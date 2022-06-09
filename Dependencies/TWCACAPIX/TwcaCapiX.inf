@@ -1,0 +1,18 @@
+[version]
+    signature="$CHICAGO$"
+    AdvancedINF=2.0
+
+[Add.Code]
+TwcaCapiX.dll = TwcaCapiX.dll                
+NBDiskX.dll = NBDiskX.dll
+   
+[TwcaCapiX.dll]
+    file-win32-x86=thiscab
+    clsid={A641225E-14A9-4D5F-800C-B471D21AE928}
+    RegisterServer=yes
+
+[NBDiskX.dll]
+    file-win32-x86=thiscab
+    RegisterServer=no
+    DestDir=11  
+
