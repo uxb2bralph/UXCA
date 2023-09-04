@@ -1,0 +1,674 @@
+﻿body {
+    padding-top: 20px;
+    margin: 30px 0px 0px 0px;
+}
+
+    body.forget {
+        padding-top: 0px;
+        text-align: center;
+    }
+
+form {
+    margin: 0px;
+    padding: 0px;
+    text-align: right;
+    right: 50px;
+    top: 275px;
+}
+
+html {
+    font-family: sans-serif;
+}
+
+label {
+    font-size: 14px;
+    color: #2D2D2D;
+    margin-bottom: .25rem;
+    font-weight: 500;
+}
+
+
+
+.prompt {
+    text-align: left;
+}
+
+.mb-5 {
+    margin-bottom: 3rem !important;
+}
+
+.d-block {
+    display: block !important;
+    margin: auto;
+}
+
+.mx-auto {
+    margin-left: auto !important;
+}
+
+.form-sublink {
+    float: right;
+    color: #838E95;
+    font-size: 12px;
+    margin-top: .3rem;
+}
+
+.container {
+    margin-left: auto;
+}
+
+form-control {
+    height: 40px;
+    width: 100%;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.btn-success1 {
+    color: #ffffff;
+    background-color: #614092;
+    /*border-color;*/
+}
+
+.btn-brand {
+    background-color: #795203;
+    color: #ffffff;
+}
+
+.copyright {
+    font: 0.825em Arial, Helvetica, sans-serif;
+    color: #999999;
+    text-align: center;
+}
+
+.login {
+    background: url(../../images/index_bg.jpg) no-repeat;
+    margin: 0px auto;
+    padding: 0px;
+    width: 780px;
+    height: 395px;
+    position: relative;
+}
+
+table.sign_in {
+    margin: 0;
+    padding: 0px;
+}
+
+    table.sign_in td {
+        padding: 2px 4px 0px 4px;
+        text-align: left;
+    }
+
+        table.sign_in td span {
+            padding: 0px;
+            padding-left: 4px;
+            font: 0.825em Arial, Helvetica, sans-serif;
+            border-left: 3px solid #f39800;
+            color: #77291e;
+        }
+
+table.err01 {
+    margin: 5px 0px 0px 10px;
+    font: 0.825em Arial, Helvetica, sans-serif;
+    color: #FF3300;
+    border-width: 0px;
+}
+
+    table.err01 a {
+        color: #FF3300;
+        border-width: 0px;
+    }
+
+        table.err01 a:hover {
+            color: #999;
+            text-decoration: none;
+            border-width: 0px;
+        }
+
+.textfield {
+    font: 0.825em Arial, Helvetica, sans-serif;
+    color: #666666;
+    border: 1px solid #7f9db9;
+}
+
+table.verifyno {
+    margin: 0px;
+    padding: 0px;
+}
+
+    table.verifyno td {
+        padding: 2px 4px 0px 4px;
+        text-align: left;
+        font: 0.825em Arial, Helvetica, sans-serif;
+        color: #8B4513;
+    }
+
+#CaptchaImg1_imgNum {
+    width: 90px;
+    height: 23px;
+    border: 1px solid #C0C0C0;
+}
+
+span.forget_pw {
+    border-left-width: 0px !important;
+}
+
+    span.forget_pw a {
+        text-decoration: none;
+        color: #D2691E;
+    }
+
+        span.forget_pw a:hover {
+            text-decoration: none;
+            color: #A52A2A;
+            border-bottom: 1px dotted #666;
+        }
+
+/**取得密碼**/
+.get_pw {
+    background: url('../../images/get_pw_bg.jpg') no-repeat;
+    margin: 0px auto;
+    padding: 0px;
+    width: 710px;
+    height: 315px;
+    position: relative;
+}
+
+form.getmail {
+    margin: 0px;
+    padding: 0px;
+    text-align: right;
+    position: absolute;
+    right: 70px;
+    top: 100px;
+}
+
+.copyright a {
+    text-decoration: none;
+    color: #D2691E;
+}
+
+    .copyright a:hover {
+        text-decoration: none;
+        color: #A52A2A;
+        border-bottom: 1px dotted #666;
+    }
+/*跑馬燈*/
+div.run {
+    background: url(../../images/run.gif) no-repeat left top;
+    position: relative;
+    width: 650px;
+    height: 25px;
+    margin: 0 auto;
+    padding-top: 5px;
+}
+
+.notice {
+    /*position:absolute;
+	right:75px;
+	top:345px;*/
+    font: 10pt/150% Arial, Helvetica, sans-serif;
+    letter-spacing: 1px;
+    color: #4169E1;
+    margin: 0px;
+    padding: 0px;
+    width: 630px;
+}
+
+    .notice a {
+        text-decoration: none;
+        border-bottom: 1px dotted #69F;
+        color: #434343;
+    }
+
+        .notice a:hover {
+            text-decoration: none;
+            color: #FF8C00;
+        }
+
+/* BUTTONS */
+.btn, .woocommerce a.button,
+.woocommerce-page a.button,
+.woocommerce button.button,
+.woocommerce-page button.button,
+.woocommerce input.button,
+.woocommerce-page input.button,
+.woocommerce #respond input#submit,
+.woocommerce-page #respond input#submit,
+.woocommerce #content input.button,
+.woocommerce-page #content input.button {
+    padding: 10.5px 27px;
+    font-size: 14px;
+}
+
+@media (max-width: 991px) {
+    .btn, .woocommerce a.button,
+    .woocommerce-page a.button,
+    .woocommerce button.button,
+    .woocommerce-page button.button,
+    .woocommerce input.button,
+    .woocommerce-page input.button,
+    .woocommerce #respond input#submit,
+    .woocommerce-page #respond input#submit,
+    .woocommerce #content input.button,
+    .woocommerce-page #content input.button {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+}
+
+.btn.btn-brand, .woocommerce a.btn-brand.button,
+.woocommerce-page a.btn-brand.button,
+.woocommerce button.btn-brand.button,
+.woocommerce-page button.btn-brand.button,
+.woocommerce input.btn-brand.button,
+.woocommerce-page input.btn-brand.button,
+.woocommerce #respond input.btn-brand#submit,
+.woocommerce-page #respond input.btn-brand#submit,
+.woocommerce #content input.btn-brand.button,
+.woocommerce-page #content input.btn-brand.button {
+    background: #7952B3;
+    color: #ffffff;
+}
+
+    .btn.btn-brand:hover, .woocommerce a.btn-brand.button:hover,
+    .woocommerce-page a.btn-brand.button:hover,
+    .woocommerce button.btn-brand.button:hover,
+    .woocommerce-page button.btn-brand.button:hover,
+    .woocommerce input.btn-brand.button:hover,
+    .woocommerce-page input.btn-brand.button:hover,
+    .woocommerce #respond input.btn-brand#submit:hover,
+    .woocommerce-page #respond input.btn-brand#submit:hover,
+    .woocommerce #content input.btn-brand.button:hover,
+    .woocommerce-page #content input.btn-brand.button:hover, .btn.btn-brand:focus, .woocommerce a.btn-brand.button:focus,
+    .woocommerce-page a.btn-brand.button:focus,
+    .woocommerce button.btn-brand.button:focus,
+    .woocommerce-page button.btn-brand.button:focus,
+    .woocommerce input.btn-brand.button:focus,
+    .woocommerce-page input.btn-brand.button:focus,
+    .woocommerce #respond input.btn-brand#submit:focus,
+    .woocommerce-page #respond input.btn-brand#submit:focus,
+    .woocommerce #content input.btn-brand.button:focus,
+    .woocommerce-page #content input.btn-brand.button:focus {
+        background: #614092;
+        color: #ffffff;
+    }
+
+.btn.btn-inverted {
+    background: #ffffff;
+    color: #007bff;
+    border-color: #007bff;
+}
+
+    .btn.btn-inverted:hover {
+        background: #287ed3;
+        color: #ffffff;
+    }
+
+.btn.btn-outline-brand, .woocommerce a.btn-outline-brand.button,
+.woocommerce-page a.btn-outline-brand.button,
+.woocommerce button.btn-outline-brand.button,
+.woocommerce-page button.btn-outline-brand.button,
+.woocommerce input.btn-outline-brand.button,
+.woocommerce-page input.btn-outline-brand.button,
+.woocommerce #respond input.btn-outline-brand#submit,
+.woocommerce-page #respond input.btn-outline-brand#submit,
+.woocommerce #content input.btn-outline-brand.button,
+.woocommerce-page #content input.btn-outline-brand.button {
+    background: transparent;
+    color: #7952B3;
+    border-color: #7952B3;
+}
+
+    .btn.btn-outline-brand:hover, .woocommerce a.btn-outline-brand.button:hover,
+    .woocommerce-page a.btn-outline-brand.button:hover,
+    .woocommerce button.btn-outline-brand.button:hover,
+    .woocommerce-page button.btn-outline-brand.button:hover,
+    .woocommerce input.btn-outline-brand.button:hover,
+    .woocommerce-page input.btn-outline-brand.button:hover,
+    .woocommerce #respond input.btn-outline-brand#submit:hover,
+    .woocommerce-page #respond input.btn-outline-brand#submit:hover,
+    .woocommerce #content input.btn-outline-brand.button:hover,
+    .woocommerce-page #content input.btn-outline-brand.button:hover, .btn.btn-outline-brand:focus, .woocommerce a.btn-outline-brand.button:focus,
+    .woocommerce-page a.btn-outline-brand.button:focus,
+    .woocommerce button.btn-outline-brand.button:focus,
+    .woocommerce-page button.btn-outline-brand.button:focus,
+    .woocommerce input.btn-outline-brand.button:focus,
+    .woocommerce-page input.btn-outline-brand.button:focus,
+    .woocommerce #respond input.btn-outline-brand#submit:focus,
+    .woocommerce-page #respond input.btn-outline-brand#submit:focus,
+    .woocommerce #content input.btn-outline-brand.button:focus,
+    .woocommerce-page #content input.btn-outline-brand.button:focus {
+        border-color: #614092;
+        background: #614092;
+        color: #ffffff;
+    }
+
+.btn.btn-lg, .btn-group-lg > .btn, .woocommerce .btn-group-lg > a.button,
+.woocommerce-page .btn-group-lg > a.button,
+.woocommerce .btn-group-lg > button.button,
+.woocommerce-page .btn-group-lg > button.button,
+.woocommerce .btn-group-lg > input.button,
+.woocommerce-page .btn-group-lg > input.button,
+.woocommerce #respond .btn-group-lg > input#submit,
+.woocommerce-page #respond .btn-group-lg > input#submit,
+.woocommerce #content .btn-group-lg > input.button,
+.woocommerce-page #content .btn-group-lg > input.button, .woocommerce a.btn-lg.button,
+.woocommerce-page a.btn-lg.button,
+.woocommerce button.btn-lg.button,
+.woocommerce-page button.btn-lg.button,
+.woocommerce input.btn-lg.button,
+.woocommerce-page input.btn-lg.button,
+.woocommerce #respond input.btn-lg#submit,
+.woocommerce-page #respond input.btn-lg#submit,
+.woocommerce #content input.btn-lg.button,
+.woocommerce-page #content input.btn-lg.button {
+    padding: 13px 27px;
+    font-size: 16px;
+}
+
+.btn.btn-sm, .btn-group-sm > .btn, .woocommerce .btn-group-sm > a.button,
+.woocommerce-page .btn-group-sm > a.button,
+.woocommerce .btn-group-sm > button.button,
+.woocommerce-page .btn-group-sm > button.button,
+.woocommerce .btn-group-sm > input.button,
+.woocommerce-page .btn-group-sm > input.button,
+.woocommerce #respond .btn-group-sm > input#submit,
+.woocommerce-page #respond .btn-group-sm > input#submit,
+.woocommerce #content .btn-group-sm > input.button,
+.woocommerce-page #content .btn-group-sm > input.button, .woocommerce a.btn-sm.button,
+.woocommerce-page a.btn-sm.button,
+.woocommerce button.btn-sm.button,
+.woocommerce-page button.btn-sm.button,
+.woocommerce input.btn-sm.button,
+.woocommerce-page input.btn-sm.button,
+.woocommerce #respond input.btn-sm#submit,
+.woocommerce-page #respond input.btn-sm#submit,
+.woocommerce #content input.btn-sm.button,
+.woocommerce-page #content input.btn-sm.button {
+    font-size: 12px;
+    padding: 7.5px 18px;
+}
+
+.btn.btn-xs, .woocommerce a.btn-xs.button,
+.woocommerce-page a.btn-xs.button,
+.woocommerce button.btn-xs.button,
+.woocommerce-page button.btn-xs.button,
+.woocommerce input.btn-xs.button,
+.woocommerce-page input.btn-xs.button,
+.woocommerce #respond input.btn-xs#submit,
+.woocommerce-page #respond input.btn-xs#submit,
+.woocommerce #content input.btn-xs.button,
+.woocommerce-page #content input.btn-xs.button {
+    font-size: 12px;
+    padding: 4px 10px;
+}
+
+.btn.rounded-bottom, .woocommerce a.rounded-bottom.button,
+.woocommerce-page a.rounded-bottom.button,
+.woocommerce button.rounded-bottom.button,
+.woocommerce-page button.rounded-bottom.button,
+.woocommerce input.rounded-bottom.button,
+.woocommerce-page input.rounded-bottom.button,
+.woocommerce #respond input.rounded-bottom#submit,
+.woocommerce-page #respond input.rounded-bottom#submit,
+.woocommerce #content input.rounded-bottom.button,
+.woocommerce-page #content input.rounded-bottom.button {
+    border-radius: 0;
+    border-bottom-right-radius: 0.25rem;
+    border-bottom-left-radius: 0.25rem;
+}
+
+@media (min-width: 768px) {
+    .btn + .btn, .woocommerce a.button + .btn,
+    .woocommerce-page a.button + .btn,
+    .woocommerce button.button + .btn,
+    .woocommerce-page button.button + .btn,
+    .woocommerce input.button + .btn,
+    .woocommerce-page input.button + .btn,
+    .woocommerce #respond input#submit + .btn,
+    .woocommerce-page #respond input#submit + .btn,
+    .woocommerce #content input.button + .btn,
+    .woocommerce-page #content input.button + .btn, .woocommerce .btn + a.button, .woocommerce a.button + a.button,
+    .woocommerce-page .woocommerce a.button + a.button, .woocommerce
+    .woocommerce-page a.button + a.button, .woocommerce button.button + a.button,
+    .woocommerce-page .woocommerce button.button + a.button, .woocommerce
+    .woocommerce-page button.button + a.button, .woocommerce input.button + a.button,
+    .woocommerce-page .woocommerce input.button + a.button, .woocommerce
+    .woocommerce-page input.button + a.button, .woocommerce #respond input#submit + a.button,
+    .woocommerce-page #respond .woocommerce input#submit + a.button, .woocommerce
+    .woocommerce-page #respond input#submit + a.button, .woocommerce #content input.button + a.button,
+    .woocommerce-page #content .woocommerce input.button + a.button, .woocommerce
+    .woocommerce-page #content input.button + a.button,
+    .woocommerce-page .btn + a.button, .woocommerce
+    .woocommerce-page a.button + a.button,
+    .woocommerce-page .woocommerce a.button + a.button, .woocommerce-page a.button + a.button,
+    .woocommerce
+    .woocommerce-page button.button + a.button,
+    .woocommerce-page
+    .woocommerce button.button + a.button, .woocommerce-page button.button + a.button,
+    .woocommerce
+    .woocommerce-page input.button + a.button,
+    .woocommerce-page
+    .woocommerce input.button + a.button, .woocommerce-page input.button + a.button,
+    .woocommerce #respond
+    .woocommerce-page input#submit + a.button,
+    .woocommerce-page
+    .woocommerce #respond input#submit + a.button, .woocommerce-page #respond input#submit + a.button,
+    .woocommerce #content
+    .woocommerce-page input.button + a.button,
+    .woocommerce-page
+    .woocommerce #content input.button + a.button, .woocommerce-page #content input.button + a.button,
+    .woocommerce .btn + button.button, .woocommerce a.button + button.button,
+    .woocommerce-page
+    .woocommerce a.button + button.button,
+    .woocommerce
+    .woocommerce-page a.button + button.button, .woocommerce button.button + button.button,
+    .woocommerce-page
+    .woocommerce button.button + button.button,
+    .woocommerce
+    .woocommerce-page button.button + button.button, .woocommerce input.button + button.button,
+    .woocommerce-page
+    .woocommerce input.button + button.button,
+    .woocommerce
+    .woocommerce-page input.button + button.button, .woocommerce #respond input#submit + button.button,
+    .woocommerce-page #respond
+    .woocommerce input#submit + button.button,
+    .woocommerce
+    .woocommerce-page #respond input#submit + button.button, .woocommerce #content input.button + button.button,
+    .woocommerce-page #content
+    .woocommerce input.button + button.button,
+    .woocommerce
+    .woocommerce-page #content input.button + button.button,
+    .woocommerce-page .btn + button.button, .woocommerce
+    .woocommerce-page a.button + button.button,
+    .woocommerce-page .woocommerce a.button + button.button, .woocommerce-page a.button + button.button,
+    .woocommerce
+    .woocommerce-page button.button + button.button,
+    .woocommerce-page
+    .woocommerce button.button + button.button, .woocommerce-page button.button + button.button,
+    .woocommerce
+    .woocommerce-page input.button + button.button,
+    .woocommerce-page
+    .woocommerce input.button + button.button, .woocommerce-page input.button + button.button,
+    .woocommerce #respond
+    .woocommerce-page input#submit + button.button,
+    .woocommerce-page
+    .woocommerce #respond input#submit + button.button, .woocommerce-page #respond input#submit + button.button,
+    .woocommerce #content
+    .woocommerce-page input.button + button.button,
+    .woocommerce-page
+    .woocommerce #content input.button + button.button, .woocommerce-page #content input.button + button.button,
+    .woocommerce .btn + input.button, .woocommerce a.button + input.button,
+    .woocommerce-page
+    .woocommerce a.button + input.button,
+    .woocommerce
+    .woocommerce-page a.button + input.button, .woocommerce button.button + input.button,
+    .woocommerce-page
+    .woocommerce button.button + input.button,
+    .woocommerce
+    .woocommerce-page button.button + input.button, .woocommerce input.button + input.button,
+    .woocommerce-page
+    .woocommerce input.button + input.button,
+    .woocommerce
+    .woocommerce-page input.button + input.button, .woocommerce #respond input#submit + input.button,
+    .woocommerce-page #respond
+    .woocommerce input#submit + input.button,
+    .woocommerce
+    .woocommerce-page #respond input#submit + input.button, .woocommerce #content input.button + input.button,
+    .woocommerce-page #content
+    .woocommerce input.button + input.button,
+    .woocommerce
+    .woocommerce-page #content input.button + input.button,
+    .woocommerce-page .btn + input.button, .woocommerce
+    .woocommerce-page a.button + input.button,
+    .woocommerce-page .woocommerce a.button + input.button, .woocommerce-page a.button + input.button,
+    .woocommerce
+    .woocommerce-page button.button + input.button,
+    .woocommerce-page
+    .woocommerce button.button + input.button, .woocommerce-page button.button + input.button,
+    .woocommerce
+    .woocommerce-page input.button + input.button,
+    .woocommerce-page
+    .woocommerce input.button + input.button, .woocommerce-page input.button + input.button,
+    .woocommerce #respond
+    .woocommerce-page input#submit + input.button,
+    .woocommerce-page
+    .woocommerce #respond input#submit + input.button, .woocommerce-page #respond input#submit + input.button,
+    .woocommerce #content
+    .woocommerce-page input.button + input.button,
+    .woocommerce-page
+    .woocommerce #content input.button + input.button, .woocommerce-page #content input.button + input.button,
+    .woocommerce #respond .btn + input#submit, .woocommerce #respond a.button + input#submit,
+    .woocommerce-page
+    .woocommerce #respond a.button + input#submit,
+    .woocommerce #respond
+    .woocommerce-page a.button + input#submit, .woocommerce #respond button.button + input#submit,
+    .woocommerce-page
+    .woocommerce #respond button.button + input#submit,
+    .woocommerce #respond
+    .woocommerce-page button.button + input#submit, .woocommerce #respond input.button + input#submit,
+    .woocommerce-page
+    .woocommerce #respond input.button + input#submit,
+    .woocommerce #respond
+    .woocommerce-page input.button + input#submit, .woocommerce #respond input#submit + input#submit,
+    .woocommerce-page
+    .woocommerce #respond input#submit + input#submit,
+    .woocommerce
+    .woocommerce-page #respond input#submit + input#submit, .woocommerce #content #respond input.button + input#submit, .woocommerce #respond #content input.button + input#submit,
+    .woocommerce-page #content
+    .woocommerce #respond input.button + input#submit,
+    .woocommerce #respond
+    .woocommerce-page #content input.button + input#submit,
+    .woocommerce-page #respond .btn + input#submit, .woocommerce
+    .woocommerce-page #respond a.button + input#submit,
+    .woocommerce-page #respond .woocommerce a.button + input#submit, .woocommerce-page #respond a.button + input#submit,
+    .woocommerce
+    .woocommerce-page #respond button.button + input#submit,
+    .woocommerce-page #respond
+    .woocommerce button.button + input#submit, .woocommerce-page #respond button.button + input#submit,
+    .woocommerce
+    .woocommerce-page #respond input.button + input#submit,
+    .woocommerce-page #respond
+    .woocommerce input.button + input#submit, .woocommerce-page #respond input.button + input#submit,
+    .woocommerce
+    .woocommerce-page #respond input#submit + input#submit,
+    .woocommerce-page
+    .woocommerce #respond input#submit + input#submit, .woocommerce-page #respond input#submit + input#submit,
+    .woocommerce #content
+    .woocommerce-page #respond input.button + input#submit,
+    .woocommerce-page #respond
+    .woocommerce #content input.button + input#submit, .woocommerce-page #content #respond input.button + input#submit, .woocommerce-page #respond #content input.button + input#submit,
+    .woocommerce #content .btn + input.button, .woocommerce #content a.button + input.button,
+    .woocommerce-page
+    .woocommerce #content a.button + input.button,
+    .woocommerce #content
+    .woocommerce-page a.button + input.button, .woocommerce #content button.button + input.button,
+    .woocommerce-page
+    .woocommerce #content button.button + input.button,
+    .woocommerce #content
+    .woocommerce-page button.button + input.button, .woocommerce #content input.button + input.button,
+    .woocommerce-page
+    .woocommerce #content input.button + input.button,
+    .woocommerce #content
+    .woocommerce-page input.button + input.button, .woocommerce #respond #content input#submit + input.button, .woocommerce #content #respond input#submit + input.button,
+    .woocommerce-page #respond
+    .woocommerce #content input#submit + input.button,
+    .woocommerce #content
+    .woocommerce-page #respond input#submit + input.button, .woocommerce #content input.button + input.button,
+    .woocommerce-page
+    .woocommerce #content input.button + input.button,
+    .woocommerce
+    .woocommerce-page #content input.button + input.button,
+    .woocommerce-page #content .btn + input.button, .woocommerce
+    .woocommerce-page #content a.button + input.button,
+    .woocommerce-page #content .woocommerce a.button + input.button, .woocommerce-page #content a.button + input.button,
+    .woocommerce
+    .woocommerce-page #content button.button + input.button,
+    .woocommerce-page #content
+    .woocommerce button.button + input.button, .woocommerce-page #content button.button + input.button,
+    .woocommerce
+    .woocommerce-page #content input.button + input.button,
+    .woocommerce-page #content
+    .woocommerce input.button + input.button, .woocommerce-page #content input.button + input.button,
+    .woocommerce #respond
+    .woocommerce-page #content input#submit + input.button,
+    .woocommerce-page #content
+    .woocommerce #respond input#submit + input.button, .woocommerce-page #respond #content input#submit + input.button, .woocommerce-page #content #respond input#submit + input.button,
+    .woocommerce
+    .woocommerce-page #content input.button + input.button,
+    .woocommerce-page
+    .woocommerce #content input.button + input.button, .woocommerce-page #content input.button + input.button {
+        margin-left: 5px;
+    }
+}
+
+.btn__label {
+    color: inherit;
+}
+
+.btn__label--right {
+    margin-left: 1rem;
+}
+
+.btn__label--left {
+    margin-right: 1rem;
+}
+
+.btn i.loading-icon, .woocommerce a.button i.loading-icon,
+.woocommerce-page a.button i.loading-icon,
+.woocommerce button.button i.loading-icon,
+.woocommerce-page button.button i.loading-icon,
+.woocommerce input.button i.loading-icon,
+.woocommerce-page input.button i.loading-icon,
+.woocommerce #respond input#submit i.loading-icon,
+.woocommerce-page #respond input#submit i.loading-icon,
+.woocommerce #content input.button i.loading-icon,
+.woocommerce-page #content input.button i.loading-icon {
+    display: none;
+}
+
+.btn.loading i.loading-icon, .woocommerce a.loading.button i.loading-icon,
+.woocommerce-page a.loading.button i.loading-icon,
+.woocommerce button.loading.button i.loading-icon,
+.woocommerce-page button.loading.button i.loading-icon,
+.woocommerce input.loading.button i.loading-icon,
+.woocommerce-page input.loading.button i.loading-icon,
+.woocommerce #respond input.loading#submit i.loading-icon,
+.woocommerce-page #respond input.loading#submit i.loading-icon,
+.woocommerce #content input.loading.button i.loading-icon,
+.woocommerce-page #content input.loading.button i.loading-icon {
+    display: inline-block;
+    -webkit-animation: spin 2s infinite linear;
+    animation: spin 2s infinite linear;
+}
+
+label.error {
+    font: 0.825em Arial, Helvetica, sans-serif;
+    color: red;
+}
+
+.logosize {
+    height: auto;
+    height: 300px;
+}
