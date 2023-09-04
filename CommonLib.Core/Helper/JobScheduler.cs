@@ -7,7 +7,6 @@ using System.IO;
 using CommonLib.Utility;
 using System.Xml;
 using Microsoft.Extensions.Configuration;
-using CommonLib.Core.Properties;
 
 namespace CommonLib.Core.Helper
 {
@@ -27,7 +26,7 @@ namespace CommonLib.Core.Helper
         private JobScheduler(int period)
         {
             initialize();
-            if (Settings.Default.EnableJobScheduler)
+            if (Startup.Properties.GetValue<bool>("EnableJobScheduler"))
             {
                 _timer = new Timer(run, null, period, period);
             }
@@ -168,7 +167,7 @@ namespace CommonLib.Core.Helper
             if (_instance == null)
                 StartUp();
             var type = Type.GetType(item.AssemblyQualifiedName);
-            if (type.GetInterface("CommonLib.Helper.IJob") != null)
+            if (type.GetInterface("CommonLib.Core.Helper.IJob") != null)
             {
                 _instance._jobItems.Add(item);
                 _instance.saveJob();

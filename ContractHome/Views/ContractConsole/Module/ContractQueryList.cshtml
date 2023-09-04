@@ -1,0 +1,76 @@
+
+@using System.Linq
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@functions
+{
+    ModelSource? models;
+    IQueryable<dynamic> _model;
+    IOrderedQueryable<dynamic> _order;
+    String _dataItemView;
+    QueryViewModel _viewModel;
+
+}
+@{
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _model = (IQueryable<dynamic>)this.Model;
+    _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+    await Html.RenderPartialAsync("~/Views/DataExchange/Module/ItemListSorting.cshtml");
+
+    _dataItemView = ViewBag.DataItemView ?? "~/Views/ContractConsole/Module/ContractQueryItem.cshtml";
+
+    IQueryable<dynamic> items;
+    int pageIndex = _viewModel.PageIndex ?? 0;
+    int pageSize = _viewModel.PageSize ?? 10;
+
+    if (TempData["SortedItems"] == null)
+    {
+        if (_viewModel.Paging == false)
+        {
+            items = _model;
+        }
+        else
+        {
+            items = _model
+                .Skip(pageIndex * pageSize)
+                .Take(pageSize);
+        }
+    }
+    else
+    {
+        if (_viewModel.Paging == false)
+        {
+            items = ((IQueryable<dynamic>)TempData["SortedItems"]);
+        }
+        else
+        {
+            items = ((IQueryable<dynamic>)TempData["SortedItems"])
+                .Skip(pageIndex * pageSize)
+                .Take(pageSize);
+        }
+    }
+
+}
+
+@{
+    int idx = 0;
+}
+@foreach (var item in items)
+{
+    idx++;
+    <tr>
+        @{ await Html.RenderPartialAsync(_dataItemView, (object)item);}
+
+    </tr>
+}
+

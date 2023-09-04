@@ -1,0 +1,80 @@
+@using System.IO
+@using System.Linq.Expressions
+@using ContractHome.Properties;
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+    ModelSource? models;
+    ModelStateDictionary _modelState;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+    QueryViewModel _viewModel = (ViewBag.ViewModel as QueryViewModel)!;
+    _viewModel.UrlAction = Url.Action("InquireSql", "DataExchange");
+
+}
+@{
+    await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "資料查詢");
+    await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
+}
+<form>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            SQL：
+            <select name="ConnectionString">
+                @foreach(var item in Settings.Default.ConnectionList)
+                {
+                    if (item != null && item.Length > 1)
+                    {
+                        <option value="@Html.Raw(item[1].EncryptData())">@Html.Raw(item[0])</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="form-group row">
+            <textarea class="form-control col-12" name="CommandText" rows="8"></textarea>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div class="table-responsive">
+                <!--表格 開始-->
+                <table class="table table-striped table-bordered table-hover">
+                    <tr>
+                        <td class="Bargain_btn" align="center">
+                            <button type="button" onclick="$global.dataTable.inquireSql();" name="UpdateButton" class="btn">確定</button>
+                            &nbsp;
+                            <input name="Reset" type="reset" class="btn" value="重填" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</form>
+@{
+    await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgent.cshtml");
+    await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
+}
+<!--按鈕-->
+<script>
+    $(function () {
+
+        $global.dataTable = {
+            'inquireSql': function () {
+                $inquiryAgent.viewModel = $('form').find('input,select,textArea').serializeObject();
+                $inquiryAgent.viewModel.CommandText = Base64.encode($inquiryAgent.viewModel.CommandText);
+                $inquiryAgent.inquire();
+            },
+        };
+    });
+
+</script>
+
+

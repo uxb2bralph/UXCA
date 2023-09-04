@@ -1,0 +1,172 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
+using System.IO;
+using ContractHome.Models;
+using ContractHome.Models.DataEntity;
+using ContractHome.Models.ViewModel;
+using CommonLib.Utility;
+using Newtonsoft.Json;
+using ContractHome.Helper;
+using ContractHome.Properties;
+using CommonLib.Core.Utility;
+using System.Xml;
+using GemBox.Document;
+using System.Net;
+using Microsoft.Extensions.Primitives;
+using System.Drawing;
+using System.Drawing.Imaging;
+using Microsoft.AspNetCore.WebUtilities;
+using System.Linq.Dynamic.Core;
+using System.Reflection;
+using System.Data.Linq;
+using ContractHome.Security.Authorization;
+using Irony.Parsing;
+
+namespace ContractHome.Controllers
+{
+    //[AuthorizedSysAdmin]
+    public class OrganizationController : SampleController
+    {
+        private readonly ILogger<OrganizationController> _logger;
+
+        public OrganizationController(ILogger<OrganizationController> logger, IServiceProvider serviceProvider) : base(serviceProvider)
+        {
+            _logger = logger;
+        }
+
+        public ActionResult InquireData(OrganizationViewModel viewModel)
+        {
+            ViewBag.ViewModel = viewModel;
+
+            IQueryable<Organization> items = models.GetTable<Organization>();
+            //viewModel.ReceiptNo = viewModel.ReceiptNo.GetEfficientString();
+            //if(viewModel.ReceiptNo != null) 
+            //{ 
+            //    items = items.Where(o=>o.ReceiptNo.StartsWith(viewModel.ReceiptNo));
+            //}
+
+            //viewModel.CompanyName = viewModel.CompanyName.GetEfficientString();
+            //if(viewModel.CompanyName != null)
+            //{
+            //    items = items.Where(o=>o.CompanyName.StartsWith(viewModel.CompanyName));    
+            //}
+
+            //viewModel.Phone = viewModel.Phone.GetEfficientString();
+            //if(viewModel.Phone != null)
+            //{
+            //    items = items.Where(o=>o.Phone.StartsWith(viewModel.Phone));
+            //}
+
+            //viewModel.Addr = viewModel.Addr.GetEfficientString();
+            //if(viewModel.Addr != null) 
+            //{
+            //    items = items.Where(o => o.Addr.StartsWith(viewModel.Addr));
+            //}
+
+            //viewModel.ContactEmail = viewModel.ContactEmail.GetEfficientString();
+            //if(viewModel.ContactEmail != null)
+            //{
+            //    items = items.Where(o=>o.ContactEmail.StartsWith(viewModel.ContactEmail));
+            //}
+
+            //viewModel.UndertakerName = viewModel.UndertakerName.GetEfficientString();
+            //if (viewModel.UndertakerName != null)
+            //{
+            //    items = items.Where(o => o.UndertakerName.StartsWith(viewModel.UndertakerName));
+            //}
+
+            //viewModel.Fax = viewModel.Fax.GetEfficientString();
+            //if(viewModel.Fax != null)
+            //{
+            //    items = items.Where(o => o.Fax.StartsWith(viewModel.Fax));
+            //}
+
+            if (viewModel.DataItem != null && viewModel.DataItem.Length > 0)
+            {
+                items = items.BuildQuery(viewModel.DataItem);
+            }
+
+            var item = items.FirstOrDefault();
+            return View("~/Views/Organization/Module/EditItem.cshtml", item);
+        }
+
+        public async Task<ActionResult> DataItemAsync(QueryViewModel viewModel)
+        {
+            if (ViewBag.ViewModel == null)
+            {
+                viewModel = await PrepareViewModelAsync(viewModel);
+            }
+
+            viewModel.EncKeyItem = viewModel.EncKeyItem.GetEfficientString();
+            if(viewModel.EncKeyItem!=null)
+            {
+                viewModel.KeyItem = JsonConvert.DeserializeObject<DataTableColumn[]>(viewModel.EncKeyItem.DecryptData());
+            }
+
+            IQueryable<Organization> items = models.GetTable<Organization>();
+
+            if (viewModel.KeyItem?.Any(k => k.Name != null && k.Value != null) == true)
+            {
+                items = items.BuildQuery(viewModel.KeyItem);
+            }
+            else
+            {
+                items = items.Where(" 1 = 0");
+            }
+
+            var dataItem = items.FirstOrDefault();
+            return View("~/Views/Organization/Module/EditItem.cshtml", dataItem);
+        }
+
+
+        public async Task<ActionResult> CommitItemAsync(OrganizationViewModel viewModel)
+        {
+            viewModel = await PrepareViewModelAsync(viewModel);
+            ViewResult result = (ViewResult)await DataItemAsync(viewModel);
+            dynamic? dataItem = result.Model;
+
+            ITable dataTable = models.GetTable<Organization>();
+            Type type = typeof(Organization);
+            dataItem = ContractHome.Models.DataEntity.ExtensionMethods.PrepareDataItem(viewModel.DataItem, dataItem, dataTable, type);
+
+            try
+            {
+                models.SubmitChanges();
+                return Json(new { result = true });
+            }
+            catch (Exception ex)
+            {
+                FileLogger.Logger.Error(ex);
+                return Json(new { result = false, message = ex.Message });
+            }
+        }
+
+        public async Task<ActionResult> DeleteItemAsync(QueryViewModel viewModel)
+        {
+            viewModel = await PrepareViewModelAsync(viewModel);
+            ViewResult result = (ViewResult)await DataItemAsync(viewModel);
+            dynamic? item = result.Model;
+
+            ITable dataTable = models.GetTable<Organization>();
+            if (item != null)
+            {
+                dataTable.DeleteOnSubmit(item);
+                try
+                {
+                    models.SubmitChanges();
+                    return Json(new { result = true });
+                }
+                catch (Exception ex)
+                {
+                    FileLogger.Logger.Error(ex);
+                    return Json(new { result = false, message = ex.Message });
+                }
+            }
+
+            return Json(new { result = false, message = "資料錯誤！" });
+        }
+
+
+    }
+}

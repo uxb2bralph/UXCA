@@ -1,0 +1,35 @@
+@using System.Linq
+@using System.IO
+@using System.Linq.Expressions
+@using System.Reflection
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+
+    DataTableQueryViewModel _viewModel;
+
+    _viewModel = (DataTableQueryViewModel)ViewBag.ViewModel;
+    var type = (Type)ViewBag.TableType; // _model.GetType();
+    PropertyInfo[] properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+}
+<th></th>
+@foreach (PropertyInfo property in properties)
+{
+    var t = property.PropertyType;
+    if (t == typeof(String) || t.IsPrimitive || t.IsValueType)
+    {
+        var item = _viewModel?.DataItem?.Where(d => d.Name == property.Name).FirstOrDefault();
+        <th><input type="text" name="@(property.Name)" value="@(item?.Value)" class="form-control" /> </th>
+    }
+}
+<th style="white-space: nowrap;min-width:130px;">
+    <button type="button" class="btn" onclick='$global.dataTable.inquireData();'>查詢</button>
+</th>
+
+

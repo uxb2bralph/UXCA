@@ -14,40 +14,42 @@ namespace TWCACAPIAdapter.Controllers
     {
 		public IActionResult RegisterObject()
         {
-			try
-			{
-				Process p = new Process();
-				p.StartInfo.FileName = "Regsvr32.exe";
-				p.StartInfo.Arguments = $"{AppDomain.CurrentDomain.BaseDirectory}TWCACAPIX.dll";//路徑中不能有空格
-				p.Start();
-				p.WaitForExit();
+			//try
+			//{
+			//	Process p = new Process();
+			//	p.StartInfo.FileName = "Regsvr32.exe";
+			//	p.StartInfo.Arguments = $"{AppDomain.CurrentDomain.BaseDirectory}TWCACAPIX.dll";//路徑中不能有空格
+			//	p.Start();
+			//	p.WaitForExit();
 
-				return View("~/Views/Home/Module/SuccessfulRegister.cshtml");
-			}
-			catch(Exception ex)
-            {
-				FileLogger.Logger.Error(ex);
-				return Json(new { result = false, message = ex.Message });
-            }
+			//	return View("~/Views/Home/Module/SuccessfulRegister.cshtml");
+			//}
+			//catch(Exception ex)
+			//         {
+			//	FileLogger.Logger.Error(ex);
+			//	return Json(new { result = false, message = ex.Message });
+			//         }
+			Program.BuildRegistry();
+			return View("~/Views/Home/Module/SuccessfulRegister.cshtml");
 		}
 
-		public IActionResult Sign([FromBody] TWCASignDataViewModel viewModel)
-        {
-            CAPIClass capi = new CAPIClass();
-            try
-            {
-                var dataSignature = capi.Sign(viewModel.DataToSign ?? "", viewModel.Subject ?? "", viewModel.Flags, viewModel.KeyUsage);
-                return Json(new { dataSignature = dataSignature, errorCode = 0 });
-            }
-            catch (Exception ex)
-            {
-                FileLogger.Logger.Error(ex);
-                return Json(new { errorCode = capi.GetErrorCode(), errorMessage = capi.GetErrorMsg() });
+        //public IActionResult Sign([FromBody] TWCASignDataViewModel viewModel)
+        //      {
+        //          CAPIClass capi = new CAPIClass();
+        //          try
+        //          {
+        //              var dataSignature = capi.Sign(viewModel.DataToSign ?? "", viewModel.Subject ?? "", viewModel.Flags, viewModel.KeyUsage);
+        //              return Json(new { dataSignature = dataSignature, errorCode = 0 });
+        //          }
+        //          catch (Exception ex)
+        //          {
+        //              FileLogger.Logger.Error(ex);
+        //              return Json(new { errorCode = capi.GetErrorCode(), errorMessage = capi.GetErrorMsg() });
 
-            }
-        }
+        //          }
+        //      }
 
-		public IActionResult SignCms([FromBody] TWCASignDataViewModel viewModel)
+        public IActionResult SignCms([FromBody] TWCASignDataViewModel viewModel)
 		{
 			Signable capi = new Signable();
 			try

@@ -1,0 +1,54 @@
+﻿@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+    Layout = "~/Views/Shared/MasterPage.cshtml";
+
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+    _viewModel.UrlAction = Url.Action("ListToStamp", "ContractConsole");
+
+}
+<div class="container">
+    @{
+        await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
+        await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgent.cshtml");
+        await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
+        await Html.RenderPartialAsync("~/Views/ContractConsole/Module/ContractRequestQueryResult.cshtml");
+    }
+</div>
+<script>
+    function affixSeal(keyID) {
+        $('').launchDownload('@Html.Raw(Url.Action("AffixSeal", "ContractConsole"))', { 'KeyID': keyID });
+    }
+
+    function affixPdfSeal(keyID) {
+        $('').launchDownload('@Html.Raw(Url.Action("AffixPdfSeal", "ContractConsole"))', { 'KeyID': keyID });
+    }
+
+
+    function startSigning(keyID) {
+        showLoading();
+        $.post('@Html.Raw(Url.Action("StartSigning", "ContractConsole"))', { 'KeyID': keyID }, function (data) {
+            hideLoading();
+            if ($.isPlainObject(data)) {
+                    alertModal(data.message);
+            } else {
+                $(data).appendTo($('body'));
+            }
+        });
+    }
+</script>
+

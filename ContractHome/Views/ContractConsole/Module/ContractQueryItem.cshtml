@@ -1,0 +1,90 @@
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using System.Reflection
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"]!;
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+
+    Contract _model;
+    QueryViewModel _viewModel;
+
+    _model = (Contract)this.Model;
+    _viewModel = (QueryViewModel)ViewBag.ViewModel;
+    var profile = await Context.GetUserAsync();
+
+}
+<td>@($"{_model.CDS_Document.DocDate:yyyy/MM/dd HH:mm}")</td>
+<td>@(_model.ContractingParty.Where(p => p.IsInitiator == true).FirstOrDefault()?.Organization.CompanyName)</td>
+<td>@(String.Join("<br/>", _model.ContractingParty.Where(p => !p.IsInitiator.HasValue || p.IsInitiator == false)
+        .Select(p=>p.Organization.CompanyName)))</td>
+<td><a target="_blank" href="@Html.Raw(@Url.Action("ShowCurrentContract","ContractConsole",new { KeyID = _model.ContractID.EncryptKey() }))">@(_model.ContractNo)</a></td>
+<td>
+    @if(_model.CDS_Document.IsPDF)
+    {
+        foreach (var req in _model.ContractSignatureRequest)
+        {
+            var party = _model.ContractingParty.Where(p => p.CompanyID == req.CompanyID).First();
+            <div>
+                @if (req.StampDate.HasValue)
+                {
+                    <span>@(party.Organization.CompanyName)已用印@*，@(req.StampDate)*@</span>
+                }
+                else
+                {
+                    <span>
+                        @(party.Organization.CompanyName)待用印
+                    </span>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        foreach (var req in _model.ContractSealRequest)
+        {
+            <div>
+                @if (req.StampDate.HasValue)
+                {
+                    <span>@(req.SealTemplate.ContractingIntent?.Description)已用印@*，@(req.StampDate)*@</span>
+                }
+                else
+                {
+                    <span>
+                        @(req.SealTemplate.ContractingIntent?.Description)
+                        @(req.SealTemplate.UserRoleDefinition?.Role)待用印
+                    </span>
+                }
+            </div>
+        }
+    }
+</td>
+<td>
+    @foreach (var req in _model.ContractSignatureRequest)
+    {
+        <div>
+            @if (req.SignerID.HasValue)
+            {
+                <span>@(req.Organization.CompanyName)簽章完成@*，@(req.SignatureDate)*@</span>
+            }
+            else
+            {
+                <span>
+                    @(req.Organization.CompanyName)
+                    待簽章
+                </span>
+            }
+        </div>
+    }
+</td>
+
+

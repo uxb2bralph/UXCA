@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Database Name="CA" Class="UXCADataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
+  <Table Name="dbo.CA" Member="CAs">
+    <Type Name="CA">
+      <Column Name="CA_ID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="FIRST_NAME" Type="System.String" DbType="VarChar(30) NOT NULL" CanBeNull="false" />
+      <Column Name="LAST_NAME" Type="System.String" DbType="VarChar(30) NOT NULL" CanBeNull="false" />
+      <Column Name="PASSCODE" Type="System.String" DbType="VarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="EMAIL" Type="System.String" DbType="VarChar(255)" CanBeNull="true" />
+      <Column Name="JOB_TITLE" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="EMPLOYEE_ID" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="COUNTRY" Type="System.String" DbType="Char(2)" CanBeNull="true" />
+      <Column Name="DUNS" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="APPLY_STATE" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="SEND_FLAG" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="ERROR_CODE" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="STATE" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="LOCALITY" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="CA_CLASS_ID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="CREATION_TIME" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
+      <Column Name="APPLY_TIME" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="CA_FALL_TIME" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="MAIL_SEND_FLAG" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
+      <Column Name="ERROR_SEND_MAIL_FLAG" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
+      <Column Name="USER_NAME" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="USER_SEX" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="COMPANY_NAME" Type="System.String" DbType="VarChar(255)" CanBeNull="true" />
+      <Column Name="COMPANY_ADDRESS" Type="System.String" DbType="VarChar(255)" CanBeNull="true" />
+      <Column Name="COMPANY_TEL" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="COMPANY_EXTENSION" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="COMPANY_FAX" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="INV_COMPANY_NAME" Type="System.String" DbType="VarChar(255)" CanBeNull="true" />
+      <Column Name="INV_COMPANY_ADDRESS" Type="System.String" DbType="VarChar(255)" CanBeNull="true" />
+      <Column Name="INV_EMPLOYEE_ID" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="USER_MOBILE" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="USER_BIRTHDAY" Type="System.DateTime" DbType="SmallDateTime" CanBeNull="true" />
+      <Column Name="COMPANY_CLASS" Type="System.Int16" DbType="SmallInt" CanBeNull="true" />
+      <Column Name="CHECKED_FLAG" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="PID" Type="System.String" DbType="Char(10)" CanBeNull="true" />
+      <Column Name="CA_SEQ" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="IKEY" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="RENEW_EMAIL_SEND_FLAG" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="FEE_FLAG" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="CA_FROM" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="Memo" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="USER_GET_CA_TIME" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Mailing_ADDRESS" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="EIVO01" Type="System.String" DbType="NVarChar(1)" CanBeNull="true" />
+      <Column Name="FOR_CA_TYPE" Type="System.Char" DbType="Char(1)" CanBeNull="true" />
+      <Column Name="REC_CA_TYPE" Type="System.Char" DbType="Char(1)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.CA_TEMP" Member="CA_TEMPs">
+    <Type Name="CA_TEMP">
+      <Column Name="First_Name" Type="System.String" DbType="VarChar(30) NOT NULL" CanBeNull="false" />
+      <Column Name="User_Name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="User_Sex" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="User_Birth" Type="System.DateTime" DbType="SmallDateTime" CanBeNull="true" />
+      <Column Name="Company_Name" Type="System.String" DbType="VarChar(255)" CanBeNull="true" />
+      <Column Name="Company_Address" Type="System.String" DbType="VarChar(255)" CanBeNull="true" />
+      <Column Name="Company_Tel" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="Company_Extention" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="Company_Fax" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="User_Mobile" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="User_Pid" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="Email" Type="System.String" DbType="VarChar(255)" CanBeNull="true" />
+      <Column Name="Job_Title" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="Employee_ID" Type="System.String" DbType="VarChar(60)" CanBeNull="true" />
+      <Column Name="Country" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="Duns" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="Creat_Time" Type="System.DateTime" DbType="SmallDateTime NOT NULL" CanBeNull="false" />
+      <Column Name="ikey" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="Operator" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="Send_Mail_Flag" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="Mailing_ADDRESS" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+    </Type>
+  </Table>
+</Database>

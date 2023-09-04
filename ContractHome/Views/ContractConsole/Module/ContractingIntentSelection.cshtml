@@ -1,0 +1,27 @@
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using System.Reflection
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+
+    String _fieldName = this.Model as String ?? "IntentID";
+}
+<select name="@(_fieldName)" class="form-control">
+    @foreach (var item in models.GetTable<ContractingIntent>())
+    {
+        <option value="@(item.IntentID)">@Html.Raw(item.Description)</option>
+    }
+</select>

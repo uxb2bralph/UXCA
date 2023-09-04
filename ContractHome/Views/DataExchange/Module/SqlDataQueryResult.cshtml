@@ -1,0 +1,43 @@
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@using System.Data;
+@{
+
+    ModelSource? models;
+    DataSet _model;
+    DataTableQueryViewModel _viewModel;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _viewModel = (DataTableQueryViewModel)ViewBag.ViewModel;
+
+    _model = (DataSet)this.Model;
+}
+@{ await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "查詢結果");}
+
+
+<div class="border_gray query_result">
+    @{
+        if (_viewModel.RecordCount > 0)
+        {
+            await Html.RenderPartialAsync("~/Views/DataExchange/Module/SqlDataTable.cshtml", _model);
+            await Html.RenderPartialAsync("~/Views/Common/Module/QueryPagingControl.cshtml", _model);
+        }
+        else
+        {
+            <font color="red">查無資料!!</font>
+        }
+    }
+</div>
+
+
+
+
+

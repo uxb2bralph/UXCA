@@ -1,0 +1,65 @@
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using System.Reflection
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+
+    String _fieldName = this.Model as String ?? "CompanyID";
+    String _contentID = "id" + DateTime.Now.Ticks;
+    String _valueID = "value" + DateTime.Now.Ticks;
+
+}
+
+<input type="text" class="form-control" id="@(_contentID)" value="" placeholder="請輸入檢索關鍵字" />
+<input type="hidden" id="@(_valueID)" name="@(_fieldName)" value="" />
+<script>
+        $(function () {
+            debugger;
+            var $input = $('#@(_contentID)');
+            $input.on('change', function (evt) {
+                if ($input.val() == '') {
+                    $('#@(_valueID)').val('');
+                }
+            });
+            $input.autocomplete({
+                source: '@Html.Raw(Url.Action("SearchCompany", "Home"))',
+                select: function (event, ui) {
+                    $input.val(ui.item.label);
+                    $('#@(_valueID)').val(ui.item.value);
+                    event.preventDefault();
+                    $('#@(_valueID)').trigger('change');
+                },
+                close: function (event, ui) {
+                    if ($input.val() == '') {
+                        $('#@(_valueID)').val('');
+                    }
+                },
+            });
+        });
+
+    @*@if (Request[_fieldName] != null)
+    {
+        <text>
+            $(function() {
+                $('#@(_valueID)').val('@(Request[_fieldName])');
+            });
+        </text>
+    }*@
+</script>
+
+
+
+

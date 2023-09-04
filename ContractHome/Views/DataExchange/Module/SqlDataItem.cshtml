@@ -1,0 +1,29 @@
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using System.Reflection
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@using System.Data;
+@{
+
+    DataRow _model;
+    DataTableQueryViewModel _viewModel;
+
+    _model = (DataRow)this.Model;
+    _viewModel = (DataTableQueryViewModel)ViewBag.ViewModel;
+
+    var columns = _model.Table.Columns;
+}
+
+@foreach (DataColumn col in columns)
+{
+        <td>@Html.Raw(_model[col])</td>
+}
+
+

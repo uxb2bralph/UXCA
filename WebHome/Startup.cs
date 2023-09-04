@@ -139,16 +139,6 @@ namespace WebHome
 
             app.UseEndpoints(endpoints =>
             {
-                //endpoints.MapControllerRoute(
-                //        name: "Official",
-                //        pattern: "Official/{action}/{id?}/{keyID?}",
-                //        defaults: new { controller = "MainActivity", action = "Index" }
-                //    );
-
-                //endpoints.MapControllerRoute(
-                //    name: "OfficialActionName",
-                //    pattern: "Official/{*actionName}",
-                //    defaults: new { controller = "MainActivity", action = "HandleUnknownAction" });
 
                 endpoints.MapControllerRoute(
                     name: "default",

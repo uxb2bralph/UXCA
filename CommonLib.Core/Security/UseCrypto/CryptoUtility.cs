@@ -56,7 +56,7 @@ namespace CommonLib.Security.UseCrypto
 
         }
 
-        public bool VerifyEnvelopedPKCS7(byte[] p7bData,out byte[] dataToSign)
+        public bool VerifyEnvelopedPKCS7(byte[] p7bData, out byte[] dataToSign)
         {
             SignedCms signedCms = new SignedCms();
             //解密文
@@ -266,7 +266,7 @@ namespace CommonLib.Security.UseCrypto
         //}
 
 
-        public static bool SignXml(XmlDocument docMsg, String cspName, String keyStorePhrass,X509Certificate2 signerCert,String referenceUri="")
+        public static bool SignXml(XmlDocument docMsg, String cspName, String keyStorePhrass, X509Certificate2 signerCert, String referenceUri = "")
         {
 
             try

@@ -1,0 +1,70 @@
+﻿@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+
+
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+}
+
+
+<script>
+    var $inquiryAgent = {
+        viewModel: @Html.Raw(_viewModel.JsonStringify()),
+        initQuery: false,
+        columns: null,
+        $queryResult: null,
+        sort: function (name, target) {
+            if (!$inquiryAgent.viewModel.SortName) {
+                $inquiryAgent.viewModel.SortName = [];
+            }
+            if (!$inquiryAgent.viewModel.SortType) {
+                $inquiryAgent.viewModel.SortType = [];
+            }
+            var sortType = 1;
+            var idx = $inquiryAgent.viewModel.SortName.indexOf(name);
+            if (idx >= 0) {
+                sortType = ($inquiryAgent.viewModel.SortType[idx] + 2) % 3 - 1;
+                $inquiryAgent.viewModel.SortType[idx] = sortType;
+            } else {
+                $inquiryAgent.viewModel.SortName.push(name);
+                $inquiryAgent.viewModel.SortType.push(sortType);
+            }
+
+            var $target = $(target);
+            $target.find('i').remove();
+            if (sortType == 1) {
+                $target.append('<i class="fa fa-sort-asc" aria-hidden="true"></i>');
+            } else if (sortType == -1) {
+                $target.append('<i class="fa fa-sort-desc" aria-hidden="true"></i>');
+            }
+            $inquiryAgent.initQuery = false;
+            $inquiryAgent.inquire(-1);
+        },
+        pageIndex: 0,
+        doPage: function (data) {
+        },
+        onBodyLoad: function () {
+        },
+        onQueryDone: null,
+        showQueryResult: function(data) {
+            //$this.$queryResult = $(data);
+            //$placement.after($this.$queryResult);
+            $global.createTab('queryResult', '查詢', data, true);
+            $inquiryAgent.initQuery = false;
+        },
+    };
+
+</script>

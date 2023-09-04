@@ -1,0 +1,145 @@
+﻿@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+    Layout = "~/Views/Shared/MasterPage.cshtml";
+
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+    _viewModel.UrlAction = Url.Action("InquireData", "ContractConsole");
+
+}
+<div class="container">
+    @{
+        <section>
+            <!-- Section title -->
+            @{
+                await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
+                await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "合約查詢");
+                await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgent.cshtml");
+                await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
+            }
+
+            <!--Section: Demo-->
+            <section class="pb-4" id="queryArea">
+                <div class="bg-white border rounded-5">
+                    <section class="w-100 p-4 d-flex justify-content-center pb-4">
+                        <form method="post" enctype="multipart/form-data">
+                            <div class="row data-item">
+                                @{
+                                    await Html.RenderPartialAsync("~/Views/ContractConsole/Module/QueryItem.cshtml");
+                                }
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mt-2">
+                                    @*<button type="button" class="btn-primary" onclick="$global.dataTable.commitData(true);">新增</button>
+                                    <button type="button" class="btn-primary" onclick="$global.dataTable.commitData();">修改</button>
+                                    <button type="button" class="btn-danger" onclick="$global.dataTable.deleteData();">刪除</button>*@
+                                    <button type="button" class="btn-primary" onclick="$global.dataTable.inquireData();">查詢</button>
+                                </div>
+                            </div>
+                        </form>
+                        <script>
+                            $global.dataTable = {
+                                'inquireData': function ($tr) {
+                                    var $tr = $tr || $(window.event.target).closest('form').find('div.data-item');
+                                    $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
+                                    $inquiryAgent.inquire();
+                                },
+                                'commitData': function (addNew) {
+                                    if(addNew) {
+                                        delete $inquiryAgent.viewModel.EncKeyItem;
+                                        delete $inquiryAgent.viewModel.KeyItem;
+                                    }
+                                    var $tr = $(window.event.target).closest('form').find('div.data-item');
+                                    $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
+                                    showLoading();
+                                    $.ajax({
+                                        url: '@(Url.Action("CommitItem", "Organization"))',
+                                        data: JSON.stringify($inquiryAgent.viewModel),
+                                        type: "POST",
+                                        //dataType: "json",
+                                        contentType: "application/json;charset=utf-8",
+                                        success: function (data) {
+                                            hideLoading();
+                                            if ($.isPlainObject(data)) {
+                                                if(data.result) {
+                                                    alertModal('存檔完成!!');
+                                                } else {
+                                                    alertModal('存檔失敗，原因：'+data.message);
+                                                }
+                                            } else {
+                                                $('body').append($(data));
+                                            }
+                                        },
+                                        error: function (xhr, ajaxOptions, thrownError) {
+                                            hideLoading();
+                                            alertModal(thrownError);
+                                            console.log(xhr.status);
+                                            console.log(thrownError);
+                                        }
+                                    });
+                                },
+                                'deleteData': function () {
+                                    if (!confirm('請確認刪除資料？刪除後無法復原！')) {
+                                        return;
+                                    }
+                                    var $tr = $(window.event.target).closest('form').find('div.data-item');
+                                    showLoading();
+                                    $.ajax({
+                                        url: '@(Url.Action("DeleteItem", "Organization"))',
+                                        data: JSON.stringify({'EncKeyItem': $inquiryAgent.viewModel.EncKeyItem}),
+                                        type: "POST",
+                                        //dataType: "json",
+                                        contentType: "application/json;charset=utf-8",
+                                        success: function (data) {
+                                            hideLoading();
+                                            if ($.isPlainObject(data)) {
+                                                if (data.result) {
+                                                    alertModal('資料已刪除!!');
+                                                    delete $inquiryAgent.viewModel.EncKeyItem;
+                                                    delete $inquiryAgent.viewModel.KeyItem;
+                                                    $global.dataTable.inquireData($tr);
+                                                } else {
+                                                    alertModal('刪除未完成，原因：' + data.message);
+                                                }
+                                            } else {
+                                                $(data).appendTo($('body')).remove();
+                                            }
+                                        },
+                                        error: function (xhr, ajaxOptions, thrownError) {
+                                            hideLoading();
+                                            alertModal(thrownError);
+                                            console.log(xhr.status);
+                                            console.log(thrownError);
+                                        }
+                                    });
+                                },
+
+                            }
+                            $inquiryAgent.showQueryResult = function (data) {
+                                $inquiryAgent.$queryResult = $(data);
+                                var $tr = $('#queryArea');
+                                $tr.after($inquiryAgent.$queryResult);
+                            }
+                        </script>
+
+                    </section>
+                </div>
+            </section>
+        </section>
+    }
+</div>
+

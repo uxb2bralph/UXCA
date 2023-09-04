@@ -1,0 +1,42 @@
+﻿@using System.Security.Cryptography.X509Certificates;
+@using TWCACAPIAdapter.Models.ViewModel;
+@using CommonLib.Utility;
+
+@{
+    X509Certificate2Collection _model = (X509Certificate2Collection)this.Model;
+    TWCASignDataViewModel _viewModel = (TWCASignDataViewModel)ViewBag.ViewModel;
+}
+<h2>
+    <span class="bd-content-title">
+        請選取您用來進行電子簽章的數位憑證
+        <a class="anchorjs-link " aria-label="Anchor" data-anchorjs-icon="#" href="#links-and-buttons" style="padding-left: 0.375em;"></a>
+    </span>
+</h2>
+<div class="list-group">
+    @foreach (var cert in _model)
+    {
+        if (cert.HasPrivateKey)
+        {
+            <button type="button" class="list-group-item list-group-item-action" aria-current="true" onclick="sign('@Html.Raw(cert.Thumbprint)');">
+                @(cert.Subject)
+            </button>
+        }
+    }
+</div>
+<script>
+    function sign(thumbprint) {
+        var event = event || window.event;
+        var $btn = $(event.target);
+        if(confirm('確定使用簽章憑證:'+$btn.text())) {
+            var viewModel = @Html.Raw(_viewModel.JsonStringify());
+            viewModel.Thumbprint = thumbprint;
+            $.post('@Html.Raw(Url.Action("SignCms", "UXPKI"))', viewModel, function (data) {
+                if ($.isPlainObject(data)) {
+                    alert(data.message);
+                } else {
+                    $('body').append(data);
+                }
+            });
+        }
+    }
+</script>

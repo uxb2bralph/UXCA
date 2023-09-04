@@ -1,0 +1,51 @@
+﻿@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+    Layout = "~/Views/Shared/MasterPage.cshtml";
+
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+    var Response = ViewContext.HttpContext.Response;
+    var Request = ViewContext.HttpContext.Request;
+
+}
+@{
+    String[][] items =
+            {
+                new String[] {"ContractNo","合約號碼"},
+                new String[] {"DocDateFrom","合約日期(起)"},
+                new String[] {"DocDateTo","合約日期(迄)"},
+                new String[] {"Initiator","起約人"},
+                new String[] {"Contractor","簽約人"},
+    };
+}
+<div class="container">
+    @foreach (var item in items)
+    {
+        BuildColumns(item[0], item[1]);
+    }
+</div>
+
+@functions
+{
+    void BuildColumns(String name,String desc)
+    {
+        <div class="col-md-4">
+            <label for="@(name)" class="form-label">@Html.Raw(desc)</label>
+            <input type="text" class="form-control" name="@(name)" id="@(name)" value="@Html.Raw($"@Html.Raw(_model?.{name})")">
+        </div>
+    }
+}

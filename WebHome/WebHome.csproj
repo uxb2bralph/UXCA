@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="jquery" Version="3.6.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.3" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
   </ItemGroup>
@@ -22,6 +23,26 @@
   <ItemGroup>
     <Folder Include="Helper\DataQuery\" />
     <Folder Include="Helper\Security\Authorization\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Models\DataEntity\UXCA.designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>UXCA.dbml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Models\DataEntity\UXCA.dbml">
+      <SubType>Designer</SubType>
+      <LastGenOutput>UXCA.designer.cs</LastGenOutput>
+      <Generator>MSLinqToSQLGenerator</Generator>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{3259aa49-8aa1-44d3-9025-a0b520596a8c}" />
   </ItemGroup>
 
 </Project>

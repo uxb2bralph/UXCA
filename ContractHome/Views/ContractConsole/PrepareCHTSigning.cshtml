@@ -1,0 +1,84 @@
+﻿@using System.IO
+@using System.Linq.Expressions
+@using ContractHome.Properties;
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@using Newtonsoft.Json.Linq;
+@{
+    Layout = "~/Views/Shared/Module/CenterModalTemplate.cshtml";
+
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+    JObject _model = (JObject)this.Model;
+    ContractSignatureRequest? _item = ViewBag.DataItem as ContractSignatureRequest;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+
+    SignatureRequestViewModel _viewModel = (SignatureRequestViewModel)ViewBag.ViewModel;
+    _viewModel.DialogID = $"sign{DateTime.Now.Ticks}";
+
+}
+
+@section ModalHeader
+{
+    <h5 class="modal-title">合約數位簽章</h5>
+}
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">合約編號：@(_item?.Contract.ContractNo)</h5>
+        <p class="card-text">請先簽章授權後，再完成簽章。</p>
+    </div>
+</div>
+
+@section ModalFooter
+    {
+    <button type="button" class="btn btn-primary btn-auth">1、簽章授權</button>
+    <button type="button" class="btn btn-light waves-effect btn-confirm">2、完成簽章</button>
+    <script nonce="Y2hiY29kZQ==">
+        $(function () {
+
+            var $currentModal = $('#@(_viewModel.DialogID)');
+            $('#@(_viewModel.DialogID) button.btn-auth').on('click', function () {
+                window.open('@Html.Raw($"{Settings.Default.CHTSigning.AuthorizeUserTicket}{_item?.RequestTicket}")', '_blank', 'popup');
+            });
+
+            $('#@(_viewModel.DialogID) button.btn-confirm').on('click', function () {
+
+                if(!confirm('確認已授權簽章？')) {
+                    return;
+                }
+
+                var $formData = $currentModal.find('input,select,textarea').serializeObject();
+                $formData.KeyID = '@Html.Raw(JsonConvert.SerializeObject(new { ContractID = _item?.ContractID, CompanyID = _item?.CompanyID}).EncryptData())';
+
+                showLoading();
+                clearErrors();
+                $.post('@Html.Raw(Url.Action("CommitUserSignature", "ContractConsole"))', $formData, function (data) {
+                    hideLoading();
+                    if ($.isPlainObject(data)) {
+                        if (data.result) {
+                            alertModal('簽章完成!!');
+                            $inquiryAgent.inquire($inquiryAgent.viewModel.PageIndex);
+                            $currentModal.modal('hide');
+                        } else {
+                            alertModal('簽章失敗!!');
+                        }
+                    } else {
+                        $currentModal.modal('hide');
+                        $(data).appendTo($('body'));
+                    }
+                });
+            });
+        });
+    </script>
+}
+
+

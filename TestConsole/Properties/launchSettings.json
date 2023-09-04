@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "TestConsole": {
+      "commandName": "Project",
+      "commandLineArgs": "0\r\nG:\\temp\\TestSample.pdf\r\nG:\\temp\\output.pdf"
+    }
+  }
+}

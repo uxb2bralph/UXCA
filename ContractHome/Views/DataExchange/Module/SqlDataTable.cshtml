@@ -1,0 +1,53 @@
+@using System.Reflection
+@using System.Linq
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@using System.Data;
+@using System.Data.SqlClient;
+@{
+
+    ModelSource? models;
+    DataSet _model;
+    String _listID = "itemList" + DateTime.Now.Ticks;
+    DataTableQueryViewModel _viewModel;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _model = (DataSet)this.Model;
+    _viewModel = (DataTableQueryViewModel)ViewBag.ViewModel;
+}
+<table id="@(_listID)" class="table01 itemList">
+    <thead>
+        <tr>
+            @foreach (DataColumn p in _model.Tables[0].Columns)
+            {
+                <th>@(p.ColumnName)</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            await Html.RenderPartialAsync("~/Views/DataExchange/Module/SqlDataItemList.cshtml", _model);
+        }
+    </tbody>
+    <tfoot>
+        <tr>
+        </tr>
+    </tfoot>
+</table>
+
+<script>
+    $inquiryAgent.doPage = function (data) {
+        $('#@(_listID) tbody')
+            .empty()
+            .append(data);
+
+    };
+</script>

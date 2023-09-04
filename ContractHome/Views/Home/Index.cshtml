@@ -1,0 +1,50 @@
+﻿@using System.IO;
+@using CommonLib.Core.Utility;
+@using ContractHome.Properties;
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-left">
+    <h1 class="display-6">使用中的範本：<span id="current">@(Settings.Default.TemplateContractDocx)</span></h1>
+    @{
+        String templatePath = System.IO.Path.Combine(FileLogger.Logger.LogPath, "Template");
+        foreach (var item in System.IO.Directory.GetFiles(templatePath))
+        {
+            <div class="row">
+                @{
+                    String fileName = System.IO.Path.GetFileName(item);
+                }
+                <div class="col-6">@(fileName)</div>
+                <div class="col-2">
+                    <button type="button" onclick="applyTemplate('@Html.Raw(fileName)');">套用範本</button>
+                </div>
+            </div>
+        }
+        <div class="row">
+            <form method="post" action="@Url.Action("UploadSample","Home")" enctype="multipart/form-data">
+                <input type="file" name="SampleDoc" />
+                <button type="button" onclick="$('form').submit();">上傳合約範本</button>
+            </form>
+        </div>
+    }
+</div>
+<script>
+    function applyTemplate(name) {
+
+        var $formData = { 'template': name };
+        $.post('@Html.Raw(Url.Action("ApplyTemplate", "Home"))', $formData, function (data) {
+            if ($.isPlainObject(data)) {
+                if (data.result) {
+                    $('#current').text(data.template);
+                    alert('已套用新範本!!');
+                } else {
+                    alert(data.message);
+                }
+            } else {
+                $('body').append(data);
+            }
+        });
+    }
+</script>

@@ -1,0 +1,45 @@
+
+@using System.Linq
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@using System.Data;
+@functions
+{
+    ModelSource? models;
+    DataSet _model;
+    String _dataItemView;
+    DataTableQueryViewModel _viewModel;
+
+}
+@{
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _model = (DataSet)this.Model;
+    _viewModel = (DataTableQueryViewModel)ViewBag.ViewModel;
+
+    _dataItemView = ViewBag.DataItemView ?? "~/Views/DataExchange/Module/SqlDataItem.cshtml";
+    var items = _model.Tables[0].Rows;
+
+}
+
+@{
+    int idx = 0;
+}
+@foreach (var item in items)
+{
+    idx++;
+    <tr>
+        @{ 
+            await Html.RenderPartialAsync(_dataItemView, (DataRow)item);
+        }
+    </tr>
+}
+

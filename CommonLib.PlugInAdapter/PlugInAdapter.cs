@@ -11,12 +11,6 @@ namespace CommonLib.PlugInAdapter
         void ConvertHtmlToPDF(String htmlFile, String pdfFile, double timeOutInMinute);
     }
 
-    public interface IPdfUtility2 : IPdfUtility
-    {
-        void ConvertHtmlToPDF(String htmlFile, String pdfFile, double timeOutInMinute, String[] args);
-    }
-
-
     public interface ILogger
     {
         void Debug(object obj);

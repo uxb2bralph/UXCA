@@ -6,15 +6,25 @@ using System.Text.Json;
 
 namespace CommonLib.Core.Properties
 {
-    public class Settings : CommonLib.Utility.Properties.AppSettings
+    public partial class Settings : AppSettings
     {
-        static Settings _default;
-
-        public static Settings Default => _default;
-
         static Settings()
         {
             _default = Initialize<Settings>(typeof(Settings).Namespace);
+        }
+
+        public Settings() : base()
+        {
+
+        }
+
+        static Settings _default;
+        public new static Settings Default
+        {
+            get
+            {
+                return _default;
+            }
         }
 
         public String IPdfUtilityImpl { get; set; } = "WKPdfWrapper.PdfUtility,WKPdfWrapper, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null";
@@ -23,5 +33,4 @@ namespace CommonLib.Core.Properties
         public String LogPath { get; set; }
         public bool IgnoreCertificateRevoked { get; set; } = true;
     }
-
 }

@@ -1,0 +1,35 @@
+﻿@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+    Organization? _model = this.Model as Organization;
+
+}
+
+@if (_model == null)
+{
+    <script>
+        delete $inquiryAgent.viewModel.EncKeyItem;
+    </script>
+}
+else
+{
+    <script>
+        $inquiryAgent.viewModel.EncKeyItem = '@Html.Raw(_model?.GetPrimaryKeyValues()?.JsonStringify().EncryptData())';
+    </script>
+}
+

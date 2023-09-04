@@ -1,0 +1,41 @@
+﻿@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+    String _dialogID = _viewModel.DialogID ?? $"msg{DateTime.Now.Ticks}";
+}
+
+<div class="modal fade" id="@(_dialogID)" tabindex="-1" role="dialog" aria-labelledby="myCenterModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                @RenderSection("ModalHeader",false)
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="$('#@(_dialogID)').modal('hide');">×</button>
+            </div>
+            <div class="modal-body">
+                @RenderBody()
+            </div>
+            <div class="modal-footer">
+                @RenderSection("ModalFooter",false)
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+@{
+    await Html.RenderPartialAsync("~/Views/Shared/BSModalScript.cshtml", _dialogID);
+}

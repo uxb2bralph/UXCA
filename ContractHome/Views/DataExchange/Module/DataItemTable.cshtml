@@ -1,0 +1,92 @@
+@using System.Reflection
+@using System.Linq
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+
+    ModelSource? models;
+    IQueryable<dynamic> _model;
+    String _listID = "itemList" + DateTime.Now.Ticks;
+    DataTableQueryViewModel _viewModel;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _model = (IQueryable<dynamic>)this.Model;
+    _viewModel = (DataTableQueryViewModel)ViewBag.ViewModel;
+
+    var dataItem = _model.First();
+    var type = dataItem.GetType();
+    PropertyInfo[] properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+}
+<table id="@(_listID)" class="table01 itemList">
+    <thead>
+        <tr>
+            <th>
+                <input name="chkAll" type="checkbox" />
+            </th>
+            @foreach (var p in properties)
+            {
+                var t = p.PropertyType;
+                if (t == typeof(String) || t.IsPrimitive || t.IsValueType)
+                {
+                    <th><a href="javascript:void(0);" onclick="$inquiryAgent.sort('@(p.Name)',this);">@(p.Name)</a></th>
+                }
+            }
+            <th>
+            </th>
+        </tr>
+        <tr>
+            @{ 
+                await Html.RenderPartialAsync("~/Views/DataExchange/Module/DataItemQuery.cshtml");
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            await Html.RenderPartialAsync("~/Views/DataExchange/Module/DataItemList.cshtml", _model);
+        }
+    </tbody>
+    <tfoot>
+        <tr>
+            @{
+                await Html.RenderPartialAsync("~/Views/DataExchange/Module/NewItem.cshtml");
+            }
+        </tr>
+    </tfoot>
+</table>
+
+<script>
+    $(function () {
+        $("#@(_listID)").find("input[name='chkAll']")
+            .click(function () {
+                $("#@(_listID)").find("input[name='KeyItems']")
+                    .prop('checked', $(this).is(':checked'));
+            });
+
+        $("#@(_listID)").find("input[name='KeyItems']")
+            .click(function (e) {
+                if (!$(this).is(':checked')) {
+                    $("#@(_listID)").find("input[name='chkAll']").prop('checked', false);
+                }
+            });
+    });
+    $inquiryAgent.doPage = function (data) {
+        $('#@(_listID) tbody')
+            .empty()
+            .append(data);
+
+        $("#@(_listID)").find("input[name='KeyItems']")
+            .click(function (e) {
+                if (!$(this).is(':checked')) {
+                    $("#@(_listID)").find("input[name='chkAll']").prop('checked', false);
+                }
+            });
+    };
+</script>

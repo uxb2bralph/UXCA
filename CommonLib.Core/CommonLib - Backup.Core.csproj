@@ -1,0 +1,72 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <RootNamespace>CommonLib.Core</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="DataWork\**" />
+    <Compile Remove="MvcExtension\**" />
+    <Compile Remove="Utility\**" />
+    <EmbeddedResource Remove="DataWork\**" />
+    <EmbeddedResource Remove="MvcExtension\**" />
+    <EmbeddedResource Remove="Utility\**" />
+    <None Remove="DataWork\**" />
+    <None Remove="MvcExtension\**" />
+    <None Remove="Utility\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Properties\Settings.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="DataWork\ExtensionMethods.cs" />
+    <Compile Include="DataWork\GenericManager.cs" />
+    <Compile Include="DataWork\SQLHelper.cs" />
+    <Compile Include="Utility\DailySequence.cs" />
+    <Compile Include="Utility\ExtensionMethods.cs" />
+    <Compile Include="Utility\FileLogger.cs" />
+    <Compile Include="Utility\FileLoggerFactory.cs" />
+    <Compile Include="Utility\FileLoggerProvider.cs" />
+    <Compile Include="Utility\ViewRenderService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EntityFramework" Version="6.4.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
+    <PackageReference Include="netstandard-System.Data.Linq" Version="1.0.1" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CommonLib.Logger\CommonLib.Logger.csproj" />
+    <ProjectReference Include="..\CommonLib.Utility\CommonLib.Utility.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Security\UseCrypto\dsPKCS7.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>dsPKCS7.xsd</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Security\UseCrypto\dsPKCS7.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>dsPKCS7.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+</Project>

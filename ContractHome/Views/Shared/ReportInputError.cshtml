@@ -1,0 +1,50 @@
+﻿@using System.IO
+@using System.Linq.Expressions
+@using System.Web
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = ViewContext.ModelState;
+    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+    String _dataRole = (String)ViewBag.DataRole;
+}
+
+@if (_modelState != null && !_modelState.IsValid)
+{
+    var errorMessage = _modelState.ErrorMessage();
+    <script>
+        $(function () {
+            console.log('@Html.Raw(errorMessage)');
+            alertModal('@Html.Raw(errorMessage)');
+        });
+    </script>
+
+    foreach (var key in _modelState.Keys.Where(k => _modelState[k].Errors.Count > 0))
+    {
+        if (key.IndexOf(',') >= 0)
+        {
+            var keys = key.Split(',');
+            <script>
+                markInputError($global.$scope, '@Html.Raw(keys[0])', '@Html.Raw(_modelState.ErrorMessage(key))', '@(_dataRole)', @Html.Raw(keys[1]);
+            </script>
+        }
+        else
+        {
+            <script>
+                markInputError($global.$scope, '@Html.Raw(key)', '@Html.Raw(_modelState.ErrorMessage(key))', '@(_dataRole)');
+            </script>
+        }
+    }
+
+}

@@ -1,0 +1,43 @@
+﻿@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+}
+<!-- Tabs navs -->
+<ul class="nav nav-tabs mb-3" id="masterTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <a class="nav-link active"
+           id="ex1-tab-1"
+           data-mdb-toggle="tab"
+           href="#masterHome"
+           role="tab"
+           aria-controls="masterHome"
+           aria-selected="true">@(_viewModel.PageMainTitle ?? ">>")</a>
+    </li>
+</ul>
+<!-- Tabs navs -->
+<!-- Tabs content -->
+<div class="tab-content" id="masterTabContent">
+    <div class="tab-pane fade show active"
+         id="masterHome"
+         role="tabpanel"
+         aria-labelledby="ex1-tab-1">
+        @RenderSection("MasterHome",true)
+    </div>
+</div>
+<!-- Tabs content -->

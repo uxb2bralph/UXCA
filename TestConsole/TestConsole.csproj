@@ -1,0 +1,65 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseWPF>True</UseWPF>
+    <StartupObject></StartupObject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GdPicture" Version="14.2.38" />
+    <PackageReference Include="GemBox.Document" Version="35.0.1443" />
+    <PackageReference Include="GemBox.Pdf" Version="17.0.1386" />
+    <PackageReference Include="GrapeCity.Documents.Pdf" Version="6.2.0" />
+    <PackageReference Include="IronPDF" Version="2023.8.6" />
+    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CommonLib.Core\CommonLib.Core.csproj" />
+    <ProjectReference Include="..\CommonLib.Logger\CommonLib.Logger.csproj" />
+    <ProjectReference Include="..\CommonLib.PlugInAdapter\CommonLib.PlugInAdapter.csproj" />
+    <ProjectReference Include="..\CommonLib.Utility\CommonLib.Utility.csproj" />
+    <ProjectReference Include="..\ContractHome\ContractHome.csproj" />
+    <ProjectReference Include="..\WpfTest\WpfTest.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="keys.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Models\UXCA.dbml">
+      <Generator>MSLinqToSQLGenerator</Generator>
+      <LastGenOutput>UXCA.designer.cs</LastGenOutput>
+    </None>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{3259aa49-8aa1-44d3-9025-a0b520596a8c}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Models\UXCA.designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>UXCA.dbml</DependentUpon>
+    </Compile>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="bin\Debug\net7.0-windows\" />
+  </ItemGroup>
+
+</Project>

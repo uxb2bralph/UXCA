@@ -22,11 +22,11 @@ namespace CommonLib.Utility.Properties
 
         }
 
-        protected void Save()
+        public void Save()
         {
             String fileName = "App.settings.json";
             String filePath = Path.Combine(AppRoot, "App_Data", fileName);
-            String propertyName = typeof(AppSettings).Namespace;
+            String propertyName = this.GetType().Namespace;
             _Settings[propertyName] = JObject.FromObject(this);
             File.WriteAllText(filePath, _Settings.ToString());
         }

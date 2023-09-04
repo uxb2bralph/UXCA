@@ -1,0 +1,48 @@
+
+@using System.IO
+@using System.Linq.Expressions
+@using System.Reflection
+@using System.Linq
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+
+    DataTableQueryViewModel _viewModel;
+
+    _viewModel = (DataTableQueryViewModel)ViewBag.ViewModel;
+    var type = (Type)ViewBag.TableType; // _model.GetType();
+    PropertyInfo[] properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+}
+<td>
+    <button type="button" class="btn" onclick='$global.dataTable.deleteData();'>刪除</button>
+</td>
+@foreach (PropertyInfo property in properties)
+{
+    var t = property.GetColumnAttribute();
+    if(t==null)
+    {
+        continue;
+    }
+    else if (t.IsDbGenerated == false)
+    {
+        <td>
+            <input type="text" name="@(property.Name)" value="" class="form-control" />
+        </td>
+    }
+    else
+    {
+        <td></td>
+    }
+
+}
+<td style="white-space: nowrap;min-width:130px;">
+    <button type="button" class="btn" onclick='$global.dataTable.commitData();'>新增</button>
+</td>
+
+

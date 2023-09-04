@@ -1,0 +1,77 @@
+﻿@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@using Newtonsoft.Json.Linq
+@{
+
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+    UserProfile? _model = this.Model as UserProfile;
+
+}
+
+<div class="col-md-4">
+    <label for="CompanyID" class="form-label">隸屬公司</label>
+    <input type="text" class="form-control" id="SearchCompany" name="SearchCompany" value="@Html.Raw(_model?.OrganizationUser!=null ? $"{_model.OrganizationUser.Organization.ReceiptNo} {_model.OrganizationUser.Organization.CompanyName}" : null)" placeholder="請輸入檢索關鍵字" />
+    <input type="hidden" id="CompanyID" name="EncCompanyID" value="@Html.Raw(_model?.OrganizationUser?.CompanyID.EncryptKey())" />
+    @{
+        await Html.RenderPartialAsync("~/Views/Home/Module/AttachAutoComplete.cshtml", JObject.FromObject(new { ContentID = "SearchCompany", ValueID = "CompanyID", SearchUrl = Url.Action("SearchCompany", "Home") }));
+    }
+</div>
+<div class="col-md-4">
+    <label for="PID" class="form-label">用戶帳號</label>
+    <input type="text" class="form-control" name="PID" id="PID" value="@Html.Raw(_model?.PID)">
+</div>
+<div class="col-md-4">
+    <label for="UserName" class="form-label">姓名</label>
+    <input type="text" class="form-control" name="UserName" id="UserName" value="@Html.Raw(_model?.UserName)">
+</div>
+<div class="col-md-4">
+    <label for="Password" class="form-label">密碼</label>
+    <input type="password" class="form-control" name="Password" id="Password" value="" />
+</div>
+<div class="col-md-4">
+    <label for="EMail" class="form-label">電子郵件</label>
+    <input type="text" class="form-control" name="EMail" id="EMail" value="@Html.Raw(_model?.EMail)">
+</div>
+<div class="col-md-4">
+    <label for="EMail" class="form-label">角色</label>
+    <select name="RoleID" class="form-control">
+        @foreach (var item in models.GetTable<UserRoleDefinition>().Where(r=>r.RoleID>0))
+        {
+            <option value="@(item.RoleID)" selected="@(_model?.UserRole?.Any(r=>r.RoleID==item.RoleID)==true)">@Html.Raw(item.Role)</option>
+        }
+    </select>
+</div>
+<div class="col-md-4">
+    <label for="Region" class="form-label">申請憑證類型</label>
+    <select name="Region" class="form-control">
+        <option value="">請選擇</option>
+        <option value="O" selected="@(_model?.Region == "O")">工商憑證</option>
+        <option value="P" selected="@(_model?.Region == "P")">自然人憑證</option>
+    </select>
+</div>
+@if (_model == null)
+{
+    <script>
+        delete $inquiryAgent.viewModel.EncKeyItem;
+    </script>
+}
+else
+{
+    <script>
+        $inquiryAgent.viewModel.EncKeyItem = '@Html.Raw(_model?.GetPrimaryKeyValues()?.JsonStringify().EncryptData())';
+    </script>
+}
+

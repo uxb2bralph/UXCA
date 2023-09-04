@@ -1,0 +1,63 @@
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using System.Reflection
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+
+    dynamic _model = this.Model as dynamic;
+    String _contentID = _model.ContentID;
+    String _valueID = _model.ValueID;
+
+}
+
+<script>
+        $(function () {
+            debugger;
+            var $input = $('#@(_contentID)');
+            $input.on('change', function (evt) {
+                if ($input.val() == '') {
+                    $('#@(_valueID)').val('');
+                }
+            });
+            $input.autocomplete({
+                source: '@Html.Raw(_model.SearchUrl)',
+                select: function (event, ui) {
+                    $input.val(ui.item.label);
+                    $('#@(_valueID)').val(ui.item.value);
+                    event.preventDefault();
+                    $('#@(_valueID)').trigger('change');
+                },
+                close: function (event, ui) {
+                    if ($input.val() == '') {
+                        $('#@(_valueID)').val('');
+                    }
+                },
+            });
+        });
+
+    @*@if (Request[_fieldName] != null)
+    {
+        <text>
+            $(function() {
+                $('#@(_valueID)').val('@(Request[_fieldName])');
+            });
+        </text>
+    }*@
+</script>
+
+
+
+

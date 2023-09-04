@@ -1,0 +1,49 @@
+﻿@{
+    Layout = null;
+    var Response = ViewContext.HttpContext.Response;
+    var Request = ViewContext.HttpContext.Request;
+
+    if(!Request.Cookies.ContainsKey("uxpki_id"))
+    {
+    }
+        Response.Cookies.Append("uxpki_id", $"{Guid.NewGuid()}");
+        Response.Cookies.Append("uxpki_remote", "https://esign.uxifs.com/Home/DoSignature");
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
+    <script src="../lib/jquery/dist/jquery.min.js"></script>
+    <script src="../js/uxpki.js?0.5" type="text/javascript"></script>
+</head>
+<body>
+    <button type="button" onclick="capix.CheckSigner(function(){ alert('簽章元件未啟動或未安裝...');});">Test</button>
+</body>
+</html>
+<script>
+    var uxpki;
+    $(function () {
+
+        function loadSigner() {
+            if(capix!==undefined) {
+                uxpki = capix.CreateSigner();
+            } else {
+                setTimeout(loadSigner,1000);
+            }
+        }
+
+        $(window).on('click', function () {
+            if (uxpki === undefined) {
+                uxpki = capix.CreateSigner();
+                //uxpki = window.open('uxpki://localhost', '_blank', 'popup');
+                //setTimeout(function() {
+                //        uxpki.close();
+                //    },1000);
+            }
+        });
+
+        loadSigner();
+    });
+</script>

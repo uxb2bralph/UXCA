@@ -1,0 +1,46 @@
+﻿@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+    String _dialogID = _viewModel.DialogID ?? $"msg{DateTime.Now.Ticks}";
+}
+
+<div class="modal" id="@(_dialogID)" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@(_viewModel.AlertTitle ?? "訊息")</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="$('#@(_dialogID)').modal('hide');">×</button>
+            </div>
+            <div class="modal-body">
+                @Html.Raw(_viewModel.AlertMessage)
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#@(_dialogID)').modal('hide');">關閉</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+@{
+    Html.RenderPartial("~/Views/Shared/BSModalScript.cshtml", _dialogID);
+}
+<script nonce="Y2hiY29kZQ==">
+    $(function () {
+        $global.$alertModal = $('#@(_dialogID)');
+    });
+</script>

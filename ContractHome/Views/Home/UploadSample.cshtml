@@ -1,0 +1,16 @@
+﻿@using Microsoft.AspNetCore.Http;
+@using CommonLib.Core.Utility;
+@{
+    var Response = ViewContext.HttpContext.Response;
+    var Request = ViewContext.HttpContext.Request;
+    IFormCollection forms = (IFormCollection)this.Model;
+
+    String templatePath = System.IO.Path.Combine(FileLogger.Logger.LogPath, "Template");
+    foreach(var file in forms.Files)
+    {
+        file.SaveAs(System.IO.Path.Combine(templatePath, file.FileName));
+    }
+
+
+    await Html.RenderPartialAsync("~/Views/Home/Index.cshtml");
+}

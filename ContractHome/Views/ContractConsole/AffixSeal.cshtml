@@ -1,0 +1,99 @@
+﻿@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+    Layout = "~/Views/Shared/MasterPage.cshtml";
+
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+    ContractSealRequest _model = (ContractSealRequest)this.Model;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+
+}
+<div class="container">
+    <section>
+        <!-- Section title -->
+        @{
+            await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
+            await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", _model.SealTemplate.Intent);
+        }
+
+        <div class="row">
+            <div class="col-10" style="height:500px">
+                <iframe style="width:100%;height:100%" frameborder="0" scrolling="auto" src='@Html.Raw(Url.Action("ShowCurrentContract","ContractConsole",new { KeyID = _model.ContractID.EncryptKey(), Preview = true }))'>
+                </iframe>
+            </div>
+            <div class="col-2">
+                @if(_model.StampDate.HasValue)
+                {
+                    <h1 class="h6">
+                        已用印，@(_model.StampDate)
+                    </h1>
+                }
+                else
+                {
+                    <div class="row" id="toAffix">
+                        <form method="post" enctype="multipart/form-data">
+                            <div>
+                                <label class="form-label" for="SealImage">請選擇印鑑章</label>
+                                <input type="file" class="form-control-small" id="SealImage" name="SealImage" />
+                            </div>
+                            <div>
+                                <label class="form-label" for="SealScale" style="white-space: nowrap;">印鑑章縮放比例(%)</label>
+                                <input type="text" class="form-control-small col-8" style="text-align:right;" id="SealScale" name="SealScale" value="100" />
+                            </div>
+                            <div>
+                                <button type="button" onclick="commitSignature();" class="form-control">用印</button>
+                            </div>
+                        </form>
+                        <script>
+                            function commitSignature() {
+                                clearErrors();
+                                $('form').ajaxForm({
+                                    url: '@Html.Raw(Url.Action("CommitSignature", "ContractConsole"))',
+                                    data: $global.viewModel,
+                                    beforeSubmit: function () {
+                                        showLoading();
+                                    },
+                                    success: function (data) {
+                                        hideLoading();
+                                        if ($.isPlainObject(data)) {
+                                            if (data.result) {
+                                                alertModal('已用印完成!!');
+                                                $('iframe')[0].contentWindow.location.reload();
+                                                @*$('').launchDownload('@Html.Raw(Url.Action("AffixSeal", "ContractConsole"))', { 'KeyID': '@Html.Raw((new { ContractID=_model.ContractID,SealID=_model.SealID}).JsonStringify().EncryptData())' });*@
+                                            } else {
+                                                alertModal(data.message);
+                                            }
+                                        }
+                                        else {
+                                            $(data).appendTo($('body'));
+                                        }
+                                    },
+                                    error: function (xhr, ajaxOptions, thrownError) {
+                                        hideLoading();
+                                        console.log(xhr.status);
+                                        alertModal(thrownError);
+                                    }
+                                }).submit();
+                            }
+                        </script>
+                    </div>
+                }
+            </div>
+        </div>
+
+    </section>
+</div>
+

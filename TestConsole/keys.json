@@ -1,0 +1,14 @@
+﻿[
+	{
+		"KeyPath": "C:\\Project\\Github\\UXCA\\Doc\\網際優勢甲方\\GRA-Application-PrivateKey.key",
+		"Token": "UXB2B01-5m1ucRbW",
+		"ClusterID": "UXB2B-Simulation",
+		"Email": "chris@uxb2b.com"
+	},
+	{
+		"KeyPath": "C:\\Project\\Github\\UXCA\\Doc\\網際優勢乙方\\GRA-Application-PrivateKey.key",
+		"Token": "UXB2B02-b9crx31x",
+		"ClusterID": "UXB2B-Simulation",
+		"Email": "rsung@uxb2b.com"
+	}
+]

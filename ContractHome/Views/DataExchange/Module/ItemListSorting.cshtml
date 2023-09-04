@@ -1,0 +1,45 @@
+@using System.IO
+@using System.Linq.Expressions
+@using System.Linq.Dynamic.Core
+@using System.Linq
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@functions
+{
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+    IQueryable<dynamic> _model;
+    QueryViewModel _viewModel;
+}
+@{
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+    _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+    _model = (IQueryable<dynamic>)this.Model;
+
+    TempData["SortedItems"] = null;
+
+    if (_viewModel.SortName != null && _viewModel.SortName.Length > 0)
+    {
+        IQueryable items = _model;
+        for (int i = 0; i < _viewModel.SortName.Length; i++)
+        {
+            if (_viewModel.SortType[i] > 0)
+            {
+                items = items.OrderBy(_viewModel.SortName[i]);
+            }
+            else if (_viewModel.SortType[i] < 0)
+            {
+                items = items.OrderBy($"{_viewModel.SortName[i]} desc");
+            }
+        }
+        TempData["SortedItems"] = items;
+    }
+}

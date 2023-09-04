@@ -1,0 +1,68 @@
+
+@using System.Reflection
+@using System.Linq
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+
+    dynamic _model;
+    DataTableQueryViewModel _viewModel;
+
+    _model = (dynamic)this.Model;
+    _viewModel = (DataTableQueryViewModel)ViewBag.ViewModel;
+    var type = (Type)ViewBag.TableType; // _model.GetType();
+    PropertyInfo[] properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+}
+<td><input name="chkItem" type="checkbox" value="" /></td>
+@foreach (PropertyInfo property in properties)
+{
+    var t = property.GetColumnAttribute();
+    if (t !=null)
+    {
+        if (t.IsPrimaryKey)
+        {
+            <td>@(property.GetValue(_model, null)?.ToString())</td>
+        }
+        else
+        {
+            <td><input type="text" name="@(property.Name)" value="@(property.GetValue(_model, null)?.ToString())" class="form-control" /> </td>
+        }
+    }
+}
+<td style="white-space: nowrap;min-width:130px;">
+    @{
+        var pk = properties.Where(p => p.CheckPrimaryKey());
+        if (pk.Any())
+        {
+            var keyItem = pk.Select(p => new
+            {
+                Name = p.Name,
+                Value = p.GetValue(_model, null)
+            }).ToList();
+            var jsonData = keyItem.JsonStringify();
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle"
+                    type="button"
+                    id="dropdownMenuButton"
+                    data-mdb-toggle="dropdown"
+                    aria-expanded="false">
+                    請選擇功能
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <li><a class="btn" onclick='$global.dataTable.commitData(@Html.Raw(jsonData));'>確定</a></li>
+                    <li><a class="btn" onclick='$global.dataTable.dataItem(@Html.Raw(jsonData));'>取消</a></li>
+                </ul>
+            </div>
+        }
+    }
+</td>
+
+

@@ -10,24 +10,24 @@ namespace WebHome.Helper
 {
     public partial class HttpContextDataModelCache
     {
-        protected IMemoryCache _cache;
-        protected ISession _session;
+        protected IMemoryCache? _cache;
+        protected ISession? _session;
         protected ILogger _logger;
 
         public HttpContextDataModelCache(HttpContext context)
         {
             _cache = context.RequestServices.GetService(typeof(IMemoryCache)) as IMemoryCache;
-            _session = context.Session;
+            _session = context?.Session;
             _logger = ApplicationLogging.CreateLogger<HttpContextDataModelCache>();
 
-            _logger.LogTrace("Session Id:{0}", _session.Id);
+            _logger.LogTrace("Session Id:{0}", _session?.Id);
         }
 
-        public Object DataItem
+        public Object? DataItem
         {
             get
             {
-                if (_cache.TryGetValue(dataID, out object item))
+                if (_cache!=null && _cache.TryGetValue(dataID, out object item))
                 {
                     return item;
                 }
@@ -35,27 +35,30 @@ namespace WebHome.Helper
             }
             set
             {
-                if (value != null)
+                if (_cache != null)
                 {
-                    String key = dataID;
-                    double timeout = Properties.Settings.Default.SessionTimeoutInMinutes;
-                    List<String> items = _cache.Get<List<String>>(_session.Id);
-
-                    if (items == null)
+                    if (_session != null && value != null)
                     {
-                        items = new List<string>();
-                        _cache.Set<List<String>>(_session.Id, items, TimeSpan.FromMinutes(timeout));
-                    }
+                        String key = dataID;
+                        double timeout = Properties.Settings.Default.SessionTimeoutInMinutes;
+                        List<String> items = _cache.Get<List<String>>(_session.Id);
 
-                    if (!items.Contains(key))
-                    {
-                        items.Add(key);
+                        if (items == null)
+                        {
+                            items = new List<string>();
+                            _cache.Set<List<String>>(_session.Id, items, TimeSpan.FromMinutes(timeout));
+                        }
+
+                        if (!items.Contains(key))
+                        {
+                            items.Add(key);
+                        }
+                        _cache.Set(key, value, TimeSpan.FromMinutes(timeout));
                     }
-                    _cache.Set(key, value, TimeSpan.FromMinutes(timeout));
-                }
-                else
-                {
-                    _cache.Remove(dataID);
+                    else
+                    {
+                        _cache.Remove(dataID);
+                    }
                 }
             }
         }
@@ -64,11 +67,11 @@ namespace WebHome.Helper
         {
             get
             {
-                return String.Format("{0}{1}", _session.Id, KeyName);
+                return String.Format("{0}{1}", _session?.Id, KeyName);
             }
         }
 
-        public String KeyName
+        public String? KeyName
         {
             get;
             set;
@@ -76,19 +79,23 @@ namespace WebHome.Helper
 
         public void Clear()
         {
-            List<String> items = _cache.Get<List<String>>(_session.Id);
-            if (items != null && items.Count > 0)
+            if(_cache != null && _session!=null)
             {
-                foreach (var key in items)
+                List<String> items = _cache.Get<List<String>>(_session.Id);
+                if (items != null && items.Count > 0)
                 {
-                    _cache.Remove(key);
+                    foreach (var key in items)
+                    {
+                        _cache.Remove(key);
+                    }
+                    items.Clear();
+                    _cache.Remove(_session.Id);
                 }
-                items.Clear();
-                _cache.Remove(_session.Id);
+
             }
         }
 
-        public Object this[String index]
+        public Object? this[String index]
         {
             get
             {

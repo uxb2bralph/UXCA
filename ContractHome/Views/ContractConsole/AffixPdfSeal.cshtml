@@ -1,0 +1,142 @@
+﻿@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@using System.Text.RegularExpressions
+
+@{
+    Layout = "~/Views/Shared/MasterPage.cshtml";
+
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+    ContractSignatureRequest _model = (ContractSignatureRequest)this.Model;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+    var party = _model.Contract.ContractingParty.Where(p => p.CompanyID == _model.CompanyID).First();
+}
+<div class="container">
+    <section>
+        <!-- Section title -->
+        @{
+            await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
+            await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", party.ContractingIntent.Description);
+        }
+
+        <div class="row">
+            <div class="col-10" style="height:500px">
+                <iframe style="width:100%;height:100%" frameborder="0" scrolling="auto" src='@Html.Raw(Url.Action("ShowCurrentContract","ContractConsole",new { KeyID = _model.ContractID.EncryptKey(), Preview = true }))'>
+                </iframe>
+            </div>
+            <div class="col-2">
+                @if(_model.StampDate.HasValue)
+                {
+                    <h1 class="h6">
+                        已用印，@(_model.StampDate)
+                    </h1>
+                }
+                else
+                {
+                    <div class="row" id="toAffix">
+                        <form method="post" enctype="multipart/form-data">
+                            <div>
+                                <label class="form-label" for="SealImage">請選擇印鑑章</label>
+                                <input type="file" class="form-control-small" id="SealImage" name="SealImage" />
+                            </div>
+                            <div>
+                                <label class="form-label" for="PageIndex" style="white-space: nowrap;">請選擇用印所在頁碼：</label>
+                                <select name="PageIndex" class="form-control-small col-8">
+                                    @for(int i=0;i<GetPdfPageCount(_model.Contract);i++)
+                                    {
+                                        <option value="@(i)" selected="@(i==_model.PageIndex)">第@(i+1)頁</option>
+                                    }
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label" for="MarginTop" style="white-space: nowrap;">請指定上邊界位置(公分)</label>
+                                <input type="text" class="form-control-small col-8" style="text-align:right;" id="MarginTop" name="MarginTop" value="@(_model?.MarginTop ?? 0)" />
+                            </div>
+                            <div>
+                                <label class="form-label" for="MarginLeft" style="white-space: nowrap;">請指定左邊界位置(公分)</label>
+                                <input type="text" class="form-control-small col-8" style="text-align:right;" id="MarginLeft" name="MarginLeft" value="@(_model?.MarginLeft ?? 0)" />
+                            </div>
+                            <div>
+                                <label class="form-label" for="SealScale" style="white-space: nowrap;">印鑑章縮放比例(%)</label>
+                                <input type="text" class="form-control-small col-8" style="text-align:right;" id="SealScale" name="SealScale" value="@(_model?.SealScale ?? 100)" />
+                            </div>
+                            <div>
+                                <button type="button" onclick="commitSignature(true);" class="form-control">預覽</button>
+                            </div>
+                            <div>
+                                <button type="button" onclick="commitSignature(false);" class="form-control">用印</button>
+                            </div>
+                        </form>
+                        <script>
+                            function commitSignature(preview) {
+                                clearErrors();
+                                $global.viewModel.Preview = preview;
+                                $('form').ajaxForm({
+                                    url: '@Html.Raw(Url.Action("CommitPdfSignature", "ContractConsole"))',
+                                    data: $global.viewModel,
+                                    beforeSubmit: function () {
+                                        showLoading();
+                                    },
+                                    success: function (data) {
+                                        hideLoading();
+                                        if ($.isPlainObject(data)) {
+                                            if (data.result) {
+                                                if(preview) {
+                                                } else {
+                                                    alertModal('已用印完成!!');
+                                                }
+                                                $('iframe')[0].contentWindow.location.reload();
+                                            } else {
+                                                alertModal(data.message);
+                                            }
+                                        }
+                                        else {
+                                            $(data).appendTo($('body'));
+                                        }
+                                    },
+                                    error: function (xhr, ajaxOptions, thrownError) {
+                                        hideLoading();
+                                        console.log(xhr.status);
+                                        alertModal(thrownError);
+                                    }
+                                }).submit();
+                            }
+                        </script>
+                    </div>
+                }
+            </div>
+        </div>
+
+    </section>
+</div>
+
+@functions
+{
+    public int GetPdfPageCount(Contract attachment)
+    {
+            if (attachment == null || !File.Exists(attachment.FilePath))
+            {
+                return 0;
+            }
+
+            var content = File.ReadAllText(attachment.FilePath);
+            var match = Regex.Match(content, "/Count(?([^\\r\\n])\\s)\\d+");
+            if (match.Value != String.Empty)
+            {
+                return int.Parse(match.Value.Substring(7));
+            }
+            return 0;
+        }
+}

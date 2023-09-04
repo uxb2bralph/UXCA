@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ordesignerObjectsDiagram dslVersion="1.0.0.0" absoluteBounds="0, 0, 11, 10.25" name="UXCA">
+  <DataContextMoniker Name="/UXCADataContext" />
+  <nestedChildShapes>
+    <classShape Id="156eeb9e-299f-48cf-8245-1ad37aa4a010" absoluteBounds="0.75, 0.75, 2, 9.29865763346354">
+      <DataClassMoniker Name="/UXCADataContext/CA" />
+      <nestedChildShapes>
+        <elementListCompartment Id="e35bf213-5d2c-4e35-853d-0dd5f3bf8e3c" absoluteBounds="0.765, 1.21, 1.9700000000000002, 8.7386576334635411" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="8d421235-0688-42ff-be59-ab51115e5a77" absoluteBounds="3.75, 0.75, 2, 4.6788049316406246">
+      <DataClassMoniker Name="/UXCADataContext/CA_TEMP" />
+      <nestedChildShapes>
+        <elementListCompartment Id="174e104d-0e22-4d63-b943-bc1eefb86a1f" absoluteBounds="3.765, 1.21, 1.9700000000000002, 4.118804931640625" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="50b87e8c-5ffb-46da-877f-676f9869a52d" absoluteBounds="4.625, 6.75, 2, 2.4612756347656251">
+      <DataClassMoniker Name="/UXCADataContext/CA_CALOG" />
+      <nestedChildShapes>
+        <elementListCompartment Id="ad008054-eb92-4655-a44c-d0cf4e375fd8" absoluteBounds="4.64, 7.21, 1.9700000000000002, 1.901275634765625" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+  </nestedChildShapes>
+</ordesignerObjectsDiagram>

@@ -8,6 +8,18 @@ namespace TWCACAPIAdapter.Models.ViewModel
         public String? Subject { get; set; }
         public int Flags { get; set; } = 1;
         public int KeyUsage { get; set; } = 0;
+        public String? TxnID { get; set; }
+        public String? RemoteHost { get; set; }
+        public String? Thumbprint { get; set; }
+        public String? ErrorMessage { get; set; }
+        public String? DataSignature { get; set; }
+        public SignatureActionEnum? SignatureAction { get; set; }
+
+    }
+    public enum SignatureActionEnum
+    {
+        PushSignerActivation = 1,
+        PopSignerActivation = 2,
     }
 
     public enum KeyStoreType

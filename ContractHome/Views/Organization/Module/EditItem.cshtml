@@ -1,0 +1,63 @@
+﻿@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+    Organization? _model = this.Model as Organization;
+
+}
+
+<div class="col-md-4">
+    <label for="CompanyName" class="form-label">公司名稱</label>
+    <input type="text" class="form-control" name="CompanyName" id="CompanyName" value="@Html.Raw(_model?.CompanyName)">
+</div>
+<div class="col-md-4">
+    <label for="ReceiptNo" class="form-label">統一編號</label>
+    <input type="text" class="form-control" name="ReceiptNo" id="ReceiptNo" value="@Html.Raw(_model?.ReceiptNo)">
+</div>
+<div class="col-md-4">
+    <label for="Phone" class="form-label">電話</label>
+    <input type="text" class="form-control" name="Phone" id="Phone" value="@Html.Raw(_model?.Phone)">
+</div>
+<div class="col-md-4">
+    <label for="Fax" class="form-label">傳真</label>
+    <input type="text" class="form-control" name="Fax" id="Fax" value="@Html.Raw(_model?.Fax)">
+</div>
+<div class="col-md-4">
+    <label for="Addr" class="form-label">地址</label>
+    <input type="text" class="form-control" name="Addr" id="Addr" value="@Html.Raw(_model?.Addr)">
+</div>
+<div class="col-md-4">
+    <label for="ContactEmail" class="form-label">電子郵件</label>
+    <input type="text" class="form-control" name="ContactEmail" id="ContactEmail" value="@Html.Raw(_model?.ContactEmail)">
+</div>
+<div class="col-md-4">
+    <label for="UndertakerName" class="form-label">負責人</label>
+    <input type="text" class="form-control" name="UndertakerName" id="UndertakerName" value="@Html.Raw(_model?.UndertakerName)">
+</div>
+@if (_model == null)
+{
+    <script>
+        delete $inquiryAgent.viewModel.EncKeyItem;
+    </script>
+}
+else
+{
+    <script>
+        $inquiryAgent.viewModel.EncKeyItem = '@Html.Raw(_model?.GetPrimaryKeyValues()?.JsonStringify().EncryptData())';
+    </script>
+}
+

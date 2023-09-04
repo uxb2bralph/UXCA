@@ -5,9 +5,9 @@
 
 <div class="text-center">
     <h1 class="display-4">簽章測試</h1>
-    TwcaCapiX元件：
+    UXB2B eSigner元件：
     @{
-        RegistryKey rkTest = Registry.ClassesRoot.OpenSubKey("TypeLib\\{913BFDD8-D3EB-4B72-90D4-D56B903F7F55}");
+        RegistryKey rkTest = Registry.ClassesRoot.OpenSubKey("uxpki");
         if (rkTest == null)
         {
             <div id="capixInfo">
@@ -46,7 +46,7 @@
 
     function signCms() {
         var pbData = $('#dataToSign').val();
-        var dataSignature = capix.Sign(pbData);
+        var dataSignature = capix.SignCms(pbData);
         $('#dataSignature').val(dataSignature);
 
         var erCode = capix.GetErrorCode();

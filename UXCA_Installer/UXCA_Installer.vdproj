@@ -153,6 +153,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_55BD010C0DE14A63941B29A7F7A39A09"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_5902696AAEC94814B03E1AA0D158EF38"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -459,10 +465,10 @@
                     "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
                     "ProductCode" = "8:.NETFramework,Version=v4.7.2"
                     }
-                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.CoreRuntime.6.0.x86"
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.CoreRuntime.6.0.x64"
                     {
-                    "Name" = "8:.NET Runtime 6.0.5 (x86)"
-                    "ProductCode" = "8:Microsoft.NetCore.CoreRuntime.6.0.x86"
+                    "Name" = "8:.NET Runtime 6.0.12 (x64)"
+                    "ProductCode" = "8:Microsoft.NetCore.CoreRuntime.6.0.x64"
                     }
                 }
             }
@@ -482,6 +488,22 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
+            }
         }
     }
     "Deployable"
@@ -605,7 +627,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Interop.CERTENROLLLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86"
+            "AssemblyAsmDisplayName" = "8:Interop.CERTENROLLLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_1A077267182D4E94977BAEF1A144AC35"
@@ -958,6 +980,26 @@
             "TargetName" = "8:additional-methods.js"
             "Tag" = "8:"
             "Folder" = "8:_F83B2668BADE4696894AD42121CBB6B6"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_55BD010C0DE14A63941B29A7F7A39A09"
+            {
+            "SourcePath" = "8:..\\TWCACAPIAdapter\\eSignerReg.bat"
+            "TargetName" = "8:eSignerReg.bat"
+            "Tag" = "8:"
+            "Folder" = "8:_77C4E2AC528E441BB9C51A0C72312F59"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -2105,7 +2147,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:UXCASigner"
         "ProductCode" = "8:{2992ACA8-7E8B-4AF3-B52C-BC86FAAC8D06}"
-        "PackageCode" = "8:{9D98234F-5EEC-46A4-94F6-BDEE8996C9C7}"
+        "PackageCode" = "8:{CC3BCF0E-7BE1-4B8D-9B03-67E6E89BEC92}"
         "UpgradeCode" = "8:{D6E11580-02BB-402C-A92F-3000763B545D}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -2205,6 +2247,116 @@
             {
                 "Keys"
                 {
+                    "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_800CA8274401485981210B2043E78DB9"
+                    {
+                    "Name" = "8:uxpki"
+                    "Condition" = "8:"
+                    "AlwaysCreate" = "11:FALSE"
+                    "DeleteAtUninstall" = "11:FALSE"
+                    "Transitive" = "11:FALSE"
+                        "Keys"
+                        {
+                            "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_092DB22FF87E4676AD5C1A6B4F59D9A2"
+                            {
+                            "Name" = "8:shell"
+                            "Condition" = "8:"
+                            "AlwaysCreate" = "11:FALSE"
+                            "DeleteAtUninstall" = "11:FALSE"
+                            "Transitive" = "11:FALSE"
+                                "Keys"
+                                {
+                                    "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_41D9FB161BDD4BE4B39E213636464194"
+                                    {
+                                    "Name" = "8:open"
+                                    "Condition" = "8:"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "DeleteAtUninstall" = "11:FALSE"
+                                    "Transitive" = "11:FALSE"
+                                        "Keys"
+                                        {
+                                            "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_CBCBE4A963D54269B2F34A76AA415249"
+                                            {
+                                            "Name" = "8:command"
+                                            "Condition" = "8:"
+                                            "AlwaysCreate" = "11:FALSE"
+                                            "DeleteAtUninstall" = "11:FALSE"
+                                            "Transitive" = "11:FALSE"
+                                                "Keys"
+                                                {
+                                                }
+                                                "Values"
+                                                {
+                                                    "{ADCFDA98-8FDD-45E4-90BC-E3D20B029870}:_FCAAECA604E54F359BBF73044A1CE62A"
+                                                    {
+                                                    "Name" = "8:"
+                                                    "Condition" = "8:"
+                                                    "Transitive" = "11:FALSE"
+                                                    "ValueTypes" = "3:1"
+                                                    "Value" = "8:[TARGETDIR]TWCACAPIAdapter.exe \"%1\""
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        "Values"
+                                        {
+                                        }
+                                    }
+                                }
+                                "Values"
+                                {
+                                }
+                            }
+                            "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_E1E90C76BBA745C3912F5484A0414524"
+                            {
+                            "Name" = "8:DefaultIcon"
+                            "Condition" = "8:"
+                            "AlwaysCreate" = "11:FALSE"
+                            "DeleteAtUninstall" = "11:FALSE"
+                            "Transitive" = "11:FALSE"
+                                "Keys"
+                                {
+                                }
+                                "Values"
+                                {
+                                    "{ADCFDA98-8FDD-45E4-90BC-E3D20B029870}:_5E47D44D66284F168CAB8685C6DBD8D4"
+                                    {
+                                    "Name" = "8:"
+                                    "Condition" = "8:"
+                                    "Transitive" = "11:FALSE"
+                                    "ValueTypes" = "3:1"
+                                    "Value" = "8:[TARGETDIR]TWCACAPIAdapter.exe"
+                                    }
+                                }
+                            }
+                        }
+                        "Values"
+                        {
+                            "{ADCFDA98-8FDD-45E4-90BC-E3D20B029870}:_AB33F62EE005433D92309818F9C2EFE7"
+                            {
+                            "Name" = "8:"
+                            "Condition" = "8:"
+                            "Transitive" = "11:FALSE"
+                            "ValueTypes" = "3:1"
+                            "Value" = "8:uxpki"
+                            }
+                            "{ADCFDA98-8FDD-45E4-90BC-E3D20B029870}:_E05A7F600AF04F6AA96055442131F501"
+                            {
+                            "Name" = "8:Content Type"
+                            "Condition" = "8:"
+                            "Transitive" = "11:FALSE"
+                            "ValueTypes" = "3:1"
+                            "Value" = "8:application/uxpki"
+                            }
+                            "{ADCFDA98-8FDD-45E4-90BC-E3D20B029870}:_E5C418705E3442C191AD58907336A620"
+                            {
+                            "Name" = "8:URL Protocol"
+                            "Condition" = "8:"
+                            "Transitive" = "11:FALSE"
+                            "ValueTypes" = "3:1"
+                            "Value" = "8:"
+                            }
+                        }
+                    }
                 }
             }
             "HKU"
@@ -2225,6 +2377,20 @@
         }
         "Shortcut"
         {
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_91D77686286A4356BC5F5658882D9A3E"
+            {
+            "Name" = "8:註冊元件"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:0"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_55BD010C0DE14A63941B29A7F7A39A09"
+            "Folder" = "8:_0F26D4279B3C44C4B77E769C6C0AB994"
+            "WorkingFolder" = "8:_77C4E2AC528E441BB9C51A0C72312F59"
+            "Icon" = "8:"
+            "Feature" = "8:"
+            }
             "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_D8534E58356041858BBFAAC8F6645B75"
             {
             "Name" = "8:元件測試"
@@ -2249,6 +2415,20 @@
             "Transitive" = "11:FALSE"
             "Target" = "8:_A0362CEBC19C480799BB277C00B651BE"
             "Folder" = "8:_0F26D4279B3C44C4B77E769C6C0AB994"
+            "WorkingFolder" = "8:_77C4E2AC528E441BB9C51A0C72312F59"
+            "Icon" = "8:"
+            "Feature" = "8:"
+            }
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_EE4DBFFDD931419F87AF1B95254AFD0C"
+            {
+            "Name" = "8:註冊元件"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:0"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_55BD010C0DE14A63941B29A7F7A39A09"
+            "Folder" = "8:_723181E0DACE49059285FA7C926BBA7A"
             "WorkingFolder" = "8:_77C4E2AC528E441BB9C51A0C72312F59"
             "Icon" = "8:"
             "Feature" = "8:"

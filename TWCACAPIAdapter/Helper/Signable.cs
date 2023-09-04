@@ -1,4 +1,7 @@
-﻿using System.Runtime.InteropServices;
+﻿using CommonLib.Utility.Properties;
+using CommonLib.Utility;
+using Newtonsoft.Json;
+using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
@@ -6,6 +9,9 @@ using System.Security.Cryptography.Xml;
 using System.Security.Permissions;
 using System.Text;
 using System.Xml;
+using TWCACAPIAdapter.Models.ViewModel;
+using CommonLib.Core.Utility;
+using System.Net;
 
 namespace TWCACAPIAdapter.Helper
 {
@@ -96,6 +102,33 @@ namespace TWCACAPIAdapter.Helper
         {
             return chooseSignerCertFromStore();
         }
+
+        public X509Certificate2Collection GetSignerCertificateCollection()
+        {
+            X509Store certStore = new X509Store(StoreLocation.CurrentUser);
+            certStore.Open(OpenFlags.ReadOnly);
+
+            X509Certificate2Collection certificates;
+            if (String.IsNullOrEmpty(CertFilter))
+            {
+                certificates = certStore.Certificates;
+            }
+            else
+            {
+                certificates = new X509Certificate2Collection();
+                foreach (X509Certificate2 cert in certStore.Certificates)
+                {
+                    if (cert.Subject.IndexOf(CertFilter) >= 0)
+                    {
+                        certificates.Add(cert);
+                    }
+                }
+            }
+
+            certStore.Close();
+            return certificates;
+        }
+
 
         private bool chooseSignerCertFromStore()
         {
@@ -216,6 +249,27 @@ namespace TWCACAPIAdapter.Helper
             set;
         }
 
+        //public void PushSignature(TWCASignDataViewModel viewModel)
+        //{
+        //    if (viewModel.RemoteHost != null)
+        //    {
+        //        try
+        //        {
+        //            using WebClientEx client = new WebClientEx();
+        //            client.Timeout = 43200000;
+        //            client.Encoding = Encoding.UTF8;
+        //            client.Headers[HttpRequestHeader.ContentType] = "application/json";
+
+        //            var dataItem = viewModel.JsonStringify();
+        //            String result = client.UploadString(viewModel.RemoteHost, dataItem);
+        //            FileLogger.Logger.Info($"PushSignature:{dataItem},result:{result}");
+        //        }
+        //        catch(Exception ex)
+        //        {
+        //            FileLogger.Logger.Error(ex);
+        //        }
+        //    }
+        //}
     }
 
 }

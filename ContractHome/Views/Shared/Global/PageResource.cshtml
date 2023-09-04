@@ -1,0 +1,40 @@
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+    ModelSource? models;
+    ModelStateDictionary _modelState;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+    QueryViewModel _viewModel = ViewBag.ViewModel as QueryViewModel;
+
+    var hasResource = ViewContext.HttpContext.Items["PageResource"] as bool?;
+    ViewContext.HttpContext.Items["PageResource"] = true;
+}
+
+@if (hasResource != true)
+{
+    <script>
+
+        $(function () {
+            debugger;
+            $global.viewModel = @Html.Raw(_viewModel.JsonStringify());
+
+            for (var i = 0; i < $global.onReady.length; i++) {
+                $global.onReady[i]();
+            }
+        });
+
+    </script>
+}
+
+
+

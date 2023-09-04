@@ -46,9 +46,9 @@ namespace CommonLib.Utility
                                     'W', 'X', 'Y'};
         public static char[] NUMERIC_STRING = { '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' };
 
-        public static string MoneyShow(this decimal numValue)
+        public static string MoneyShow(this object numValue)
         {
-            string strMoney = Math.Round(numValue).ToString();
+            string strMoney = Convert.ToInt64(numValue).ToString();
             if (strMoney.Length > 15) return strMoney; //百兆以上不處理
 
             #region 變數宣告
@@ -140,16 +140,6 @@ namespace CommonLib.Utility
             }
         }
 
-        public static char[] GetChineseNumberSeries(this int number, int length)
-        {
-            char[] result = new char[length];
-            for (int i = 0; i < length; i++)
-            {
-                result[i] = __CHINESE_NUM_CHAR[number % 10];
-                number /= 10;
-            }
-            return result;
-        }
         public static bool CheckRegno(this string strNo)
         {
             if (strNo == null)
@@ -235,6 +225,12 @@ namespace CommonLib.Utility
             return path;
         }
 
+        public static string GetDateStylePath(this DateTime date)
+        {
+            string path = Path.Combine($"{date:yyyy}", $"{date:MM}", $"{date:dd}");
+            return path;
+        }
+
         public static byte[] HexToByteArray(this string hexString)
         {
             byte[] bytes = new byte[hexString.Length / 2];
@@ -248,9 +244,9 @@ namespace CommonLib.Utility
             return bytes;
         }
 
-        public static String ToHexString(this byte[] data, String delimiter = "")
+        public static String ToHexString(this byte[] data, String delimiter = "",String format = "X2")
         {
-            return String.Join(delimiter, data.Select(b => b.ToString("X2")));
+            return String.Join(delimiter, data.Select(b => b.ToString(format)));
         }
 
         public static string ConvertToHalfWidthString(this string str)

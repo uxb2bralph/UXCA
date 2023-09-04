@@ -1,0 +1,2322 @@
+﻿@using ContractHome.Models.ViewModel;
+@functions
+{
+    SignContractViewModel? _viewModel;
+}
+@{
+    Layout = null;
+    var Response = ViewContext.HttpContext.Response;
+    var Request = ViewContext.HttpContext.Request;
+    _viewModel = (this.Model as SignContractViewModel) ?? (ViewBag.ViewModel as SignContractViewModel);
+}
+<html xmlns:v="urn:schemas-microsoft-com:vml"
+      xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns:m="http://schemas.microsoft.com/office/2004/12/omml"
+      xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+    <meta http-equiv=Content-Type content="text/html; charset=big5">
+    <meta name=ProgId content=Word.Document>
+    <meta name=Generator content="Microsoft Word 15">
+    <meta name=Originator content="Microsoft Word 15">
+    <link rel=File-List href="ContractTemplate.files/filelist.xml">
+    <link rel=Edit-Time-Data href="ContractTemplate.files/editdata.mso">
+    <!--[if !mso]>
+    <style>
+    v\:* {behavior:url(#default#VML);}
+    o\:* {behavior:url(#default#VML);}
+    w\:* {behavior:url(#default#VML);}
+    .shape {behavior:url(#default#VML);}
+    </style>
+    <![endif]-->
+    <!--[if gte mso 9]><xml>
+     <o:OfficeDocumentSettings>
+      <o:AllowPNG/>
+     </o:OfficeDocumentSettings>
+    </xml><![endif]-->
+    <link rel=themeData href="ContractTemplate.files/themedata.thmx">
+    <link rel=colorSchemeMapping
+          href="ContractTemplate.files/colorschememapping.xml">
+    <!--[if gte mso 9]><xml>
+     <w:WordDocument>
+      <w:SpellingState>Clean</w:SpellingState>
+      <w:TrackMoves>false</w:TrackMoves>
+      <w:TrackFormatting/>
+      <w:PunctuationKerning/>
+      <w:DisplayHorizontalDrawingGridEvery>0</w:DisplayHorizontalDrawingGridEvery>
+      <w:DisplayVerticalDrawingGridEvery>2</w:DisplayVerticalDrawingGridEvery>
+      <w:ValidateAgainstSchemas/>
+      <w:SaveIfXMLInvalid>false</w:SaveIfXMLInvalid>
+      <w:IgnoreMixedContent>false</w:IgnoreMixedContent>
+      <w:AlwaysShowPlaceholderText>false</w:AlwaysShowPlaceholderText>
+      <w:DoNotPromoteQF/>
+      <w:LidThemeOther>EN-US</w:LidThemeOther>
+      <w:LidThemeAsian>ZH-TW</w:LidThemeAsian>
+      <w:LidThemeComplexScript>X-NONE</w:LidThemeComplexScript>
+      <w:Compatibility>
+       <w:SpaceForUL/>
+       <w:BalanceSingleByteDoubleByteWidth/>
+       <w:DoNotLeaveBackslashAlone/>
+       <w:ULTrailSpace/>
+       <w:DoNotExpandShiftReturn/>
+       <w:AdjustLineHeightInTable/>
+       <w:BreakWrappedTables/>
+       <w:SnapToGridInCell/>
+       <w:WrapTextWithPunct/>
+       <w:UseAsianBreakRules/>
+       <w:DontGrowAutofit/>
+       <w:SplitPgBreakAndParaMark/>
+       <w:EnableOpenTypeKerning/>
+       <w:DontFlipMirrorIndents/>
+       <w:OverrideTableStyleHps/>
+       <w:UseFELayout/>
+      </w:Compatibility>
+      <m:mathPr>
+       <m:mathFont m:val="Cambria Math"/>
+       <m:brkBin m:val="before"/>
+       <m:brkBinSub m:val="&#45;-"/>
+       <m:smallFrac m:val="off"/>
+       <m:dispDef/>
+       <m:lMargin m:val="0"/>
+       <m:rMargin m:val="0"/>
+       <m:defJc m:val="centerGroup"/>
+       <m:wrapIndent m:val="1440"/>
+       <m:intLim m:val="subSup"/>
+       <m:naryLim m:val="undOvr"/>
+      </m:mathPr></w:WordDocument>
+    </xml><![endif]-->
+    <!--[if gte mso 9]><xml>
+     <w:LatentStyles DefLockedState="false" DefUnhideWhenUsed="false"
+      DefSemiHidden="false" DefQFormat="false" DefPriority="99"
+      LatentStyleCount="375">
+      <w:LsdException Locked="false" Priority="0" QFormat="true" Name="Normal"/>
+      <w:LsdException Locked="false" Priority="9" QFormat="true" Name="heading 1"/>
+      <w:LsdException Locked="false" Priority="9" SemiHidden="true"
+       UnhideWhenUsed="true" QFormat="true" Name="heading 2"/>
+      <w:LsdException Locked="false" Priority="9" SemiHidden="true"
+       UnhideWhenUsed="true" QFormat="true" Name="heading 3"/>
+      <w:LsdException Locked="false" Priority="9" SemiHidden="true"
+       UnhideWhenUsed="true" QFormat="true" Name="heading 4"/>
+      <w:LsdException Locked="false" Priority="9" SemiHidden="true"
+       UnhideWhenUsed="true" QFormat="true" Name="heading 5"/>
+      <w:LsdException Locked="false" Priority="9" SemiHidden="true"
+       UnhideWhenUsed="true" QFormat="true" Name="heading 6"/>
+      <w:LsdException Locked="false" Priority="9" SemiHidden="true"
+       UnhideWhenUsed="true" QFormat="true" Name="heading 7"/>
+      <w:LsdException Locked="false" Priority="9" SemiHidden="true"
+       UnhideWhenUsed="true" QFormat="true" Name="heading 8"/>
+      <w:LsdException Locked="false" Priority="9" SemiHidden="true"
+       UnhideWhenUsed="true" QFormat="true" Name="heading 9"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="index 1"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="index 2"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="index 3"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="index 4"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="index 5"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="index 6"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="index 7"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="index 8"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="index 9"/>
+      <w:LsdException Locked="false" Priority="39" SemiHidden="true"
+       UnhideWhenUsed="true" Name="toc 1"/>
+      <w:LsdException Locked="false" Priority="39" SemiHidden="true"
+       UnhideWhenUsed="true" Name="toc 2"/>
+      <w:LsdException Locked="false" Priority="39" SemiHidden="true"
+       UnhideWhenUsed="true" Name="toc 3"/>
+      <w:LsdException Locked="false" Priority="39" SemiHidden="true"
+       UnhideWhenUsed="true" Name="toc 4"/>
+      <w:LsdException Locked="false" Priority="39" SemiHidden="true"
+       UnhideWhenUsed="true" Name="toc 5"/>
+      <w:LsdException Locked="false" Priority="39" SemiHidden="true"
+       UnhideWhenUsed="true" Name="toc 6"/>
+      <w:LsdException Locked="false" Priority="39" SemiHidden="true"
+       UnhideWhenUsed="true" Name="toc 7"/>
+      <w:LsdException Locked="false" Priority="39" SemiHidden="true"
+       UnhideWhenUsed="true" Name="toc 8"/>
+      <w:LsdException Locked="false" Priority="39" SemiHidden="true"
+       UnhideWhenUsed="true" Name="toc 9"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Normal Indent"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="footnote text"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="annotation text"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="header"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="footer"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="index heading"/>
+      <w:LsdException Locked="false" Priority="0" SemiHidden="true"
+       UnhideWhenUsed="true" QFormat="true" Name="caption"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="table of figures"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="envelope address"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="envelope return"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="footnote reference"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="annotation reference"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="line number"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="page number"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="endnote reference"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="endnote text"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="table of authorities"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="macro"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="toa heading"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="List"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="List Bullet"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="List Number"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="List 2"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="List 3"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="List 4"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="List 5"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="List Bullet 2"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="List Bullet 3"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="List Bullet 4"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="List Bullet 5"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="List Number 2"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="List Number 3"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="List Number 4"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="List Number 5"/>
+      <w:LsdException Locked="false" Priority="10" QFormat="true" Name="Title"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Closing"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Signature"/>
+      <w:LsdException Locked="false" Priority="1" SemiHidden="true"
+       UnhideWhenUsed="true" Name="Default Paragraph Font"/>
+      <w:LsdException Locked="false" Priority="0" SemiHidden="true"
+       UnhideWhenUsed="true" Name="Body Text"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Body Text Indent"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="List Continue"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="List Continue 2"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="List Continue 3"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="List Continue 4"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="List Continue 5"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Message Header"/>
+      <w:LsdException Locked="false" Priority="11" QFormat="true" Name="Subtitle"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Salutation"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Date"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Body Text First Indent"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Body Text First Indent 2"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Note Heading"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Body Text 2"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Body Text 3"/>
+      <w:LsdException Locked="false" Priority="0" SemiHidden="true"
+       UnhideWhenUsed="true" Name="Body Text Indent 2"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Body Text Indent 3"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Block Text"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Hyperlink"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="FollowedHyperlink"/>
+      <w:LsdException Locked="false" Priority="22" QFormat="true" Name="Strong"/>
+      <w:LsdException Locked="false" Priority="20" QFormat="true" Name="Emphasis"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Document Map"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Plain Text"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="E-mail Signature"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="HTML Top of Form"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="HTML Bottom of Form"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Normal (Web)"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="HTML Acronym"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="HTML Address"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="HTML Cite"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="HTML Code"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="HTML Definition"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="HTML Keyboard"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="HTML Preformatted"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="HTML Sample"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="HTML Typewriter"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="HTML Variable"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Normal Table"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="annotation subject"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="No List"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Outline List 1"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Outline List 2"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Outline List 3"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Simple 1"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Simple 2"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Simple 3"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Classic 1"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Classic 2"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Classic 3"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Classic 4"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Colorful 1"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Colorful 2"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Colorful 3"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Columns 1"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Columns 2"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Columns 3"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Columns 4"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Columns 5"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Grid 1"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Grid 2"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Grid 3"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Grid 4"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Grid 5"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Grid 6"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Grid 7"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Grid 8"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table List 1"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table List 2"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table List 3"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table List 4"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table List 5"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table List 6"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table List 7"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table List 8"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table 3D effects 1"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table 3D effects 2"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table 3D effects 3"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Contemporary"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Elegant"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Professional"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Subtle 1"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Subtle 2"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Web 1"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Web 2"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Web 3"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Balloon Text"/>
+      <w:LsdException Locked="false" Priority="0" Name="Table Grid"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Table Theme"/>
+      <w:LsdException Locked="false" SemiHidden="true" Name="Placeholder Text"/>
+      <w:LsdException Locked="false" Priority="1" QFormat="true" Name="No Spacing"/>
+      <w:LsdException Locked="false" Priority="60" Name="Light Shading"/>
+      <w:LsdException Locked="false" Priority="61" Name="Light List"/>
+      <w:LsdException Locked="false" Priority="62" Name="Light Grid"/>
+      <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1"/>
+      <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2"/>
+      <w:LsdException Locked="false" Priority="65" Name="Medium List 1"/>
+      <w:LsdException Locked="false" Priority="66" Name="Medium List 2"/>
+      <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1"/>
+      <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2"/>
+      <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3"/>
+      <w:LsdException Locked="false" Priority="70" Name="Dark List"/>
+      <w:LsdException Locked="false" Priority="71" Name="Colorful Shading"/>
+      <w:LsdException Locked="false" Priority="72" Name="Colorful List"/>
+      <w:LsdException Locked="false" Priority="73" Name="Colorful Grid"/>
+      <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 1"/>
+      <w:LsdException Locked="false" Priority="61" Name="Light List Accent 1"/>
+      <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 1"/>
+      <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 1"/>
+      <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 1"/>
+      <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 1"/>
+      <w:LsdException Locked="false" SemiHidden="true" Name="Revision"/>
+      <w:LsdException Locked="false" Priority="34" QFormat="true"
+       Name="List Paragraph"/>
+      <w:LsdException Locked="false" Priority="29" QFormat="true" Name="Quote"/>
+      <w:LsdException Locked="false" Priority="30" QFormat="true"
+       Name="Intense Quote"/>
+      <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 1"/>
+      <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 1"/>
+      <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 1"/>
+      <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 1"/>
+      <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 1"/>
+      <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 1"/>
+      <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 1"/>
+      <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 1"/>
+      <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 2"/>
+      <w:LsdException Locked="false" Priority="61" Name="Light List Accent 2"/>
+      <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 2"/>
+      <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 2"/>
+      <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 2"/>
+      <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 2"/>
+      <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 2"/>
+      <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 2"/>
+      <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 2"/>
+      <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 2"/>
+      <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 2"/>
+      <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 2"/>
+      <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 2"/>
+      <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 2"/>
+      <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 3"/>
+      <w:LsdException Locked="false" Priority="61" Name="Light List Accent 3"/>
+      <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 3"/>
+      <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 3"/>
+      <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 3"/>
+      <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 3"/>
+      <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 3"/>
+      <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 3"/>
+      <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 3"/>
+      <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 3"/>
+      <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 3"/>
+      <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 3"/>
+      <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 3"/>
+      <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 3"/>
+      <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 4"/>
+      <w:LsdException Locked="false" Priority="61" Name="Light List Accent 4"/>
+      <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 4"/>
+      <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 4"/>
+      <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 4"/>
+      <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 4"/>
+      <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 4"/>
+      <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 4"/>
+      <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 4"/>
+      <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 4"/>
+      <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 4"/>
+      <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 4"/>
+      <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 4"/>
+      <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 4"/>
+      <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 5"/>
+      <w:LsdException Locked="false" Priority="61" Name="Light List Accent 5"/>
+      <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 5"/>
+      <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 5"/>
+      <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 5"/>
+      <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 5"/>
+      <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 5"/>
+      <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 5"/>
+      <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 5"/>
+      <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 5"/>
+      <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 5"/>
+      <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 5"/>
+      <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 5"/>
+      <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 5"/>
+      <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 6"/>
+      <w:LsdException Locked="false" Priority="61" Name="Light List Accent 6"/>
+      <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 6"/>
+      <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 6"/>
+      <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 6"/>
+      <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 6"/>
+      <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 6"/>
+      <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 6"/>
+      <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 6"/>
+      <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 6"/>
+      <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 6"/>
+      <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 6"/>
+      <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 6"/>
+      <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 6"/>
+      <w:LsdException Locked="false" Priority="19" QFormat="true"
+       Name="Subtle Emphasis"/>
+      <w:LsdException Locked="false" Priority="21" QFormat="true"
+       Name="Intense Emphasis"/>
+      <w:LsdException Locked="false" Priority="31" QFormat="true"
+       Name="Subtle Reference"/>
+      <w:LsdException Locked="false" Priority="32" QFormat="true"
+       Name="Intense Reference"/>
+      <w:LsdException Locked="false" Priority="33" QFormat="true" Name="Book Title"/>
+      <w:LsdException Locked="false" Priority="37" SemiHidden="true"
+       UnhideWhenUsed="true" Name="Bibliography"/>
+      <w:LsdException Locked="false" Priority="39" SemiHidden="true"
+       UnhideWhenUsed="true" QFormat="true" Name="TOC Heading"/>
+      <w:LsdException Locked="false" Priority="41" Name="Plain Table 1"/>
+      <w:LsdException Locked="false" Priority="42" Name="Plain Table 2"/>
+      <w:LsdException Locked="false" Priority="43" Name="Plain Table 3"/>
+      <w:LsdException Locked="false" Priority="44" Name="Plain Table 4"/>
+      <w:LsdException Locked="false" Priority="45" Name="Plain Table 5"/>
+      <w:LsdException Locked="false" Priority="40" Name="Grid Table Light"/>
+      <w:LsdException Locked="false" Priority="46" Name="Grid Table 1 Light"/>
+      <w:LsdException Locked="false" Priority="47" Name="Grid Table 2"/>
+      <w:LsdException Locked="false" Priority="48" Name="Grid Table 3"/>
+      <w:LsdException Locked="false" Priority="49" Name="Grid Table 4"/>
+      <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark"/>
+      <w:LsdException Locked="false" Priority="51" Name="Grid Table 6 Colorful"/>
+      <w:LsdException Locked="false" Priority="52" Name="Grid Table 7 Colorful"/>
+      <w:LsdException Locked="false" Priority="46"
+       Name="Grid Table 1 Light Accent 1"/>
+      <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 1"/>
+      <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 1"/>
+      <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 1"/>
+      <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 1"/>
+      <w:LsdException Locked="false" Priority="51"
+       Name="Grid Table 6 Colorful Accent 1"/>
+      <w:LsdException Locked="false" Priority="52"
+       Name="Grid Table 7 Colorful Accent 1"/>
+      <w:LsdException Locked="false" Priority="46"
+       Name="Grid Table 1 Light Accent 2"/>
+      <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 2"/>
+      <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 2"/>
+      <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 2"/>
+      <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 2"/>
+      <w:LsdException Locked="false" Priority="51"
+       Name="Grid Table 6 Colorful Accent 2"/>
+      <w:LsdException Locked="false" Priority="52"
+       Name="Grid Table 7 Colorful Accent 2"/>
+      <w:LsdException Locked="false" Priority="46"
+       Name="Grid Table 1 Light Accent 3"/>
+      <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 3"/>
+      <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 3"/>
+      <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 3"/>
+      <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 3"/>
+      <w:LsdException Locked="false" Priority="51"
+       Name="Grid Table 6 Colorful Accent 3"/>
+      <w:LsdException Locked="false" Priority="52"
+       Name="Grid Table 7 Colorful Accent 3"/>
+      <w:LsdException Locked="false" Priority="46"
+       Name="Grid Table 1 Light Accent 4"/>
+      <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 4"/>
+      <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 4"/>
+      <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 4"/>
+      <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 4"/>
+      <w:LsdException Locked="false" Priority="51"
+       Name="Grid Table 6 Colorful Accent 4"/>
+      <w:LsdException Locked="false" Priority="52"
+       Name="Grid Table 7 Colorful Accent 4"/>
+      <w:LsdException Locked="false" Priority="46"
+       Name="Grid Table 1 Light Accent 5"/>
+      <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 5"/>
+      <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 5"/>
+      <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 5"/>
+      <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 5"/>
+      <w:LsdException Locked="false" Priority="51"
+       Name="Grid Table 6 Colorful Accent 5"/>
+      <w:LsdException Locked="false" Priority="52"
+       Name="Grid Table 7 Colorful Accent 5"/>
+      <w:LsdException Locked="false" Priority="46"
+       Name="Grid Table 1 Light Accent 6"/>
+      <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 6"/>
+      <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 6"/>
+      <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 6"/>
+      <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 6"/>
+      <w:LsdException Locked="false" Priority="51"
+       Name="Grid Table 6 Colorful Accent 6"/>
+      <w:LsdException Locked="false" Priority="52"
+       Name="Grid Table 7 Colorful Accent 6"/>
+      <w:LsdException Locked="false" Priority="46" Name="List Table 1 Light"/>
+      <w:LsdException Locked="false" Priority="47" Name="List Table 2"/>
+      <w:LsdException Locked="false" Priority="48" Name="List Table 3"/>
+      <w:LsdException Locked="false" Priority="49" Name="List Table 4"/>
+      <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark"/>
+      <w:LsdException Locked="false" Priority="51" Name="List Table 6 Colorful"/>
+      <w:LsdException Locked="false" Priority="52" Name="List Table 7 Colorful"/>
+      <w:LsdException Locked="false" Priority="46"
+       Name="List Table 1 Light Accent 1"/>
+      <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 1"/>
+      <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 1"/>
+      <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 1"/>
+      <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 1"/>
+      <w:LsdException Locked="false" Priority="51"
+       Name="List Table 6 Colorful Accent 1"/>
+      <w:LsdException Locked="false" Priority="52"
+       Name="List Table 7 Colorful Accent 1"/>
+      <w:LsdException Locked="false" Priority="46"
+       Name="List Table 1 Light Accent 2"/>
+      <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 2"/>
+      <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 2"/>
+      <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 2"/>
+      <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 2"/>
+      <w:LsdException Locked="false" Priority="51"
+       Name="List Table 6 Colorful Accent 2"/>
+      <w:LsdException Locked="false" Priority="52"
+       Name="List Table 7 Colorful Accent 2"/>
+      <w:LsdException Locked="false" Priority="46"
+       Name="List Table 1 Light Accent 3"/>
+      <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 3"/>
+      <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 3"/>
+      <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 3"/>
+      <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 3"/>
+      <w:LsdException Locked="false" Priority="51"
+       Name="List Table 6 Colorful Accent 3"/>
+      <w:LsdException Locked="false" Priority="52"
+       Name="List Table 7 Colorful Accent 3"/>
+      <w:LsdException Locked="false" Priority="46"
+       Name="List Table 1 Light Accent 4"/>
+      <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 4"/>
+      <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 4"/>
+      <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 4"/>
+      <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 4"/>
+      <w:LsdException Locked="false" Priority="51"
+       Name="List Table 6 Colorful Accent 4"/>
+      <w:LsdException Locked="false" Priority="52"
+       Name="List Table 7 Colorful Accent 4"/>
+      <w:LsdException Locked="false" Priority="46"
+       Name="List Table 1 Light Accent 5"/>
+      <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 5"/>
+      <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 5"/>
+      <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 5"/>
+      <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 5"/>
+      <w:LsdException Locked="false" Priority="51"
+       Name="List Table 6 Colorful Accent 5"/>
+      <w:LsdException Locked="false" Priority="52"
+       Name="List Table 7 Colorful Accent 5"/>
+      <w:LsdException Locked="false" Priority="46"
+       Name="List Table 1 Light Accent 6"/>
+      <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 6"/>
+      <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 6"/>
+      <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 6"/>
+      <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 6"/>
+      <w:LsdException Locked="false" Priority="51"
+       Name="List Table 6 Colorful Accent 6"/>
+      <w:LsdException Locked="false" Priority="52"
+       Name="List Table 7 Colorful Accent 6"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Mention"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Smart Hyperlink"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Hashtag"/>
+      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+       Name="Unresolved Mention"/>
+     </w:LatentStyles>
+    </xml><![endif]-->
+    <style>
+        <!--
+        /* Font Definitions */
+        @@font-face {
+            font-family: 新細明體;
+            panose-1: 2 2 5 0 0 0 0 0 0 0;
+            mso-font-alt: PMingLiU;
+            mso-font-charset: 136;
+            mso-generic-font-family: roman;
+            mso-font-pitch: variable;
+            mso-font-signature: -1610611969 684719354 22 0 1048577 0;
+        }
+
+        @@font-face {
+            font-family: 細明體;
+            panose-1: 2 2 5 9 0 0 0 0 0 0;
+            mso-font-alt: MingLiU;
+            mso-font-charset: 136;
+            mso-generic-font-family: modern;
+            mso-font-pitch: fixed;
+            mso-font-signature: -1610611969 684719354 22 0 1048577 0;
+        }
+
+        @@font-face {
+            font-family: "Cambria Math";
+            panose-1: 2 4 5 3 5 4 6 3 2 4;
+            mso-font-charset: 0;
+            mso-generic-font-family: roman;
+            mso-font-pitch: variable;
+            mso-font-signature: 3 0 0 0 1 0;
+        }
+
+        @@font-face {
+            font-family: Calibri;
+            panose-1: 2 15 5 2 2 2 4 3 2 4;
+            mso-font-charset: 0;
+            mso-generic-font-family: swiss;
+            mso-font-pitch: variable;
+            mso-font-signature: -469750017 -1073732485 9 0 511 0;
+        }
+
+        @@font-face {
+            font-family: 標楷體;
+            panose-1: 3 0 5 9 0 0 0 0 0 0;
+            mso-font-charset: 136;
+            mso-generic-font-family: script;
+            mso-font-pitch: fixed;
+            mso-font-signature: 3 135135232 22 0 1048577 0;
+        }
+
+        @@font-face {
+            font-family: "\@@新細明體";
+            panose-1: 2 1 6 1 0 1 1 1 1 1;
+            mso-font-charset: 136;
+            mso-generic-font-family: roman;
+            mso-font-pitch: variable;
+            mso-font-signature: -1610611969 684719354 22 0 1048577 0;
+        }
+
+        @@font-face {
+            font-family: "\@@標楷體";
+            mso-font-charset: 136;
+            mso-generic-font-family: script;
+            mso-font-pitch: fixed;
+            mso-font-signature: 3 135135232 22 0 1048577 0;
+        }
+
+        @@font-face {
+            font-family: "\@@細明體";
+            panose-1: 2 1 6 9 0 1 1 1 1 1;
+            mso-font-charset: 136;
+            mso-generic-font-family: modern;
+            mso-font-pitch: fixed;
+            mso-font-signature: -1610611969 684719354 22 0 1048577 0;
+        }
+        /* Style Definitions */
+        p.MsoNormal, li.MsoNormal, div.MsoNormal {
+            mso-style-unhide: no;
+            mso-style-qformat: yes;
+            mso-style-parent: "";
+            margin: 0cm;
+            margin-bottom: .0001pt;
+            mso-pagination: none;
+            font-size: 12.0pt;
+            
+            font-family: "Times New Roman",serif;
+            mso-font-kerning: 1.0pt;
+        }
+
+        p.MsoCaption, li.MsoCaption, div.MsoCaption {
+            mso-style-noshow: yes;
+            mso-style-qformat: yes;
+            mso-style-next: 內文;
+            margin: 0cm;
+            margin-bottom: .0001pt;
+            mso-pagination: none;
+            font-size: 10.0pt;
+            font-family: "Times New Roman",serif;
+            mso-font-kerning: 1.0pt;
+        }
+
+        p.MsoBodyText, li.MsoBodyText, div.MsoBodyText {
+            mso-style-noshow: yes;
+            mso-style-link: "本文 字元";
+            margin: 0cm;
+            margin-bottom: .0001pt;
+            text-align: justify;
+            text-justify: inter-ideograph;
+            line-height: 20.0pt;
+            mso-line-height-rule: exactly;
+            mso-pagination: none;
+            font-size: 14.0pt;
+            
+            font-family: "Times New Roman",serif;
+            mso-font-kerning: 1.0pt;
+        }
+
+        p.MsoBodyTextIndent2, li.MsoBodyTextIndent2, div.MsoBodyTextIndent2 {
+            mso-style-noshow: yes;
+            mso-style-link: "本文縮排 2 字元";
+            margin-top: 0cm;
+            margin-right: 0cm;
+            margin-bottom: 0cm;
+            margin-left: 72.0pt;
+            margin-bottom: .0001pt;
+            mso-pagination: none;
+            font-size: 12.0pt;
+            
+            font-family: "Times New Roman",serif;
+            mso-font-kerning: 1.0pt;
+        }
+
+        a:link, span.MsoHyperlink {
+            mso-style-noshow: yes;
+            mso-style-priority: 99;
+            color: #0563C1;
+            mso-themecolor: hyperlink;
+            text-decoration: underline;
+            text-underline: single;
+        }
+
+        a:visited, span.MsoHyperlinkFollowed {
+            mso-style-noshow: yes;
+            mso-style-priority: 99;
+            color: #954F72;
+            mso-themecolor: followedhyperlink;
+            text-decoration: underline;
+            text-underline: single;
+        }
+
+        p.MsoListParagraph, li.MsoListParagraph, div.MsoListParagraph {
+            mso-style-priority: 34;
+            mso-style-unhide: no;
+            mso-style-qformat: yes;
+            margin-top: 0cm;
+            margin-right: 0cm;
+            margin-bottom: 0cm;
+            margin-left: 24.0pt;
+            margin-bottom: .0001pt;
+            mso-pagination: none;
+            font-size: 12.0pt;
+            
+            font-family: "Times New Roman",serif;
+            mso-font-kerning: 1.0pt;
+        }
+
+        span.EmailStyle17 {
+            mso-style-type: personal-compose;
+            mso-style-noshow: yes;
+            mso-style-unhide: no;
+            mso-ansi-font-size: 12.0pt;
+            
+            font-family: "Calibri",sans-serif;
+            mso-ascii-font-family: Calibri;
+            mso-ascii-theme-font: minor-latin;
+            mso-fareast-theme-font: minor-fareast;
+            mso-hansi-theme-font: minor-latin;
+            mso-bidi-font-family: "Times New Roman";
+            mso-bidi-theme-font: minor-bidi;
+            color: windowtext;
+        }
+
+        span.a {
+            mso-style-name: "本文 字元";
+            mso-style-noshow: yes;
+            mso-style-unhide: no;
+            mso-style-locked: yes;
+            mso-style-link: 本文;
+            mso-ansi-font-size: 14.0pt;
+            
+            font-family: "Times New Roman",serif;
+            mso-ascii-font-family: "Times New Roman";
+            mso-bidi-font-family: "Times New Roman";
+        }
+
+        span.2 {
+            mso-style-name: "本文縮排 2 字元";
+            mso-style-noshow: yes;
+            mso-style-unhide: no;
+            mso-style-locked: yes;
+            mso-style-link: "本文縮排 2";
+            
+            font-family: "Times New Roman",serif;
+            mso-ascii-font-family: "Times New Roman";
+            mso-bidi-font-family: "Times New Roman";
+        }
+
+        span.SpellE {
+            mso-style-name: "";
+            mso-spl-e: yes;
+        }
+
+        .MsoChpDefault {
+            mso-style-type: export-only;
+            mso-default-props: yes;
+            font-family: "Calibri",sans-serif;
+            mso-bidi-font-family: "Times New Roman";
+            mso-bidi-theme-font: minor-bidi;
+        }
+        /* Page Definitions */
+        @@page {
+            mso-page-border-surround-header: no;
+            mso-page-border-surround-footer: no;
+        }
+
+        @@page WordSection1 {
+            size: /*22.5cm 29.7cm;*/ /*612.0pt 792.0pt;*/ A4 portrait;
+            margin: 1.8cm 1.5cm 2.2cm 1.5cm; /*72.0pt 90.0pt 72.0pt 90.0pt;*/
+            mso-header-margin: 36.0pt;
+            mso-footer-margin: 36.0pt;
+            mso-paper-source: 0;
+        }
+
+        div.WordSection1 {
+            page: WordSection1;
+        }
+        /* List Definitions */
+        @@list l0 {
+            mso-list-id: 381751964;
+            mso-list-type: hybrid;
+            mso-list-template-ids: -1715419112 -136936172 67698713 67698715 67698703 67698713 67698715 67698703 67698713 67698715;
+        }
+
+        @@list l0:level1 {
+            mso-level-number-format: taiwanese-counting-thousand;
+            mso-level-text: "\(%1\)";
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 24.0pt;
+            text-indent: -24.0pt;
+            mso-text-animation: none;
+            text-decoration: none;
+            text-underline: none;
+            text-decoration: none;
+            text-line-through: none;
+        }
+
+        @@list l0:level2 {
+            mso-level-number-format: ideograph-traditional;
+            mso-level-text: %2、;
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 48.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l0:level3 {
+            mso-level-number-format: roman-lower;
+            mso-level-tab-stop: none;
+            mso-level-number-position: right;
+            margin-left: 72.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l0:level4 {
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 96.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l0:level5 {
+            mso-level-number-format: ideograph-traditional;
+            mso-level-text: %5、;
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 120.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l0:level6 {
+            mso-level-number-format: roman-lower;
+            mso-level-tab-stop: none;
+            mso-level-number-position: right;
+            margin-left: 144.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l0:level7 {
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 168.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l0:level8 {
+            mso-level-number-format: ideograph-traditional;
+            mso-level-text: %8、;
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 192.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l0:level9 {
+            mso-level-number-format: roman-lower;
+            mso-level-tab-stop: none;
+            mso-level-number-position: right;
+            margin-left: 216.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l1 {
+            mso-list-id: 404647972;
+            mso-list-type: hybrid;
+            mso-list-template-ids: -904211220 1997319584 67698713 67698715 67698703 67698713 67698715 67698703 67698713 67698715;
+        }
+
+        @@list l1:level1 {
+            mso-level-number-format: taiwanese-counting-thousand;
+            mso-level-text: "\(%1\)";
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 24.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l1:level2 {
+            mso-level-number-format: ideograph-traditional;
+            mso-level-text: %2、;
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 48.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l1:level3 {
+            mso-level-number-format: roman-lower;
+            mso-level-tab-stop: none;
+            mso-level-number-position: right;
+            margin-left: 72.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l1:level4 {
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 96.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l1:level5 {
+            mso-level-number-format: ideograph-traditional;
+            mso-level-text: %5、;
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 120.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l1:level6 {
+            mso-level-number-format: roman-lower;
+            mso-level-tab-stop: none;
+            mso-level-number-position: right;
+            margin-left: 144.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l1:level7 {
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 168.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l1:level8 {
+            mso-level-number-format: ideograph-traditional;
+            mso-level-text: %8、;
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 192.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l1:level9 {
+            mso-level-number-format: roman-lower;
+            mso-level-tab-stop: none;
+            mso-level-number-position: right;
+            margin-left: 216.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l2 {
+            mso-list-id: 439035734;
+            mso-list-type: hybrid;
+            mso-list-template-ids: -1752162756 1997319584 67698713 67698715 67698703 67698713 67698715 67698703 67698713 67698715;
+        }
+
+        @@list l2:level1 {
+            mso-level-number-format: taiwanese-counting-thousand;
+            mso-level-text: "\(%1\)";
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 24.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l2:level2 {
+            mso-level-number-format: ideograph-traditional;
+            mso-level-text: %2、;
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 48.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l2:level3 {
+            mso-level-number-format: roman-lower;
+            mso-level-tab-stop: none;
+            mso-level-number-position: right;
+            margin-left: 72.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l2:level4 {
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 96.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l2:level5 {
+            mso-level-number-format: ideograph-traditional;
+            mso-level-text: %5、;
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 120.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l2:level6 {
+            mso-level-number-format: roman-lower;
+            mso-level-tab-stop: none;
+            mso-level-number-position: right;
+            margin-left: 144.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l2:level7 {
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 168.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l2:level8 {
+            mso-level-number-format: ideograph-traditional;
+            mso-level-text: %8、;
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 192.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l2:level9 {
+            mso-level-number-format: roman-lower;
+            mso-level-tab-stop: none;
+            mso-level-number-position: right;
+            margin-left: 216.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l3 {
+            mso-list-id: 1112434109;
+            mso-list-type: hybrid;
+            mso-list-template-ids: -466341462 1997319584 67698713 67698715 67698703 67698713 67698715 67698703 67698713 67698715;
+        }
+
+        @@list l3:level1 {
+            mso-level-number-format: taiwanese-counting-thousand;
+            mso-level-text: "\(%1\)";
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 24.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l3:level2 {
+            mso-level-number-format: ideograph-traditional;
+            mso-level-text: %2、;
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 48.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l3:level3 {
+            mso-level-number-format: roman-lower;
+            mso-level-tab-stop: none;
+            mso-level-number-position: right;
+            margin-left: 72.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l3:level4 {
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 96.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l3:level5 {
+            mso-level-number-format: ideograph-traditional;
+            mso-level-text: %5、;
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 120.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l3:level6 {
+            mso-level-number-format: roman-lower;
+            mso-level-tab-stop: none;
+            mso-level-number-position: right;
+            margin-left: 144.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l3:level7 {
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 168.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l3:level8 {
+            mso-level-number-format: ideograph-traditional;
+            mso-level-text: %8、;
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 192.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l3:level9 {
+            mso-level-number-format: roman-lower;
+            mso-level-tab-stop: none;
+            mso-level-number-position: right;
+            margin-left: 216.0pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l4 {
+            mso-list-id: 1822112641;
+            mso-list-type: hybrid;
+            mso-list-template-ids: 299371314 67698703 67698713 67698715 67698703 67698713 67698715 67698703 67698713 67698715;
+        }
+
+        @@list l4:level1 {
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 66.55pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l4:level2 {
+            mso-level-number-format: ideograph-traditional;
+            mso-level-text: %2、;
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 90.55pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l4:level3 {
+            mso-level-number-format: roman-lower;
+            mso-level-tab-stop: none;
+            mso-level-number-position: right;
+            margin-left: 114.55pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l4:level4 {
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 138.55pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l4:level5 {
+            mso-level-number-format: ideograph-traditional;
+            mso-level-text: %5、;
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 162.55pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l4:level6 {
+            mso-level-number-format: roman-lower;
+            mso-level-tab-stop: none;
+            mso-level-number-position: right;
+            margin-left: 186.55pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l4:level7 {
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 210.55pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l4:level8 {
+            mso-level-number-format: ideograph-traditional;
+            mso-level-text: %8、;
+            mso-level-tab-stop: none;
+            mso-level-number-position: left;
+            margin-left: 234.55pt;
+            text-indent: -24.0pt;
+        }
+
+        @@list l4:level9 {
+            mso-level-number-format: roman-lower;
+            mso-level-tab-stop: none;
+            mso-level-number-position: right;
+            margin-left: 258.55pt;
+            text-indent: -24.0pt;
+        }
+
+        ol {
+            margin-bottom: 0cm;
+        }
+
+        ul {
+            margin-bottom: 0cm;
+        }
+        -->
+    </style>
+    <!--[if gte mso 10]>
+    <style>
+     /* Style Definitions */
+     table.MsoNormalTable
+        {mso-style-name:表格內文;
+        mso-tstyle-rowband-size:0;
+        mso-tstyle-colband-size:0;
+        mso-style-noshow:yes;
+        mso-style-priority:99;
+        mso-style-parent:"";
+        
+        mso-para-margin:0cm;
+
+        mso-pagination:widow-orphan;
+        font-size:12.0pt;
+        
+        font-family:"Calibri",sans-serif;
+        mso-ascii-font-family:Calibri;
+        mso-ascii-theme-font:minor-latin;
+
+        mso-hansi-theme-font:minor-latin;
+        mso-bidi-font-family:"Times New Roman";
+        mso-bidi-theme-font:minor-bidi;
+        mso-font-kerning:1.0pt;}
+    table.MsoTableGrid
+        {mso-style-name:表格格線;
+        mso-tstyle-rowband-size:0;
+        mso-tstyle-colband-size:0;
+        mso-style-unhide:no;
+        border:solid windowtext 1.0pt;
+        mso-border-alt:solid windowtext .5pt;
+        
+        mso-border-insideh:.5pt solid windowtext;
+        mso-border-insidev:.5pt solid windowtext;
+        mso-para-margin:0cm;
+
+        mso-pagination:widow-orphan;
+        font-size:10.0pt;
+        font-family:"Times New Roman",serif;
+        }
+    </style>
+    <![endif]-->
+    <!--[if gte mso 9]><xml>
+     <o:shapedefaults v:ext="edit" spidmax="1032"/>
+    </xml><![endif]-->
+    <!--[if gte mso 9]><xml>
+    <o:shapelayout v:ext="edit">
+     <o:idmap v:ext="edit" data="1"/>
+    </o:shapelayout></xml><![endif]-->
+</head>
+
+<body lang=ZH-TW link="#0563C1" vlink="#954F72" style='tab-interval:24.0pt;
+text-justify-trim:punctuation;position:absolute;margin-left: 0.5cm;margin-right: 0.5cm;'>
+    <div class=WordSection1>
+
+        <table class=MsoTableGrid border=0 cellspacing=0 cellpadding=0 width=647
+               style='width:485.55pt;border-collapse:collapse;border:none;mso-yfti-tbllook:
+ 1184;mso-border-insideh:none;mso-border-insidev:
+ none'>
+            <tr style='mso-yfti-lastrow:yes;
+  height:15.1pt'>
+                <td width=647 valign=top style='width:485.55pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:15.1pt'>
+                    <p class=MsoNormal align=center style='margin-top:0cm;margin-right:-5.5pt;
+  margin-bottom:0cm;margin-left:-5.4pt;margin-bottom:.0001pt;text-align:center;punctuation-wrap:
+  simple'>
+                        <b style=''>
+                            <span style='font-size:16.0pt;
+  font-family:標楷體;color:black;'>賒銷合約</span>
+                        </b>
+                    </p>
+                </td>
+            </tr>
+        </table>
+
+        <p class=MsoNormal align=right style='text-align:right;'>
+            <span style='font-family:標楷體;
+color:black;'>合約編號：</span><span style='font-family:標楷體;color:black;'><span lang=EN-US>@(_viewModel?.No)</span></span>
+        </p>
+
+        <p class=MsoNormal style='text-align:justify;
+'>
+            <span style='font-size:14.0pt;
+font-family:標楷體;color:black;'>茲因立約人</span><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'><span class=SpellE><span lang=EN-US>@(_viewModel?.BuyerName)</span></span></span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>(</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>下稱買方</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>)</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>與中國鋼鐵股份有限公司</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>(</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>下稱中鋼公司</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>)</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>約定在核准的賒銷限額內，中鋼公司銷售給買方之各項產品，同意以電子商務賒銷方式出貨，並將雙方依前述方式出貨應遵守之權利義務關係訂立本賒銷合約</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>(</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>下稱本合約</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>)</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>。</span>
+        </p>
+
+        <p class=MsoNormal style='margin-top:6.0pt;text-align:
+justify;'>
+            <span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>緣中鋼公司銷貨之基本原則乃是先付款後交貨，中鋼公司為協助買方開拓購料融資管道，努力向國際金融機構爭取提供此一賒銷額度</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>(</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>但不保證此賒銷額度長期有效</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>)</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>，買方亦同意如就買方與中鋼公司間之買賣契約發生爭議，不以拒付貨款作為抗爭之手段，雙方基於長久以來建立之商誼，一本誠實信用及公平合理原則，協議採電子商務方式處理交易事宜，彼此間權利義務如後：</span>
+        </p>
+
+        <p class=MsoNormal style='margin-top:6.0pt;text-align:
+justify;'>
+            <span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>第一條：本合約之賒銷額度、條件及內容</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:42.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+text-indent:-24.0pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    (一)
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>用途：僅限於供買方向中鋼公司採購各項產品時適用。</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:42.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+text-indent:-24.0pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    (二)
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>賒銷額度：以新台幣</span><b style=''>
+                <span style='font-size:14.0pt;font-family:標楷體;color:black;
+'><span lang=EN-US>@(_viewModel?.Amount)</span>元</span>
+            </b><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>為上限</span><span lang=EN-US style='font-size:14.0pt;
+color:black;'>(</span><span style='font-size:14.0pt;
+font-family:標楷體;color:black;'>得循環使用</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>)</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>。</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:42.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+text-indent:-24.1pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    (三)
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>信用期間：每筆賒銷帳款的信用期間為</span><span style='font-size:14.0pt;
+font-family:標楷體;color:black;'>
+                <span class=SpellE><span lang=EN-US>@(_viewModel?.CreditDate)</span></span>
+            </span><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>天。賒銷帳款到期日為中鋼公司出貨日加上信用期間，到期日若為非銀行營業日，順延至次一銀行營業日。</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:42.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+text-indent:-24.0pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    (四)
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>額度動用期間：自本合約完成訂約生效起至民國</span><span style='font-size:14.0pt;
+font-family:標楷體;mso-bidi-font-family:細明體;'>
+                <span class=SpellE><span lang=EN-US>@(_viewModel?.EndDate)</span></span>
+            </span><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>止。</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:42.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+text-indent:-24.0pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    (五)
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>付款附價：買方採用本賒銷方式出貨，除貨價外另加計付款附價，中鋼公司將於網際優勢公司金融平台系統公告各月銷貨合約適用之賒銷帳款付款附價率。</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:42.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+text-indent:-24.1pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    (六)
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>計費和繳費方式：從中鋼公司出貨日到賒銷帳款到期日期間的付款附價內含於貨款計收。倘買方於賒銷帳款到期日前提前支付貨款</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>(</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>內含付款附價，下同</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>)</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>，內含於貨款的付款附價不退還。</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:42.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+text-indent:-24.0pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    (七)
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>逾期違約金：買方如遲延支付到期賒銷帳款時，依未償還的到期賒銷帳款按實際延遲付款天數，以年利率</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>10%</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>計收逾期違約金</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>(</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>未含稅</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>)</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>。</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:42.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+text-indent:-24.1pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    (八)
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>買方付款日之指定</span><span lang=EN-US style='font-size:14.0pt;
+color:black;'>:</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:42.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+'>
+            <span style='font-size:14.0pt;
+font-family:標楷體;color:black;'>每筆賒銷帳款，買方均須開立還款電子商業本票</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>(</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>下稱電子本票，詳本合約第四條</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>)</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>予銀行，買方可就付款日約定如下：</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:42.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+'>
+            <span style='font-size:14.0pt;
+font-family:標楷體;color:black;'>指定星期〈</span><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'><span class=SpellE><span lang=EN-US>@(_viewModel?.PayWeekDate)</span></span></span><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>〉為付款日</span><span lang=EN-US style='font-size:14.0pt;
+color:black;'>(</span><span style='font-size:14.0pt;
+font-family:標楷體;color:black;'>未填寫者視為不指定</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>)</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>。</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:66.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+text-indent:-24.0pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>若客戶不指定付款日，則依每筆賒銷帳款到期日作為付款日，若該付款日為例假日、國定假日或其他銀行休息日時，則再順延至次一銀行營業日。</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:66.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+text-indent:-24.0pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    2.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>若客戶指定付款日，則依每筆賒銷帳款到期日作為付款日。若賒銷帳款到期日不同於客戶指定付款日時則順延至最近一週內作為付款日，若該付款日為例假日、國定假日或其他銀行休息日時，則再順延至次一銀行營業日。惟上述最終實際付款日依中鋼公司試算為準。</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:66.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+text-indent:-24.0pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    3.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>展延期間仍須按本條第</span><span lang=EN-US style='font-size:14.0pt;
+color:black;'>(</span><span style='font-size:14.0pt;
+font-family:標楷體;color:black;'>五</span><span lang=EN-US
+                                            style='font-size:14.0pt;
+color:black;'>)</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>、</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>(</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>六</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>)</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>兩款計算付款附價並內含於貨款計收，惟上述展延規定，於第十條不適用之。</span>
+        </p>
+
+        <p class=MsoNormal style='margin-top:6.0pt;text-align:
+justify;'>
+            <span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>第二條：得優先以電子商務賒銷方式出貨</span>
+        </p>
+
+        <p class=MsoBodyText style='line-height:normal;'>
+            <span style='font-family:標楷體;color:black;'>買方同意並授權中鋼公司在賒銷額度仍有剩餘時，得優先選擇以電子商務賒銷付款方式出貨。</span>
+        </p>
+
+        <p class=MsoNormal style='margin-top:6.0pt;text-align:
+justify;'>
+            <span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>第三條：開立備償專戶之約定</span>
+        </p>
+
+        <p class=MsoNormal style='text-align:justify;
+'>
+            <span style='font-size:14.0pt;
+font-family:標楷體;color:black;'>買方同意在中鋼公司指定之銀行</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>(</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>下稱銀行</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>)</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>開立賒銷帳款備償專戶</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>(</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>下稱備償專戶</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>)</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>，並同意將此備償專戶的開戶印鑑以電腦掃描器製成印鑑圖形檔存於網際優勢公司金融平台系統，使用印鑑時買方以數位方式簽章，並將列印之印鑑作為備償專戶的另一組留存印鑑。此等授權依本合約約定，將買方開戶印鑑製成印鑑圖形檔、存檔及使用、列印電子本票，均具有拘束買方之效力。</span>
+        </p>
+
+        <p class=MsoNormal style='margin-top:6.0pt;text-align:
+justify;'>
+            <span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>第四條：債權確認及代印還款商業本票</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:42.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+text-indent:-24.1pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    (一)
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>中鋼公司於出貨日的次一銀行營業日，透過網際優勢公司金融平台傳遞賒銷帳款債權讓與通知或債權證明給買方。買方並授權網際優勢股份有限公司代產生一張以買方為發票人的電子本票，該電子本票之受款人為中國鋼鐵股份有限公司或中鋼公司指定之受款人，付款帳戶則為買方在銀行的備償專戶，本票發票日為出貨日期，到期日為賒銷帳款到期日，票面金額為賒銷帳款；倘若尚得使用之賒銷額度少於賒銷帳款時，以尚得使用之賒銷額度為票面金額，並將該電子本票作為前述債權讓與通知之附件傳送予買方。</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:42.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+text-indent:-24.1pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    (二)
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>若買方確認中鋼公司出具的賒銷帳款債權金額與所附之電子本票上金額無誤，買方應於中鋼公司依本條第</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>(</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>一</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>)</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>款通知後二個營業日內，將所附的電子本票以數位簽章方式加蓋開戶印鑑，完成開發電子本票之動作後，以數位簽章加密方式傳送給銀行。</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>
+                <br>
+            </span><span style='font-size:14.0pt;font-family:
+標楷體;
+color:black;'>倘買方因不可抗力因素</span><span lang=EN-US
+                                     style='font-size:14.0pt;
+color:black;'>(</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>包括，但不限於颱風、地震以及網際優勢公司金融平台無法正常運作</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>)</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>致無法於二個營業日內確認電子本票，中鋼公司同意將前述電子本票開立期限順延至次一正常營業日。</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:42.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+text-indent:-24.1pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    (三)
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>買方同意授權並委託銀行於接獲買方以數位簽章加密後的電子本票，立即印出該還款商業本票，並確認開戶印鑑與本票內容真正無訛後，依中鋼公司指示將還款商業本票代為保管及到期提示或轉交其他金融機構處理。</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:42.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+text-indent:-24.1pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    (四)
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>本交易係中鋼公司出貨後，將賒銷帳款債權讓予金融機構，因此買方保證不以任何理由撤銷銀行已代印還款本票之委託或主張該還款本票無效。買方同意如就買方與中鋼公司間之買賣契約發生爭議，仍應履行本條第</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>(</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>五</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>)</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>款之義務後再另依循協商及法律途徑解決，且於買方實際付款後，得檢具公證報告証明中鋼公司所交貨物存有重大瑕疵之後，退還貨物。於此情況，中鋼公司須於買方已完成付款暨退貨後，返還買方該退貨部分之貨款或將該部分貨款提存於法院。</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:42.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+text-indent:-24.1pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    (五)
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>買方應於還款商業本票到期日前，將本票金額存入銀行備償專戶，以備兌付。</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:42.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+text-indent:-24.1pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    (六)
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>買方同意簽發與賒銷額度等額，以中國鋼鐵股份有限公司或中鋼公司指定之債權承購銀行為受款人，並載明發票年月日之本票</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>(</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>下稱擔保本票</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>)</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>壹張作為履行本合約之擔保，由中鋼公司或中鋼公司指定之債權承購銀行收執。買方並應出具授權書授權中鋼公司或中鋼公司指定之債權承購銀行於買方違反或不履行本合約之義務時，得逕行填載到期日、逾期違約息及其他為行使票據權利應完成之法定要項後，提示請求付款。</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:42.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+'>
+            <span lang=EN-US style='font-size:14.0pt;color:black;'><o:p>&nbsp;</o:p></span>
+        </p>
+
+        <p class=MsoNormal style='margin-top:6.0pt;text-align:
+justify;'>
+            <span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>第五條：數位簽章效力</span>
+        </p>
+
+        <p class=MsoNormal style='text-align:justify;
+'>
+            <span style='font-size:14.0pt;
+font-family:標楷體;color:black;'>買方同意於本合約相關電子商務作業流程中所使用之數位簽章具有與公司印鑑相同之效力，遇有數位簽章方面之爭議時，雙方同意依照網際優勢憑證認證中心</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>(UX CA CENTER)</span><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>公共核證服務用戶合約</span><span lang=EN-US style='font-size:14.0pt;
+color:black;'>(Subscriber Agreement)</span><span style='font-size:14.0pt;font-family:標楷體;color:black;'>之規定辦理。</span>
+        </p>
+
+        <p class=MsoNormal style='margin-top:6.0pt;text-align:
+justify;'>
+            <span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>第六條：資訊傳遞授權</span>
+        </p>
+
+        <p class=MsoNormal style='text-align:justify;
+'>
+            <span style='font-size:14.0pt;
+font-family:標楷體;color:black;'>買方授權中鋼公司將其基本資料及買方與中鋼公司間以電子商務賒銷的交易相關資訊，提供給金融機構、信用保險公司與網際優勢公司做為資訊傳遞與應收帳款管理之用途。</span>
+        </p>
+
+        <p class=MsoNormal style='margin-top:6.0pt;text-align:
+justify;'>
+            <span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>第七條：債權移轉的配合</span>
+        </p>
+
+        <p class=MsoNormal style='text-align:justify;
+'>
+            <span style='font-size:14.0pt;
+font-family:標楷體;color:black;'>中鋼公司將賒銷帳款債權賣斷給其他金融機構時或於信用保險公司理賠後將債權轉移給信用保險公司代位求償時，買方同意於接獲賒銷帳款債權讓與通知後，無條件配合賒銷帳款債權承購機構履行到期償債之義務</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>(</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>含逾期時須支付逾期違約息</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>)</span><span style='font-size:14.0pt;
+font-family:標楷體;
+color:black;'>。買方如收到中鋼公司或賒銷帳款債權承購機構通知，將賒銷帳款債權再讓與中鋼公司，買方對中鋼公司履行到期償債之義務不受影響。</span>
+        </p>
+
+        <p class=MsoNormal style='margin-top:6.0pt;text-align:
+justify;'>
+            <span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>第八條：額度機動審核調整</span>
+        </p>
+
+        <p class=MsoNormal style='text-align:justify;
+'>
+            <span style='font-size:14.0pt;
+font-family:標楷體;color:black;'>中鋼公司將不定時要求買方提供財務資料，審核財務狀況或斟酌其他市場資訊，依下列方式機動調整買方的賒銷額度，惟在額度調整前已出貨之賒銷帳款不受影響。</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:42.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+text-indent:-24.1pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    (一)
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>額度縮減者，自中鋼公司調整日起生效，並由中鋼公司於調整後以書面告知買方。</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:42.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+text-indent:-24.1pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    (二)
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>額度增加者，經中鋼公司書面通知買方，並經買方於增加後之賒銷額度上限內簽發擔保本票者，視同買方同意將賒銷額度調整至該擔保本票所載金額，並自中鋼公司或銀行接獲擔保本票之日起生效。</span>
+        </p>
+
+        <p class=MsoNormal style='margin-top:6.0pt;text-align:
+justify;'>
+            <span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>第九條：超出賒銷額度之處理</span>
+        </p>
+
+        <p class=MsoNormal style='text-align:justify;
+'>
+            <span style='font-size:14.0pt;
+font-family:標楷體;color:black;'>當中鋼公司出貨金額超出賒銷額度時，超過限額之貨款視同現金出貨，買方應立即將超過限額之貨款電匯至中鋼公司指定帳戶。</span>
+        </p>
+
+        <p class=MsoNormal style='margin-top:6.0pt;text-align:
+justify;'>
+            <span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>第十條：額度之取消或終止</span>
+        </p>
+
+        <p class=MsoNormal style='text-align:justify;
+'>
+            <span style='font-size:14.0pt;
+font-family:標楷體;color:black;'>如有下列情事者，中鋼公司得不經通知或催告逕行取消或終止全部之賒銷額度：</span>
+        </p>
+
+        <p class=MsoListParagraph style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:42.55pt;margin-bottom:.0001pt;
+
+text-align:justify;
+text-indent:-24.1pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    (一)
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>買方於賒銷帳款債權屆清償日時，拒絕付款或僅為部分付款；或買方所簽發之票據，因存款不足、拒絕往來或其他原因退票時。</span>
+        </p>
+
+        <p class=MsoBodyTextIndent2 style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:42.55pt;margin-bottom:.0001pt;text-align:justify;text-indent:-24.1pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    (二)
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>買方提供虛偽不實資料予中鋼公司或隱瞞有關不利買方之交易信用、支付能力或其他相關負面訊息，致影響中鋼公司對買方債信之判斷時。</span>
+        </p>
+
+        <p class=MsoBodyTextIndent2 style='margin-top:3.0pt;margin-right:0cm;margin-bottom:
+0cm;margin-left:42.55pt;margin-bottom:.0001pt;text-align:justify;text-indent:-24.1pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    (三)
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>除前二款事由外，買方有其他違反本合約任一約定時。</span>
+        </p>
+
+        <p class=MsoBodyTextIndent2 style='margin-top:3.0pt;margin-right:0cm;margin-bottom:0cm;margin-left:42.55pt;margin-bottom:.0001pt;text-align:justify;text-indent:-24.1pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    (四)
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>買方受假扣押、假處分、假執行、終局執行等強制執行，或依破產法規定之和解或破產程序清理其債務，或聲請重整或宣告破產，或信用有重大貶落之情事時。</span>
+        </p>
+
+        <p class=MsoBodyTextIndent2 style='margin-top:3.0pt;margin-right:0cm;
+margin-bottom:0cm;margin-left:42.55pt;margin-bottom:.0001pt;text-align:justify;
+text-indent:-24.1pt;'>
+            <![if !supportLists]><span lang=EN-US style='font-size:14.0pt;color:black;'>
+                <span style='font-family:標楷體;'>
+                    (五)
+                </span>
+            </span><![endif]><span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>其他經中鋼公司研判買方因故無法繼續履行賒銷合約或繼續履行顯有重大困難者。</span>
+        </p>
+
+        <p class=MsoNormal style='margin-top:3.0pt;
+text-align:justify;'>
+            <span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>買方因違反本條約定而遭取消或終止全部之賒銷額度時，所有賒銷帳款均視為已到期。買方應立即將賒銷帳款電匯至中鋼公司指定帳戶。</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>
+                <br>
+            </span><span style='font-size:14.0pt;font-family:
+標楷體;
+color:black;'>買方如無需繼續使用賒銷額度，應書面通知中鋼公司，中鋼公司於受送達後，應即停止以賒銷方式出貨。</span>
+        </p>
+
+        <p class=MsoNormal style='margin-top:6.0pt;
+text-align:justify;'>
+            <span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>第十一條：指定管轄法院</span>
+        </p>
+
+        <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+'>
+            <span style='font-size:
+14.0pt;font-family:標楷體;
+color:black;'>雙方同意因本合約涉訟時，以台灣高雄地方法院為第一審管轄法院。</span>
+        </p>
+
+        <p class=MsoNormal style='margin-top:6.0pt;
+text-align:justify;'>
+            <span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>第十二條：未盡事宜之處理</span>
+        </p>
+
+        <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+'>
+            <span style='font-size:
+14.0pt;font-family:標楷體;
+color:black;'>本合約若有未盡事宜，須依本合約前言所載之締約目的及精神，一本誠實信用原則及契約應嚴守解釋之原則履行之。</span>
+        </p>
+
+        <p class=MsoNormal style='margin-top:6.0pt;
+text-align:justify;'>
+            <span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>第十三條：合約條款之修改</span>
+        </p>
+
+        <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+'>
+            <span style='font-size:
+14.0pt;font-family:標楷體;
+color:black;'>本合約內容及未規範事項得經雙方協議後，以換文方式修改或增刪。</span>
+        </p>
+
+        <p class=MsoNormal style='margin-top:6.0pt;
+text-align:justify;'>
+            <span style='font-size:14.0pt;font-family:標楷體;color:black;
+'>第十四條：電子契約之效力</span>
+        </p>
+
+        <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+'>
+            <span style='font-size:
+14.0pt;font-family:標楷體;
+color:black;'>雙方同意本合約以電子簽章為之，雙方完成電子簽章後，本合約即生效，並取代雙方於本合約生效前關於本合約內容之一切書面或口頭承諾或合意。</span><span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+標楷體;color:black;'>
+                <br style=''>
+                <![if !supportLineBreakNewLine]><br style=''>
+                <![endif]>
+            </span>
+        </p>
+
+        <table class=MsoTableGrid border=0 cellspacing=0 cellpadding=0
+               style='border-collapse:collapse;border:none;mso-yfti-tbllook:1184;mso-border-insideh:none;mso-border-insidev:none'>
+            <tr >
+                <td width=222 valign=top style='width:166.15pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  '>
+                        <span lang=EN-US
+                              style='font-size:14.0pt;mso-fareast-font-family:
+  標楷體;color:black;'><o:p>&nbsp;</o:p></span>
+                    </p>
+                </td>
+                <td width=118 valign=top style='width:88.35pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    @if (_viewModel?.BuyerSeal != null)
+                    {
+                        <span style='position:absolute;z-index:-999;margin-left:0px;margin-top:-15px;'>
+                            <img src="@Html.Raw(_viewModel.BuyerSeal)" style="max-width:306px;" />
+                        </span>
+                    }
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  text-justify:distribute-all-lines;'>
+                        <span style='font-size:14.0pt;
+  font-family:標楷體;color:black;'>買方：</span>
+                    </p>
+                </td>
+                <td width=303 valign=top style='width:227.45pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  '>
+                        <span style='mso-bookmark:buyerSig'>
+                            <span style='font-size:
+  14.0pt;font-family:標楷體;color:black;'><span class=SpellE><span lang=EN-US>@(_viewModel?.BuyerName)</span></span></span>
+                        </span>
+                    </p>
+                </td>
+            </tr>
+            <tr >
+                <td width=222 valign=top style='width:166.15pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  '>
+                        <span lang=EN-US
+                              style='font-size:14.0pt;mso-fareast-font-family:
+  標楷體;color:black;'><o:p>&nbsp;</o:p></span>
+                    </p>
+                </td>
+                <td width=118 valign=top style='width:88.35pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  text-justify:distribute-all-lines;'>
+                        <span style='font-size:14.0pt;font-family:標楷體;mso-ascii-font-family:
+  "Times New Roman";color:black;
+  '>負責人簽章：</span>
+                    </p>
+                </td>
+                <td width=303 valign=top style='width:227.45pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  '>
+                    </p>
+                </td>
+            </tr>
+            <tr >
+                <td width=222 valign=top style='width:166.15pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  '>
+                        <span lang=EN-US
+                              style='font-size:14.0pt;mso-fareast-font-family:
+  標楷體;color:black;'><o:p>&nbsp;</o:p></span>
+                    </p>
+                </td>
+                <td width=118 valign=top style='width:88.35pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  text-justify:distribute-all-lines;'>
+                        <span style='font-size:14.0pt;font-family:標楷體;mso-ascii-font-family:
+  "Times New Roman";color:black;
+  '>地址：</span>
+                    </p>
+                </td>
+                <td width=303 valign=top style='width:227.45pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;'>
+                        <span style='mso-bookmark:buyerSig'>
+                            <span class=SpellE>
+                                <span lang=EN-US
+                                      style='font-size:14.0pt;font-family:標楷體;color:black;'>
+                                      @(_viewModel?.BuyerAddress)
+                                </span>
+                            </span>
+                        </span>
+                    </p>
+                </td>
+            </tr>
+            <tr >
+                <td width=222 valign=top style='width:166.15pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  '>
+                        <span lang=EN-US
+                              style='font-size:14.0pt;mso-fareast-font-family:
+  標楷體;color:black;'><o:p>&nbsp;</o:p></span>
+                    </p>
+                </td>
+                <td width=118 valign=top style='width:88.35pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  text-justify:distribute-all-lines;'>
+                        <span style='font-size:14.0pt;font-family:標楷體;mso-ascii-font-family:
+  "Times New Roman";color:black;
+  '>統一編號：</span>
+                    </p>
+                </td>
+                <td width=303 valign=top style='width:227.45pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  '>
+                        <span style='mso-bookmark:buyerSig'>
+                            <span class=SpellE>
+                                <span lang=EN-US
+                                      style='font-size:14.0pt;mso-fareast-font-family:
+  標楷體;color:black;'>@Html.Raw(_viewModel?.BuyerIdNo)</span>
+                            </span>
+                        </span>
+                    </p>
+                </td>
+
+            </tr>
+            <tr >
+                <td width=222 valign=top style='width:166.15pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  '>
+                        <span lang=EN-US
+                              style='font-size:14.0pt;mso-fareast-font-family:
+  標楷體;color:black;'><o:p>&nbsp;</o:p></span>
+                    </p>
+                </td>
+                <td width=118 valign=top style='width:88.35pt;padding:0cm 5.4pt 0cm 5.4pt;  height:34.0pt'>
+                    @if (_viewModel?.SellerSeal != null)
+                    {
+                        <span style='position:absolute;z-index:-999;'>
+                            <img src="@Html.Raw(_viewModel.SellerSeal)" style="max-width:306px;" >
+                        </span>
+                    }
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  text-justify:distribute-all-lines;'>
+                        <span style='font-size:14.0pt;
+  font-family:標楷體;color:black;'>賣方：</span>
+                    </p>
+                </td>
+                <td width=303 valign=top style='width:227.45pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  '>
+                        <span style='font-size:
+  14.0pt;font-family:標楷體;
+  color:black;
+  '>中國鋼鐵股份有限公司</span>
+                    </p>
+                </td>
+            </tr>
+            <tr >
+                <td width=222 valign=top style='width:166.15pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  '>
+                        <span lang=EN-US
+                              style='font-size:14.0pt;mso-fareast-font-family:
+  標楷體;color:black;'><o:p>&nbsp;</o:p></span>
+                    </p>
+                </td>
+                <td width=118 valign=top style='width:88.35pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  text-justify:distribute-all-lines;'>
+                        <span style='font-size:14.0pt;font-family:標楷體;mso-ascii-font-family:
+  "Times New Roman";color:black;
+  '>代表人簽章：</span>
+                    </p>
+                </td>
+                <td width=303 valign=top style='width:227.45pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  '>
+                        <span style='font-size:
+  14.0pt;font-family:標楷體;
+  color:black;
+  '>財務副總經理</span><span lang=EN-US style='font-size:14.0pt;
+  color:black;'><span style='mso-spacerun:yes'>&nbsp; </span></span><span style='font-size:14.0pt;font-family:標楷體;mso-ascii-font-family:
+  "Times New Roman";color:black;
+  '>楊岳崑</span>
+                    </p>
+                </td>
+            </tr>
+            <tr >
+                <td width=222 valign=top style='width:166.15pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  '>
+                        <span lang=EN-US
+                              style='font-size:14.0pt;mso-fareast-font-family:
+  標楷體;color:black;'><o:p>&nbsp;</o:p></span>
+                    </p>
+                </td>
+                <td width=118 valign=top style='width:88.35pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  text-justify:distribute-all-lines;'>
+                        <span style='font-size:14.0pt;font-family:標楷體;mso-ascii-font-family:
+  "Times New Roman";color:black;
+  '>地址：</span>
+                    </p>
+                </td>
+                <td width=303 valign=top style='width:227.45pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  '>
+                        <a name=sellerrSig>
+                            <span style='font-size:14.0pt;font-family:標楷體;color:black;'>高雄市小港區中鋼路一號</span>
+                        </a>
+                    </p>
+                </td>
+            </tr>
+            <tr style='mso-yfti-lastrow:yes;height:34.0pt'>
+                <td width=222 valign=top style='width:166.15pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  '>
+                        <span lang=EN-US
+                              style='font-size:14.0pt;mso-fareast-font-family:
+  標楷體;color:black;'><o:p>&nbsp;</o:p></span>
+                    </p>
+                </td>
+                <td width=118 valign=top style='width:88.35pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  text-justify:distribute-all-lines;'>
+                        <span style='font-size:14.0pt;font-family:標楷體;mso-ascii-font-family:
+  "Times New Roman";color:black;
+  '>統一編號：</span>
+                    </p>
+                </td>
+                <td width=303 valign=top style='width:227.45pt;padding:0cm 5.4pt 0cm 5.4pt;
+  height:34.0pt'>
+                    <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
+  '>
+                        <a name=sellerSig>
+                            <span lang=EN-US style='font-size:14.0pt;mso-fareast-font-family:
+  標楷體;color:black;'>30414175</span>
+                        </a>
+                    </p>
+                </td>
+            </tr>
+        </table>
+
+        <p class=MsoNormal style='margin-left:72.0pt;
+text-align:justify;text-indent:137.9pt;mso-char-indent-count:
+9.85;'>
+            <span lang=EN-US style='font-size:14.0pt;
+color:black;'><o:p>&nbsp;</o:p></span>
+        </p>
+
+        <p class=MsoNormal style='margin-top:0cm;margin-right:24.0pt;margin-bottom:
+0cm;margin-left:24.0pt;margin-bottom:.0001pt;
+text-align-last:justify;text-justify:distribute-all-lines;
+'>
+            <span class=SpellE>
+                <span lang=EN-US
+                      style='font-size:14.0pt;font-family:標楷體;color:black;'>
+                    @Html.Raw(_viewModel.SignDate)
+                </span>
+            </span>
+        </p>
+
+    </div>
+</body>
+
+</html>

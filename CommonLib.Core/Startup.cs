@@ -6,11 +6,11 @@ namespace CommonLib.Core
 {
     public class Startup
     {
-        //public static IConfigurationSection Properties { get; private set; }
+        public static IConfigurationSection Properties { get; private set; }
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            //Properties = Configuration.GetSection("CommonLib.Core");
+            Properties = Configuration.GetSection("CommonLib.Core");
         }
 
         public IConfiguration Configuration { get; }

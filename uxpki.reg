@@ -1,0 +1,17 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\uxpki]
+@="uxpki"
+"URL Protocol"=""
+"Content Type"="application/uxpki"
+
+[HKEY_CLASSES_ROOT\uxpki\DefaultIcon]
+@="C:\\Project\\Github\\UXCA\\TWCACAPIAdapter\\bin\\Debug\\net6.0\\TWCACAPIAdapter.exe"
+
+[HKEY_CLASSES_ROOT\uxpki\shell]
+
+[HKEY_CLASSES_ROOT\uxpki\shell\open]
+
+[HKEY_CLASSES_ROOT\uxpki\shell\open\command]
+@="C:\\Project\\Github\\UXCA\\TWCACAPIAdapter\\bin\\Debug\\net6.0\\TWCACAPIAdapter.exe \"%1\""
+

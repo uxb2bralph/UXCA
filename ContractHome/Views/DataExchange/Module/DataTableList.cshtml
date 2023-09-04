@@ -1,0 +1,189 @@
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+    ModelSource? models;
+    ModelStateDictionary _modelState;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+    QueryViewModel _viewModel = ViewBag.ViewModel as QueryViewModel;
+    _viewModel.UrlAction = Url.Action("ShowDataTable", "DataExchange");
+
+}
+@{
+    await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "資料表格");
+    await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
+}
+<form>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            資料表
+        </div>
+        <div class="row">
+            @{
+                var type = typeof(DCDataContext);
+                var items = type.GetProperties()
+                                .Where(p => p.PropertyType.GetInterface("System.Data.Linq.ITable") != null)
+                                .OrderBy(p => p.Name);
+            }
+            @foreach (var item in items)
+            {
+                <label class="col-md-3">
+                    <a href="javascript:void(0);" onclick="javascript: $global.dataTable.showTable('@(item.Name)');">@(item.Name)</a>
+                </label>
+            }
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div class="table-responsive">
+                <!--表格 開始-->
+                <table class="table table-striped table-bordered table-hover">
+                    <tr>
+                        <td class="Bargain_btn" align="center">
+                            <button type="button" onclick="$global.commitIssuerAgent();" name="UpdateButton" class="btn">確定</button>
+                            &nbsp;
+                            <input name="Reset" type="reset" class="btn" value="重填" />
+                            @*<asp:Button ID="Config_btn" runat="server" CausesValidation="True" CssClass="btn"
+                                Text="下載設定檔" OnClick="Config_btn_Click" />*@
+                            @*@if (_viewModel.CompanyID.HasValue)
+                                    {
+                                <input type="button" class="btn" name="btnDownloadConfig" value="下載設定檔" />
+                                }*@
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</form>
+@{
+    await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgent.cshtml");
+    await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
+}
+<!--按鈕-->
+<script>
+    $(function () {
+
+        $global.dataTable = {
+            'showTable': function (tableName) {
+                $inquiryAgent.viewModel.TableName = tableName;
+                delete $inquiryAgent.viewModel.DataItem;
+                $inquiryAgent.inquire();
+            },
+            'inquireData': function () {
+                var $tr = $(window.event.target).closest('tr');
+                $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
+                $inquiryAgent.inquire();
+            },
+            'dataItem': function (keyItem,url) {
+                $inquiryAgent.viewModel.KeyItem = keyItem;
+                var $tr = $(window.event.target).closest('tr');
+                showLoading();
+                $.ajax({
+                    url: url || '@(Url.Action("DataItem", "DataExchange"))',
+                    data: JSON.stringify($inquiryAgent.viewModel),
+                    type: "POST",
+                    //dataType: "json",
+                    contentType: "application/json;charset=utf-8",
+                    success: function (data) {
+                        hideLoading();
+                        $tr.empty().append($(data));
+                        //$global.createTab('editData', $inquiryAgent.viewModel.TableName, data, true);
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        hideLoading();
+                        console.log(xhr.status);
+                        console.log(thrownError);
+                    }
+                });
+            },
+            'editData': function (keyItem) {
+                $global.dataTable.dataItem(keyItem, '@(Url.Action("EditItem", "DataExchange"))');
+            },
+            'commitData': function (keyItem) {
+                var newItem = false;
+                if (keyItem == undefined) {
+                    delete $inquiryAgent.viewModel.KeyItem;
+                    newItem = true;
+                } else {
+                    $inquiryAgent.viewModel.KeyItem = keyItem;
+                }
+                var $tr = $(window.event.target).closest('tr');
+                $global.$scope = $tr;
+                $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
+                showLoading();
+                $.ajax({
+                    url: '@(Url.Action("CommitItem", "DataExchange"))',
+                    data: JSON.stringify($inquiryAgent.viewModel),
+                    type: "POST",
+                    //dataType: "json",
+                    contentType: "application/json;charset=utf-8",
+                    success: function (data) {
+                        hideLoading();
+                        if (newItem) {
+                            var $item = $('<tr>');
+                            $item.append($(data));
+                            $tr.before($item);
+                        } else {
+                            $tr.empty().append($(data));
+                        }
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        hideLoading();
+                        alertModal(thrownError);
+                        console.log(xhr.status);
+                        console.log(thrownError);
+                    }
+                });
+            },
+            'deleteData': function () {
+                var $keyItems = $(window.event.target).closest('table').find('input[name="KeyItems"]:checked');
+                if ($keyItems.length == 0) {
+                    alertModal('請勾選欲刪除之資料!!');
+                    return;
+                }
+
+                var viewModel = $.extend({}, $inquiryAgent.viewModel, $keyItems.serializeObject());
+                showLoading();
+                $.ajax({
+                    url: '@(Url.Action("DeleteItem", "DataExchange"))',
+                    data: JSON.stringify(viewModel),
+                    type: "POST",
+                    //dataType: "json",
+                    contentType: "application/json;charset=utf-8",
+                    success: function (data) {
+                        hideLoading();
+                        if ($.isPlainObject(data)) {
+                            if (data.result) {
+                                alertModal('資料已刪除!!');
+                                $inquiryAgent.inquire($inquiryAgent.pageIndex ?? 1);
+                            } else {
+                                alertModal('刪除未完成!!');
+                            }
+                        } else {
+                            $(data).appendTo($('body')).remove();
+                        }
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        hideLoading();
+                        alertModal(thrownError);
+                        console.log(xhr.status);
+                        console.log(thrownError);
+                    }
+                });
+            },
+        };
+    });
+
+</script>
+
+

@@ -1,0 +1,66 @@
+﻿@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+
+
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+}
+
+
+<script>
+    $(function () {
+        $inquiryAgent.viewModel.Paging = @(_viewModel.Paging==false ? "false" : "true");
+        $inquiryAgent.inquire = function (pageNum) {
+            var $this = $inquiryAgent;
+            var $placement = $('#queryArea');
+            var $formData = $placement.find('input,select,textarea').serializeObject();
+
+            if (isNaN(pageNum)) {
+                $inquiryAgent.viewModel.PageIndex = null;
+                $this.initQuery = true;
+            }
+            else if (pageNum > 0) {
+                $inquiryAgent.viewModel.PageIndex = pageNum;
+            } else if (!$inquiryAgent.viewModel.PageIndex) {
+                $inquiryAgent.viewModel.PageIndex = 1;
+            }
+            $formData = $.extend({}, $inquiryAgent.viewModel, $formData);
+            clearErrors();
+            showLoading();
+            $.post('@Html.Raw(_viewModel.UrlAction)', $formData, function (data) {
+                hideLoading();
+                if ($.isPlainObject(data)) {
+                    alertModal(data.message);
+                } else {
+                    if ($this.initQuery) {
+                        if ($this.$queryResult) {
+                            $this.$queryResult.remove();
+                        }
+
+                        $inquiryAgent.showQueryResult(data);
+
+                    } else {
+                        $this.doPage(data);
+                    }
+                    if ($this.onQueryDone) {
+                        $this.onQueryDone();
+                    }
+                }
+            });
+        };
+    });
+
+</script>

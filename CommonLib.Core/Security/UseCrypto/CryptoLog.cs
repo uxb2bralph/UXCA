@@ -64,11 +64,11 @@ namespace CommonLib.Security.UseCrypto
                 Directory.CreateDirectory(path);
             }
 
-            if (XmlSignature != null && this.pkcs7Envelop.Rows.Count>0)
+            if (XmlSignature != null && this.pkcs7Envelop!=null)
             {
                 string sigFile = String.Format("{0}\\{1:000000000000}({3:HHmmssffff})-XmlSig.{2}.xml", path, key, qName, DateTime.Now);
                 XmlSignature.Save(sigFile);
-                this.pkcs7Envelop[0].DataSignature = sigFile;
+                this.pkcs7Envelop.DataSignature = sigFile;
             }
 
             return String.Format("{0}\\{1:000000000000}({3:HHmmssffff}).{2}.xml", path, key, qName, DateTime.Now);

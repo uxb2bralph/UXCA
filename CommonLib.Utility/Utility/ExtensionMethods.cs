@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.OleDb;
 using System.Drawing;
 //using System.Drawing.Imaging;
 using System.IO;
@@ -27,17 +25,18 @@ namespace CommonLib.Utility
     {
         public static String Concatenate(this IEnumerable<String> strArray, string separator)
         {
-            StringBuilder sb = new StringBuilder();
-            foreach (var str in strArray)
-            {
-                sb.Append(str).Append(separator);
-            }
+            //StringBuilder sb = new StringBuilder();
+            //foreach (var str in strArray)
+            //{
+            //    sb.Append(str).Append(separator);
+            //}
 
-            if (sb.Length > 0)
-            {
-                sb.Remove(sb.Length - separator.Length, separator.Length);
-            }
-            return sb.ToString();
+            //if (sb.Length > 0)
+            //{
+            //    sb.Remove(sb.Length - separator.Length, separator.Length);
+            //}
+            //return sb.ToString();
+            return String.Join(separator, strArray);
         }
 
         public static void WriteTo(this Stream srcStream, Stream toStream)
@@ -637,13 +636,13 @@ namespace CommonLib.Utility
 
         }
 
-        public static Bitmap GetCode39(this string strSource, bool printCode, int? wide = null, int? narrow = null, int? height = null, int? margin = null)
+        public static Bitmap GetCode39(this string strSource, bool printCode)
         {
-            int x = margin ?? 5; //左邊界 
+            int x = 5; //左邊界 
             int y = 0; //上邊界 
-            int WidLength = wide ?? 2; //粗BarCode長度 
-            int NarrowLength = narrow ?? 1; //細BarCode長度 
-            int BarCodeHeight = height ?? 24; //BarCode高度 
+            int WidLength = 3; //粗BarCode長度 
+            int NarrowLength = 1; //細BarCode長度 
+            int BarCodeHeight = 24; //BarCode高度 
             int intSourceLength = strSource.Length;
             string strEncode = "010010100"; //編碼字串 初值為 起始符號 * 
 
@@ -1081,51 +1080,6 @@ namespace CommonLib.Utility
                 runJob.RecycleJob(waitInMilliSeconds);
             });
         }
-
-        public static String GetString(this DataRow row, int index)
-        {
-            return (row[index] as String)?.GetEfficientString() ?? $"{row[index]}";
-        }
-
-        public static String GetString(this DataRow row, String columnName)
-        {
-            return (row[columnName] as String)?.GetEfficientString() ?? $"{row[columnName]}";
-        }
-
-        public static DataSet ImportExcelXLS(this string FileName, bool hasHeaders = true)
-        {
-            string HDR = hasHeaders ? "Yes" : "No";
-            string strConn;
-            if (FileName.ToLower().EndsWith(".xlsx"))
-                strConn = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + FileName + ";Extended Properties=\"Excel 12.0;HDR=" + HDR + ";IMEX=0\"";
-            else
-                strConn = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + FileName + ";Extended Properties=\"Excel 8.0;HDR=" + HDR + ";IMEX=0\"";
-
-            DataSet output = new DataSet();
-
-            using (OleDbConnection conn = new OleDbConnection(strConn))
-            {
-                conn.Open();
-
-                DataTable dt = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, new object[] { null, null, null, "TABLE" });
-
-                //                foreach (DataRow row in dt.Rows)
-                for (int idx = dt.Rows.Count - 1; idx >= 0; idx--)
-                {
-                    var row = dt.Rows[idx];
-                    string sheet = row["TABLE_NAME"].ToString();
-
-                    OleDbCommand cmd = new OleDbCommand($"SELECT * FROM [{sheet}]", conn);
-                    cmd.CommandType = CommandType.Text;
-
-                    DataTable outputTable = new DataTable(sheet);
-                    output.Tables.Add(outputTable);
-                    new OleDbDataAdapter(cmd).Fill(outputTable);
-                }
-            }
-            return output;
-        }
-
 
         public static Newtonsoft.Json.JsonSerializerSettings CommonJsonSettings = new Newtonsoft.Json.JsonSerializerSettings
         {
