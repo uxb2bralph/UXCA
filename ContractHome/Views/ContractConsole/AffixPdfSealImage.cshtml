@@ -11,148 +11,152 @@
 @using System.Text.RegularExpressions
 
 @{
-    Layout = "~/Views/Shared/MasterPage.cshtml";
+  Layout = "~/Views/Shared/MasterPage.cshtml";
 
-    ModelStateDictionary _modelState;
-    ModelSource? models;
-    ContractSignatureRequest _model = (ContractSignatureRequest)this.Model;
+  ModelStateDictionary _modelState;
+  ModelSource? models;
+  ContractSignatureRequest _model = (ContractSignatureRequest)this.Model;
 
-    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
-    _modelState = (ModelStateDictionary)ViewBag.ModelState;
-    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+  models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+  _modelState = (ModelStateDictionary)ViewBag.ModelState;
+  QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
 
-    var party = _model.Contract.ContractingParty.Where(p => p.CompanyID == _model.CompanyID).First();
+  var party = _model.Contract.ContractingParty.Where(p => p.CompanyID == _model.CompanyID).First();
 }
 <div class="container">
-    <section>
-        <!-- Section title -->
-        @{
-            await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
-            await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", party.ContractingIntent.Description);
+  <section>
+    <!-- Section title -->
+    @{
+      await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
+      await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", party.ContractingIntent.Description);
+    }
+
+    <div class="row">
+      @{
+        await Html.RenderPartialAsync("~/Views/ContractConsole/Module/ShowContractImage.cshtml", _model.Contract);
+      }
+      <div class="col-2">
+        @if (_model.StampDate.HasValue)
+        {
+          <h1 class="h6">
+            已用印，@(_model.StampDate)
+          </h1>
         }
+        else
+        {
+          <div class="row" id="toAffix">
+            <form method="post" enctype="multipart/form-data">
+              <div>
+                <label class="form-label" for="SealImage">請選擇印鑑章</label>
+                <input type="file" class="form-control-small" id="SealImage" name="SealImage" />
+              </div>
+              <div>
+                <label class="form-label" for="PageIndex" style="white-space: nowrap;">請選擇用印所在頁碼：</label>
+                <select name="PageIndex" class="form-control-small col-8">
+                  <option value="0" selected="0">第 1 頁</option>
+                  @for (int i = 0; i < GetPdfPageCount(_model.Contract); i++)
+                  {
+                    <option value="@(i)" selected="@(i==_model.PageIndex)">第@(i + 1)頁</option>
+                  }
+                </select>
+                <script>
+                  $('select[name="PageIndex"]').on('change', function () {
+                    loadContractPage($('select[name="PageIndex"]').val());
+                  });
+                </script>
+              </div>
+              <div>
+                <label class="form-label" for="MarginTop" style="white-space: nowrap;">請指定上邊界位置(公分)</label>
+                <input type="text" class="form-control-small col-8" style="text-align:right;" id="MarginTop"
+                  name="MarginTop" value="@(_model?.MarginTop ?? 0)" />
+              </div>
+              <div>
+                <label class="form-label" for="MarginLeft" style="white-space: nowrap;">請指定左邊界位置(公分)</label>
+                <input type="text" class="form-control-small col-8" style="text-align:right;" id="MarginLeft"
+                  name="MarginLeft" value="@(_model?.MarginLeft ?? 0)" />
+              </div>
+              <div>
+                <label class="form-label" for="SealScale" style="white-space: nowrap;">印鑑章縮放比例(%)</label>
+                <input type="text" class="form-control-small col-8" style="text-align:right;" id="SealScale"
+                  name="SealScale" value="@(_model?.SealScale ?? 100)" />
+              </div>
+              <div>
+                <button type="button" onclick="commitSignature(true);" class="form-control">預覽</button>
+              </div>
+              <div>
+                <button type="button" onclick="commitSignature(false);" class="form-control">用印</button>
+              </div>
+            </form>
+            <script>
+              function commitSignature(preview) {
+                clearErrors();
+                $global.viewModel.Preview = preview;
+                $('form').ajaxForm({
+                  url: '@Html.Raw(Url.Action("CommitPdfSignature", "ContractConsole"))',
+                  data: $global.viewModel,
+                  beforeSubmit: function () {
+                    showLoading();
+                  },
+                  success: function (data) {
+                    hideLoading();
+                    if ($.isPlainObject(data)) {
+                      if (data.result) {
+                        if (preview) {
+                        } else {
+                          alertModal('已用印完成!!');
+                        }
+                        loadContractPage($('select[name="PageIndex"]').val());
+                      } else {
+                        alertModal(data.message);
+                      }
+                    }
+                    else {
+                      $(data).appendTo($('body'));
+                    }
+                  },
+                  error: function (xhr, ajaxOptions, thrownError) {
+                    hideLoading();
+                    console.log(xhr.status);
+                    alertModal(thrownError);
+                  }
+                }).submit();
+              }
 
-        <div class="row">
-            @{
-                await Html.RenderPartialAsync("~/Views/ContractConsole/Module/ShowContractImage.cshtml", _model.Contract);
-            }
-            <div class="col-2">
-                @if(_model.StampDate.HasValue)
-                {
-                    <h1 class="h6">
-                        已用印，@(_model.StampDate)
-                    </h1>
-                }
-                else
-                {
-                    <div class="row" id="toAffix">
-                        <form method="post" enctype="multipart/form-data">
-                            <div>
-                                <label class="form-label" for="SealImage">請選擇印鑑章</label>
-                                <input type="file" class="form-control-small" id="SealImage" name="SealImage" />
-                            </div>
-                            <div>
-                                <label class="form-label" for="PageIndex" style="white-space: nowrap;">請選擇用印所在頁碼：</label>
-                                <select name="PageIndex" class="form-control-small col-8">
-                                    @for(int i=0;i<GetPdfPageCount(_model.Contract);i++)
-                                    {
-                                        <option value="@(i)" selected="@(i==_model.PageIndex)">第@(i+1)頁</option>
-                                    }
-                                </select>
-                                <script>
-                                    $('select[name="PageIndex"]').on('change',function() {
-                                        loadContractPage($('select[name="PageIndex"]').val());
-                                    });
-                                </script>
-                            </div>
-                            <div>
-                                <label class="form-label" for="MarginTop" style="white-space: nowrap;">請指定上邊界位置(公分)</label>
-                                <input type="text" class="form-control-small col-8" style="text-align:right;" id="MarginTop" name="MarginTop" value="@(_model?.MarginTop ?? 0)" />
-                            </div>
-                            <div>
-                                <label class="form-label" for="MarginLeft" style="white-space: nowrap;">請指定左邊界位置(公分)</label>
-                                <input type="text" class="form-control-small col-8" style="text-align:right;" id="MarginLeft" name="MarginLeft" value="@(_model?.MarginLeft ?? 0)" />
-                            </div>
-                            <div>
-                                <label class="form-label" for="SealScale" style="white-space: nowrap;">印鑑章縮放比例(%)</label>
-                                <input type="text" class="form-control-small col-8" style="text-align:right;" id="SealScale" name="SealScale" value="@(_model?.SealScale ?? 100)" />
-                            </div>
-                            <div>
-                                <button type="button" onclick="commitSignature(true);" class="form-control">預覽</button>
-                            </div>
-                            <div>
-                                <button type="button" onclick="commitSignature(false);" class="form-control">用印</button>
-                            </div>
-                        </form>
-                        <script>
-                            function commitSignature(preview) {
-                                clearErrors();
-                                $global.viewModel.Preview = preview;
-                                $('form').ajaxForm({
-                                    url: '@Html.Raw(Url.Action("CommitPdfSignature", "ContractConsole"))',
-                                    data: $global.viewModel,
-                                    beforeSubmit: function () {
-                                        showLoading();
-                                    },
-                                    success: function (data) {
-                                        hideLoading();
-                                        if ($.isPlainObject(data)) {
-                                            if (data.result) {
-                                                if(preview) {
-                                                } else {
-                                                    alertModal('已用印完成!!');
-                                                }
-                                                loadContractPage($('select[name="PageIndex"]').val());
-                                            } else {
-                                                alertModal(data.message);
-                                            }
-                                        }
-                                        else {
-                                            $(data).appendTo($('body'));
-                                        }
-                                    },
-                                    error: function (xhr, ajaxOptions, thrownError) {
-                                        hideLoading();
-                                        console.log(xhr.status);
-                                        alertModal(thrownError);
-                                    }
-                                }).submit();
-                            }
+              function loadContractPage(pageIndex) {
+                showLoading();
+                $.post('@Html.Raw(Url.Action("LoadContractPage","ContractConsole"))', { 'KeyID': '@Html.Raw(_model!.ContractID.EncryptKey())', 'PageIndex': pageIndex }, function (data) {
+                  hideLoading();
+                  if ($.isPlainObject(data)) {
+                    $('#contractImg').css(data);
+                  } else {
+                    $(data).appendTo($('body'));
+                  }
+                });
+              }
+            </script>
+          </div>
+        }
+      </div>
+    </div>
 
-                            function loadContractPage(pageIndex) {
-                                showLoading();
-                                $.post('@Html.Raw(Url.Action("LoadContractPage","ContractConsole"))', {'KeyID':'@Html.Raw(_model!.ContractID.EncryptKey())','PageIndex':pageIndex}, function (data) {
-                                    hideLoading();
-                                    if ($.isPlainObject(data)) {
-                                        $('#contractImg').css(data);
-                                    } else {
-                                        $(data).appendTo($('body'));
-                                    }
-                                });
-                            }
-                        </script>
-                    </div>
-                }
-            </div>
-        </div>
-
-    </section>
+  </section>
 </div>
 
 @functions
 {
-    public int GetPdfPageCount(Contract attachment)
+  public int GetPdfPageCount(Contract attachment)
+  {
+    if (attachment == null || !File.Exists(attachment.FilePath))
     {
-            if (attachment == null || !File.Exists(attachment.FilePath))
-            {
-                return 0;
-            }
+      return 0;
+    }
 
-            var content = File.ReadAllText(attachment.FilePath);
-            var match = Regex.Match(content, "/Count(?([^\\r\\n])\\s)\\d+");
-            if (match.Value != String.Empty)
-            {
-                return int.Parse(match.Value.Substring(7));
-            }
-            return 0;
-        }
+    var content = File.ReadAllText(attachment.FilePath);
+    var match = Regex.Match(content, "/Count(?([^\\r\\n])\\s)\\d+");
+    if (match.Value != String.Empty)
+    {
+      return int.Parse(match.Value.Substring(7));
+    }
+    return 0;
+  }
 }

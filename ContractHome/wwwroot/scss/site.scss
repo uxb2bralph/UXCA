@@ -2,9 +2,7 @@ html {
   min-height: 100%;
   position: relative;
   font-size: 14px;
-}
-@media screen and (min-width: 768px) {
-  html {
+  @media screen and (min-width: 768px) {
     font-size: 16px;
   }
 }
@@ -17,4 +15,4 @@ body {
   border: 1px dotted red;
   font-style: italic;
   color: red;
-}/*# sourceMappingURL=site.css.map */
+}
