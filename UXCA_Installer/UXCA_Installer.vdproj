@@ -465,10 +465,15 @@
                     "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
                     "ProductCode" = "8:.NETFramework,Version=v4.7.2"
                     }
-                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.CoreRuntime.6.0.x64"
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.CoreRuntime.7.0.x64"
                     {
-                    "Name" = "8:.NET Runtime 6.0.12 (x64)"
-                    "ProductCode" = "8:Microsoft.NetCore.CoreRuntime.6.0.x64"
+                    "Name" = "8:.NET Runtime 7.0.10 (x64)"
+                    "ProductCode" = "8:Microsoft.NetCore.CoreRuntime.7.0.x64"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.CoreRuntime.7.0.x86"
+                    {
+                    "Name" = "8:.NET Runtime 7.0.10 (x86)"
+                    "ProductCode" = "8:Microsoft.NetCore.CoreRuntime.7.0.x86"
                     }
                 }
             }
@@ -2862,7 +2867,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_260791F6C81E461E99E2FD359F7CBFD9"
             {
-            "SourcePath" = "8:..\\TWCACAPIAdapter\\obj\\Debug\\net6.0\\apphost.exe"
+            "SourcePath" = "8:..\\TWCACAPIAdapter\\obj\\Debug\\net7.0\\apphost.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_77C4E2AC528E441BB9C51A0C72312F59"
