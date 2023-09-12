@@ -1,16 +1,50 @@
-html {
-  min-height: 100%;
-  position: relative;
-  font-size: 14px;
-}
-@media screen and (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+@charset "UTF-8";
+* {
+  font-family: -apple-system, Roboto, BlinkMacSystemFont, Microsoft JhengHei, 新微軟正黑體, 微軟正黑體, Segoe UI, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
 }
 
-body {
-  margin-bottom: 60px;
+#mainNavBar .v-application--wrap {
+  min-height: initial;
+}
+
+.login__wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+.login__signin {
+  width: 100%;
+  max-width: 1280px;
+  margin: auto;
+}
+@media (max-width: 1400px) {
+  .login__signin {
+    max-width: 80%;
+  }
+}
+@media (max-width: 768px) {
+  .login__signin {
+    max-width: 80%;
+  }
+}
+@media (max-width: 576px) {
+  .login__signin {
+    max-width: 90%;
+  }
+}
+.login__signin .input__height {
+  height: 82px;
+  padding-top: 5px;
+  padding-bottom: 0;
+}
+.login__intro {
+  min-height: 450px;
+}
+@media (max-width: 576px) {
+  .login__intro {
+    min-height: 0;
+  }
 }
 
 .error-msg {

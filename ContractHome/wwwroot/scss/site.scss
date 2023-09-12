@@ -1,14 +1,90 @@
-html {
-  min-height: 100%;
-  position: relative;
-  font-size: 14px;
-  @media screen and (min-width: 768px) {
-    font-size: 16px;
+// html {
+//   min-height: 100%;
+//   position: relative;
+//   font-size: 14px;
+//   @media screen and (min-width: 768px) {
+//     font-size: 16px;
+//   }
+// }
+
+// body {
+//   margin-bottom: 60px;
+// }
+
+@charset "UTF-8";
+
+@mixin sm {
+  @media(max-width: 576px) {
+    @content
+  }
+}
+@mixin md {
+  @media(max-width: 768px) {
+    @content
+  }
+}
+@mixin lg {
+  @media(max-width: 992px) {
+    @content
+  }
+}
+@mixin xl {
+  @media(max-width: 1200px) {
+    @content
+  }
+}
+@mixin xxl {
+  @media(max-width: 1400px) {
+    @content
   }
 }
 
-body {
-  margin-bottom: 60px;
+* {
+  font-family: -apple-system, Roboto, BlinkMacSystemFont, Microsoft JhengHei, 新微軟正黑體, 微軟正黑體, Segoe UI, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+}
+
+#mainNavBar {
+  .v-application {
+    &--wrap {
+      min-height: initial;
+    }
+  }
+}
+
+.login {
+  &__wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+  &__signin {
+    width: 100%;
+    max-width: 1280px;
+    margin: auto;
+    @include xxl {
+      max-width: 80%;
+    }
+    @include md {
+      max-width: 80%;
+    }
+    @include sm {
+      max-width: 90%;
+    }
+    .input {
+      &__height {
+        height: 82px;
+        padding-top: 5px;
+        padding-bottom: 0;
+      }
+    }
+  }
+  &__intro {
+    min-height: 450px;    
+    @include sm {
+      min-height: 0;
+    }
+  }
 }
 
 .error-msg {
