@@ -9,19 +9,19 @@
 @using CommonLib.Utility
 @using Newtonsoft.Json
 @{
-    Layout = "~/Views/Shared/MasterPage.cshtml";
+  Layout = "~/Views/Shared/MasterPage.cshtml";
 
-    ModelStateDictionary _modelState;
-    ModelSource? models;
+  ModelStateDictionary _modelState;
+  ModelSource? models;
 
-    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
-    _modelState = (ModelStateDictionary)ViewBag.ModelState;
-    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+  models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+  _modelState = (ModelStateDictionary)ViewBag.ModelState;
+  QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
 
-    var Response = ViewContext.HttpContext.Response;
-    var Request = ViewContext.HttpContext.Request;
+  var Response = ViewContext.HttpContext.Response;
+  var Request = ViewContext.HttpContext.Request;
 
 }
 @{
-    Response.Redirect(Url.Action("ApplyContract", "ContractConsole"));
+  Response.Redirect(Url.Action("ListToStampIndex", "ContractConsole"));
 }
