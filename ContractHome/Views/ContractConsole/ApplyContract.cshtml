@@ -20,7 +20,7 @@
 
 
 }
-<div class="container">
+<div id="applyContract" class="container">
   <section>
     <!-- Section title -->
     @{
@@ -39,6 +39,7 @@
                 @{
                   await Html.RenderPartialAsync("~/Views/Home/Module/CompanyQuickSearch.cshtml", "Initiator");
                 }
+                <v-text-field></v-text-field>
               </div>
               <div class="col-md-6">
                 <label for="No" class="form-label">合約發起人身份</label>
@@ -61,7 +62,7 @@
                 }
               </div>
               <div class="col-md-6">
-                <label for="No" class="form-label">合約編號</label>
+                <label for="No" class="form-label">合約編號</label> 
                 <input type="text" class="form-control" name="No" id="No">
               </div>
               <div class="col-md-6">
@@ -69,43 +70,53 @@
                 <input type="file" class="form-control" name="ContractDoc" />
               </div>
               <div class="col-md-6">
-                <button type="button" onclick="saveContract();">傳送</button>
+                <v-btn type="button" v-on:click="saveContract">傳送</v-btn>
               </div>
             </div>
           </form>
-          <script>
-            function saveContract() {
-              clearErrors();
-              $('form').ajaxForm({
-                url: '@Html.Raw(Url.Action("SaveContract", "ContractConsole"))',
-                data: $global.viewModel,
-                beforeSubmit: function () {
-                  showLoading();
-                },
-                success: function (data) {
-                  hideLoading();
-                  if ($.isPlainObject(data)) {
-                    if (data.result) {
-                      alertModal('合約傳送完成!!');
-                    } else {
-                      alertModal(data.message);
-                    }
-                  }
-                  else {
-                    $(data).appendTo($('body'));
-                  }
-                },
-                error: function (xhr, ajaxOptions, thrownError) {
-                  hideLoading();
-                  console.log(xhr.status);
-                  alertModal(thrownError);
-                }
-              }).submit();
-            }
-          </script>
-
         </section>
       </div>
     </section>
   </section>
 </div>
+<script>
+  var app = new Vue({
+    el: '#applyContract',
+    // vuetify: new Vuetify(),
+    data: {
+      // message: 'Hello Vue!'
+    },
+    methods: {
+      saveContract() {
+        clearErrors();
+        $('form').ajaxForm({
+          url: '@Html.Raw(Url.Action("SaveContract", "ContractConsole"))',
+          data: $global.viewModel,
+          beforeSubmit: function () {
+            showLoading();
+          },
+          success: function (data) {
+            hideLoading();
+            if ($.isPlainObject(data)) {
+              if (data.result) {
+                alertModal('合約傳送完成!!');
+              } else {
+                alertModal(data.message);
+              }
+            }
+            else {
+              $(data).appendTo($('body'));
+            }
+          },
+          error: function (xhr, ajaxOptions, thrownError) {
+            hideLoading();
+            console.log(xhr.status);
+            alertModal(thrownError);
+          }
+        }).submit();
+      }
+
+    }
+  })
+
+</script>
