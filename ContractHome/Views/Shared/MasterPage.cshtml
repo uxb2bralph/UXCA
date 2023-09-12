@@ -7,7 +7,7 @@
   UserProfile? profile = await Context.GetUserAsync();
 }
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-tw">
 
 <head>
   <meta charset="UTF-8" />
@@ -19,33 +19,25 @@
   <!-- Font Awesome -->
   <link rel="stylesheet" href="~/css/fontawesome/all.css" />
   <!-- Google Fonts Roboto -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" />
-  <!-- MDB -->
-  @* <link rel="stylesheet" href="~/css/mdb.min.css" /> *@
-  <!-- MDB -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
+  <!-- Boostrap -->
   <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-  <link rel="stylesheet" href="~/css/site.css" />
-  @* <script type="text/javascript" src="~/js/mdb.min.js"></script> *@
   <!-- Custom scripts -->
-  <link rel="stylesheet" href="~/lib/jquery-ui/Content/themes/base/all.css" />
+  @* <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css"> *@
+  @* <link rel="stylesheet" href="~/lib/jquery-ui/Content/themes/base/all.css" /> *@
+  <link rel="stylesheet" href="~/css/site.css" />
   <script type="text/javascript" src="~/lib/jquery/dist/jquery.js"></script>
   <script type="text/javascript" src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  @* <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script> *@
+  <script src="https://cdn.jsdelivr.net/npm/vee-validate@2.0.0-rc.25/dist/vee-validate.js"></script>
   @{
     await Html.RenderPartialAsync("~/Views/Shared/CommonScriptInclude.cshtml");
   }
 </head>
 
 <body>
-
-  @*@if (_viewModel?.PageMainTitle != null)
-  {
-  <header class="section-header py-4">
-  <div class="container">
-  <h2>@(_viewModel.PageMainTitle)</h2>
-  </div>
-  </header>
-  }*@
-  <!-- Start your project here-->
   <!-- Navbar -->
   @{
     if (profile != null)
@@ -53,8 +45,8 @@
       await Html.RenderPartialAsync("~/Views/Shared/SiteAction/MainNavBar.cshtml");
     }
   }
+  <!-- Container -->
   @RenderBody()
-  <!-- End your project here-->
 </body>
 
 </html>
