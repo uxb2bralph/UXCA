@@ -9,139 +9,266 @@
 @using CommonLib.Utility
 @using Newtonsoft.Json
 @{
-    Layout = "~/Views/Shared/MasterPage.cshtml";
+  Layout = "~/Views/Shared/MasterPage.cshtml";
 
-    ModelStateDictionary _modelState;
-    ModelSource? models;
+  ModelStateDictionary _modelState;
+  ModelSource? models;
 
-    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
-    _modelState = (ModelStateDictionary)ViewBag.ModelState;
-    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+  models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+  _modelState = (ModelStateDictionary)ViewBag.ModelState;
+  QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
 
-    _viewModel.UrlAction = Url.Action("InquireData", "UserProfile");
-
+  _viewModel.UrlAction = Url.Action("InquireData", "UserProfile");
 }
-<div class="container">
+<div id="userProdile" class="container-lg">
+
+  <section>
+    <!-- Section title -->
     @{
-        <section>
-            <!-- Section title -->
-            @{
-                await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
-                await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "使用者基本資料維護");
-                await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgent.cshtml");
-                await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
-            }
-
-            <!--Section: Demo-->
-            <section class="pb-4">
-                <div class="bg-white border rounded-5">
-                    <section class="w-100 p-4 d-flex justify-content-center pb-4">
-                        <form id="queryArea" method="post" enctype="multipart/form-data">
-                            <div class="row data-item">
-                                @{
-                                    await Html.RenderPartialAsync("~/Views/UserProfile/Module/EditItem.cshtml");
-                                }
-                            </div>
-                            <div class="row">
-                                <div class="mt-2">
-                                    <button type="button" class="btn-primary" onclick="$global.dataTable.commitData(true);">新增</button>
-                                    <button type="button" class="btn-primary" onclick="$global.dataTable.commitData();">修改</button>
-                                    <button type="button" class="btn-danger" onclick="$global.dataTable.deleteData();">刪除</button>
-                                    <button type="button" class="btn-primary" onclick="$global.dataTable.inquireData();">查詢</button>
-                                </div>
-                            </div>
-                        </form>
-                        <script>
-                            $global.dataTable = {
-                                'inquireData': function ($tr) {
-                                    var $tr = $tr || $(window.event.target).closest('form').find('div.data-item');
-                                    $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
-                                    $inquiryAgent.inquire();
-                                },
-                                'commitData': function (addNew) {
-                                    if(addNew) {
-                                        delete $inquiryAgent.viewModel.EncKeyItem;
-                                        delete $inquiryAgent.viewModel.KeyItem;
-                                    }
-                                    var $tr = $(window.event.target).closest('form');
-                                    var viewModel = $tr.find('input,select,textArea').serializeObject();
-                                    viewModel = $.extend({}, $inquiryAgent.viewModel,viewModel);
-                                    viewModel.DataItem = $tr.find('div.data-item').find('input,select,textArea').serializeArray();
-                                    clearErrors();
-                                    showLoading();
-                                    $.ajax({
-                                        url: '@(Url.Action("CommitItem", "UserProfile"))',
-                                        data: JSON.stringify(viewModel),
-                                        type: "POST",
-                                        //dataType: "json",
-                                        contentType: "application/json;charset=utf-8",
-                                        success: function (data) {
-                                            hideLoading();
-                                            if ($.isPlainObject(data)) {
-                                                if(data.result) {
-                                                    alertModal('存檔完成!!');
-                                                } else {
-                                                    alertModal('存檔失敗，原因：'+data.message);
-                                                }
-                                            } else {
-                                                $('body').append($(data));
-                                            }
-                                        },
-                                        error: function (xhr, ajaxOptions, thrownError) {
-                                            hideLoading();
-                                            alertModal(thrownError);
-                                            console.log(xhr.status);
-                                            console.log(thrownError);
-                                        }
-                                    });
-                                },
-                                'deleteData': function () {
-                                    if (!confirm('請確認刪除資料？刪除後無法復原！')) {
-                                        return;
-                                    }
-                                    var $tr = $(window.event.target).closest('form').find('div.data-item');
-                                    showLoading();
-                                    $.ajax({
-                                        url: '@(Url.Action("DeleteItem", "UserProfile"))',
-                                        data: JSON.stringify({'EncKeyItem': $inquiryAgent.viewModel.EncKeyItem}),
-                                        type: "POST",
-                                        //dataType: "json",
-                                        contentType: "application/json;charset=utf-8",
-                                        success: function (data) {
-                                            hideLoading();
-                                            if ($.isPlainObject(data)) {
-                                                if (data.result) {
-                                                    alertModal('資料已刪除!!');
-                                                    delete $inquiryAgent.viewModel.EncKeyItem;
-                                                    delete $inquiryAgent.viewModel.KeyItem;
-                                                    $global.dataTable.inquireData($tr);
-                                                } else {
-                                                    alertModal('刪除未完成，原因：' + data.message);
-                                                }
-                                            } else {
-                                                $(data).appendTo($('body')).remove();
-                                            }
-                                        },
-                                        error: function (xhr, ajaxOptions, thrownError) {
-                                            hideLoading();
-                                            alertModal(thrownError);
-                                            console.log(xhr.status);
-                                            console.log(thrownError);
-                                        }
-                                    });
-                                },
-
-                            }
-                            $inquiryAgent.showQueryResult = function (data) {
-                                var $tr = $('form div.data-item');
-                                $tr.empty().append($(data));
-                            }
-                        </script>
-
-                    </section>
-                </div>
-            </section>
-        </section>
+      // await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
+      await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "使用者基本資料維護");
+      // await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgent.cshtml");
+      // await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
     }
-</div>
 
+    <!-- Section: Demo -->
+    <div class="card">
+      <form v-on:submit.prevent="inquireData" id="queryArea" method="post" enctype="multipart/form-data"
+        class="needs-validation" :class="{'was-validated': isValidate}" novalidate>
+        <div class="container">
+          <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3 g-3 m-2 mb-3 data-item">
+            <div class="col">
+              <div class="row">
+                <label for="CompanyID" class="col-sm-12 col-md-3 col-form-label fw-bolder">隸屬公司</label>
+                <div class="col-sm-12 col-md-9">
+                  <input v-model="formData.CompanyID" type="text" class="form-control" id="SearchCompany"
+                    name="SearchCompany" placeholder="請輸入檢索關鍵字" />
+                  <input type="hidden" id="CompanyID" name="EncCompanyID" />
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="row">
+                <label for="PID" class="col-sm-12 col-md-3 col-form-label fw-bolder">用戶帳號</label>
+                <div class="col-sm-12 col-md-9">
+                  <input v-model="formData.PID" type="text" class="form-control" name="PID" id="PID" />
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="row">
+                <label for="UserName" class="col-sm-12 col-md-3 col-form-label fw-bolder">姓名</label>
+                <div class="col-sm-12 col-md-9">
+                  <input v-model="formData.UserName" type="text" class="form-control" name="UserName" id="UserName">
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="row">
+                <label for="Password" class="col-sm-12 col-md-3 col-form-label fw-bolder">密碼</label>
+                <div class="col-sm-12 col-md-9">
+                  <input type="password" class="form-control" name="Password" id="Password" />
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="row">
+                <label for="EMail" class="col-sm-12 col-md-3 col-form-label fw-bolder">電子郵件</label>
+                <div class="col-sm-12 col-md-9">
+                  <input v-model="formData.EMail" type="text" class="form-control"
+                    :class="{'is-invalid': mailValidate }" name="EMail" id="EMail" />
+                  <div class="invalid-feedback">
+                    請輸入有效的電子郵件地址
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="row">
+                <label for="RoleID" class="col-sm-12 col-md-3 col-form-label fw-bolder">角色</label>
+                <div class="col-sm-12 col-md-9">
+                  <select v-model="formData.RoleID" name="RoleID" id="RoleID" class="form-control">
+                    <option v-for="(item, index) in roleList" :key="index" :value="item.value">{{ item.text }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="row">
+                <label for="Region" class="col-sm-12 col-md-3 col-form-label fw-bolder">憑證類型</label>
+                <div class="col-sm-12 col-md-9">
+                  <select v-model="formData.Region" id="Region" name="Region" class="form-control">
+                    <option v-for="(item, index) in regionList" :key="index" :value="item.value">{{ item.text }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="row">
+      <div class="my-3 text-end">
+        <button type="button" class="btn-primary" v-on:click="commitData(true)">新增</button>
+        <button type="button" class="btn-primary" v-on:click="commitData">修改</button>
+        <button type="button" class="btn-danger" v-on:click="deleteData">刪除</button>
+        <button type="submit" class="btn-primary" v-on:click="inquireData">查詢</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+<script>
+  const roleList = `@ViewData["roleList"]`;
+  var app = new Vue({
+    el: '#userProdile',
+    data: {
+      isValidate: false,
+      formData: {
+        CompanyID: null,
+        PID: null,
+        UserName: null,
+        Password: null,
+        RoleID: null,
+        Region: null
+      },
+      roleList: [
+        {
+          text: '請選擇',
+          value: ''
+        },
+        {
+          text: '角色1',
+          value: 'O'
+        },
+        {
+          text: '角色2',
+          value: 'P'
+        },
+      ],
+      regionList: [
+        {
+          text: '請選擇',
+          value: ''
+        },
+        {
+          text: '工商憑證',
+          value: 'O'
+        },
+        {
+          text: '自然人憑證',
+          value: 'P'
+        },
+      ]
+    },
+    computed: {
+      mailValidate() {
+        const emailRegex = /^[A-Za-z0-9._%+-]+@@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+        const isEmail = !!this.formData.EMail;
+        const checkEmail = emailRegex.test(this.formData.EMail);
+        // email 輸入檢核
+        return isEmail && !checkEmail;
+      }
+    },
+    methods: {
+      commitData(addNew) {
+        console.log(addNew);
+        /*
+        if (addNew) {
+          delete $inquiryAgent.viewModel.EncKeyItem;
+          delete $inquiryAgent.viewModel.KeyItem;
+        }
+        var $tr = $(window.event.target).closest('form');
+        var viewModel = $tr.find('input,select,textArea').serializeObject();
+        viewModel = $.extend({}, $inquiryAgent.viewModel, viewModel);
+        viewModel.DataItem = $tr.find('div.data-item').find('input,select,textArea').serializeArray();
+        clearErrors();
+        showLoading();
+        $.ajax({
+          url: '@(Url.Action("CommitItem", "UserProfile"))',
+          data: JSON.stringify(viewModel),
+          type: "POST",
+          //dataType: "json",
+          contentType: "application/json;charset=utf-8",
+          success: function (data) {
+            hideLoading();
+            if ($.isPlainObject(data)) {
+              if (data.result) {
+                alertModal('存檔完成!!');
+              } else {
+                alertModal('存檔失敗，原因：' + data.message);
+              }
+            } else {
+              $('body').append($(data));
+            }
+          },
+          error: function (xhr, ajaxOptions, thrownError) {
+            hideLoading();
+            alertModal(thrownError);
+            console.log(xhr.status);
+            console.log(thrownError);
+          }
+        });
+        */
+      },
+      deleteData() {
+        console.log('del');
+        /**
+        if (!confirm('請確認刪除資料？刪除後無法復原！')) {
+          return;
+        }
+        var $tr = $(window.event.target).closest('form').find('div.data-item');
+        showLoading();
+        $.ajax({
+          url: '@(Url.Action("DeleteItem", "UserProfile"))',
+          data: JSON.stringify({ 'EncKeyItem': $inquiryAgent.viewModel.EncKeyItem }),
+          type: "POST",
+          //dataType: "json",
+          contentType: "application/json;charset=utf-8",
+          success: function (data) {
+            hideLoading();
+            if ($.isPlainObject(data)) {
+              if (data.result) {
+                alertModal('資料已刪除!!');
+                delete $inquiryAgent.viewModel.EncKeyItem;
+                delete $inquiryAgent.viewModel.KeyItem;
+                $global.dataTable.inquireData($tr);
+              } else {
+                alertModal('刪除未完成，原因：' + data.message);
+              }
+            } else {
+              $(data).appendTo($('body')).remove();
+            }
+          },
+          error: function (xhr, ajaxOptions, thrownError) {
+            hideLoading();
+            alertModal(thrownError);
+            console.log(xhr.status);
+            console.log(thrownError);
+          }
+        });
+        */
+      },
+      inquireData() {
+        // email欄位檢核沒過不送出表單
+        if (this.mailValidate) return;
+
+        // 表單資料
+        console.log(this.formData);
+
+        // var $tr = $tr || $(window.event.target).closest('form').find('div.data-item');
+        // console.log($tr);
+        // $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
+        // $inquiryAgent.inquire();
+      }
+    }
+  });
+
+  // $inquiryAgent.showQueryResult = function (data) {
+  //   var $tr = $('form div.data-item');
+  //   $tr.empty().append($(data));
+  // }
+
+</script>
