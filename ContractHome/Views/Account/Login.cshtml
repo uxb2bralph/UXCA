@@ -19,26 +19,24 @@
 }
 <main id="login" class="login__wrapper bg-secondary bg-gradient">
   <div class="login__signin">
-    @* <form ref="form" v-on:submit.prevent id="loginForm" class="needs-validation" :class="{'was-validated': isValidate}" *@
+    @* <form ref="form" v-on:submit.prevent id="loginForm" class="needs-validation" :class="{'was-validated':
+    isValidate}" *@
     <form ref="form" v-on:submit.prevent id="loginForm" class="needs-validation" :class="{'was-validated': isValidate}"
       novalidate accept-charset="UTF-8" role="form" method="post" autocomplete="off">
       <div class="card mb-3 shadow-sm">
         <div class="row g-0">
-          <div class="col-md-8 p-0 login__intro bg-secondary bg-opacity-10">
-            <img src="https://picsum.photos/900/480?ramdom=10" class="img-fluid rounded">
-            <div class="card-img-overlay col-md-8 ps-5">
-              <img src="https://picsum.photos/150/50?ramdom=10" class="py-3">
-              <h1 class="h2 fw-bolder text-white">雲端文件簽署，簡化簽署步驟</h1>
-              <p class="text-white">高效率完成線上文件簽署，並獲取具有法律約束力的電子簽名。</p>
-            </div>
+          <div class="col-xl-8 p-5 login__intro bg-secondary bg-opacity-10">
+            <img src="https://picsum.photos/150/50?ramdom=10" class="py-3">
+            <h1 class="h2 fw-bolder text-white">雲端文件簽署，簡化簽署步驟</h1>
+            <p class="text-white">高效率完成線上文件簽署，並獲取具有法律約束力的電子簽名。</p>
           </div>
-          <div class="col-md-4 align-self-center p-5">
+          <div class="col-xl-4 align-self-center p-5">
             <div class="container">
               <div class="row">
                 <div class="col-12">
                   <h4 class="text-center fw-bolder">登入</h4>
                 </div>
-                <div class="col-12 input__height">
+                <div class="col-xl-12 col-lg-6 col-md-12 input__height">
                   <label for="userAccount" class="fw-bolder">帳號</label>
                   <input v-model="formData.pid" type="text" id="userAccount" class="form-control form-control-sm"
                     placeholder="" name="PID" required autofocus>
@@ -46,7 +44,7 @@
                     請輸入帳號
                   </div>
                 </div>
-                <div class="col-12 input__height">
+                <div class="col-xl-12 col-lg-6 col-md-12 input__height">
                   <label for="userPwd" class="fw-bolder">密碼</label>
                   <input v-model="formData.password" type="password" id="userPwd" class="form-control form-control-sm"
                     placeholder="" name="Password" required>

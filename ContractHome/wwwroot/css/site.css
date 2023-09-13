@@ -40,10 +40,14 @@
 }
 .login__intro {
   min-height: 450px;
+  background-image: url("https://picsum.photos/900/480?ramdom=10");
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
 }
-@media (max-width: 576px) {
+@media (max-width: 1200px) {
   .login__intro {
-    min-height: 0;
+    min-height: 300px;
   }
 }
 
