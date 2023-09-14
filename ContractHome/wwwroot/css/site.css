@@ -52,10 +52,19 @@
   padding-bottom: 0;
 }
 .input__height {
-  margin-top: 5px;
   height: 62px;
-  padding-top: 0;
-  padding-bottom: 0;
+}
+@media (max-width: 768px) {
+  .input__height {
+    height: auto;
+  }
+}
+
+.icon__rounded {
+  width: 33px;
+}
+.icon__rounded > i {
+  width: 15px;
 }
 
 .error-msg {

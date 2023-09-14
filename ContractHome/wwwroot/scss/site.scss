@@ -71,17 +71,30 @@
   }
 }
 
+// 輸入框高度
 .input {
+  // 登入
   &__loginHeight {
     height: 82px;
     padding-top: 5px;
     padding-bottom: 0;
   }
+  // 搜尋
   &__height {
-    margin-top: 5px;
     height: 62px;
-    padding-top: 0;
-    padding-bottom: 0;
+    @include md {
+      height: auto;
+    }
+  }
+}
+
+// 圓形按鈕
+.icon {
+  &__rounded {
+    width: 33px;
+    > i {
+      width: 15px;
+    }
   }
 }
 
