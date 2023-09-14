@@ -33,11 +33,6 @@
     max-width: 90%;
   }
 }
-.login__signin .input__height {
-  height: 82px;
-  padding-top: 5px;
-  padding-bottom: 0;
-}
 .login__intro {
   min-height: 450px;
   background-image: url("https://picsum.photos/900/480?ramdom=10");
@@ -49,6 +44,18 @@
   .login__intro {
     min-height: 300px;
   }
+}
+
+.input__loginHeight {
+  height: 82px;
+  padding-top: 5px;
+  padding-bottom: 0;
+}
+.input__height {
+  margin-top: 5px;
+  height: 62px;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .error-msg {

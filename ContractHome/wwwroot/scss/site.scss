@@ -58,13 +58,6 @@
     @include sm {
       max-width: 90%;
     }
-    .input {
-      &__height {
-        height: 82px;
-        padding-top: 5px;
-        padding-bottom: 0;
-      }
-    }
   }
   &__intro {
     min-height: 450px;
@@ -75,6 +68,20 @@
     @include xl {
       min-height: 300px;
     }
+  }
+}
+
+.input {
+  &__loginHeight {
+    height: 82px;
+    padding-top: 5px;
+    padding-bottom: 0;
+  }
+  &__height {
+    margin-top: 5px;
+    height: 62px;
+    padding-top: 0;
+    padding-bottom: 0;
   }
 }
 
