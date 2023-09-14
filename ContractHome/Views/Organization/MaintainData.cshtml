@@ -184,52 +184,49 @@
         console.log(addNew);
         /*
         if (addNew) {
-          delete $inquiryAgent.viewModel.EncKeyItem;
-          delete $inquiryAgent.viewModel.KeyItem;
-        }
-        var $tr = $(window.event.target).closest('form');
-        var viewModel = $tr.find('input,select,textArea').serializeObject();
-        viewModel = $.extend({}, $inquiryAgent.viewModel, viewModel);
-        viewModel.DataItem = $tr.find('div.data-item').find('input,select,textArea').serializeArray();
-        clearErrors();
-        showLoading();
-        $.ajax({
-          url: '@(Url.Action("CommitItem", "UserProfile"))',
-          data: JSON.stringify(viewModel),
-          type: "POST",
-          //dataType: "json",
-          contentType: "application/json;charset=utf-8",
-          success: function (data) {
-            hideLoading();
-            if ($.isPlainObject(data)) {
-              if (data.result) {
-                alertModal('存檔完成!!');
-              } else {
-                alertModal('存檔失敗，原因：' + data.message);
-              }
+        delete $inquiryAgent.viewModel.EncKeyItem;
+        delete $inquiryAgent.viewModel.KeyItem;
+      }
+      var $tr = $(window.event.target).closest('form').find('div.data-item');
+      $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
+      showLoading();
+      $.ajax({
+        url: '@(Url.Action("CommitItem", "Organization"))',
+        data: JSON.stringify($inquiryAgent.viewModel),
+        type: "POST",
+        //dataType: "json",
+        contentType: "application/json;charset=utf-8",
+        success: function (data) {
+          hideLoading();
+          if ($.isPlainObject(data)) {
+            if (data.result) {
+              alertModal('存檔完成!!');
             } else {
-              $('body').append($(data));
+              alertModal('存檔失敗，原因：' + data.message);
             }
-          },
-          error: function (xhr, ajaxOptions, thrownError) {
-            hideLoading();
-            alertModal(thrownError);
-            console.log(xhr.status);
-            console.log(thrownError);
+          } else {
+            $('body').append($(data));
           }
-        });
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+          hideLoading();
+          alertModal(thrownError);
+          console.log(xhr.status);
+          console.log(thrownError);
+        }
+      });
         */
       },
       deleteData() {
         console.log('del');
         /**
-        if (!confirm('請確認刪除資料？刪除後無法復原！')) {
+          if (!confirm('請確認刪除資料？刪除後無法復原！')) {
           return;
         }
         var $tr = $(window.event.target).closest('form').find('div.data-item');
         showLoading();
         $.ajax({
-          url: '@(Url.Action("DeleteItem", "UserProfile"))',
+          url: '@(Url.Action("DeleteItem", "Organization"))',
           data: JSON.stringify({ 'EncKeyItem': $inquiryAgent.viewModel.EncKeyItem }),
           type: "POST",
           //dataType: "json",
@@ -266,92 +263,11 @@
         console.log(this.formData);
 
         // var $tr = $tr || $(window.event.target).closest('form').find('div.data-item');
-        // console.log($tr);
         // $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
         // $inquiryAgent.inquire();
       }
     }
   });
-
-  /***
-  $global.dataTable = {
-    'inquireData': function ($tr) {
-      var $tr = $tr || $(window.event.target).closest('form').find('div.data-item');
-      $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
-      $inquiryAgent.inquire();
-    },
-    'commitData': function (addNew) {
-      if (addNew) {
-        delete $inquiryAgent.viewModel.EncKeyItem;
-        delete $inquiryAgent.viewModel.KeyItem;
-      }
-      var $tr = $(window.event.target).closest('form').find('div.data-item');
-      $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
-      showLoading();
-      $.ajax({
-        url: '@(Url.Action("CommitItem", "Organization"))',
-        data: JSON.stringify($inquiryAgent.viewModel),
-        type: "POST",
-        //dataType: "json",
-        contentType: "application/json;charset=utf-8",
-        success: function (data) {
-          hideLoading();
-          if ($.isPlainObject(data)) {
-            if (data.result) {
-              alertModal('存檔完成!!');
-            } else {
-              alertModal('存檔失敗，原因：' + data.message);
-            }
-          } else {
-            $('body').append($(data));
-          }
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-          hideLoading();
-          alertModal(thrownError);
-          console.log(xhr.status);
-          console.log(thrownError);
-        }
-      });
-    },
-    'deleteData': function () {
-      if (!confirm('請確認刪除資料？刪除後無法復原！')) {
-        return;
-      }
-      var $tr = $(window.event.target).closest('form').find('div.data-item');
-      showLoading();
-      $.ajax({
-        url: '@(Url.Action("DeleteItem", "Organization"))',
-        data: JSON.stringify({ 'EncKeyItem': $inquiryAgent.viewModel.EncKeyItem }),
-        type: "POST",
-        //dataType: "json",
-        contentType: "application/json;charset=utf-8",
-        success: function (data) {
-          hideLoading();
-          if ($.isPlainObject(data)) {
-            if (data.result) {
-              alertModal('資料已刪除!!');
-              delete $inquiryAgent.viewModel.EncKeyItem;
-              delete $inquiryAgent.viewModel.KeyItem;
-              $global.dataTable.inquireData($tr);
-            } else {
-              alertModal('刪除未完成，原因：' + data.message);
-            }
-          } else {
-            $(data).appendTo($('body')).remove();
-          }
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-          hideLoading();
-          alertModal(thrownError);
-          console.log(xhr.status);
-          console.log(thrownError);
-        }
-      });
-    },
-
-  }
-  **/
   /**
   $inquiryAgent.showQueryResult = function (data) {
     var $tr = $('form div.data-item');
