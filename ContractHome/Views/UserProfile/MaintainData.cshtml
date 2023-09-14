@@ -41,7 +41,7 @@
                 <div class="col-sm-12 col-md-9">
                   <input v-model="formData.CompanyID" type="text" class="form-control" id="SearchCompany"
                     name="SearchCompany" placeholder="請輸入檢索關鍵字" />
-                  <input type="hidden" id="CompanyID" name="EncCompanyID" />
+                  <!-- input type="hidden" id="CompanyID" name="EncCompanyID" / -->
                 </div>
               </div>
             </div>
@@ -119,7 +119,6 @@
 
 </div>
 <script>
-  const roleList = `@ViewData["roleList"]`;
   var app = new Vue({
     el: '#userProdile',
     data: {
