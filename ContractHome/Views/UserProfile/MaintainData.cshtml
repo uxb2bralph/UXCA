@@ -34,18 +34,18 @@
     <div class="card">
       <form v-on:submit.prevent="inquireData" id="queryArea" method="post" enctype="multipart/form-data">
         <div class="container">
-          <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3 g-3 m-2 mb-3 data-item">
-            <div class="col">
+          <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3 g-3 m-3 mb-0 data-item">
+            <div class="col input__height">
               <div class="row">
                 <label for="CompanyID" class="col-sm-12 col-md-3 col-form-label fw-bolder">隸屬公司</label>
                 <div class="col-sm-12 col-md-9">
-                  <input v-model="formData.CompanyID" type="text" class="form-control" id="SearchCompany"
-                    name="SearchCompany" placeholder="請輸入檢索關鍵字" />
+                  <input v-model="formData.CompanyID" type="text" class="form-control" name="SearchCompany"
+                    placeholder="請輸入檢索關鍵字" />
                   <!-- input type="hidden" id="CompanyID" name="EncCompanyID" / -->
                 </div>
               </div>
             </div>
-            <div class="col">
+            <div class="col input__height">
               <div class="row">
                 <label for="PID" class="col-sm-12 col-md-3 col-form-label fw-bolder">用戶帳號</label>
                 <div class="col-sm-12 col-md-9">
@@ -53,7 +53,7 @@
                 </div>
               </div>
             </div>
-            <div class="col">
+            <div class="col input__height">
               <div class="row">
                 <label for="UserName" class="col-sm-12 col-md-3 col-form-label fw-bolder">姓名</label>
                 <div class="col-sm-12 col-md-9">
@@ -61,7 +61,7 @@
                 </div>
               </div>
             </div>
-            <div class="col">
+            <div class="col input__height">
               <div class="row">
                 <label for="Password" class="col-sm-12 col-md-3 col-form-label fw-bolder">密碼</label>
                 <div class="col-sm-12 col-md-9">
@@ -69,11 +69,11 @@
                 </div>
               </div>
             </div>
-            <div class="col">
+            <div class="col input__height">
               <div class="row">
                 <label for="EMail" class="col-sm-12 col-md-3 col-form-label fw-bolder">電子郵件</label>
                 <div class="col-sm-12 col-md-9">
-                  <input v-model="formData.EMail" type="text" class="form-control"
+                  <input v-model="formData.EMail" type="email" class="form-control"
                     :class="{'is-invalid': mailValidate }" name="EMail" id="EMail" />
                   <div class="invalid-feedback">
                     請輸入有效的電子郵件地址
@@ -81,7 +81,7 @@
                 </div>
               </div>
             </div>
-            <div class="col">
+            <div class="col input__height">
               <div class="row">
                 <label for="RoleID" class="col-sm-12 col-md-3 col-form-label fw-bolder">角色</label>
                 <div class="col-sm-12 col-md-9">
@@ -92,7 +92,7 @@
                 </div>
               </div>
             </div>
-            <div class="col">
+            <div class="col input__height">
               <div class="row">
                 <label for="Region" class="col-sm-12 col-md-3 col-form-label fw-bolder">憑證類型</label>
                 <div class="col-sm-12 col-md-9">
@@ -119,10 +119,51 @@
 
 </div>
 <script>
+  // 角色選單
+  const roleList = [
+    {
+      text: '請選擇',
+      value: ''
+    },
+    {
+      text: '角色1',
+      value: 'O'
+    },
+    {
+      text: '角色2',
+      value: 'P'
+    },
+  ];
+
+  // 憑證類型選單
+  const regionList = [
+    {
+      text: '請選擇',
+      value: ''
+    },
+    {
+      text: '工商憑證',
+      value: 'O'
+    },
+    {
+      text: '自然人憑證',
+      value: 'P'
+    },
+  ];
+
   var app = new Vue({
     el: '#userProdile',
     data: {
       isValidate: false,
+      /**
+       * 使用者基本資料
+       * @@param {string} CompanyID 隸屬公司
+       * @@param {string} PID 用戶帳號
+       * @@param {string} UserName 姓名
+       * @@param {string} Password 密碼
+       * @@param {string} RoleID 角色
+       * @@param {string} Region 憑證類型
+       */
       formData: {
         CompanyID: null,
         PID: null,
@@ -131,34 +172,8 @@
         RoleID: null,
         Region: null
       },
-      roleList: [
-        {
-          text: '請選擇',
-          value: ''
-        },
-        {
-          text: '角色1',
-          value: 'O'
-        },
-        {
-          text: '角色2',
-          value: 'P'
-        },
-      ],
-      regionList: [
-        {
-          text: '請選擇',
-          value: ''
-        },
-        {
-          text: '工商憑證',
-          value: 'O'
-        },
-        {
-          text: '自然人憑證',
-          value: 'P'
-        },
-      ]
+      roleList,
+      regionList
     },
     computed: {
       mailValidate() {
