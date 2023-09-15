@@ -413,4 +413,13 @@
     input.after(msg);
   }
 
+  // 產生uuid
+  function ui_uuid() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      let r = (Math.random() * 16) | 0;
+      let v = c == 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
+
 </script>
