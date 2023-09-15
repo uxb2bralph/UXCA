@@ -87,7 +87,7 @@
                 <label for="ContactEmail" class="col-sm-12 col-md-3 col-form-label fw-bolder">電子郵件</label>
                 <div class="col-sm-12 col-md-9">
                   <input v-model="searchFormData.ContactEmail" type="text" class="form-control"
-                    :class="{'is-invalid': mailValidate }" name="ContactEmail" id="ContactEmail" />
+                    :class="{'is-invalid': searchMailCheck }" name="ContactEmail" id="ContactEmail" />
                   <div class="invalid-feedback">
                     請輸入有效的電子郵件地址
                   </div>
@@ -111,7 +111,7 @@
       <div class="col-12 hstack gap-3 py-3">
         <div>
           <button type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="新增廠商資料"
-            class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="commitData(true)">
+            class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="commitData('addNew')">
             <i class="fal fa-file-plus"></i>
           </button>
         </div>
@@ -150,7 +150,7 @@
             <td class="text-nowrap text-center">
               <span data-bs-toggle="tooltip" data-bs-placement="top" title="修改" class="d-inline-block mx-1">
                 <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded"
-                  v-on:click="commitData">
+                  v-on:click="commitData('edit', company)">
                   <i class="fal fa-edit"></i>
                 </button>
               </span>
@@ -192,37 +192,137 @@
       </div>
     </div>
   </div>
-  <!-- 已刪除訊息 Dialog -->
-  <div class="modal fade" id="deleteInfoModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-    aria-labelledby="deleteInfoModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered ">
+
+  <!-- 新增 Dialog -->
+  <div class="modal fade" id="addNewModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="addNewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
-        <div class="modal-body text-center h5 fw-bolder pt-5">
-          <div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div>
-          <span class="text-primary opacity-75">" {{ currentCompanyData.CompanyID }} "</span> 已刪除
+        <div class="modal-header">
+          <h5 class="modal-title fw-bolder" id="staticBackdropLabel">{{ editTitle }}廠商資料</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-footer border-top-0 justify-content-center">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+        <div class="modal-body">
+          <form v-on:submit.prevent method="post" enctype="multipart/form-data">
+            <div class="container">
+              <div class="row row-cols-1 m-3 mb-lg-0 data-item">
+                <div class="col input__height">
+                  <div class="row">
+                    <label for="CompanyName" class="col-sm-12 col-md-3 col-form-label fw-bolder">公司名稱</label>
+                    <div class="col-sm-12 col-md-9">
+                      <input v-model="formData.CompanyID" type="text" class="form-control form-control-sm"
+                        :class="{'is-invalid': isCompanyName}" id="CompanyName"
+                        v-on:focus="resetValidate('isCompanyName')"
+                        v-on:blur="validateField('isCompanyName', formData.CompanyID)" />
+                      <div class="invalid-feedback">
+                        請輸入公司名稱
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col input__height">
+                  <div class="row">
+                    <label for="ReceiptNo" class="col-sm-12 col-md-3 col-form-label fw-bolder">統一編號</label>
+                    <div class="col-sm-12 col-md-9">
+                      <input v-model="formData.ReceiptNo" type="text" class="form-control form-control-sm"
+                        :class="{'is-invalid': isReceiptNo}" id="ReceiptNo" v-on:focus="resetValidate('isReceiptNo')"
+                        v-on:blur="validateField('isReceiptNo', formData.ReceiptNo)" />
+                      <div class="invalid-feedback">
+                        請輸入統一編號
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col input__height">
+                  <div class="row">
+                    <label for="Phone" class="col-sm-12 col-md-3 col-form-label fw-bolder">電話</label>
+                    <div class="col-sm-12 col-md-9">
+                      <input v-model="formData.Phone" type="text" class="form-control form-control-sm"
+                        :class="{'is-invalid': isPhone}" name="Phone" id="Phone" v-on:focus="resetValidate('isPhone')"
+                        v-on:blur="validateField('isPhone', formData.Phone)" />
+                      <div class="invalid-feedback">
+                        請輸入電話
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col input__height">
+                  <div class="row">
+                    <label for="Fax" class="col-sm-12 col-md-3 col-form-label fw-bolder">傳真</label>
+                    <div class="col-sm-12 col-md-9">
+                      <input v-model="formData.Fax" type="text" class="form-control form-control-sm"
+                        :class="{'is-invalid': isFax}" name="Fax" id="Fax" v-on:focus="resetValidate('isFax')"
+                        v-on:blur="validateField('isFax', formData.Fax)" />
+                      <div class="invalid-feedback">
+                        請輸入傳真號碼
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col input__height">
+                  <div class="row">
+                    <label for="UndertakerName" class="col-sm-12 col-md-3 col-form-label fw-bolder">負責人</label>
+                    <div class="col-sm-12 col-md-9">
+                      <input v-model="formData.UndertakerName" type="text" class="form-control form-control-sm"
+                        :class="{'is-invalid': isUndertakerName}" id="UndertakerName"
+                        v-on:focus="resetValidate('isUndertakerName')"
+                        v-on:blur="validateField('isUndertakerName', formData.UndertakerName)" />
+                      <div class="invalid-feedback">
+                        請輸入負責人姓名
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col input__height">
+                  <div class="row">
+                    <label for="ContactEmail" class="col-sm-12 col-md-3 col-form-label fw-bolder">電子郵件</label>
+                    <div class="col-sm-12 col-md-9">
+                      <input v-model="formData.ContactEmail" type="text" class="form-control form-control-sm"
+                        :class="{'is-invalid': isContactEmail}" name="ContactEmail" id="ContactEmail"
+                        v-on:focus="resetValidate('isContactEmail')"
+                        v-on:blur="validateField('isContactEmail', formData.ContactEmail);checkMail('isContactEmail', formData.ContactEmail)" />
+                      <div class="invalid-feedback">
+                        請輸入有效的電子郵件地址
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col input__height">
+                  <div class="row">
+                    <label for="Addr" class="col-sm-12 col-md-3 col-form-label fw-bolder">地址</label>
+                    <div class="col-sm-12 col-md-9">
+                      <input v-model="formData.Addr" type="text" class="form-control form-control-sm"
+                        :class="{'is-invalid': isAddr}" name="Addr" id="Addr" v-on:focus="resetValidate('isAddr')"
+                        v-on:blur="validateField('isAddr', formData.Addr)" />
+                      <div class="invalid-feedback">
+                        請輸入地址
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" v-on:click="saveHandler">確定</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 新增 Dialog -->
-  <div class="modal fade" id="addNewModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-    aria-labelledby="addNewModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered ">
+  <!-- 訊息 Dialog -->
+  <div class="modal fade" id="infoModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="infoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="staticBackdropLabel">新增廠商資料</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-body text-center h5 fw-bolder pt-5">
+          <div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div>
+          <div v-html="infoMsg"></div>
         </div>
-        <div class="modal-body">
-          AAA
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-          <button type="button" class="btn btn-primary" v-on:click="addHandler">確定</button>
+        <div class="modal-footer border-top-0 justify-content-center">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
         </div>
       </div>
     </div>
@@ -287,16 +387,34 @@
         ContactEmail: null,
         UndertakerName: null,
       },
+      // 編輯
+      initialFormData: {
+        uuid: null,
+        CompanyID: null,
+        ReceiptNo: null,
+        Phone: null,
+        Fax: null,
+        Addr: null,
+        ContactEmail: null,
+        UndertakerName: null,
+      },
+      formData: {},
       companyList,
-      currentCompanyData: {}
+      currentCompanyData: {},
+      editTitle: null,
+      isCompanyName: false,
+      isReceiptNo: false,
+      isPhone: false,
+      isFax: false,
+      isUndertakerName: false,
+      isContactEmail: false,
+      isAddr: false,
+      infoMsg: null
     },
     computed: {
-      // email 輸入檢核
-      mailValidate() {
-        const emailRegex = /^[A-Za-z0-9._%+-]+@@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-        const isEmail = !!this.searchFormData.ContactEmail;
-        const checkEmail = emailRegex.test(this.searchFormData.ContactEmail);
-        return isEmail && !checkEmail;
+      // 搜尋 email 輸入檢核
+      searchMailCheck() {
+        return this.mailValidate(this.searchFormData.ContactEmail);
       }
     },
     mounted() {
@@ -309,43 +427,21 @@
       });
     },
     methods: {
-      commitData(addNew) {
-        console.log(addNew);
-        /*
-        if (addNew) {
-        delete $inquiryAgent.viewModel.EncKeyItem;
-        delete $inquiryAgent.viewModel.KeyItem;
-      }
-      var $tr = $(window.event.target).closest('form').find('div.data-item');
-      $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
-      showLoading();
-      $.ajax({
-        url: '@(Url.Action("CommitItem", "Organization"))',
-        data: JSON.stringify($inquiryAgent.viewModel),
-        type: "POST",
-        //dataType: "json",
-        contentType: "application/json;charset=utf-8",
-        success: function (data) {
-          hideLoading();
-          if ($.isPlainObject(data)) {
-            if (data.result) {
-              alertModal('存檔完成!!');
-            } else {
-              alertModal('存檔失敗，原因：' + data.message);
-            }
-          } else {
-            $('body').append($(data));
-          }
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-          hideLoading();
-          alertModal(thrownError);
-          console.log(xhr.status);
-          console.log(thrownError);
+      // 新增 / 編輯 表單 Modal
+      commitData(type, data) {
+        $('#addNewModal').modal('show');
+        const isNew = type === 'addNew';
+        this.editTitle = isNew ? '新增' : '編輯';
+        // 新增時加入一筆uuid
+        this.formData.uuid = isNew ? ui_uuid() : this.formData.uuid;
+        if (type === 'addNew') {
+          this.formData = { ...this.initialFormData };
         }
-      });
-        */
+        if (type === 'edit') {
+          this.formData = { ...data };
+        }
       },
+      // 刪除廠商資料
       deleteData(item) {
         console.log('currentCompanyData:', item);
         this.currentCompanyData = item;
@@ -399,11 +495,71 @@
           */
 
           hideLoading();
-          $('#deleteInfoModal').modal('show');
+          // 開啟訊息視窗
+          this.infoMsg = `<span class='text-primary opacity-75'>" ${ this.currentCompanyData.CompanyID} "</span> 資料已刪除`;
+          $('#infoModal').modal('show');
         }, 2000);
       },
-      addHandler() {
-        console.log('add');
+      // 儲存表單
+      saveHandler() {
+        // 輸入欄位檢核
+        this.isCompanyName = !this.formData.CompanyID;
+        this.isReceiptNo = !this.formData.ReceiptNo;
+        this.isPhone = !this.formData.Phone;
+        this.isFax = !this.formData.Fax;
+        this.isUndertakerName = !this.formData.UndertakerName;
+        this.isContactEmail = !this.formData.ContactEmail;
+        this.isAddr = !this.formData.Addr;
+        // 檢核email格式是否正確
+        this.checkMail('isContactEmail', this.formData.ContactEmail);
+        // 如果檢核通過，就會送出表單
+        if (this.isCompanyName || this.isReceiptNo || this.isPhone || this.isFax || this.isUndertakerName || this.isContactEmail || this.isAddr) return;
+
+        console.log('儲存表單');
+        $('#addNewModal').modal('hide');
+        showLoading();
+        setTimeout(() => {
+          hideLoading();
+          // 開啟訊息視窗
+          this.infoMsg = "存檔完成";
+          $('#infoModal').modal('show');
+
+        }, 2000);
+
+        /*
+        if (addNew) {
+        delete $inquiryAgent.viewModel.EncKeyItem;
+        delete $inquiryAgent.viewModel.KeyItem;
+      }
+      var $tr = $(window.event.target).closest('form').find('div.data-item');
+      $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
+      showLoading();
+      $.ajax({
+        url: '@(Url.Action("CommitItem", "Organization"))',
+        data: JSON.stringify($inquiryAgent.viewModel),
+        type: "POST",
+        //dataType: "json",
+        contentType: "application/json;charset=utf-8",
+        success: function (data) {
+          hideLoading();
+          if ($.isPlainObject(data)) {
+            if (data.result) {
+              alertModal('存檔完成!!');
+            } else {
+              alertModal('存檔失敗，原因：' + data.message);
+            }
+          } else {
+            $('body').append($(data));
+          }
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+          hideLoading();
+          alertModal(thrownError);
+          console.log(xhr.status);
+          console.log(thrownError);
+        }
+      });
+        */
       },
       inquireData() {
         // email欄位檢核沒過不送出表單
@@ -415,6 +571,28 @@
         // var $tr = $tr || $(window.event.target).closest('form').find('div.data-item');
         // $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
         // $inquiryAgent.inquire();
+      },
+
+      // 查詢 email 欄位驗證
+      mailValidate(value) {
+        const emailRegex = /^[A-Za-z0-9._%+-]+@@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+        const isEmail = !!value;
+        const checkEmail = emailRegex.test(value);
+        return isEmail && !checkEmail;
+      },
+      // 輸入 email 欄位驗證
+      checkMail(status, contactEmail) {
+        const emailRegex = /^[A-Za-z0-9._%+-]+@@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+        const checkEmail = emailRegex.test(contactEmail);
+        this[status] = !checkEmail;
+      },
+      // 欄位檢核
+      validateField(status, data) {
+        this[status] = !data;
+      },
+      // Reset 欄位檢核
+      resetValidate(status) {
+        this[status] = false;
       }
     }
   });
