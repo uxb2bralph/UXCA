@@ -22,7 +22,7 @@
 }
 <div id="organization" class="container-lg">
   <section>
-    <!-- Section title -->
+    <!-- 標題 -->
     @{
       // await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
       await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "廠商資料維護");
@@ -30,7 +30,7 @@
       // await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
     }
 
-    <!--Section: Demo-->
+    <!-- 廠商資料維護搜尋-->
     <div class="card">
       <form v-on:submit.prevent="inquireData" method="post" enctype="multipart/form-data">
         <div class="container">
@@ -39,12 +39,12 @@
             await Html.RenderPartialAsync("~/Views/Organization/Module/EditItem.cshtml");
           }
           -->
-          <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3 g-3 m-3 mb-0 data-item">
+          <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3 m-3 mb-lg-0 data-item">
             <div class="col input__height">
               <div class="row">
                 <label for="CompanyName" class="col-sm-12 col-md-3 col-form-label fw-bolder">公司名稱</label>
                 <div class="col-sm-12 col-md-9">
-                  <input v-model="formData.CompanyID" type="text" class="form-control" name="CompanyName"
+                  <input v-model="searchFormData.CompanyID" type="text" class="form-control" name="CompanyName"
                     id="CompanyName" />
                 </div>
               </div>
@@ -53,7 +53,7 @@
               <div class="row">
                 <label for="ReceiptNo" class="col-sm-12 col-md-3 col-form-label fw-bolder">統一編號</label>
                 <div class="col-sm-12 col-md-9">
-                  <input v-model="formData.ReceiptNo" type="text" class="form-control" name="ReceiptNo"
+                  <input v-model="searchFormData.ReceiptNo" type="text" class="form-control" name="ReceiptNo"
                     id="ReceiptNo" />
                 </div>
               </div>
@@ -62,7 +62,7 @@
               <div class="row">
                 <label for="Phone" class="col-sm-12 col-md-3 col-form-label fw-bolder">電話</label>
                 <div class="col-sm-12 col-md-9">
-                  <input v-model="formData.Phone" type="text" class="form-control" name="Phone" id="Phone" />
+                  <input v-model="searchFormData.Phone" type="text" class="form-control" name="Phone" id="Phone" />
                 </div>
               </div>
             </div>
@@ -70,7 +70,7 @@
               <div class="row">
                 <label for="Fax" class="col-sm-12 col-md-3 col-form-label fw-bolder">傳真</label>
                 <div class="col-sm-12 col-md-9">
-                  <input v-model="formData.Fax" type="text" class="form-control" name="Fax" id="Fax" />
+                  <input v-model="searchFormData.Fax" type="text" class="form-control" name="Fax" id="Fax" />
                 </div>
               </div>
             </div>
@@ -78,7 +78,7 @@
               <div class="row">
                 <label for="Addr" class="col-sm-12 col-md-3 col-form-label fw-bolder">地址</label>
                 <div class="col-sm-12 col-md-9">
-                  <input v-model="formData.Addr" type="text" class="form-control" name="Addr" id="Addr" />
+                  <input v-model="searchFormData.Addr" type="text" class="form-control" name="Addr" id="Addr" />
                 </div>
               </div>
             </div>
@@ -86,7 +86,7 @@
               <div class="row">
                 <label for="ContactEmail" class="col-sm-12 col-md-3 col-form-label fw-bolder">電子郵件</label>
                 <div class="col-sm-12 col-md-9">
-                  <input v-model="formData.ContactEmail" type="text" class="form-control"
+                  <input v-model="searchFormData.ContactEmail" type="text" class="form-control"
                     :class="{'is-invalid': mailValidate }" name="ContactEmail" id="ContactEmail" />
                   <div class="invalid-feedback">
                     請輸入有效的電子郵件地址
@@ -98,7 +98,7 @@
               <div class="row">
                 <label for="UndertakerName" class="col-sm-12 col-md-3 col-form-label fw-bolder">負責人</label>
                 <div class="col-sm-12 col-md-9">
-                  <input v-model="formData.UndertakerName" type="text" class="form-control" name="UndertakerName"
+                  <input v-model="searchFormData.UndertakerName" type="text" class="form-control" name="UndertakerName"
                     id="UndertakerName" />
                 </div>
               </div>
@@ -108,40 +108,159 @@
       </form>
     </div>
     <div class="row">
-      <div class="my-3 text-end">
-        <button type="button" class="btn-primary" v-on:click="commitData(true)">新增</button>
-        <button type="button" class="btn-primary" v-on:click="commitData">修改</button>
-        <button type="button" class="btn-danger" v-on:click="deleteData">刪除</button>
-        <button type="button" class="btn-primary" v-on:click="inquireData">查詢</button>
+      <div class="col-12 hstack gap-3 py-3">
+        <div>
+          <button type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="新增廠商資料"
+            class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="commitData(true)">
+            <i class="fal fa-file-plus"></i>
+          </button>
+        </div>
+        <div class="ms-auto">
+          <button type="button" class="btn btn-primary" v-on:click="inquireData">查詢</button>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- 廠商資料列表 -->
   <section>
-
+    <div v-if="companyList.length > 0" class="card p-3">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th scope="col">公司名稱</th>
+            <th scope="col">統一編號</th>
+            <th scope="col">電話</th>
+            <th scope="col">傳真</th>
+            <th scope="col">地址</th>
+            <th scope="col">電子郵件</th>
+            <th scope="col">負責人</th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(company, index) in companyList" :key="`c_${index}`">
+            <td class="text-nowrap">{{ company.CompanyID }}</td>
+            <td class="text-nowrap">{{ company.ReceiptNo }}</td>
+            <td>{{ company.Phone }}</td>
+            <td>{{ company.Fax }}</td>
+            <td>{{ company.Addr }}</td>
+            <td>{{ company.ContactEmail }}</td>
+            <td class="text-nowrap">{{ company.UndertakerName }}</td>
+            <td class="text-nowrap text-center">
+              <span data-bs-toggle="tooltip" data-bs-placement="top" title="修改" class="d-inline-block mx-1">
+                <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded"
+                  v-on:click="commitData">
+                  <i class="fal fa-edit"></i>
+                </button>
+              </span>
+              <span data-bs-toggle="tooltip" data-bs-placement="top" title="刪除" class="d-inline-block mx-1">
+                <button type="button" id="deleteCompany"
+                  class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded" v-on:click="deleteData(company)">
+                  <i class="fal fa-trash-alt"></i>
+                </button>
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div v-else class="card p-3 text-center">
+      <span class="text-danger opacity-50" style="font-size: 50px;">
+        <i class="fal fa-box-full"></i>
+      </span>
+      <span class="text-primary">目前尚無廠商資料</span>
+    </div>
   </section>
+
+  <!-- 刪除 Dialog -->
+  <div class="modal fade" id="deleteModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered ">
+      <div class="modal-content">
+        <div class="modal-header border-bottom-0">
+          <h5 class="modal-title" id="staticBackdropLabel"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center h5 fw-bolder">
+          確定刪除 <span class="text-primary opacity-75">" {{ currentCompanyData.CompanyID }} "</span> 相關資料？
+        </div>
+        <div class="modal-footer border-top-0 justify-content-center">
+          <button type="button" class="btn btn-secondary opacity-50" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" v-on:click="confirmDel(currentCompanyData)">確定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 已刪除訊息 Dialog -->
+  <div class="modal fade" id="deleteInfoModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered ">
+      <div class="modal-content">
+        <div class="modal-body text-center h5 fw-bolder pt-5">
+          <div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div>
+          <span class="text-primary opacity-75">" {{ currentCompanyData.CompanyID }} "</span> 已刪除
+        </div>
+        <div class="modal-footer border-top-0 justify-content-center">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新增 Dialog -->
+  <div class="modal fade" id="addNewModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered ">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">新增廠商資料</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          AAA
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" v-on:click="addHandler">確定</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </div>
 <script>
   // 廠商列表
   const companyList = [
     {
-      CompanyID: null,
-      ReceiptNo: null,
-      Phone: null,
-      Fax: null,
-      Addr: null,
-      ContactEmail: null,
-      UndertakerName: null
+      uuid: '111',
+      CompanyID: '網際優勢甲方公司',
+      ReceiptNo: '12345678',
+      Phone: '02-12345678',
+      Fax: '02-12345679',
+      Addr: '台北市中正區南海路20號6樓',
+      ContactEmail: 'David@uxb2b.com',
+      UndertakerName: '劉大衛'
     },
     {
-      text: '角色1',
-      value: 'O'
+      uuid: '222',
+      CompanyID: '網際優勢乙方公司',
+      ReceiptNo: '87654321',
+      Phone: '02-12345678',
+      Fax: '02-12345679',
+      Addr: '台北市中正區杭州南路120號8樓',
+      ContactEmail: 'wang@uxb2b.com',
+      UndertakerName: '王大衛'
     },
     {
-      text: '角色2',
-      value: 'P'
+      uuid: '333',
+      CompanyID: '網際優勢丙方公司',
+      ReceiptNo: '85214788',
+      Phone: '02-12345678',
+      Fax: '02-12345679',
+      Addr: '台北市中正區羅斯福路200號6樓之一',
+      ContactEmail: 'lin@uxb2b.com',
+      UndertakerName: '林大衛'
     },
   ];
 
@@ -159,7 +278,7 @@
        * @@param {string} ContactEmail 電子郵件
        * @@param {string} UndertakerName 負責人
        */
-      formData: {
+      searchFormData: {
         CompanyID: null,
         ReceiptNo: null,
         Phone: null,
@@ -168,16 +287,26 @@
         ContactEmail: null,
         UndertakerName: null,
       },
-      companyList
+      companyList,
+      currentCompanyData: {}
     },
     computed: {
+      // email 輸入檢核
       mailValidate() {
         const emailRegex = /^[A-Za-z0-9._%+-]+@@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-        const isEmail = !!this.formData.ContactEmail;
-        const checkEmail = emailRegex.test(this.formData.ContactEmail);
-        // email 輸入檢核
+        const isEmail = !!this.searchFormData.ContactEmail;
+        const checkEmail = emailRegex.test(this.searchFormData.ContactEmail);
         return isEmail && !checkEmail;
       }
+    },
+    mounted() {
+      // 初始化 Bootstrap Tooltip
+      document.addEventListener("DOMContentLoaded", function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (element) {
+          return new bootstrap.Tooltip(element);
+        });
+      });
     },
     methods: {
       commitData(addNew) {
@@ -217,50 +346,71 @@
       });
         */
       },
-      deleteData() {
-        console.log('del');
-        /**
-          if (!confirm('請確認刪除資料？刪除後無法復原！')) {
-          return;
-        }
-        var $tr = $(window.event.target).closest('form').find('div.data-item');
+      deleteData(item) {
+        console.log('currentCompanyData:', item);
+        this.currentCompanyData = item;
+        $("#deleteModal").modal('show');
+      },
+      confirmDel(companyData) {
+        console.log('companyData:', companyData);
+
+        $("#deleteModal").modal('hide');
+
         showLoading();
-        $.ajax({
-          url: '@(Url.Action("DeleteItem", "Organization"))',
-          data: JSON.stringify({ 'EncKeyItem': $inquiryAgent.viewModel.EncKeyItem }),
-          type: "POST",
-          //dataType: "json",
-          contentType: "application/json;charset=utf-8",
-          success: function (data) {
-            hideLoading();
-            if ($.isPlainObject(data)) {
-              if (data.result) {
-                alertModal('資料已刪除!!');
-                delete $inquiryAgent.viewModel.EncKeyItem;
-                delete $inquiryAgent.viewModel.KeyItem;
-                $global.dataTable.inquireData($tr);
-              } else {
-                alertModal('刪除未完成，原因：' + data.message);
-              }
-            } else {
-              $(data).appendTo($('body')).remove();
-            }
-          },
-          error: function (xhr, ajaxOptions, thrownError) {
-            hideLoading();
-            alertModal(thrownError);
-            console.log(xhr.status);
-            console.log(thrownError);
+        setTimeout(() => {
+          // 模擬假資料被刪除
+          const filterCompanyList = this.companyList.filter(item => item.uuid !== companyData.uuid);
+          this.companyList = filterCompanyList;
+
+          /**
+          if (!confirm('請確認刪除資料？刪除後無法復原！')) {
+            return;
           }
-        });
-        */
+          var $tr = $(window.event.target).closest('form').find('div.data-item');
+          showLoading();
+          $.ajax({
+            url: '@(Url.Action("DeleteItem", "Organization"))',
+            data: JSON.stringify({ 'EncKeyItem': $inquiryAgent.viewModel.EncKeyItem }),
+            type: "POST",
+            //dataType: "json",
+            contentType: "application/json;charset=utf-8",
+            success: function (data) {
+              hideLoading();
+              if ($.isPlainObject(data)) {
+                if (data.result) {
+                  alertModal('資料已刪除!!');
+                  delete $inquiryAgent.viewModel.EncKeyItem;
+                  delete $inquiryAgent.viewModel.KeyItem;
+                  $global.dataTable.inquireData($tr);
+                } else {
+                  alertModal('刪除未完成，原因：' + data.message);
+                }
+              } else {
+                $(data).appendTo($('body')).remove();
+              }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+              hideLoading();
+              alertModal(thrownError);
+              console.log(xhr.status);
+              console.log(thrownError);
+            }
+          });
+          */
+
+          hideLoading();
+          $('#deleteInfoModal').modal('show');
+        }, 2000);
+      },
+      addHandler() {
+        console.log('add');
       },
       inquireData() {
         // email欄位檢核沒過不送出表單
         if (this.mailValidate) return;
 
         // 表單資料
-        console.log(this.formData);
+        console.log(this.searchFormData);
 
         // var $tr = $tr || $(window.event.target).closest('form').find('div.data-item');
         // $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
