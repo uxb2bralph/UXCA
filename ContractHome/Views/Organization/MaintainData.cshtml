@@ -122,9 +122,9 @@
     </div>
   </section>
 
-  <!-- 廠商資料列表 -->
+  <!-- 廠商資料查詢列表 -->
   <section>
-    <div v-if="companyList.length > 0" class="card p-3">
+    <div v-if="companyList.length > 0" class="card p-3 table-responsive">
       <table class="table table-hover">
         <thead>
           <tr>
@@ -148,15 +148,18 @@
             <td>{{ company.ContactEmail }}</td>
             <td class="text-nowrap">{{ company.UndertakerName }}</td>
             <td class="text-nowrap text-center">
+              <!-- 編輯 -->
               <span data-bs-toggle="tooltip" data-bs-placement="top" title="修改" class="d-inline-block mx-1">
                 <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded"
                   v-on:click="commitData('edit', company)">
                   <i class="fal fa-edit"></i>
                 </button>
               </span>
+              <!-- 刪除 -->
               <span data-bs-toggle="tooltip" data-bs-placement="top" title="刪除" class="d-inline-block mx-1">
                 <button type="button" id="deleteCompany"
-                  class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded" v-on:click="deleteData(company)">
+                  class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded"
+                  v-on:click="openDeleteDialog(company)">
                   <i class="fal fa-trash-alt"></i>
                 </button>
               </span>
@@ -164,6 +167,63 @@
           </tr>
         </tbody>
       </table>
+      <!-- 分頁模組 -->
+      <div class="row g-3 align-items-center justify-content-between">
+        <div class="col-auto">
+          <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mb-0">
+              <!-- 第一頁 -->
+              <li class=" page-item" :class="{'disabled' : page === 1}">
+                <a class="page-link" v-on:click="firstPage">
+                  <i class="far fa-step-backward"></i>
+                </a>
+              </li>
+              <!-- 前一頁 -->
+              <li class=" page-item" :class="{'disabled' : page === 1}">
+                <a class="page-link" v-on:click="previousPage">
+                  <i class="fal fa-chevron-left"></i>
+                </a>
+              </li>
+              <!-- 頁面列表 -->
+              <li v-for="n in totalPages" :key="n" :v-model="page" class="page-item" :class="{'active' : page === n}">
+                <a class="page-link" v-on:click="changePage(n)">{{ n }}</a>
+              </li>
+              <!-- 下一頁 -->
+              <li class="page-item" :class="{'disabled' : page === totalPages}">
+                <a class="page-link" v-on:click="nextPage">
+                  <i class="fal fa-chevron-right"></i>
+                </a>
+              </li>
+              <!-- 最後一頁 -->
+              <li class="page-item" :class="{'disabled' : page === totalPages}">
+                <a class="page-link" v-on:click="lastPage">
+                  <i class="far fa-step-forward"></i>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        <div class="col-auto">
+          <div class="row g-3 align-items-center">
+            <div class="col-auto">
+              <label for="PageSize">每頁筆數：</label>
+            </div>
+            <div class="col-auto">
+              <select v-model="pageSize" class="form-select form-control-sm" name="PageSize" id="PageSize"
+                v-on:change="resetPageSize">
+                <option>10</option>
+                <option>30</option>
+                <option>50</option>
+                <option>100</option>
+                <option>200</option>
+              </select>
+            </div>
+            <div class="col-auto">
+              共 {{ totalPages }} 頁，{{ totalRecordCount }} 筆
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div v-else class="card p-3 text-center">
       <span class="text-danger opacity-50" style="font-size: 50px;">
@@ -400,6 +460,15 @@
       },
       formData: {},
       companyList,
+      /** 分頁 options
+       * totalRecordCount: 總筆數
+       * pageSize: 每頁筆數
+       * totalPages: 總頁數
+       * page: 目前頁面
+       */
+      totalRecordCount: 105,
+      pageSize: 10,
+      page: 1,
       currentCompanyData: {},
       editTitle: null,
       isCompanyName: false,
@@ -415,6 +484,12 @@
       // 搜尋 email 輸入檢核
       searchMailCheck() {
         return this.mailValidate(this.searchFormData.ContactEmail);
+      },
+      // 計算總頁數
+      totalPages() {
+        const totalCount = Number.parseInt(this.totalRecordCount, 10);
+        const pageSize = Number.parseInt(this.pageSize, 10);
+        return Math.ceil(totalCount / pageSize);
       }
     },
     mounted() {
@@ -427,7 +502,7 @@
       });
     },
     methods: {
-      // 新增 / 編輯 表單 Modal
+      // 新增 / 編輯 表單Modal
       commitData(type, data) {
         $('#addNewModal').modal('show');
         const isNew = type === 'addNew';
@@ -441,12 +516,13 @@
           this.formData = { ...data };
         }
       },
-      // 刪除廠商資料
-      deleteData(item) {
+      // 開啟刪除Modal
+      openDeleteDialog(item) {
         console.log('currentCompanyData:', item);
         this.currentCompanyData = item;
         $("#deleteModal").modal('show');
       },
+      // 刪除廠商資料串API
       confirmDel(companyData) {
         console.log('companyData:', companyData);
 
@@ -496,7 +572,7 @@
 
           hideLoading();
           // 開啟訊息視窗
-          this.infoMsg = `<span class='text-primary opacity-75'>" ${ this.currentCompanyData.CompanyID} "</span> 資料已刪除`;
+          this.infoMsg = `<span class='text-primary opacity-75'>" ${this.currentCompanyData.CompanyID} "</span> 資料已刪除`;
           $('#infoModal').modal('show');
         }, 2000);
       },
@@ -561,6 +637,7 @@
       });
         */
       },
+      // 查詢廠商資料
       inquireData() {
         // email欄位檢核沒過不送出表單
         if (this.mailValidate) return;
@@ -593,7 +670,44 @@
       // Reset 欄位檢核
       resetValidate(status) {
         this[status] = false;
-      }
+      },
+      // 設定每頁筆數
+      resetPageSize() {
+        // 重新查詢列表並回傳資料
+        console.log('pageSize:', this.pageSize);
+      },
+      // 換頁
+      changePage(page) {
+        this.page = page;
+        // 重新查詢列表並回傳資料
+        console.log('page:', this.page);
+      },
+      // 第一頁
+      firstPage() {
+        this.page = 1;
+        // 重新查詢列表並回傳資料
+        console.log('page:', this.page);
+      },
+      // 前一頁
+      previousPage() {
+        const currentPage = Number.parseInt(this.page, 10);
+        this.page = currentPage > 1 ? this.page - 1 : currentPage;
+        // 重新查詢列表並回傳資料
+        console.log('page:', this.page);
+      },
+      // 下一頁
+      nextPage() {
+        const currentPage = Number.parseInt(this.page, 10);
+        this.page = currentPage < this.totalPages ? this.page + 1 : currentPage;
+        // 重新查詢列表並回傳資料
+        console.log('page:', this.page);
+      },
+      // 最後一頁
+      lastPage() {
+        this.page = this.totalPages;
+        // 重新查詢列表並回傳資料
+        console.log('page:', this.page);
+      },
     }
   });
   /**
