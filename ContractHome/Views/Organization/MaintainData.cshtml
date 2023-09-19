@@ -44,8 +44,15 @@
               <div class="row">
                 <label for="CompanyName" class="col-sm-12 col-md-3 col-form-label fw-bolder">公司名稱</label>
                 <div class="col-sm-12 col-md-9">
-                  <input v-model="searchFormData.CompanyID" type="text" class="form-control" name="CompanyName"
-                    id="CompanyName" />
+                  <input v-model="searchFormData.CompanyID" type="text" class="form-control" placeholder="可輸入鍵字查詢公司名稱"
+                    id="CompanyName" autocomplete="off" />
+                  <ul v-show="isSearchOptionsOpen" class="list-group mb-3">
+                    <li v-for="(result, index) in searchResults" :key="index"
+                      class="list-group-item list-group-item-action" v-on:click="setResult(result, 'search')"
+                      :class="{'active': index === currentlyCounter}">
+                      {{ result }}
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>
@@ -273,7 +280,14 @@
                       <input v-model="formData.CompanyID" type="text" class="form-control form-control-sm"
                         :class="{'is-invalid': isCompanyName}" id="CompanyName"
                         v-on:focus="resetValidate('isCompanyName')"
-                        v-on:blur="validateField('isCompanyName', formData.CompanyID)" />
+                        v-on:blur="validateField('isCompanyName', formData.CompanyID)" autocomplete="off" />
+                      <ul v-show="isInputOptionsOpen" class="list-group mb-3">
+                        <li v-for="(result, index) in searchResults" :key="index"
+                          class="list-group-item list-group-item-action" v-on:click="setResult(result, 'edit')"
+                          :class="{'active': index === currentlyCounter}">
+                          {{ result }}
+                        </li>
+                      </ul>
                       <div class="invalid-feedback">
                         請輸入公司名稱
                       </div>
@@ -390,6 +404,16 @@
 
 </div>
 <script>
+  // Fake company Data
+  const companyOptions = [
+    'Option 1',
+    'Option 111',
+    'Option 11',
+    'Option 22',
+    'Option 2',
+    'Option 3',
+  ]
+
   // 廠商列表
   const companyList = [
     {
@@ -458,7 +482,9 @@
         ContactEmail: null,
         UndertakerName: null,
       },
-      formData: {},
+      formData: {
+        CompanyID: null,
+      },
       companyList,
       /** 分頁 options
        * totalRecordCount: 總筆數
@@ -478,7 +504,24 @@
       isUndertakerName: false,
       isContactEmail: false,
       isAddr: false,
-      infoMsg: null
+      infoMsg: null,
+      /**
+       * Autocomplete
+       */
+      companyOptions,
+      isSearchOptionsOpen: false,
+      isInputOptionsOpen: false,
+      searchResults: [],
+      currentlyCounter: -1
+    },
+    watch: {
+      // 檢查公司名稱輸入框的值，並執行Autocomplate
+      'searchFormData.CompanyID'() {
+        this.filterResults('search');
+      },
+      'formData.CompanyID'() {
+        this.filterResults('edit');
+      }
     },
     computed: {
       // 搜尋 email 輸入檢核
@@ -510,10 +553,10 @@
         // 新增時加入一筆uuid
         this.formData.uuid = isNew ? ui_uuid() : this.formData.uuid;
         if (type === 'addNew') {
-          this.formData = { ...this.initialFormData };
+          this.formData = JSON.parse(JSON.stringify(this.initialFormData));
         }
         if (type === 'edit') {
-          this.formData = { ...data };
+          this.formData = JSON.parse(JSON.stringify(data));
         }
       },
       // 開啟刪除Modal
@@ -639,6 +682,7 @@
       },
       // 查詢廠商資料
       inquireData() {
+        console.log(this.searchFormData);
         // email欄位檢核沒過不送出表單
         if (this.mailValidate) return;
 
@@ -708,6 +752,48 @@
         // 重新查詢列表並回傳資料
         console.log('page:', this.page);
       },
+      /** 公司名稱 Autocomplate
+       * 篩選出對應輸入框的清單
+       */
+      filterResults(type) {
+        // 搜尋和輸入資料來源不同
+        const inputValue = type === 'search' ? this.searchFormData.CompanyID : this.formData.CompanyID;
+        this.searchResults = !inputValue ? [] : this.companyOptions.filter((item) => {
+          return item.toLowerCase().indexOf(inputValue.toLowerCase()) > -1;
+        });
+        if (type === 'search') {
+          this.isSearchOptionsOpen = this.searchResults.length > 0;
+        }
+        if (type === 'edit') {
+          console.log(this.formData.CompanyID)
+          this.isInputOptionsOpen = this.searchResults.length > 0;
+        }
+      },
+      // 選取值後代入欄位
+      setResult(result, type) {
+        if (this.searchResults.length !== 0) {
+          if (type === 'search') {
+            this.searchFormData.CompanyID = result;
+          }
+          if (type === 'edit') {
+            this.formData.CompanyID = result;
+          }
+          this.clearAll(type);
+        }
+      },
+      // 還原初始化
+      clearAll(type) {
+        this.currentlyCounter = -1;
+        this.$nextTick(() => {
+          if (type === 'search') {
+            this.isSearchOptionsOpen = false;
+          }
+          if (type === 'edit') {
+            this.isInputOptionsOpen = false;
+          }
+
+        })
+      }
     }
   });
   /**
