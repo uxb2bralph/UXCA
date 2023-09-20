@@ -26,7 +26,7 @@
   await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgent.cshtml");
   await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
 }
-<div id="queryIndex" class="container-lg">
+<div id="queryIndex" class="container-lg pt-4">
   <section>
     <!-- 標題 -->
     @{
@@ -114,8 +114,8 @@
     await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "合約列表");
   }
   <section id="queryArea">
-    <div v-if="contractList.length > 0" class="card p-3 table-responsive">
-      <table class="table table-hover">
+    <div v-if="contractList.length > 0" class="card p-2 mb-3 table-responsive">
+      <table class="table table-hover mb-0">
         <thead>
           <tr>
             <th scope="col">
@@ -218,60 +218,60 @@
           </tr>
         </tbody>
       </table>
-      <!-- 分頁模組 -->
-      <div class="row g-3 align-items-center justify-content-between">
-        <div class="col-auto">
-          <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center mb-0">
-              <!-- 第一頁 -->
-              <li class=" page-item" :class="{'disabled' : page === 1}">
-                <a class="page-link" v-on:click="firstPage">
-                  <i class="far fa-step-backward"></i>
-                </a>
-              </li>
-              <!-- 前一頁 -->
-              <li class=" page-item" :class="{'disabled' : page === 1}">
-                <a class="page-link" v-on:click="previousPage">
-                  <i class="fal fa-chevron-left"></i>
-                </a>
-              </li>
-              <!-- 頁面列表 -->
-              <li v-for="n in totalPages" :key="n" :v-model="page" class="page-item" :class="{'active' : page === n}">
-                <a class="page-link" v-on:click="changePage(n)">{{ n }}</a>
-              </li>
-              <!-- 下一頁 -->
-              <li class="page-item" :class="{'disabled' : page === totalPages}">
-                <a class="page-link" v-on:click="nextPage">
-                  <i class="fal fa-chevron-right"></i>
-                </a>
-              </li>
-              <!-- 最後一頁 -->
-              <li class="page-item" :class="{'disabled' : page === totalPages}">
-                <a class="page-link" v-on:click="lastPage">
-                  <i class="far fa-step-forward"></i>
-                </a>
-              </li>
-            </ul>
-          </nav>
-        </div>
-        <div class="col-auto">
-          <div class="row g-3 align-items-center">
-            <div class="col-auto">
-              <label for="PageSize">每頁筆數：</label>
-            </div>
-            <div class="col-auto">
-              <select v-model="pageSize" class="form-select form-control-sm" name="PageSize" id="PageSize"
-                v-on:change="resetPageSize">
-                <option>10</option>
-                <option>30</option>
-                <option>50</option>
-                <option>100</option>
-                <option>200</option>
-              </select>
-            </div>
-            <div class="col-auto">
-              共 {{ totalPages }} 頁，{{ totalRecordCount }} 筆
-            </div>
+    </div>
+    <!-- 分頁模組 -->
+    <div class="row g-3 align-items-center justify-content-between">
+      <div class="col-auto">
+        <nav aria-label="Page navigation">
+          <ul class="pagination justify-content-center mb-0">
+            <!-- 第一頁 -->
+            <li class=" page-item" :class="{'disabled' : page === 1}">
+              <a class="page-link" v-on:click="firstPage">
+                <i class="far fa-step-backward"></i>
+              </a>
+            </li>
+            <!-- 前一頁 -->
+            <li class=" page-item" :class="{'disabled' : page === 1}">
+              <a class="page-link" v-on:click="previousPage">
+                <i class="fal fa-chevron-left"></i>
+              </a>
+            </li>
+            <!-- 頁面列表 -->
+            <li v-for="n in totalPages" :key="n" :v-model="page" class="page-item" :class="{'active' : page === n}">
+              <a class="page-link" v-on:click="changePage(n)">{{ n }}</a>
+            </li>
+            <!-- 下一頁 -->
+            <li class="page-item" :class="{'disabled' : page === totalPages}">
+              <a class="page-link" v-on:click="nextPage">
+                <i class="fal fa-chevron-right"></i>
+              </a>
+            </li>
+            <!-- 最後一頁 -->
+            <li class="page-item" :class="{'disabled' : page === totalPages}">
+              <a class="page-link" v-on:click="lastPage">
+                <i class="far fa-step-forward"></i>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+      <div class="col-auto">
+        <div class="row g-3 align-items-center">
+          <div class="col-auto">
+            <label for="PageSize">每頁筆數：</label>
+          </div>
+          <div class="col-auto">
+            <select v-model="pageSize" class="form-select form-control-sm" name="PageSize" id="PageSize"
+              v-on:change="resetPageSize">
+              <option>10</option>
+              <option>30</option>
+              <option>50</option>
+              <option>100</option>
+              <option>200</option>
+            </select>
+          </div>
+          <div class="col-auto">
+            共 {{ totalPages }} 頁，{{ totalRecordCount }} 筆
           </div>
         </div>
       </div>
