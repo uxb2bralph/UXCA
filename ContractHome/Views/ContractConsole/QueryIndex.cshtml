@@ -53,7 +53,8 @@
               <div class="row">
                 <label for="ContractDateFrom" class="col-sm-12 col-md-3 col-form-label fw-bolder">建檔起日</label>
                 <div class="col-sm-12 col-md-9">
-                  <input type="text" class="form-control" name="ContractDateFrom" id="ContractDateFrom" />
+                  <input v-model="formData.ContractDateFrom" type="text" class="form-control" name="ContractDateFrom"
+                    id="ContractDateFrom" />
                 </div>
               </div>
             </div>
@@ -100,6 +101,9 @@
         <button type="button" class="btn-primary" onclick="$global.dataTable.commitData();">修改</button>
         <button type="button" class="btn-danger" onclick="$global.dataTable.deleteData();">刪除</button>*@
         <div class="ms-auto">
+          <button type="button" class="btn btn-secondary opacity-75" v-on:click="resetHandler">重設</button>
+        </div>
+        <div>
           <button type="button" class="btn-primary" v-on:click="inquireData"
             onclick="$global.dataTable.inquireData();">查詢</button>
         </div>
@@ -388,6 +392,16 @@
           page: this.page
         }
         console.log('payload:', payload);
+      },
+      // 重設查詢
+      resetHandler() {
+        this.formData = {
+          No: null,
+          ContractDateFrom: null,
+          ContractDateTo: null,
+          Initiator: null,
+          Contractor: null
+        }
       },
       sortHandler(dataField, status) {
         console.log(dataField, status);

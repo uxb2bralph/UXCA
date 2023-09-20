@@ -123,7 +123,10 @@
           </button>
         </div>
         <div class="ms-auto">
-          <button type="button" class="btn-primary" v-on:click="inquireData"
+          <button type="button" class="btn btn-secondary opacity-75" v-on:click="resetHandler">重設</button>
+        </div>
+        <div>
+          <button type="button" class="btn btn-primary" v-on:click="inquireData"
             :disabled="this.searchMailCheck">查詢</button>
         </div>
       </div>
@@ -702,6 +705,12 @@
           page: this.page
         }
         console.log('payload:', payload);
+      },
+
+      // 重設查詢
+      resetHandler() {
+        this.searchFormData = JSON.parse(JSON.stringify(this.initialFormData));
+        delete this.searchFormData.uuid;
       },
 
       // 查詢 email 欄位驗證
