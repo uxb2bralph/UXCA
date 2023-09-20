@@ -9,137 +9,519 @@
 @using CommonLib.Utility
 @using Newtonsoft.Json
 @{
-    Layout = "~/Views/Shared/MasterPage.cshtml";
+  Layout = "~/Views/Shared/MasterPage.cshtml";
 
-    ModelStateDictionary _modelState;
-    ModelSource? models;
+  ModelStateDictionary _modelState;
+  ModelSource? models;
 
-    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
-    _modelState = (ModelStateDictionary)ViewBag.ModelState;
-    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+  models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+  _modelState = (ModelStateDictionary)ViewBag.ModelState;
+  QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
 
-    _viewModel.UrlAction = Url.Action("InquireData", "ContractConsole");
+  _viewModel.UrlAction = Url.Action("InquireData", "ContractConsole");
 
 }
-<div class="container">
+@{
+  // await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
+  await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgent.cshtml");
+  await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
+}
+<div id="queryIndex" class="container-lg">
+  <section>
+    <!-- 標題 -->
     @{
-        <section>
-            <!-- Section title -->
-            @{
-                await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
-                await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "合約查詢");
-                await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgent.cshtml");
-                await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
-            }
-
-            <!--Section: Demo-->
-            <section class="pb-4" id="queryArea">
-                <div class="bg-white border rounded-5">
-                    <section class="w-100 p-4 d-flex justify-content-center pb-4">
-                        <form method="post" enctype="multipart/form-data">
-                            <div class="row data-item">
-                                @{
-                                    await Html.RenderPartialAsync("~/Views/ContractConsole/Module/QueryItem.cshtml");
-                                }
-                            </div>
-                            <div class="row">
-                                <div class="col-md-4 mt-2">
-                                    @*<button type="button" class="btn-primary" onclick="$global.dataTable.commitData(true);">新增</button>
-                                    <button type="button" class="btn-primary" onclick="$global.dataTable.commitData();">修改</button>
-                                    <button type="button" class="btn-danger" onclick="$global.dataTable.deleteData();">刪除</button>*@
-                                    <button type="button" class="btn-primary" onclick="$global.dataTable.inquireData();">查詢</button>
-                                </div>
-                            </div>
-                        </form>
-                        <script>
-                            $global.dataTable = {
-                                'inquireData': function ($tr) {
-                                    var $tr = $tr || $(window.event.target).closest('form').find('div.data-item');
-                                    $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
-                                    $inquiryAgent.inquire();
-                                },
-                                'commitData': function (addNew) {
-                                    if(addNew) {
-                                        delete $inquiryAgent.viewModel.EncKeyItem;
-                                        delete $inquiryAgent.viewModel.KeyItem;
-                                    }
-                                    var $tr = $(window.event.target).closest('form').find('div.data-item');
-                                    $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
-                                    showLoading();
-                                    $.ajax({
-                                        url: '@(Url.Action("CommitItem", "Organization"))',
-                                        data: JSON.stringify($inquiryAgent.viewModel),
-                                        type: "POST",
-                                        //dataType: "json",
-                                        contentType: "application/json;charset=utf-8",
-                                        success: function (data) {
-                                            hideLoading();
-                                            if ($.isPlainObject(data)) {
-                                                if(data.result) {
-                                                    alertModal('存檔完成!!');
-                                                } else {
-                                                    alertModal('存檔失敗，原因：'+data.message);
-                                                }
-                                            } else {
-                                                $('body').append($(data));
-                                            }
-                                        },
-                                        error: function (xhr, ajaxOptions, thrownError) {
-                                            hideLoading();
-                                            alertModal(thrownError);
-                                            console.log(xhr.status);
-                                            console.log(thrownError);
-                                        }
-                                    });
-                                },
-                                'deleteData': function () {
-                                    if (!confirm('請確認刪除資料？刪除後無法復原！')) {
-                                        return;
-                                    }
-                                    var $tr = $(window.event.target).closest('form').find('div.data-item');
-                                    showLoading();
-                                    $.ajax({
-                                        url: '@(Url.Action("DeleteItem", "Organization"))',
-                                        data: JSON.stringify({'EncKeyItem': $inquiryAgent.viewModel.EncKeyItem}),
-                                        type: "POST",
-                                        //dataType: "json",
-                                        contentType: "application/json;charset=utf-8",
-                                        success: function (data) {
-                                            hideLoading();
-                                            if ($.isPlainObject(data)) {
-                                                if (data.result) {
-                                                    alertModal('資料已刪除!!');
-                                                    delete $inquiryAgent.viewModel.EncKeyItem;
-                                                    delete $inquiryAgent.viewModel.KeyItem;
-                                                    $global.dataTable.inquireData($tr);
-                                                } else {
-                                                    alertModal('刪除未完成，原因：' + data.message);
-                                                }
-                                            } else {
-                                                $(data).appendTo($('body')).remove();
-                                            }
-                                        },
-                                        error: function (xhr, ajaxOptions, thrownError) {
-                                            hideLoading();
-                                            alertModal(thrownError);
-                                            console.log(xhr.status);
-                                            console.log(thrownError);
-                                        }
-                                    });
-                                },
-
-                            }
-                            $inquiryAgent.showQueryResult = function (data) {
-                                $inquiryAgent.$queryResult = $(data);
-                                var $tr = $('#queryArea');
-                                $tr.after($inquiryAgent.$queryResult);
-                            }
-                        </script>
-
-                    </section>
-                </div>
-            </section>
-        </section>
+      await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "合約查詢");
     }
-</div>
 
+    <!-- 合約搜尋 -->
+    <div class="card">
+      <form v-on:submit.prevent method="post" enctype="multipart/form-data">
+        <div class="container">
+          <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3 m-3 mb-lg-0 data-item">
+            @{
+      // await Html.RenderPartialAsync("~/Views/ContractConsole/Module/QueryItem.cshtml");
+            }
+            <div class="col input__height">
+              <div class="row">
+                <label for="No" class="col-sm-12 col-md-3 col-form-label fw-bolder">合約號碼</label>
+                <div class="col-sm-12 col-md-9">
+                  <input v-model="formData.No" type=" text" class="form-control" name="No" id="No" />
+                </div>
+              </div>
+            </div>
+            <div class="col input__height">
+              <div class="row">
+                <label for="ContractDateFrom" class="col-sm-12 col-md-3 col-form-label fw-bolder">建檔起日</label>
+                <div class="col-sm-12 col-md-9">
+                  <input type="text" class="form-control" name="ContractDateFrom" id="ContractDateFrom" />
+                </div>
+              </div>
+            </div>
+            <div class="col input__height">
+              <div class="row">
+                <label for="ContractDateTo" class="col-sm-12 col-md-3 col-form-label fw-bolder">建檔迄日</label>
+                <div class="col-sm-12 col-md-9">
+                  <input v-model="formData.ContractDateTo" type="text" class="form-control" name="ContractDateTo"
+                    id="ContractDateTo" />
+                </div>
+              </div>
+            </div>
+            <div class="col input__height">
+              <div class="row">
+                <label for="Initiator" class="col-sm-12 col-md-3 col-form-label fw-bolder">起約人</label>
+                @{
+                  // await Html.RenderPartialAsync("~/Views/Home/Module/CompanyQuickSearch.cshtml", "Initiator");
+                }
+                <div class="col-sm-12 col-md-9">
+                  <input v-model="formData.Initiator" type="text" class="form-control" name="Initiator"
+                    id="Initiator" />
+                </div>
+              </div>
+            </div>
+            <div class="col input__height">
+              <div class="row">
+                <label for="Contractor" class="col-sm-12 col-md-3 col-form-label fw-bolder">簽約人</label>
+                @{
+      // await Html.RenderPartialAsync("~/Views/Home/Module/CompanyQuickSearch.cshtml", "Contractor");
+                }
+                <div class="col-sm-12 col-md-9">
+                  <input v-model="formData.Contractor" type="text" class="form-control" name="Contractor"
+                    id="Contractor" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="row">
+      <div class="col-12 hstack gap-3 py-3">
+        @*<button type="button" class="btn-primary" onclick="$global.dataTable.commitData(true);">新增</button>
+        <button type="button" class="btn-primary" onclick="$global.dataTable.commitData();">修改</button>
+        <button type="button" class="btn-danger" onclick="$global.dataTable.deleteData();">刪除</button>*@
+        <div class="ms-auto">
+          <button type="button" class="btn-primary" v-on:click="inquireData"
+            onclick="$global.dataTable.inquireData();">查詢</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 合約資料查詢列表 -->
+  <!-- 標題 -->
+  @{
+    await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "合約列表");
+  }
+  <section id="queryArea">
+    <div v-if="contractList.length > 0" class="card p-3 table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th scope="col">
+              建檔日期
+              <a href="javascript:void(0);" v-on:click="sortHandler('ContractDateFrom', 'isSortDateFrom')">
+                <i class="fas fa-sort-amount-down"
+                  :class="[isSortDateFrom ? 'fa-sort-amount-down' : 'fa-sort-amount-down']"></i>
+              </a>
+            </th>
+            <th scope="col">起約人</th>
+            <th scope="col">簽約人</th>
+            <th scope="col">合約編號</th>
+            <th scope="col">用印狀態</th>
+            <th scope="col">簽約狀態</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(contract, index) in contractList" :key="`c_${index}`">
+            <td class="align-middle text-nowrap">{{ contract.ContractDateFrom }}</td>
+            <td class="align-middle text-nowrap">{{ contract.Initiator }}</td>
+            <td class="align-middle text-nowrap">{{ contract.Contractor }}</td>
+            <td class="align-middle"><a :href="`/ContractConsole/ShowCurrentContract?KeyID=${contract.KeyID}`">{{
+                contract.No
+                }}</a></td>
+            <td>
+              <!-- 用印流程 -->
+              <div class="progresses__wrapper">
+                <div class="progresses__stepGroup">
+                  <div class="fw-bolder"
+                    :class="[!!contract.InitiatorStampDate ? 'text-primary opacity-75' : 'text-danger']">
+                    {{ contract.InitiatorStampDate ? '已用印' : '未用印'}}
+                  </div>
+                  <div class="progresses__steps" :class="{'progresses__steps--done': contract.InitiatorStampDate }">
+                    <span><i class="fas" :class="[!!contract.InitiatorStampDate ? 'fa-stamp': 'fa-circle']"></i></span>
+                  </div>
+                  <div class="text-secondary fw-bolder">起約人</div>
+                </div>
+                <span class="progresses__line"
+                  :class="{'progresses__line--done': contract.ContractorStampDate }"></span>
+                <div class="progresses__stepGroup">
+                  <div class="fw-bolder"
+                    :class="[!!contract.ContractorStampDate ? 'text-primary opacity-75' : 'text-danger']">
+                    {{ contract.ContractorStampDate ? '已用印' : '未用印'}}
+                  </div>
+                  <div class="progresses__steps" :class="{'progresses__steps--done': contract.ContractorStampDate }">
+                    <span><i class="fas"
+                        :class="[!!contract.ContractorStampDate ? 'fa-stamp' : 'fa-circle']"></i></span>
+                  </div>
+                  <div class="text-secondary fw-bolder">簽約人</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <!-- 簽署流程 -->
+              <div class="progresses__wrapper">
+                <div class="progresses__stepGroup">
+                  <div class="fw-bolder"
+                    :class="[!!contract.InitiatorSignerID ? 'text-primary opacity-75': 'text-danger']">
+                    {{ contract.InitiatorSignerID ? '已簽署' : '未簽署'}}
+                  </div>
+                  <div class="progresses__steps progresses__signature"
+                    :class="{'progresses__steps--done': contract.InitiatorSignerID }">
+                    <span><i class="fas"
+                        :class="[!!contract.InitiatorSignerID ? 'fa-signature' : 'fa-circle']"></i></span>
+                  </div>
+                  <div class="text-secondary fw-bolder">起約人</div>
+                </div>
+                <span class="progresses__line progresses__signature"
+                  :class="{'progresses__line--done': contract.ContractorSignerID }"></span>
+                <div class="progresses__stepGroup">
+                  <div class="fw-bolder"
+                    :class="[!!contract.ContractorSignerID ? 'text-primary opacity-75' : 'text-danger']">
+                    {{ contract.ContractorSignerID ? '已簽署' : '未簽署'}}
+                  </div>
+                  <div class="progresses__steps progresses__signature"
+                    :class="{'progresses__steps--done': contract.ContractorSignerID }">
+                    <span><i class="fas"
+                        :class="[!!contract.ContractorSignerID ? 'fa-signature' : 'fa-circle']"></i></span>
+                  </div>
+                  <div class="text-secondary fw-bolder">簽約人</div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <!-- 分頁模組 -->
+      <div class="row g-3 align-items-center justify-content-between">
+        <div class="col-auto">
+          <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mb-0">
+              <!-- 第一頁 -->
+              <li class=" page-item" :class="{'disabled' : page === 1}">
+                <a class="page-link" v-on:click="firstPage">
+                  <i class="far fa-step-backward"></i>
+                </a>
+              </li>
+              <!-- 前一頁 -->
+              <li class=" page-item" :class="{'disabled' : page === 1}">
+                <a class="page-link" v-on:click="previousPage">
+                  <i class="fal fa-chevron-left"></i>
+                </a>
+              </li>
+              <!-- 頁面列表 -->
+              <li v-for="n in totalPages" :key="n" :v-model="page" class="page-item" :class="{'active' : page === n}">
+                <a class="page-link" v-on:click="changePage(n)">{{ n }}</a>
+              </li>
+              <!-- 下一頁 -->
+              <li class="page-item" :class="{'disabled' : page === totalPages}">
+                <a class="page-link" v-on:click="nextPage">
+                  <i class="fal fa-chevron-right"></i>
+                </a>
+              </li>
+              <!-- 最後一頁 -->
+              <li class="page-item" :class="{'disabled' : page === totalPages}">
+                <a class="page-link" v-on:click="lastPage">
+                  <i class="far fa-step-forward"></i>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        <div class="col-auto">
+          <div class="row g-3 align-items-center">
+            <div class="col-auto">
+              <label for="PageSize">每頁筆數：</label>
+            </div>
+            <div class="col-auto">
+              <select v-model="pageSize" class="form-select form-control-sm" name="PageSize" id="PageSize"
+                v-on:change="resetPageSize">
+                <option>10</option>
+                <option>30</option>
+                <option>50</option>
+                <option>100</option>
+                <option>200</option>
+              </select>
+            </div>
+            <div class="col-auto">
+              共 {{ totalPages }} 頁，{{ totalRecordCount }} 筆
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div v-else class="card p-3 text-center">
+      <span class="text-danger opacity-50" style="font-size: 50px;">
+        <i class="fal fa-box-full"></i>
+      </span>
+      <span class="text-primary">目前尚無合約資料</span>
+    </div>
+  </section>
+
+</div>
+<script>
+  // 合約列表
+  const contractList = [
+    {
+      uuid: '111',
+      No: 'CS-000100000',
+      ContractDateFrom: '2023/08/22 14:58',
+      Initiator: '網際優勢甲方公司',
+      Contractor: '網際優勢乙方公司',
+      InitiatorStampDate: null,
+      ContractorStampDate: null,
+      InitiatorSignerID: null,
+      ContractorSignerID: null,
+      KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D'
+    },
+    {
+      uuid: '222',
+      No: 'CS-000100001',
+      ContractDateFrom: '2023/08/22 14:58',
+      Initiator: '網際優勢甲方公司',
+      Contractor: '網際優勢乙方公司',
+      InitiatorStampDate: '2023/08/22 14:58',
+      ContractorStampDate: null,
+      InitiatorSignerID: null,
+      ContractorSignerID: null,
+      KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D'
+    },
+    {
+      uuid: '333',
+      No: 'CS-000100002',
+      ContractDateFrom: '2023/08/23 14:20',
+      Initiator: '網際優勢甲方公司',
+      Contractor: '網際優勢乙方公司',
+      InitiatorStampDate: '2023/08/23 14:20',
+      ContractorStampDate: '2023/08/23 14:20',
+      InitiatorSignerID: null,
+      ContractorSignerID: null,
+      KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D'
+    },
+    {
+      uuid: '444',
+      No: 'CS-000100003',
+      ContractDateFrom: '2023/08/24 13:58',
+      Initiator: '網際優勢甲方公司',
+      Contractor: '網際優勢乙方公司',
+      InitiatorStampDate: '2023/08/24 13:58',
+      ContractorStampDate: '2023/08/24 13:58',
+      InitiatorSignerID: 's-1234',
+      ContractorSignerID: null,
+      KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D'
+    },
+    {
+      uuid: '555',
+      No: 'CS-000100004',
+      ContractDateFrom: '2023/08/25 10:58',
+      Initiator: '網際優勢甲方公司',
+      Contractor: '網際優勢乙方公司',
+      InitiatorStampDate: '2023/08/25 10:58',
+      ContractorStampDate: '2023/08/25 10:58',
+      InitiatorSignerID: 's-1234',
+      ContractorSignerID: 's-5678',
+      KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D'
+    },
+  ];
+  var app = new Vue({
+    el: '#queryIndex',
+    data: {
+      /**
+       * 合約查詢表單
+       * @@param {string} No 合約號碼
+       * @@param {string} ContractDateFrom 建檔起日
+       * @@param {string} ContractDateTo 建檔迄日
+       * @@param {string} Initiator 起約人
+       * @@param {string} Contractor 簽約人
+       */
+      formData: {
+        No: null,
+        ContractDateFrom: null,
+        ContractDateTo: null,
+        Initiator: null,
+        Contractor: null
+      },
+      /** 分頁 options
+       * totalRecordCount: 總筆數
+       * pageSize: 每頁筆數
+       * totalPages: 總頁數
+       * page: 目前頁面
+       */
+      totalRecordCount: 105,
+      pageSize: 10,
+      page: 1,
+      contractList,
+      isSortDateFrom: true
+    },
+    computed: {
+      // 計算總頁數
+      totalPages() {
+        const totalCount = Number.parseInt(this.totalRecordCount, 10);
+        const pageSize = Number.parseInt(this.pageSize, 10);
+        return Math.ceil(totalCount / pageSize);
+      }
+    },
+    methods: {
+      // 查詢合約列表
+      inquireData() {
+        // 執行查詢合約列表
+        this.page = 1;
+        this.fetchAPI();
+        // var $tr = $tr || $(window.event.target).closest('form').find('div.data-item');
+        // $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
+        // $inquiryAgent.inquire();
+      },
+      fetchAPI() {
+        // 執行查詢合約列表
+        const payload = {
+          data: this.formData,
+          pageSize: this.pageSize,
+          page: this.page
+        }
+        console.log('payload:', payload);
+      },
+      sortHandler(dataField, status) {
+        console.log(dataField, status);
+  @* this.[status] = !this.[status]; *@
+
+      },
+      // Reset 欄位檢核
+      resetValidate(status) {
+        this[status] = false;
+      },
+      // 設定每頁筆數
+      resetPageSize() {
+        // 重新查詢列表並回傳資料
+        // 每次切換時，都要回到第1頁
+        this.page = 1;
+        this.fetchAPI();
+      },
+      // 換頁
+      changePage(page) {
+        this.page = page;
+        // 重新查詢列表並回傳資料
+        this.fetchAPI();
+      },
+      // 第一頁
+      firstPage() {
+        this.page = 1;
+        // 重新查詢列表並回傳資料
+        this.fetchAPI();
+      },
+      // 前一頁
+      previousPage() {
+        const currentPage = Number.parseInt(this.page, 10);
+        this.page = currentPage > 1 ? this.page - 1 : currentPage;
+        // 重新查詢列表並回傳資料
+        this.fetchAPI();
+      },
+      // 下一頁
+      nextPage() {
+        const currentPage = Number.parseInt(this.page, 10);
+        this.page = currentPage < this.totalPages ? this.page + 1 : currentPage;
+        // 重新查詢列表並回傳資料
+        this.fetchAPI();
+      },
+      // 最後一頁
+      lastPage() {
+        this.page = this.totalPages;
+        // 重新查詢列表並回傳資料
+        this.fetchAPI();
+      },
+    }
+  });
+
+  $global.dataTable = {
+    'inquireData': function ($tr) {
+      var $tr = $tr || $(window.event.target).closest('form').find('div.data-item');
+      $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
+      $inquiryAgent.inquire();
+    },
+    /**
+      'commitData': function (addNew) {
+        if (addNew) {
+          delete $inquiryAgent.viewModel.EncKeyItem;
+          delete $inquiryAgent.viewModel.KeyItem;
+        }
+        var $tr = $(window.event.target).closest('form').find('div.data-item');
+        $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
+        showLoading();
+        $.ajax({
+          url: '@(Url.Action("CommitItem", "Organization"))',
+          data: JSON.stringify($inquiryAgent.viewModel),
+          type: "POST",
+          //dataType: "json",
+          contentType: "application/json;charset=utf-8",
+          success: function (data) {
+            hideLoading();
+            if ($.isPlainObject(data)) {
+              if (data.result) {
+                alertModal('存檔完成!!');
+              } else {
+                alertModal('存檔失敗，原因：' + data.message);
+              }
+            } else {
+              $('body').append($(data));
+            }
+          },
+          error: function (xhr, ajaxOptions, thrownError) {
+            hideLoading();
+            alertModal(thrownError);
+            console.log(xhr.status);
+            console.log(thrownError);
+          }
+        });
+      },
+      'deleteData': function () {
+        if (!confirm('請確認刪除資料？刪除後無法復原！')) {
+          return;
+        }
+        var $tr = $(window.event.target).closest('form').find('div.data-item');
+        showLoading();
+        $.ajax({
+          url: '@(Url.Action("DeleteItem", "Organization"))',
+          data: JSON.stringify({ 'EncKeyItem': $inquiryAgent.viewModel.EncKeyItem }),
+          type: "POST",
+          //dataType: "json",
+          contentType: "application/json;charset=utf-8",
+          success: function (data) {
+            hideLoading();
+            if ($.isPlainObject(data)) {
+              if (data.result) {
+                alertModal('資料已刪除!!');
+                delete $inquiryAgent.viewModel.EncKeyItem;
+                delete $inquiryAgent.viewModel.KeyItem;
+                $global.dataTable.inquireData($tr);
+              } else {
+                alertModal('刪除未完成，原因：' + data.message);
+              }
+            } else {
+              $(data).appendTo($('body')).remove();
+            }
+          },
+          error: function (xhr, ajaxOptions, thrownError) {
+            hideLoading();
+            alertModal(thrownError);
+            console.log(xhr.status);
+            console.log(thrownError);
+          }
+        });
+      },
+    */
+
+  }
+  $inquiryAgent.showQueryResult = function (data) {
+    $inquiryAgent.$queryResult = $(data);
+    var $tr = $('#queryArea');
+    $tr.after($inquiryAgent.$queryResult);
+  }
+</script>

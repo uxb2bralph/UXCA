@@ -32,7 +32,7 @@
 
     <!-- 廠商資料維護搜尋-->
     <div class="card">
-      <form v-on:submit.prevent="inquireData" method="post" enctype="multipart/form-data">
+      <form v-on:submit.prevent method="post" enctype="multipart/form-data">
         <div class="container">
           <!--
           @{
@@ -123,7 +123,8 @@
           </button>
         </div>
         <div class="ms-auto">
-          <button type="button" class="btn btn-primary" v-on:click="inquireData">查詢</button>
+          <button type="button" class="btn-primary" v-on:click="inquireData"
+            :disabled="this.searchMailCheck">查詢</button>
         </div>
       </div>
     </div>
@@ -682,16 +683,25 @@
       },
       // 查詢廠商資料
       inquireData() {
-        console.log(this.searchFormData);
         // email欄位檢核沒過不送出表單
-        if (this.mailValidate) return;
+        if (this.searchMailCheck) return;
 
         // 表單資料
-        console.log(this.searchFormData);
+        this.page = 1;
+        this.fetchAPI();
 
         // var $tr = $tr || $(window.event.target).closest('form').find('div.data-item');
         // $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
         // $inquiryAgent.inquire();
+      },
+      fetchAPI() {
+        // 執行查詢合約列表
+        const payload = {
+          data: this.searchFormData,
+          pageSize: this.pageSize,
+          page: this.page
+        }
+        console.log('payload:', payload);
       },
 
       // 查詢 email 欄位驗證
@@ -718,39 +728,41 @@
       // 設定每頁筆數
       resetPageSize() {
         // 重新查詢列表並回傳資料
-        console.log('pageSize:', this.pageSize);
+        // 每次切換時，都要回到第1頁z
+        this.page = 1;
+        this.fetchAPI();
       },
       // 換頁
       changePage(page) {
         this.page = page;
         // 重新查詢列表並回傳資料
-        console.log('page:', this.page);
+        this.fetchAPI();
       },
       // 第一頁
       firstPage() {
         this.page = 1;
         // 重新查詢列表並回傳資料
-        console.log('page:', this.page);
+        this.fetchAPI();
       },
       // 前一頁
       previousPage() {
         const currentPage = Number.parseInt(this.page, 10);
         this.page = currentPage > 1 ? this.page - 1 : currentPage;
         // 重新查詢列表並回傳資料
-        console.log('page:', this.page);
+        this.fetchAPI();
       },
       // 下一頁
       nextPage() {
         const currentPage = Number.parseInt(this.page, 10);
         this.page = currentPage < this.totalPages ? this.page + 1 : currentPage;
         // 重新查詢列表並回傳資料
-        console.log('page:', this.page);
+        this.fetchAPI();
       },
       // 最後一頁
       lastPage() {
         this.page = this.totalPages;
         // 重新查詢列表並回傳資料
-        console.log('page:', this.page);
+        this.fetchAPI();
       },
       /** 公司名稱 Autocomplate
        * 篩選出對應輸入框的清單
