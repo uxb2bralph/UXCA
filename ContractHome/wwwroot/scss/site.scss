@@ -123,6 +123,8 @@
     display: flex;
     width: 35px;
     height: 35px;
+    margin-top: 4px;
+    margin-bottom: 2px;
     align-items: center;
     justify-content: center;
     background-color: #B5BABE;
@@ -142,6 +144,9 @@
     &--done {
       background-color: #63d19e;
     }
+    &--w200 {
+      width: 200px;
+    }
   }
   &__signature {    
     &.progresses__steps--done {
@@ -151,4 +156,25 @@
       background-color: #FFA500;
     }
   }
+  // 流程廠商區塊設定
+  &__company {
+    width: 60px;
+    height: 31px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+// 顏色
+.cornflowerBlue {
+  color: #6495ED;
+}
+.mediumSlateBlue {
+  color: #7B68EE;
+}
+
+// 陰影
+.boxShadow {
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
