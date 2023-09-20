@@ -135,6 +135,10 @@
 
   <!-- 廠商資料查詢列表 -->
   <section>
+    <!-- 標題 -->
+    @{
+      await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "廠商列表");
+    }
     <div v-if="companyList.length > 0" class="card p-3 table-responsive">
       <table class="table table-hover">
         <thead>
