@@ -97,9 +97,6 @@
     </div>
     <div class="row">
       <div class="col-12 hstack gap-3 py-3">
-        @*<button type="button" class="btn-primary" onclick="$global.dataTable.commitData(true);">新增</button>
-        <button type="button" class="btn-primary" onclick="$global.dataTable.commitData();">修改</button>
-        <button type="button" class="btn-danger" onclick="$global.dataTable.deleteData();">刪除</button>*@
         <div class="ms-auto">
           <button type="button" class="btn btn-secondary opacity-75" v-on:click="resetHandler">重設</button>
         </div>
@@ -123,14 +120,30 @@
           <tr>
             <th scope="col">
               建檔日期
-              <a href="javascript:void(0);" v-on:click="sortHandler('ContractDateFrom', 'isSortDateFrom')">
-                <i class="fas fa-sort-amount-down"
-                  :class="[isSortDateFrom ? 'fa-sort-amount-down' : 'fa-sort-amount-down']"></i>
+              <!-- DESC -->
+              <a v-if="isSortDateFrom" href="javascript:void(0);"
+                v-on:click="sortHandler('ContractDateFrom', 'isSortDateFrom', true)">
+                <i class="fas fa-sort-amount-down"></i>
+              </a>
+              <!-- ASC -->
+              <a v-else href="javascript:void(0);"
+                v-on:click="sortHandler('ContractDateFrom', 'isSortDateFrom', false)">
+                <i class="fas fa-sort-amount-down-alt"></i>
               </a>
             </th>
             <th scope="col">起約人</th>
             <th scope="col">簽約人</th>
-            <th scope="col">合約編號</th>
+            <th scope="col">
+              合約編號
+              <!-- DESC -->
+              <a v-if="isSortNo" href="javascript:void(0);" v-on:click="sortHandler('No', 'isSortNo', true)">
+                <i class="fas fa-sort-amount-down"></i>
+              </a>
+              <!-- ASC -->
+              <a v-else href="javascript:void(0);" v-on:click="sortHandler('No', 'isSortNo', false)">
+                <i class="fas fa-sort-amount-down-alt"></i>
+              </a>
+            </th>
             <th scope="col">用印狀態</th>
             <th scope="col">簽約狀態</th>
           </tr>
@@ -346,6 +359,10 @@
        * @@param {string} ContractDateTo 建檔迄日
        * @@param {string} Initiator 起約人
        * @@param {string} Contractor 簽約人
+       * @@param {string} pageSize 每頁筆數
+       * @@param {string} page 目前頁面
+       * @@param {string} sort 排序欄位
+       * @@param {boolean} desc 排序
        */
       formData: {
         No: null,
@@ -363,8 +380,11 @@
       totalRecordCount: 105,
       pageSize: 10,
       page: 1,
+      sort: null,
+      desc: true,
       contractList,
-      isSortDateFrom: true
+      isSortDateFrom: true,
+      isSortNo: true
     },
     computed: {
       // 計算總頁數
@@ -389,7 +409,9 @@
         const payload = {
           data: this.formData,
           pageSize: this.pageSize,
-          page: this.page
+          page: this.page,
+          sort: this.sort,
+          desc: this.desc
         }
         console.log('payload:', payload);
       },
@@ -403,10 +425,12 @@
           Contractor: null
         }
       },
-      sortHandler(dataField, status) {
-        console.log(dataField, status);
-  @* this.[status] = !this.[status]; *@
-
+      sortHandler(dataField, status, sortStatus) {
+        console.log(dataField, status, sortStatus);
+        this.sort = dataField;
+        this.desc = sortStatus;
+        this[status] = !this[status];
+        this.fetchAPI();
       },
       // Reset 欄位檢核
       resetValidate(status) {
