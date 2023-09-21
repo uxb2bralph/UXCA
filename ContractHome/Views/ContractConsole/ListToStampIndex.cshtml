@@ -30,8 +30,20 @@
   <!-- 合約資料列表 -->
   <!-- 標題 -->
   @{
-    await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "合約清單");
+    // await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "合約清單");
   }
+
+  <div class="row">
+    <div class="col-12 hstack gap-3 py-3">
+      <h3 class="mb-3 fw-bolder">合約清單</h3>
+      <div class="ms-auto">
+        <button type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="新增合約"
+          class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="addHandler">
+          <i class="fal fa-file-plus"></i>
+        </button>
+      </div>
+    </div>
+  </div>
   <section id="queryArea">
     <div v-if="contractList.length > 0">
       <div class="card p-2 mb-3 table-responsive">
@@ -80,8 +92,14 @@
 
               </td>
               <td class="align-middle">
-                <div><span class="badge bg-primary">起約人</span>：{{ contract.Initiator }}</div>
-                <div><span class="badge bg-warning text-dark">簽約人</span>：{{ contract.Contractor }}</div>
+                <div>
+                  <span class="badge bg-primary opacity-75">起約人</span>：
+                  <span class="fw-bolder">{{ contract.Initiator }}</span>
+                </div>
+                <div>
+                  <span class="badge bg-warning text-dark opacity-75">簽約人</span>：
+                  <span class="fw-bolder">{{ contract.Contractor }}</span>
+                </div>
               </td>
               <td>
                 <!-- 用印流程 -->
@@ -92,16 +110,20 @@
                         已用印
                       </span>
                       <div v-else>
-                        <button type="button" class="btn opacity-75 btn-sm boxShadow"
-                          :class="[contract.isContractor ? 'btn-secondary' : 'btn-primary']"
-                          :disabled="contract.isContractor">待用印</button>
+                        <button type="button" class="btn btn-sm boxShadow"
+                          :class="[contract.isContractor ? 'btn-secondary' : 'btn-stamp']"
+                          :disabled="contract.isContractor">
+                          <i class="fas fa-stamp"></i> 待用印
+                        </button>
                       </div>
                     </div>
                     <div class="progresses__steps" :class="{'progresses__steps--done': contract.InitiatorStampDate }">
                       <span><i class="fas"
                           :class="[!!contract.InitiatorStampDate ? 'fa-stamp': 'fa-circle']"></i></span>
                     </div>
-                    <div class="progresses__company">起約人</div>
+                    <div class="progresses__company">
+                      <span class="badge bg-primary opacity-75">起約人</span>
+                    </div>
                   </div>
                   <span class="progresses__line progresses__line--w200"
                     :class="{'progresses__line--done': contract.ContractorStampDate }"></span>
@@ -112,16 +134,20 @@
                         已用印
                       </div>
                       <div v-else>
-                        <button type="button" class="btn opacity-75 btn-sm boxShadow"
-                          :class="[contract.isInitiator || !contract.InitiatorStampDate ? 'btn-secondary' : 'btn-primary']"
-                          :disabled="contract.isInitiator || !contract.InitiatorStampDate">待用印</button>
+                        <button type="button" class="btn btn-sm boxShadow"
+                          :class="[contract.isInitiator || !contract.InitiatorStampDate ? 'btn-secondary' : 'btn-stamp']"
+                          :disabled="contract.isInitiator || !contract.InitiatorStampDate">
+                          <i class="fas fa-stamp"></i> 待用印
+                        </button>
                       </div>
                     </div>
                     <div class="progresses__steps" :class="{'progresses__steps--done': contract.ContractorStampDate }">
                       <span><i class="fas"
                           :class="[!!contract.ContractorStampDate ? 'fa-stamp' : 'fa-circle']"></i></span>
                     </div>
-                    <div class="progresses__company">簽約人</div>
+                    <div class="progresses__company">
+                      <span class="badge bg-warning text-dark opacity-75">簽約人</span>
+                    </div>
                   </div>
                 </div>
               </td>
@@ -135,9 +161,11 @@
                         已簽署
                       </div>
                       <div v-else>
-                        <button type="button" class="btn opacity-75 btn-sm boxShadow"
-                          :class="[contract.isContractor || !contract.ContractorStampDate ? 'btn-secondary' : 'btn-primary']"
-                          :disabled="contract.isContractor || !contract.ContractorStampDate">待簽署</button>
+                        <button type="button" class="btn btn-sm boxShadow"
+                          :class="[contract.isContractor || !contract.ContractorStampDate ? 'btn-secondary' : 'btn-sign']"
+                          :disabled="contract.isContractor || !contract.ContractorStampDate">
+                          <i class="fas fa-signature"></i> 待簽署
+                        </button>
                       </div>
                     </div>
                     <div class="progresses__steps progresses__signature"
@@ -145,7 +173,9 @@
                       <span><i class="fas"
                           :class="[!!contract.InitiatorSignerDate ? 'fa-signature' : 'fa-circle']"></i></span>
                     </div>
-                    <div class="progresses__company">起約人</div>
+                    <div class="progresses__company">
+                      <span class="badge bg-primary opacity-75">起約人</span>
+                    </div>
                   </div>
                   <span class="progresses__line progresses__line--w200 progresses__signature"
                     :class="{'progresses__line--done': contract.ContractorSignerDate }"></span>
@@ -156,9 +186,11 @@
                         已簽署
                       </div>
                       <div v-else>
-                        <button type="button" class="btn opacity-75 btn-sm boxShadow"
-                          :class="[contract.isInitiator || !contract.InitiatorSignerDate ? 'btn-secondary' : 'btn-primary']"
-                          :disabled="contract.isInitiator || !contract.InitiatorSignerDate">待簽署</button>
+                        <button type="button" class="btn btn-sm boxShadow"
+                          :class="[contract.isInitiator || !contract.InitiatorSignerDate ? 'btn-secondary' : 'btn-sign']"
+                          :disabled="contract.isInitiator || !contract.InitiatorSignerDate">
+                          <i class="fas fa-signature"></i> 待簽署
+                        </button>
                       </div>
                     </div>
                     <div class="progresses__steps progresses__signature"
@@ -166,7 +198,9 @@
                       <span><i class="fas"
                           :class="[!!contract.ContractorSignerDate ? 'fa-signature' : 'fa-circle']"></i></span>
                     </div>
-                    <div class="progresses__company">簽約人</div>
+                    <div class="progresses__company">
+                      <span class="badge bg-warning text-dark opacity-75">簽約人</span>
+                    </div>
                   </div>
                 </div>
               </td>
@@ -337,7 +371,7 @@
       Title: '測試很重要的一份合約-5',
       ContractDateFrom: '2023/08/25 10:58',
       Initiator: '網際優勢甲方公司',
-      Contractor: '網際優勢乙方公司',
+      Contractor: '網際優勢乙方股份有限公司',
       InitiatorStampDate: '2023/08/25 10:58',
       ContractorStampDate: '2023/08/25 10:58',
       InitiatorSignerDate: '2023/08/25 10:58',
@@ -394,6 +428,15 @@
         return Math.ceil(totalCount / pageSize);
       }
     },
+    mounted() {
+      // 初始化 Bootstrap Tooltip
+      document.addEventListener("DOMContentLoaded", function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (element) {
+          return new bootstrap.Tooltip(element);
+        });
+      });
+    },
     methods: {
       // 查詢合約列表
       inquireData() {
@@ -424,6 +467,10 @@
           Initiator: null,
           Contractor: null
         }
+      },
+      // 新增合約
+      addHandler() {
+        console.log('新增合約');
       },
       sortHandler(dataField, status, sortStatus) {
         console.log(dataField, status, sortStatus);
