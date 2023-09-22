@@ -23,19 +23,24 @@
 
   var party = _model.Contract.ContractingParty.Where(p => p.CompanyID == _model.CompanyID).First();
 }
-<div class="container">
+<div id="AffixPdfSealImage" class="container-fluid py-4 pb-3">
   <section>
     <!-- Section title -->
     @{
-      await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
+      // await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
       await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", party.ContractingIntent.Description);
     }
 
-    <div class="row">
-      @{
-        await Html.RenderPartialAsync("~/Views/ContractConsole/Module/ShowContractImage.cshtml", _model.Contract);
-      }
-      <div class="col-2">
+    <div class="row" style="height: calc(100vh - 160px);">
+      <div class="col col-xl-10 col-md-8" style="height: 100%;">
+        <div class="card" style="background-color: #fbf8f8;height: 100%;overflow-y: auto;
+    display: block;text-align: center;padding: 10px;">
+          @{
+            await Html.RenderPartialAsync("~/Views/ContractConsole/Module/ShowContractImage.cshtml", _model.Contract);
+          }
+        </div>
+      </div>
+      <div class="col col-xl-2 col-md-4">
         @if (_model.StampDate.HasValue)
         {
           <h1 class="h6">

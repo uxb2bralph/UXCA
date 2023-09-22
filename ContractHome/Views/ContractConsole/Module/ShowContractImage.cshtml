@@ -47,10 +47,9 @@
 @if (img != null)
 {
 
-    String css = $"width:{img.Width}px; height:{img.Height}px; background-image: url('../{imgFile!.Substring(imgFile.IndexOf("logs")).Replace('\\', '/')}'); cursor:crosshair";
-    @*<div id="pos"></div>*@
-    <div id="contractImg" style="@Html.Raw(css)">
-    </div>
+    String css = $"width:{img.Width}px; height:{img.Height}px; background-image: url('../{imgFile!.Substring(imgFile.IndexOf("logs")).Replace('\\', '/')}');"; 
+    
+    <div id="contractImg" class="contractImg" style="@Html.Raw(css)"></div>
     <script>
         $(function () {
             $('#contractImg').on('click', function (event) {
