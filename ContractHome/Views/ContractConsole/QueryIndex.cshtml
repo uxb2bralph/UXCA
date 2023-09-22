@@ -23,8 +23,8 @@
 }
 @{
   // await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
-  await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgent.cshtml");
-  await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
+  // await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgent.cshtml");
+  // await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
 }
 <div id="queryIndex" class="container-lg py-5">
   <section>
@@ -101,9 +101,9 @@
           <button type="button" class="btn btn-secondary opacity-75" v-on:click="resetHandler">重設</button>
         </div>
         <div>
-          <button type="button" class="btn-primary" v-on:click="inquireData"
-            onclick="$global.dataTable.inquireData();">查詢</button>
+          <button type="button" class="btn-primary" v-on:click="inquireData">查詢</button>
         </div>
+        <!-- onclick="$global.dataTable.inquireData();" -->
       </div>
     </div>
   </section>
@@ -114,164 +114,166 @@
     await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "合約列表");
   }
   <section id="queryArea">
-    <div v-if="contractList.length > 0" class="card p-2 mb-3 table-responsive">
-      <table class="table table-hover mb-0">
-        <thead>
-          <tr>
-            <th scope="col">
-              建檔日期
-              <!-- DESC -->
-              <a v-if="isSortDateFrom" href="javascript:void(0);"
-                v-on:click="sortHandler('ContractDateFrom', 'isSortDateFrom', true)">
-                <i class="fas fa-sort-amount-down"></i>
-              </a>
-              <!-- ASC -->
-              <a v-else href="javascript:void(0);"
-                v-on:click="sortHandler('ContractDateFrom', 'isSortDateFrom', false)">
-                <i class="fas fa-sort-amount-down-alt"></i>
-              </a>
-            </th>
-            <th scope="col">起約人</th>
-            <th scope="col">簽約人</th>
-            <th scope="col">
-              合約編號
-              <!-- DESC -->
-              <a v-if="isSortNo" href="javascript:void(0);" v-on:click="sortHandler('No', 'isSortNo', true)">
-                <i class="fas fa-sort-amount-down"></i>
-              </a>
-              <!-- ASC -->
-              <a v-else href="javascript:void(0);" v-on:click="sortHandler('No', 'isSortNo', false)">
-                <i class="fas fa-sort-amount-down-alt"></i>
-              </a>
-            </th>
-            <th scope="col">用印狀態</th>
-            <th scope="col">簽約狀態</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(contract, index) in contractList" :key="`c_${index}`">
-            <td class="align-middle text-nowrap">{{ contract.ContractDateFrom }}</td>
-            <td class="align-middle text-nowrap">{{ contract.Initiator }}</td>
-            <td class="align-middle text-nowrap">{{ contract.Contractor }}</td>
-            <td class="align-middle"><a :href="`/ContractConsole/ShowCurrentContract?KeyID=${contract.KeyID}`">{{
-                contract.No
-                }}</a></td>
-            <td>
-              <!-- 用印流程 -->
-              <div class="progresses__wrapper">
-                <div class="progresses__stepGroup">
-                  <div class="fw-bolder"
-                    :class="[!!contract.InitiatorStampDate ? 'text-primary opacity-75' : 'text-danger']">
-                    {{ contract.InitiatorStampDate ? '已用印' : '未用印'}}
+    <div v-if="contractList.length > 0">
+      <div class="card p-2 mb-3 table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th scope="col">
+                建檔日期
+                <!-- DESC -->
+                <a v-if="isSortDateFrom" href="javascript:void(0);"
+                  v-on:click="sortHandler('ContractDateFrom', 'isSortDateFrom', true)">
+                  <i class="fas fa-sort-amount-down"></i>
+                </a>
+                <!-- ASC -->
+                <a v-else href="javascript:void(0);"
+                  v-on:click="sortHandler('ContractDateFrom', 'isSortDateFrom', false)">
+                  <i class="fas fa-sort-amount-down-alt"></i>
+                </a>
+              </th>
+              <th scope="col">起約人</th>
+              <th scope="col">簽約人</th>
+              <th scope="col">
+                合約編號
+                <!-- DESC -->
+                <a v-if="isSortNo" href="javascript:void(0);" v-on:click="sortHandler('No', 'isSortNo', true)">
+                  <i class="fas fa-sort-amount-down"></i>
+                </a>
+                <!-- ASC -->
+                <a v-else href="javascript:void(0);" v-on:click="sortHandler('No', 'isSortNo', false)">
+                  <i class="fas fa-sort-amount-down-alt"></i>
+                </a>
+              </th>
+              <th scope="col">用印狀態</th>
+              <th scope="col">簽約狀態</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(contract, index) in contractList" :key="`c_${index}`">
+              <td class="align-middle text-nowrap">{{ contract.ContractDateFrom }}</td>
+              <td class="align-middle text-nowrap">{{ contract.Initiator }}</td>
+              <td class="align-middle text-nowrap">{{ contract.Contractor }}</td>
+              <td class="align-middle"><a :href="`/ContractConsole/ShowCurrentContract?KeyID=${contract.KeyID}`">{{
+                  contract.No
+                  }}</a></td>
+              <td>
+                <!-- 用印流程 -->
+                <div class="progresses__wrapper">
+                  <div class="progresses__stepGroup">
+                    <div class="fw-bolder"
+                      :class="[!!contract.InitiatorStampDate ? 'text-primary opacity-75' : 'text-danger']">
+                      {{ contract.InitiatorStampDate ? '已用印' : '未用印'}}
+                    </div>
+                    <div class="progresses__steps" :class="{'progresses__steps--done': contract.InitiatorStampDate }">
+                      <span><i class="fas" :class="[!!contract.InitiatorStampDate ? 'fa-stamp': 'fa-circle']"></i></span>
+                    </div>
+                    <div class="text-secondary fw-bolder">起約人</div>
                   </div>
-                  <div class="progresses__steps" :class="{'progresses__steps--done': contract.InitiatorStampDate }">
-                    <span><i class="fas" :class="[!!contract.InitiatorStampDate ? 'fa-stamp': 'fa-circle']"></i></span>
+                  <span class="progresses__line"
+                    :class="{'progresses__line--done': contract.ContractorStampDate }"></span>
+                  <div class="progresses__stepGroup">
+                    <div class="fw-bolder"
+                      :class="[!!contract.ContractorStampDate ? 'text-primary opacity-75' : 'text-danger']">
+                      {{ contract.ContractorStampDate ? '已用印' : '未用印'}}
+                    </div>
+                    <div class="progresses__steps" :class="{'progresses__steps--done': contract.ContractorStampDate }">
+                      <span><i class="fas"
+                          :class="[!!contract.ContractorStampDate ? 'fa-stamp' : 'fa-circle']"></i></span>
+                    </div>
+                    <div class="text-secondary fw-bolder">簽約人</div>
                   </div>
-                  <div class="text-secondary fw-bolder">起約人</div>
                 </div>
-                <span class="progresses__line"
-                  :class="{'progresses__line--done': contract.ContractorStampDate }"></span>
-                <div class="progresses__stepGroup">
-                  <div class="fw-bolder"
-                    :class="[!!contract.ContractorStampDate ? 'text-primary opacity-75' : 'text-danger']">
-                    {{ contract.ContractorStampDate ? '已用印' : '未用印'}}
+              </td>
+              <td>
+                <!-- 簽署流程 -->
+                <div class="progresses__wrapper">
+                  <div class="progresses__stepGroup">
+                    <div class="fw-bolder"
+                      :class="[!!contract.InitiatorSignerID ? 'text-primary opacity-75': 'text-danger']">
+                      {{ contract.InitiatorSignerID ? '已簽署' : '未簽署'}}
+                    </div>
+                    <div class="progresses__steps progresses__signature"
+                      :class="{'progresses__steps--done': contract.InitiatorSignerID }">
+                      <span><i class="fas"
+                          :class="[!!contract.InitiatorSignerID ? 'fa-signature' : 'fa-circle']"></i></span>
+                    </div>
+                    <div class="text-secondary fw-bolder">起約人</div>
                   </div>
-                  <div class="progresses__steps" :class="{'progresses__steps--done': contract.ContractorStampDate }">
-                    <span><i class="fas"
-                        :class="[!!contract.ContractorStampDate ? 'fa-stamp' : 'fa-circle']"></i></span>
+                  <span class="progresses__line progresses__signature"
+                    :class="{'progresses__line--done': contract.ContractorSignerID }"></span>
+                  <div class="progresses__stepGroup">
+                    <div class="fw-bolder"
+                      :class="[!!contract.ContractorSignerID ? 'text-primary opacity-75' : 'text-danger']">
+                      {{ contract.ContractorSignerID ? '已簽署' : '未簽署'}}
+                    </div>
+                    <div class="progresses__steps progresses__signature"
+                      :class="{'progresses__steps--done': contract.ContractorSignerID }">
+                      <span><i class="fas"
+                          :class="[!!contract.ContractorSignerID ? 'fa-signature' : 'fa-circle']"></i></span>
+                    </div>
+                    <div class="text-secondary fw-bolder">簽約人</div>
                   </div>
-                  <div class="text-secondary fw-bolder">簽約人</div>
                 </div>
-              </div>
-            </td>
-            <td>
-              <!-- 簽署流程 -->
-              <div class="progresses__wrapper">
-                <div class="progresses__stepGroup">
-                  <div class="fw-bolder"
-                    :class="[!!contract.InitiatorSignerID ? 'text-primary opacity-75': 'text-danger']">
-                    {{ contract.InitiatorSignerID ? '已簽署' : '未簽署'}}
-                  </div>
-                  <div class="progresses__steps progresses__signature"
-                    :class="{'progresses__steps--done': contract.InitiatorSignerID }">
-                    <span><i class="fas"
-                        :class="[!!contract.InitiatorSignerID ? 'fa-signature' : 'fa-circle']"></i></span>
-                  </div>
-                  <div class="text-secondary fw-bolder">起約人</div>
-                </div>
-                <span class="progresses__line progresses__signature"
-                  :class="{'progresses__line--done': contract.ContractorSignerID }"></span>
-                <div class="progresses__stepGroup">
-                  <div class="fw-bolder"
-                    :class="[!!contract.ContractorSignerID ? 'text-primary opacity-75' : 'text-danger']">
-                    {{ contract.ContractorSignerID ? '已簽署' : '未簽署'}}
-                  </div>
-                  <div class="progresses__steps progresses__signature"
-                    :class="{'progresses__steps--done': contract.ContractorSignerID }">
-                    <span><i class="fas"
-                        :class="[!!contract.ContractorSignerID ? 'fa-signature' : 'fa-circle']"></i></span>
-                  </div>
-                  <div class="text-secondary fw-bolder">簽約人</div>
-                </div>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <!-- 分頁模組 -->
-    <div class="row g-3 align-items-center justify-content-between">
-      <div class="col-auto">
-        <nav aria-label="Page navigation">
-          <ul class="pagination justify-content-center mb-0">
-            <!-- 第一頁 -->
-            <li class=" page-item" :class="{'disabled' : page === 1}">
-              <a class="page-link" v-on:click="firstPage">
-                <i class="far fa-step-backward"></i>
-              </a>
-            </li>
-            <!-- 前一頁 -->
-            <li class=" page-item" :class="{'disabled' : page === 1}">
-              <a class="page-link" v-on:click="previousPage">
-                <i class="fal fa-chevron-left"></i>
-              </a>
-            </li>
-            <!-- 頁面列表 -->
-            <li v-for="n in totalPages" :key="n" :v-model="page" class="page-item" :class="{'active' : page === n}">
-              <a class="page-link" v-on:click="changePage(n)">{{ n }}</a>
-            </li>
-            <!-- 下一頁 -->
-            <li class="page-item" :class="{'disabled' : page === totalPages}">
-              <a class="page-link" v-on:click="nextPage">
-                <i class="fal fa-chevron-right"></i>
-              </a>
-            </li>
-            <!-- 最後一頁 -->
-            <li class="page-item" :class="{'disabled' : page === totalPages}">
-              <a class="page-link" v-on:click="lastPage">
-                <i class="far fa-step-forward"></i>
-              </a>
-            </li>
-          </ul>
-        </nav>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <div class="col-auto">
-        <div class="row g-3 align-items-center">
-          <div class="col-auto">
-            <label for="PageSize">每頁筆數：</label>
-          </div>
-          <div class="col-auto">
-            <select v-model="pageSize" class="form-select form-control-sm" name="PageSize" id="PageSize"
-              v-on:change="resetPageSize">
-              <option>10</option>
-              <option>30</option>
-              <option>50</option>
-              <option>100</option>
-              <option>200</option>
-            </select>
-          </div>
-          <div class="col-auto">
-            共 {{ totalPages }} 頁，{{ totalRecordCount }} 筆
+      <!-- 分頁模組 -->
+      <div class="row g-3 align-items-center justify-content-between">
+        <div class="col-auto">
+          <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mb-0">
+              <!-- 第一頁 -->
+              <li class=" page-item" :class="{'disabled' : page === 1}">
+                <a class="page-link" v-on:click="firstPage">
+                  <i class="far fa-step-backward"></i>
+                </a>
+              </li>
+              <!-- 前一頁 -->
+              <li class=" page-item" :class="{'disabled' : page === 1}">
+                <a class="page-link" v-on:click="previousPage">
+                  <i class="fal fa-chevron-left"></i>
+                </a>
+              </li>
+              <!-- 頁面列表 -->
+              <li v-for="n in totalPages" :key="n" :v-model="page" class="page-item" :class="{'active' : page === n}">
+                <a class="page-link" v-on:click="changePage(n)">{{ n }}</a>
+              </li>
+              <!-- 下一頁 -->
+              <li class="page-item" :class="{'disabled' : page === totalPages}">
+                <a class="page-link" v-on:click="nextPage">
+                  <i class="fal fa-chevron-right"></i>
+                </a>
+              </li>
+              <!-- 最後一頁 -->
+              <li class="page-item" :class="{'disabled' : page === totalPages}">
+                <a class="page-link" v-on:click="lastPage">
+                  <i class="far fa-step-forward"></i>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        <div class="col-auto">
+          <div class="row g-3 align-items-center">
+            <div class="col-auto">
+              <label for="PageSize">每頁筆數：</label>
+            </div>
+            <div class="col-auto">
+              <select v-model="pageSize" class="form-select form-control-sm" name="PageSize" id="PageSize"
+                v-on:change="resetPageSize">
+                <option>10</option>
+                <option>30</option>
+                <option>50</option>
+                <option>100</option>
+                <option>200</option>
+              </select>
+            </div>
+            <div class="col-auto">
+              共 {{ totalPages }} 頁，{{ totalRecordCount }} 筆
+            </div>
           </div>
         </div>
       </div>
@@ -557,9 +559,11 @@
     */
 
   }
+  /**
   $inquiryAgent.showQueryResult = function (data) {
     $inquiryAgent.$queryResult = $(data);
     var $tr = $('#queryArea');
     $tr.after($inquiryAgent.$queryResult);
   }
+  */
 </script>
