@@ -7,6 +7,23 @@
   min-height: initial;
 }
 
+.nav-link.menuLink {
+  color: #FFFFFF;
+}
+
+.border__uxb2b--bottom {
+  border-bottom: 1px solid #bec2c6 !important;
+}
+
+.shadow__card {
+  box-shadow: 0 0.2rem 0.25rem rgba(0, 0, 0, 0.095) !important;
+}
+
+.navbar-uxb2b {
+  background-color: rgba(133, 187, 249, 0.75);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
+}
+
 .login__wrapper {
   display: flex;
   align-items: center;
