@@ -166,6 +166,23 @@
   }
 }
 
+// 拖曳輸入框
+.dropzone {
+  padding: 20px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 250px;
+  border: 3px dotted rgba(0, 0, 0, .3);
+  border-radius: 1rem;
+  background: #f1f6ff;
+}
+.dz-button {
+  &.btn:focus {
+    box-shadow: none;
+  }
+}
+
 // 顏色
 .cornflowerBlue {
   color: #6495ED;
