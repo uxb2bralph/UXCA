@@ -247,3 +247,23 @@
     box-shadow: 0 0 0 0.25rem rgba(241, 215, 159, 0.25);
   }
 }
+
+// 用印圖片區
+.contractImg {
+  margin: auto;
+  background-color: #FFFFFF;
+  cursor: crosshair;
+  box-shadow: 0 0.2rem 0.25rem rgba(0, 0, 0, 0.095);
+}
+
+// 範本
+.stamp {
+  &__wrapper {
+    display: block;
+    max-width: 170px;
+    height: 100%;
+    img {
+      width: 100%;
+    }
+  }
+}
