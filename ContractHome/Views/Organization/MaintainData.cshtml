@@ -43,7 +43,7 @@
             <div class="col input__height">
               <div class="row">
                 <label for="CompanyName" class="col-sm-12 col-md-3 col-form-label fw-bolder">公司名稱</label>
-                <div class="col-sm-12 col-md-9">
+                <div id="searchCompanyName" class="col-sm-12 col-md-9">
                   <input v-model="searchFormData.CompanyID" type="text" class="form-control" placeholder="可輸入鍵字查詢公司名稱"
                     id="CompanyName" autocomplete="off" />
                   <ul v-show="isSearchOptionsOpen" class="list-group mb-3">
@@ -286,7 +286,7 @@
                 <div class="col input__height">
                   <div class="row">
                     <label for="CompanyName" class="col-sm-12 col-md-3 col-form-label fw-bolder">公司名稱</label>
-                    <div class="col-sm-12 col-md-9">
+                    <div id="InputCompanyName" class="col-sm-12 col-md-9">
                       <input v-model="formData.CompanyID" type="text" class="form-control form-control-sm"
                         :class="{'is-invalid': isCompanyName}" id="CompanyName"
                         v-on:focus="resetValidate('isCompanyName')"
@@ -553,6 +553,25 @@
           return new bootstrap.Tooltip(element);
         });
       });
+
+      const self = this;
+      // 輸入框 click outside 時 AutoComplete 收起
+      window.addEventListener('click', function (e) {
+        const searchContainer = $('#searchCompanyName');
+        const InputContainer = $('#InputCompanyName');
+        // 查詢
+        if (!searchContainer.is(e.target) &&
+          !searchContainer.has(e.target).length
+        ) {
+          self.isSearchOptionsOpen = false;
+        }
+        // 新增
+        if (!InputContainer.is(e.target) &&
+          !InputContainer.has(e.target).length
+        ) {
+          self.isInputOptionsOpen = false;
+        }
+      });
     },
     methods: {
       // 新增 / 編輯 表單Modal
@@ -792,7 +811,6 @@
           this.isSearchOptionsOpen = this.searchResults.length > 0;
         }
         if (type === 'edit') {
-          console.log(this.formData.CompanyID)
           this.isInputOptionsOpen = this.searchResults.length > 0;
         }
       },
