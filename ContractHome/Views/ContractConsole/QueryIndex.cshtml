@@ -27,7 +27,7 @@
   // await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
 }
 <div id="queryIndex" class="container-lg py-5">
-  <section>
+  <section class="queryform">
     <!-- 標題 -->
     @{
       await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "合約查詢");
@@ -73,9 +73,16 @@
                 @{
                   // await Html.RenderPartialAsync("~/Views/Home/Module/CompanyQuickSearch.cshtml", "Initiator");
                 }
-                <div class="col-sm-12 col-md-9">
+                <div id="initiatorField" class="col-sm-12 col-md-9">
                   <input v-model="formData.Initiator" type="text" class="form-control" name="Initiator"
-                    id="Initiator" />
+                    id="Initiator" placeholder="可輸入鍵字查詢公司名稱" autocomplete="off" />
+                  <ul v-show="isInitiatorOptionsOpen" class="list-group mb-3 shadow__card">
+                    <li v-for="(result, index) in searchResults" :key="index"
+                      class="list-group-item list-group-item-action" v-on:click="setResult(result, 'initiator')"
+                      :class="{'active': index === currentlyCounter}">
+                      {{ result }}
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>
@@ -85,9 +92,16 @@
                 @{
       // await Html.RenderPartialAsync("~/Views/Home/Module/CompanyQuickSearch.cshtml", "Contractor");
                 }
-                <div class="col-sm-12 col-md-9">
+                <div id="contractorField" class="col-sm-12 col-md-9">
                   <input v-model="formData.Contractor" type="text" class="form-control" name="Contractor"
-                    id="Contractor" />
+                    id="Contractor" placeholder="可輸入鍵字查詢公司名稱" autocomplete="off" />
+                  <ul v-show="isContractorOptionsOpen" class="list-group mb-3 shadow__card">
+                    <li v-for="(result, index) in searchResults" :key="index"
+                      class="list-group-item list-group-item-action" v-on:click="setResult(result, 'contractor')"
+                      :class="{'active': index === currentlyCounter}">
+                      {{ result }}
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>
@@ -288,6 +302,16 @@
 
 </div>
 <script>
+  // Fake company Data
+  const companyOptions = [
+    'Option 1',
+    'Option 111',
+    'Option 11',
+    'Option 22',
+    'Option 2',
+    'Option 3',
+  ];
+
   // 合約列表
   const contractList = [
     {
@@ -386,7 +410,24 @@
       desc: true,
       contractList,
       isSortDateFrom: true,
-      isSortNo: true
+      isSortNo: true,
+      /**
+       * Autocomplete
+       */
+      companyOptions,
+      isInitiatorOptionsOpen: false,
+      isContractorOptionsOpen: false,
+      searchResults: [],
+      currentlyCounter: -1
+    },
+    watch: {
+      // 檢查公司名稱輸入框的值，並執行Autocomplate
+      'formData.Initiator'() {
+        this.filterResults('initiator');
+      },
+      'formData.Contractor'() {
+        this.filterResults('contractor');
+      }
     },
     computed: {
       // 計算總頁數
@@ -395,6 +436,26 @@
         const pageSize = Number.parseInt(this.pageSize, 10);
         return Math.ceil(totalCount / pageSize);
       }
+    },
+    mounted() {
+      const self = this;
+      // 輸入框 click outside 時 AutoComplete 收起
+      window.addEventListener('click', function (e) {
+        const initiatorContainer = $('#initiatorField');
+        const contractorContainer = $('#contractorField');
+        // 起約人
+        if (!initiatorContainer.is(e.target) &&
+          !initiatorContainer.has(e.target).length
+        ) {
+          self.isInitiatorOptionsOpen = false;
+        }
+        // 簽約人
+        if (!contractorContainer.is(e.target) &&
+          !contractorContainer.has(e.target).length
+        ) {
+          self.isContractorOptionsOpen = false;
+        }
+      });
     },
     methods: {
       // 查詢合約列表
@@ -477,6 +538,46 @@
         // 重新查詢列表並回傳資料
         this.fetchAPI();
       },
+      /** 公司名稱 Autocomplate
+       * 篩選出對應輸入框的清單
+       */
+      filterResults(type) {
+        // 搜尋和輸入資料來源不同
+        const inputValue = type === 'initiator' ? this.formData.Initiator : this.formData.Contractor;
+        this.searchResults = !inputValue ? [] : this.companyOptions.filter((item) => {
+          return item.toLowerCase().indexOf(inputValue.toLowerCase()) > -1;
+        });
+        if (type === 'initiator') {
+          this.isInitiatorOptionsOpen = this.searchResults.length > 0;
+        }
+        if (type === 'contractor') {
+          this.isContractorOptionsOpen = this.searchResults.length > 0;
+        }
+      },
+      // 選取值後代入欄位
+      setResult(result, type) {
+        if (this.searchResults.length !== 0) {
+          if (type === 'initiator') {
+            this.formData.Initiator = result;
+          }
+          if (type === 'contractor') {
+            this.formData.Contractor = result;
+          }
+          this.clearAll(type);
+        }
+      },
+      // 還原初始化
+      clearAll(type) {
+        this.currentlyCounter = -1;
+        this.$nextTick(() => {
+          if (type === 'initiator') {
+            this.isInitiatorOptionsOpen = false;
+          }
+          if (type === 'contractor') {
+            this.isContractorOptionsOpen = false;
+          }
+        })
+      }
     }
   });
 

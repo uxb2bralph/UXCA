@@ -21,7 +21,7 @@
   _viewModel.UrlAction = Url.Action("InquireData", "Organization");
 }
 <div id="organization" class="container-lg py-5">
-  <section>
+  <section class="queryform">
     <!-- 標題 -->
     @{
       // await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
@@ -46,7 +46,7 @@
                 <div id="searchCompanyName" class="col-sm-12 col-md-9">
                   <input v-model="searchFormData.CompanyID" type="text" class="form-control" placeholder="可輸入鍵字查詢公司名稱"
                     id="CompanyName" autocomplete="off" />
-                  <ul v-show="isSearchOptionsOpen" class="list-group mb-3">
+                  <ul v-show="isSearchOptionsOpen" class="list-group mb-3 shadow__card">
                     <li v-for="(result, index) in searchResults" :key="index"
                       class="list-group-item list-group-item-action" v-on:click="setResult(result, 'search')"
                       :class="{'active': index === currentlyCounter}">
@@ -291,7 +291,7 @@
                         :class="{'is-invalid': isCompanyName}" id="CompanyName"
                         v-on:focus="resetValidate('isCompanyName')"
                         v-on:blur="validateField('isCompanyName', formData.CompanyID)" autocomplete="off" />
-                      <ul v-show="isInputOptionsOpen" class="list-group mb-3">
+                      <ul v-show="isInputOptionsOpen" class="list-group mb-3 shadow__card">
                         <li v-for="(result, index) in searchResults" :key="index"
                           class="list-group-item list-group-item-action" v-on:click="setResult(result, 'edit')"
                           :class="{'active': index === currentlyCounter}">
@@ -836,7 +836,6 @@
           if (type === 'edit') {
             this.isInputOptionsOpen = false;
           }
-
         })
       }
     }
