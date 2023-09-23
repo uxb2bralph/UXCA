@@ -275,3 +275,16 @@
     }
   }
 }
+
+// Form 表單
+.queryform {
+  position: relative;
+  z-index: 3;
+}
+
+// 群組選單
+.list-group-item-action:focus,
+.list-group-item-action:hover {
+  color: #000000;
+  background-color: #b1d8ff;
+}
