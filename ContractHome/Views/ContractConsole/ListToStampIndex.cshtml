@@ -288,13 +288,12 @@
         </div>
         <div class="modal-body">
           <!-- 拖曳上傳元件-->
+          <div v-if="isUploadFile" class="px-5 alert alert-danger d-flex align-items-center uploadFile__message" role="alert">
+            <span class="pe-2"><i class="fas fa-exclamation-triangle"></i></span>
+            <div>{{ uploadFileMsg }}</div>
+          </div>
           <form id="contractForm" class="dropzone"></form>
         </div>
-        <!--
-        <div class="modal-footer">
-          <button type="button" class="btn btn-primary" v-on:click="editContract">下一步</button>
-        </div>
-        -->
       </div>
     </div>
   </div>
@@ -315,7 +314,7 @@
                   <div class="row">
                     <label for="ProjectName" class="col-sm-12 col-md-3 col-form-label fw-bolder">專案名稱</label>
                     <div class="col-sm-12 col-md-9">
-                      <input v-model="formData.ProjectName" type="text" class="form-control form-control-sm"
+                      <input v-model="formData.ProjectName" type="text" class="form-control"
                         id="ProjectName" required />
                       <div class="invalid-feedback">
                         請輸入任務名稱
@@ -327,8 +326,9 @@
                   <div class="row align-items-center">
                     <label for="FileTitle" class="col-sm-12 col-md-3 col-form-label fw-bolder">合約名稱</label>
                     <div class="col-sm-12 col-md-9">
-                      <span class="pe-3 fw-bolder">{{ formData.FileTitle }}</span> <span class="text-muted">( {{
-                        (formData.Size / 1024).toFixed(2) }} k )</span>
+                      <span class="pe-3 fw-bolder">{{ formData.FileTitle }}</span>
+                      <br>
+                      <span class="text-muted">( {{ (formData.Size / 1024000).toFixed(2) }} M )</span>
                     </div>
                   </div>
                 </div>
@@ -544,7 +544,9 @@
       isUpload: true,
       currentCompanyData: {},
       signerMessage: null,
-      infoMsg: null
+      infoMsg: null,
+      isUploadFile: false,
+      uploadFileMsg: null
     },
     computed: {
       // 計算總頁數
@@ -568,35 +570,60 @@
 
       if (this.isUpload) {
         const self = this;
-        // 拖曳上傳檔案
+        // 拖曳上傳檔案模組
         Dropzone.options.contractForm = {
           /** 
            * url: 存放檔案路徑
-           * autoProcessQueue: 上傳佇列
+           * autoProcessQueue: 自動上傳佇列
            * uploadMultiple: 是否在一個上傳中發送多個文件
            * parallelUploads: 要併行處理多少個文件上傳
            * maxFiles: 最大文件數量
-           * maxFilesize: 最大文件檔案大小
+           * maxFilesize: 允許上傳的最大文件（bytes單位）
            * acceptedFiles: 檔案格式
            * dictDefaultMessage: 畫面顯示內容
            */
           url: '/file-upload/',
-          autoProcessQueue: false,
+          autoProcessQueue: true,
           uploadMultiple: false,
           parallelUploads: 1,
           maxFiles: 1,
-          maxFilesize: 10000,
+          maxFilesize: 100000,
           addRemoveLinks: true,
-          dictDefaultMessage: "<div class='text-center h2 text-primary opacity-75'><i class='fas fa-cloud-upload-alt fa-lg'></i></div><div class='fs-5 fw-bolder text-secondary'>請將檔案拖曳到這裡，或是點一下，就可以上傳檔案</div>",
           acceptedFiles: '.doc,.docx,application/msword,application/pdf',
+          dictDefaultMessage: "<div class='text-center h2 text-primary opacity-75'><i class='fas fa-cloud-upload-alt fa-lg'></i></div><div class='fs-5 fw-bolder text-secondary'>請將檔案拖曳到這裡，或是點一下，就可以上傳檔案</div>",
           init: function () {
             var myDropzone = this;
             this.on("addedfile", function (file) {
-              console.log(file);
+              console.log(file.status);
+            });
+            this.on("complete", function (file) {
+              console.log("complete", file.status);
               if (file.status === 'error') {
-                console.log('ok');
+                // 顯示錯誤訊息，2 秒後自動消失
+                self.isUploadFile = true;
+                self.uploadFileMsg = '檔案上傳失敗，請重新上傳';
+                setTimeout(() => {
+                  self.isUploadFile = false;
+                  self.uploadFileMsg = null;
+                }, 2000);
+
+                // 測試用
+                const projectName = file.name.split('.');
+                self.isUpload = false;
+                self.formData = {
+                  ...self.formData,
+                  Size: file.size,
+                  Type: file.type,
+                  FileTitle: file.name,
+                  ProjectName: projectName[0]
+                };
+                $('#addNewModal').modal('hide');
+                $('#addProjectModal').modal('show');
+                // 測試用
               } else {
-                console.log('false');
+                // 伺服器處理檔案儲存
+
+                // 前端畫面切換，資料傳遞
                 const projectName = file.name.split('.');
                 self.isUpload = false;
                 self.formData = {
@@ -609,11 +636,7 @@
                 $('#addNewModal').modal('hide');
                 $('#addProjectModal').modal('show');
               }
-
-            });
-            this.on("complete", function (file) {
-              console.log("complete", file);
-              this.removeAllFiles(file);
+              // 上傳後自動刪除檔案
               this.removeFile(file);
             });
           },
@@ -690,6 +713,7 @@
       // Reset 欄位檢核
       resetValidate(status) {
         this[status] = false;
+        this.uploadFile();
       },
       // 設定每頁筆數
       resetPageSize() {

@@ -204,6 +204,14 @@
     box-shadow: none;
   }
 }
+.uploadFile {
+  &__message {
+    position: absolute;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
 
 // 顏色
 .cornflowerBlue {
