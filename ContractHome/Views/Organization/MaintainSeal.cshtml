@@ -1,0 +1,144 @@
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+  Layout = "~/Views/Shared/MasterPage.cshtml";
+}
+<div id="maintainSeal" class="container-lg py-5">
+  <section class="queryform">
+    <!-- 標題 -->
+    @{
+      await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "印鑑檔維護");
+    }
+
+    <!-- 印鑑檔維護-->
+    <div class="card p-3" style="min-height: 360px;">
+      <form v-on:submit.prevent method="post" enctype="multipart/form-data" class="pt-3 pb-5 text-center">
+        <div class="h5 fw-bolder my-3 text-center">新增印鑑影像檔 (支援 .jpg 和 .png 檔案格式)</div>
+        <div class="inputSale">
+          <label for="formFile" class="form-label">
+            <a data-bs-toggle="tooltip" data-bs-placement="right" title="新增印鑑檔"
+              class="btn btn-lg btn-success rounded-pill opacity-75">
+              <i class="fal fa-file-plus"></i>
+            </a>
+          </label>
+          <input id="formFile" class="form-control" type="file" v-on:change="addHandler">
+        </div>
+      </form>
+      <div class="row g-3">
+        <div v-for="(seal,index) in sealList" :key="index" class="d-flex align-items-stretch col-md-3 col-sm-12"
+          style="height: 150px;">
+          <div class="card p-3 w-100 h-100">
+            <div class="d-inline-flex h-100 w-100 justify-content-center align-items-center">
+              <img id="frame" :src="seal" class="mh-100" />
+            </div>
+            <button type="button" data-bs-toggle="tooltip" data-bs-placement="right" title="刪除印鑑檔"
+              class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded operation__card"
+              v-on:click="delSaleHandler(seal, index)">
+              <i class="fal fa-trash-alt"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 刪除 Dialog -->
+  <div class="modal fade" id="deleteModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered ">
+      <div class="modal-content">
+        <div class="modal-header border-bottom-0">
+          <h5 class="modal-title" id="staticBackdropLabel"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center h5 fw-bolder">
+          確定刪除印鑑檔案？
+        </div>
+        <div class="modal-footer border-top-0 justify-content-center">
+          <button type="button" class="btn btn-secondary opacity-50" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" v-on:click="confirmDel(currentSaleData)">確定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 訊息 Dialog -->
+  <div class="modal fade" id="infoModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="infoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body text-center h5 fw-bolder pt-5">
+          <div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div>
+          <div v-html="infoMsg"></div>
+        </div>
+        <div class="modal-footer border-top-0 justify-content-center">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>
+  var app = new Vue({
+    el: '#maintainSeal',
+    data: {
+      isValidate: false,
+      infoMsg: null,
+      sealList: [],
+      currentSaleData: null
+
+    },
+    mounted() {
+      // 初始化 Bootstrap Tooltip
+      document.addEventListener("DOMContentLoaded", function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (element) {
+          return new bootstrap.Tooltip(element);
+        });
+      });
+    },
+    methods: {
+      addHandler(event) {
+        sealImg = URL.createObjectURL(event.target.files[0]);
+        this.sealList.push(sealImg);
+      },
+      delSaleHandler(seal, index) {
+        this.currentSaleData = { seal, index }
+        this.openDeleteDialog();
+      },
+
+      // 開啟刪除Modal
+      openDeleteDialog() {
+        $("#deleteModal").modal('show');
+      },
+      // 刪除廠商資料串API
+      confirmDel() {
+        console.log(this.currentSaleData);
+
+        $("#deleteModal").modal('hide');
+
+        showLoading();
+        setTimeout(() => {
+          // 模擬假資料被刪除
+          this.sealList.splice(this.currentSaleData.index, 1);
+
+          this.currentSaleData = null;
+
+          hideLoading();
+          // 開啟訊息視窗
+          this.infoMsg = '印鑑已刪除';
+          $('#infoModal').modal('show');
+        }, 2000);
+      },
+    }
+  });
+</script>

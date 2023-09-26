@@ -40,7 +40,7 @@
                 <label for="CompanyID" class="col-sm-12 col-md-3 col-form-label fw-bolder">隸屬公司</label>
                 <div id="searchCompanyName" class="col-sm-12 col-md-9">
                   <input v-model="searchFormData.CompanyID" type="text" class="form-control" name="SearchCompany"
-                    placeholder="可輸入鍵字查詢公司名稱" v-on:keypress="keypressHandler(searchFormData.CompanyID)" />
+                    placeholder="可輸入鍵字查詢公司名稱" v-on:keyup="keypressHandler(searchFormData.CompanyID)" />
                   <ul v-show="isSearchOptionsOpen" class="list-group mb-3 shadow__card">
                     <li v-for="(result, index) in searchResults" :key="index"
                       class="list-group-item list-group-item-action" v-on:click="setResult(result, 'search')"
