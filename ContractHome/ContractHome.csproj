@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Helper\DataQuery\" />
     <Folder Include="Helper\Security\Authorization\" />
     <Folder Include="Security\" />
   </ItemGroup>

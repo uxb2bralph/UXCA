@@ -53,11 +53,11 @@
               <th scope="col">
                 合約編號
                 <!-- DESC -->
-                <a v-if="isSortNo" href="javascript:void(0);" v-on:click="sortHandler('No', 'isSortNo', true)">
+                <a v-if="isSortNo" href="javascript:void(0);" v-on:click="sortHandler('ContractNo', 'isSortNo', true)">
                   <i class="fas fa-sort-amount-down"></i>
                 </a>
                 <!-- ASC -->
-                <a v-else href="javascript:void(0);" v-on:click="sortHandler('No', 'isSortNo', false)">
+                                <a v-else href="javascript:void(0);" v-on:click="sortHandler('ContractNo', 'isSortNo', false)">
                   <i class="fas fa-sort-amount-down-alt"></i>
                 </a>
               </th>
@@ -416,7 +416,7 @@
     * @@param {string} isInitiator 是否為起約人(甲方)
     * @@param {string} isContractor 是否為簽約人(乙方)
     */
-  const contractList = [
+  @*const contractList = [
     {
       uuid: '111',
       No: 'CS-000100000',
@@ -502,7 +502,8 @@
       isInitiator: true, // 是否為甲方
       isContractor: false, // 是否為乙方
     },
-  ];
+  ];*@
+  const contractList = [];
   var app = new Vue({
     el: '#listToStampIndex',
     data: {
@@ -533,11 +534,13 @@
        * totalPages: 總頁數
        * page: 目前頁面
        */
-      totalRecordCount: 105,
+      totalRecordCount: 0,
       pageSize: 10,
       page: 1,
       sort: null,
       desc: true,
+      SortName: [],
+      SortType: [],
       contractList,
       isSortDateFrom: true,
       isSortNo: true,
@@ -655,14 +658,47 @@
       },
       fetchAPI() {
         // 執行查詢合約列表
+          debugger;
         const payload = {
           data: this.contractList,
           pageSize: this.pageSize,
           page: this.page,
           sort: this.sort,
           desc: this.desc
-        }
+        };
         console.log('payload:', payload);
+        var viewModel = {
+            PageIndex: this.page,
+            SortType: this.SortType,
+            PageSize: this.pageSize,
+            SortName: this.SortName,
+        };
+        showLoading();
+                $.ajax({
+                    type: 'POST',
+                    url: '@(Url.Action("VueListToStamp", "ContractConsole"))',
+                    data: JSON.stringify(viewModel),
+                    type: "POST",
+                    //dataType: "json",
+                    contentType: "application/json;charset=utf-8",
+                    success: function (data) {
+                        hideLoading();
+                        if ($.isPlainObject(data)) {
+                            if (data.result) {
+                            } else {
+                                alertModal(data.message);
+                            }
+                        } else {
+                            $(data).appendTo($('body')).remove();
+                        }
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        hideLoading();
+                        console.log(xhr.status);
+                        console.log(thrownError);
+                    }
+                });
+
       },
       // 新增合約 Modal
       addHandler() {
@@ -708,6 +744,16 @@
         this.sort = dataField;
         this.desc = sortStatus;
         this[status] = !this[status];
+
+            var sortType = 1;
+            var idx = this.SortName.indexOf(dataField);
+            if (idx >= 0) {
+                this.SortType[idx] = -this.SortType[idx];
+            } else {
+                this.SortName.push(dataField);
+                this.SortType.push(sortType);
+            }
+
         this.fetchAPI();
       },
       // Reset 欄位檢核
@@ -779,3 +825,6 @@
     });
   }
 </script>
+@{
+    await Html.RenderPartialAsync("~/Views/ContractConsole/VueModule/ContractRequestList.cshtml");
+}

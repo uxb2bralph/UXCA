@@ -186,6 +186,13 @@ namespace ContractHome.Controllers
             }
         }
 
+        public async Task<ActionResult> VueListToStampAsync([FromBody]SignContractViewModel viewModel)
+        {
+            ViewResult result = (ViewResult)(await ListToStampAsync(viewModel));
+            result.ViewName = "~/Views/ContractConsole/VueModule/ContractRequestList.cshtml";
+            return result;
+        }
+
         public async Task<ActionResult> InquireDataAsync(ContractQueryViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;

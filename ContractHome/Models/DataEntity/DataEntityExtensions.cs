@@ -90,4 +90,13 @@ namespace ContractHome.Models.DataEntity
         public bool IsPDF => ProcessType == (int)ProcessTypeEnum.PDF;
     }
 
+    public partial class ContractingIntent
+    {
+        public enum ContractingIntentEnum
+        {
+            Initiator = 1,
+            Contractor = 2,
+        }
+    }
+
 }
