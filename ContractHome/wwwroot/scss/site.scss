@@ -256,12 +256,83 @@
   }
 }
 
+.block {
+  &--hover {
+    cursor: pointer;
+    .block--show {
+      display: none;
+    }
+    &:hover {
+      background-color: #f4f2f2;
+      .block--show {
+        display: block;
+      }
+    }
+    [type="file"] {
+      position: absolute;
+      top:50px;
+      opacity: 0;
+    }
+  }
+  &--border {
+    &:hover {
+      outline: #9cc2fa solid 3px;
+    }
+  }
+}
+
 // 用印圖片區
 .contractImg {
   margin: auto;
   background-color: #FFFFFF;
   cursor: crosshair;
   box-shadow: 0 0.2rem 0.25rem rgba(0, 0, 0, 0.095);
+  position: relative;
+}
+
+.contract {
+  &__wrapper {
+    height: 100%;
+    position: relative;
+  }
+  &__arrow {
+    &--left {
+      position: absolute;
+      top: 50%;
+      left: 50px;
+      z-index: 10;
+    }
+    &--right {
+      position: absolute;
+      top: 50%;
+      right: 70px;
+      z-index: 10;
+    }
+  }
+}
+
+.pdf {
+  &__wrapper {
+    padding: 10px;
+    height: 100%;
+    display: block;
+    text-align: center;
+    overflow-y: auto;
+    background-color: #fbf8f8;
+  }
+}
+
+// 虛擬印章區塊
+.vmSeal {
+  border-radius: 5px;
+  height: 100px;
+  width: 100px;
+  display: block;
+  background: rgba(74, 146, 253, 0.3);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 // 印鑑檔管理
