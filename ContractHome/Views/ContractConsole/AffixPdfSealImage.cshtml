@@ -251,26 +251,45 @@
 
   // 選擇印鑑
   function useSealHandler(index) {
-    console.log(index);
     $('#sealModal').modal('hide');
-    console.log(sealList);
-    // 產生一個虛擬box
+    console.log('印鑑 index:', index);
+    console.log('印鑑sealList:', sealList);
+
+    // 產生一個虛擬 sealBox
     const sealBox = document.createElement("div");
-    const uuid = ui_uuid();
-    sealBox.setAttribute('id', uuid); // 動態產生
+    // id 動態產生
+    const uuid = ui_uuid8();
+    sealBox.id = uuid;
     sealBox.setAttribute('class', 'vmSeal');
     sealBox.setAttribute('style', 'top:42.5%;left:42.5%;');
     document.querySelector("#contractImg").appendChild(sealBox);
+    // 產生印章並放到 sealBox
+    const sealImg = document.createElement("img");
+    sealImg.setAttribute('class', 'sealimg mw-100');
+    sealImg.setAttribute('src', 'http://fakeimg.pl/300x250/?text=Seal'); // 動態置入印鑑圖檔-來源 sealList
+    document.querySelector(`#${uuid}`).appendChild(sealImg);
+    // scale 模組
+    const scaleBox = document.createElement("div");
+    scaleBox.id = `scale-${uuid}`;
+    scaleBox.setAttribute('class', 'vmScale');
+    document.querySelector(`#${uuid}`).appendChild(scaleBox);
+    // 刪除 模組
+    const delBox = document.createElement("button");
+    const textNode = document.createTextNode("x");
+    delBox.id = `del-${uuid}`;
+    delBox.setAttribute('class', 'btn btn-sm btn-secondary text-white opacity-50 rounded-pill icon__rounded vmDelete');
+    delBox.appendChild(textNode);
+    document.querySelector(`#${uuid}`).appendChild(delBox);
+
     // 跟著滑鼠移動
     const contractArea = document.querySelector("#contractImg");
-    const elmnt = document.querySelector("#" + uuid);
-    //dragElement(elmnt);
-    elmnt.onmousedown = function (ev) {
+    const seal = document.querySelector(`#${uuid}`);
+    seal.onmousedown = function (ev) {
       var oEvent = ev;
       // 阻擋瀏覽器的預設行為
       oEvent.preventDefault();
-      var disX = oEvent.clientX - elmnt.offsetLeft;
-      var disY = oEvent.clientY - elmnt.offsetTop;
+      var disX = oEvent.clientX - seal.offsetLeft;
+      var disY = oEvent.clientY - seal.offsetTop;
       contractArea.onmousemove = function (ev) {
         oEvent = ev;
         oEvent.preventDefault();
@@ -279,12 +298,16 @@
 
         // 圖形移動時的邊界判斷-必須在文件內的範圍
         x = x <= 0 ? 0 : x;
-        x = x >= contractArea.offsetWidth - elmnt.offsetWidth ? contractArea.offsetWidth - elmnt.offsetWidth : x;
+        x = x >= contractArea.offsetWidth - seal.offsetWidth ? contractArea.offsetWidth - seal.offsetWidth : x;
         y = y <= 0 ? 0 : y;
-        y = y >= contractArea.offsetHeight - elmnt.offsetHeight ? contractArea.offsetHeight - elmnt.offsetHeight : y;
-        console.log('ax', x, 'ay:', y);
-        elmnt.style.left = x + 'px';
-        elmnt.style.top = y + 'px';
+        y = y >= contractArea.offsetHeight - seal.offsetHeight ? contractArea.offsetHeight - seal.offsetHeight : y;
+        // console.log('x', x, 'y:', y);
+        seal.style.left = x + 'px';
+        seal.style.top = y + 'px';
+        const MarginLeft = (x / 37.7).toFixed(2);
+        const MarginTop = (y / 37.7).toFixed(2);
+        console.log('mx-左邊界(cm):', MarginLeft);
+        console.log('my-上邊界(cm):', MarginTop);
       }
       // 圖形移出文件範圍取消移動是,防止移動過快觸發滑鼠移出事件，導致滑鼠彈起事件失效
       contractArea.onmouseleave = function () {
@@ -297,49 +320,59 @@
         contractArea.onmouseup = null;
       }
     }
+    // 图片缩放效果
+    const scale = document.querySelector(`#scale-${uuid}`);
+    scale.onmousedown = function (e) {
+      // 阻止冒泡,避免缩放时触发移动事件
+      e.stopPropagation();
+      e.preventDefault();
+      var pos = {
+        'w': seal.offsetWidth,
+        'h': seal.offsetHeight,
+        'x': e.clientX,
+        'y': e.clientY
+      };
+      contractArea.onmousemove = function (ev) {
+        ev.preventDefault();
+        // 设置图片的最小缩放为30*30
+        var w = Math.max(30, ev.clientX - pos.x + pos.w)
+        var h = Math.max(30, ev.clientY - pos.y + pos.h)
+        // console.log(w,h)
 
-  }
+        // 设置图片的最大宽高
+        w = w >= contractArea.offsetWidth - seal.offsetLeft ? contractArea.offsetWidth - seal.offsetLeft : w
+        h = h >= contractArea.offsetHeight - seal.offsetTop ? contractArea.offsetHeight - seal.offsetTop : h
+        seal.style.width = w + 'px';
+        seal.style.height = h + 'px';
+        // console.log(box.offsetWidth,box.offsetHeight)
+      }
+      contractArea.onmouseleave = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+      contractArea.onmouseup = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+    }
 
-  function dragElement(elmnt) {
+    // 刪除印鑑檔
+    const deleteSeal = document.querySelector(`#del-${uuid}`);
+    deleteSeal.onmousedown = function (e) {
+      // 阻止冒泡,避免缩放时触发移动事件
+      e.stopPropagation();
+      e.preventDefault();
+      seal.remove();
 
-    //var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-    //if (document.getElementById(elmnt.id + "header")) {
-    //  /* if present, the header is where you move the DIV from:*/
-    //  document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
-    //} else {
-    //  /* otherwise, move the DIV from anywhere inside the DIV:*/
-    //  elmnt.onmousedown = dragMouseDown;
-    //}
-    //
-    //function dragMouseDown(e) {
-    //  e = e || window.event;
-    //  e.preventDefault();
-    //  // get the mouse cursor position at startup:
-    //  pos3 = e.clientX;
-    //  pos4 = e.clientY;
-    //  document.onmouseup = closeDragElement;
-    //  // call a function whenever the cursor moves:
-    //  document.onmousemove = elementDrag;
-    //}
-    //
-    //function elementDrag(e) {
-    //  e = e || window.event;
-    //  e.preventDefault();
-    //  // calculate the new cursor position:
-    //  pos1 = pos3 - e.clientX;
-    //  pos2 = pos4 - e.clientY;
-    //  pos3 = e.clientX;
-    //  pos4 = e.clientY;
-    //  // set the element's new position:
-    //  elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-    //  elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-    //}
-    //
-    //function closeDragElement() {
-    //  /* stop moving when mouse button is released:*/
-    //  document.onmouseup = null;
-    //  document.onmousemove = null;
-    //}
+      contractArea.onmouseleave = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+      contractArea.onmouseup = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+    }
   }
 
   // 新增印鑑檔
