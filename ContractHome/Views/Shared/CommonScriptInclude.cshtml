@@ -430,4 +430,18 @@
     });
   }
 
+  // 產生8碼 uuid
+  function ui_uuid8() {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    const numbers = '0123456789';
+
+    const firstChar = characters.charAt(Math.floor(Math.random() * characters.length));
+    const thirdChar = characters.charAt(Math.floor(Math.random() * characters.length));
+
+    const numericPart = Array.from({ length: 6 }, () => numbers.charAt(Math.floor(Math.random() * numbers.length))).join('');
+
+    return `${firstChar}${numericPart}${thirdChar}`;
+  }
+
+
 </script>
