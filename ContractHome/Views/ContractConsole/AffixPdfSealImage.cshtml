@@ -256,16 +256,18 @@
     console.log(sealList);
     // 產生一個虛擬box
     const sealBox = document.createElement("div");
-    sealBox.setAttribute('id', 'vmSeal'); // 動態產生
+    const uuid = ui_uuid();
+    sealBox.setAttribute('id', uuid); // 動態產生
     sealBox.setAttribute('class', 'vmSeal');
+    sealBox.setAttribute('style', 'top:42.5%;left:42.5%;');
     document.querySelector("#contractImg").appendChild(sealBox);
     // 跟著滑鼠移動
     const contractArea = document.querySelector("#contractImg");
-    const elmnt = document.querySelector("#vmSeal");
+    const elmnt = document.querySelector("#" + uuid);
     //dragElement(elmnt);
     elmnt.onmousedown = function (ev) {
       var oEvent = ev;
-      // 浏览器有一些图片的默认事件,这里要阻止
+      // 阻擋瀏覽器的預設行為
       oEvent.preventDefault();
       var disX = oEvent.clientX - elmnt.offsetLeft;
       var disY = oEvent.clientY - elmnt.offsetTop;
@@ -274,9 +276,8 @@
         oEvent.preventDefault();
         var x = oEvent.clientX - disX;
         var y = oEvent.clientY - disY;
-        console.log({ x, y });
 
-        // 图形移动的边界判断
+        // 圖形移動時的邊界判斷-必須在文件內的範圍
         x = x <= 0 ? 0 : x;
         x = x >= contractArea.offsetWidth - elmnt.offsetWidth ? contractArea.offsetWidth - elmnt.offsetWidth : x;
         y = y <= 0 ? 0 : y;
@@ -285,12 +286,12 @@
         elmnt.style.left = x + 'px';
         elmnt.style.top = y + 'px';
       }
-      // 图形移出父盒子取消移动事件,防止移动过快触发鼠标移出事件,导致鼠标弹起事件失效
+      // 圖形移出文件範圍取消移動是,防止移動過快觸發滑鼠移出事件，導致滑鼠彈起事件失效
       contractArea.onmouseleave = function () {
         contractArea.onmousemove = null;
         contractArea.onmouseup = null;
       }
-      // 鼠标弹起后停止移动
+      // 署標彈起後停止移動
       contractArea.onmouseup = function () {
         contractArea.onmousemove = null;
         contractArea.onmouseup = null;
