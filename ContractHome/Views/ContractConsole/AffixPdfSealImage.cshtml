@@ -337,14 +337,16 @@
         // 设置图片的最小缩放为30*30
         var w = Math.max(30, ev.clientX - pos.x + pos.w)
         var h = Math.max(30, ev.clientY - pos.y + pos.h)
-        // console.log(w,h)
+        //console.log(w,h)
 
         // 设置图片的最大宽高
         w = w >= contractArea.offsetWidth - seal.offsetLeft ? contractArea.offsetWidth - seal.offsetLeft : w
         h = h >= contractArea.offsetHeight - seal.offsetTop ? contractArea.offsetHeight - seal.offsetTop : h
         seal.style.width = w + 'px';
         seal.style.height = h + 'px';
-        // console.log(box.offsetWidth,box.offsetHeight)
+        //console.log(seal.offsetWidth,seal.offsetHeight)
+        console.log('圖片的寬的縮放比 %:', ((sealImg.width / sealImg.naturalWidth) * 100).toFixed(2));
+        console.log('圖片的高的縮放比 %:', ((sealImg.height / sealImg.naturalHeight) * 100).toFixed(2));
       }
       contractArea.onmouseleave = function () {
         contractArea.onmousemove = null;
