@@ -78,10 +78,13 @@
                   <div class="fs-1 px-2 mediumSlateBlue">
                     <i class="fad fa-file-contract fa-lg"></i>
                   </div>
-                  <div>
+                  <div>                   
+                    <div class="fs-12 text-black-50">
+                      {{ contract.ContractDateFrom }}
+                    </div>
                     <div class="fw-bolder">
                       {{ contract.Title }}
-                    </div>
+                    </div> 
                     <div>
                       <a :href="`/ContractConsole/ShowCurrentContract?KeyID=${contract.KeyID}`">
                         {{ contract.No }}

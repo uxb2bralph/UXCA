@@ -340,4 +340,8 @@
 .list-group-item-action:hover {
   color: #000000;
   background-color: #b1d8ff;
+}
+
+.fs-12 {
+  font-size: 12px;
 }/*# sourceMappingURL=site.css.map */
