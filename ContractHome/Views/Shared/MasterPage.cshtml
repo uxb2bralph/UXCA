@@ -23,14 +23,17 @@
   <!-- Boostrap -->
   <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
   <!-- Custom scripts -->
-  <link rel="stylesheet" href="~/lib/jquery-ui/Content/themes/base/all.css" />  
+  <link rel="stylesheet" href="~/lib/jquery-ui/Content/themes/base/all.css" />
+  <!-- 拖曳上傳模組 -->
   <link rel="stylesheet" href="~/lib/dropzone/dropzone.min.css" type="text/css" />
+  <!-- datepicker 和語系檔 -->
+  <link href="~/lib/datepicker/core.min.css" rel="stylesheet" type="text/css">
+  <link href="~/lib/datepicker/datepicker.min.css" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="~/css/site.css" />
   <script type="text/javascript" src="~/lib/jquery/dist/jquery.js"></script>
   <script type="text/javascript" src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  @* <script src="https://cdn.jsdelivr.net/npm/vee-validate@2.0.0-rc.25/dist/vee-validate.js"></script> *@
   @{
     await Html.RenderPartialAsync("~/Views/Shared/CommonScriptInclude.cshtml");
   }
