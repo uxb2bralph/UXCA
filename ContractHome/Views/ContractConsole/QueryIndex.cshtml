@@ -38,9 +38,6 @@
       <form v-on:submit.prevent method="post" enctype="multipart/form-data">
         <div class="container">
           <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3 m-3 mb-lg-0 data-item">
-            @{
-      // await Html.RenderPartialAsync("~/Views/ContractConsole/Module/QueryItem.cshtml");
-            }
             <div class="col input__height">
               <div class="row">
                 <label for="No" class="col-sm-12 col-md-3 col-form-label fw-bolder">合約號碼</label>
@@ -53,8 +50,7 @@
               <div class="row">
                 <label for="ContractDateFrom" class="col-sm-12 col-md-3 col-form-label fw-bolder">建檔起日</label>
                 <div class="col-sm-12 col-md-9">
-                  <input v-model="formData.ContractDateFrom" type="text" class="form-control" name="ContractDateFrom"
-                    id="ContractDateFrom" />
+                  <input v-model="formData.ContractDateFrom" type="text" class="form-control" name="ContractDateFrom" id="ContractDateFrom" />
                 </div>
               </div>
             </div>
@@ -438,7 +434,24 @@
       }
     },
     mounted() {
-      const self = this;
+      const self = this;      
+      $('#ContractDateFrom').datepicker({
+        locale: 'zh-tw',
+        uiLibrary: 'bootstrap5',
+        format: 'yyyy/mm/dd',
+        change: function (e) {
+          self.formData.ContractDateFrom = this.value;
+        }
+      });
+      $('#ContractDateTo').datepicker({
+        locale: 'zh-tw',
+        uiLibrary: 'bootstrap5',
+        format: 'yyyy/mm/dd',
+        change: function (e) {
+          self.formData.ContractDateTo = this.value;
+        }
+      });
+      
       // 輸入框 click outside 時 AutoComplete 收起
       window.addEventListener('click', function (e) {
         const initiatorContainer = $('#initiatorField');

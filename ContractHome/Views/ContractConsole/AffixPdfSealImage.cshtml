@@ -25,71 +25,140 @@
 }
 <div id="AffixPdfSealImage" class="container-fluid py-4 pb-3">
   <section>
-    <!-- Section title -->
+    <!-- 標題 - 甲方 / 乙方 -->
     @{
-      // await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
+      await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
       await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", party.ContractingIntent.Description);
     }
-
     <div class="row" style="height: calc(100vh - 160px);">
-      <div class="col col-xl-10 col-md-8" style="height: 100%;">
-        <div class="card" style="background-color: #fbf8f8;height: 100%;overflow-y: auto;
-    display: block;text-align: center;padding: 10px;">
+      <!-- 合約影像檔 -->
+      <div class="col col-xl-10 col-md-8 contract__wrapper">
+        <div class="contract__arrow--left">
+          <button type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="上一頁"
+            class="btn btn-lg btn-secondary rounded-pill opacity-50" onclick="commitData('prev')">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+        </div>
+        <div class="card pdf__wrapper">
           @{
             await Html.RenderPartialAsync("~/Views/ContractConsole/Module/ShowContractImage.cshtml", _model.Contract);
           }
         </div>
+        <div class="contract__arrow--right">
+          <button type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="下一頁"
+            class="btn btn-lg btn-secondary rounded-pill opacity-50" onclick="commitData('next')">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
       </div>
+      <!-- 操作介面 -->
       <div class="col col-xl-2 col-md-4">
         @if (_model.StampDate.HasValue)
         {
-          <h1 class="h6">
-            已用印，@(_model.StampDate)
-          </h1>
+          <h5 class="h5 fw-bolder text-center">
+            合約已用印，@(_model.StampDate)
+          </h5>
         }
         else
         {
-          <div class="row" id="toAffix">
+          <div id="toAffix" class="row ps-2 pe-4">
             <form method="post" enctype="multipart/form-data">
-              <div>
-                <label class="form-label" for="SealImage">請選擇印鑑章</label>
-                <input type="file" class="form-control-small" id="SealImage" name="SealImage" />
+              <div class="card p-3 mb-3">
+                <h5 class="h5 fw-bolder text-primary">Step 1：指定合約雙方</h5>
+                <div class="mb-2">
+                  <label for="Initiator" class="form-label h6 text-secondary fw-bolder mb-1">起約方</label>
+                  <select id="Initiator" name="Initiator" class="form-select form-select-sm">
+                    <option value="0" selected="0">網際優勢甲方公司</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="Contractor" class="form-label h6 text-secondary fw-bolder mb-1">簽約方 (按 Ctrl 鍵可複選)</label>
+                  <select id="Contractor" name="Contractor" class="form-select form-select-sm" multiple
+                    aria-label="multiple select">
+                    <option value="0">網際優勢乙方公司</option>
+                    <option value="1">網際優勢丙方公司</option>
+                    <option value="2">網際優勢丁方公司</option>
+                    <option value="3">網際優勢戊方公司</option>
+                    <option value="4">網際優勢己方公司</option>
+                  </select>
+                </div>
               </div>
-              <div>
-                <label class="form-label" for="PageIndex" style="white-space: nowrap;">請選擇用印所在頁碼：</label>
-                <select name="PageIndex" class="form-control-small col-8">
-                  <option value="0" selected="0">第 1 頁</option>
-                  @for (int i = 0; i < GetPdfPageCount(_model.Contract); i++)
-                  {
-                    <option value="@(i)" selected="@(i==_model.PageIndex)">第@(i + 1)頁</option>
-                  }
-                </select>
-                <script>
-                  $('select[name="PageIndex"]').on('change', function () {
-                    loadContractPage($('select[name="PageIndex"]').val());
-                  });
-                </script>
+
+              
+              <div class="card p-3 mb-3">
+                <h5 class="h5 fw-bolder text-primary">Step 2：文件審閱</h5>
+                <div class="pb-3">
+                  <input class="form-check-input" type="checkbox" id="isInitiatorStamp">
+                  <label class="form-check-label" for="isInitiatorStamp">
+                    起約人上傳合約已用印
+                  </label>
+                </div>
+                <div>
+                  <input class="form-check-input" type="checkbox" id="isReject">
+                  <label class="form-check-label" for="isReject">
+                    簽約人審閱後退回合約
+                  </label>
+                </div>
               </div>
-              <div>
-                <label class="form-label" for="MarginTop" style="white-space: nowrap;">請指定上邊界位置(公分)</label>
-                <input type="text" class="form-control-small col-8" style="text-align:right;" id="MarginTop"
-                  name="MarginTop" value="@(_model?.MarginTop ?? 0)" />
+
+              <div class="card p-3 mb-3">
+                <h5 class="h5 fw-bolder text-primary">Step 3：創建欄位</h5>
+                <div class="pb-3">
+                  <label class="form-label fw-bolder" for="PageIndex">選擇用印所在頁碼</label>
+                  <select name="PageIndex" class="form-select form-select-sm">
+                    <option value="0" selected="0">第 1 頁</option>
+                    @for (int i = 0; i < GetPdfPageCount(_model.Contract); i++)
+                    {
+                      <option value="@(i)" selected="@(i==_model.PageIndex)">第@(i + 1)頁</option>
+                    }
+                  </select>
+                  <script>
+                    $('select[name="PageIndex"]').on('change', function () {
+                      loadContractPage($('select[name="PageIndex"]').val());
+                    });
+                  </script>
+                </div>
+                <div>
+                  <button type="button" onclick="sealHandler()" class="btn btn-primary opacity-75 w-100">
+                    <i class="fas fa-stamp"></i> 選擇印鑑
+                  </button>
+                </div>
               </div>
-              <div>
-                <label class="form-label" for="MarginLeft" style="white-space: nowrap;">請指定左邊界位置(公分)</label>
-                <input type="text" class="form-control-small col-8" style="text-align:right;" id="MarginLeft"
-                  name="MarginLeft" value="@(_model?.MarginLeft ?? 0)" />
+
+              <!--
+              <div class="pb-3">
+                <label class="form-label fw-bolder" for="SealImage">請選擇印鑑章</label>
+                <input type="file" class="form-control form-control-sm" id="SealImage" name="SealImage" />
               </div>
-              <div>
-                <label class="form-label" for="SealScale" style="white-space: nowrap;">印鑑章縮放比例(%)</label>
-                <input type="text" class="form-control-small col-8" style="text-align:right;" id="SealScale"
-                  name="SealScale" value="@(_model?.SealScale ?? 100)" />
+
+              <div class="pb-3">
+                <label class="form-label fw-bolder" for="MarginTop">請指定上邊界位置(公分)</label>
+                <input type="text" class="form-control form-control-sm" id="MarginTop" name="MarginTop"
+                  value="@(_model?.MarginTop ?? 0)" />
               </div>
-              <div>
-                <button type="button" onclick="commitSignature(true);" class="form-control">預覽</button>
+              <div class="pb-3">
+                <label class="form-label fw-bolder" for="MarginLeft" style="white-space: nowrap;">請指定左邊界位置(公分)</label>
+                <input type="text" class="form-control form-control-sm" id="MarginLeft" name="MarginLeft"
+                  value="@(_model?.MarginLeft ?? 0)" />
               </div>
-              <div>
-                <button type="button" onclick="commitSignature(false);" class="form-control">用印</button>
+              <div class="pb-3">
+                <label class="form-label fw-bolder" for="SealScale" style="white-space: nowrap;">印鑑章縮放比例(%)</label>
+                <input type="text" class="form-control form-control-sm" id="SealScale" name="SealScale"
+                  value="@(_model?.SealScale ?? 100)" />
+              </div>
+              -->
+              
+              <div class="row g-2">
+                <div class="col-8">
+                  <button type="button" onclick="commitSignature(false);" class="btn btn-primary opacity-75 w-100">
+                    <i class="fas fa-stamp"></i> 送出合約
+                  </button>
+                </div>
+                <div class="col-4">
+                  <button type="button" onclick="commitSignature(true);" class="btn btn-success opacity-75 w-100">
+                    <i class="fas fa-file-pdf"></i> 預覽
+                  </button>
+                </div>
               </div>
             </form>
             <script>
@@ -141,12 +210,200 @@
             </script>
           </div>
         }
+        <!-- 印章 Modal -->
+        <div class="modal fade" id="sealModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+          aria-labelledby="sealModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+              <div class="modal-header border-bottom-0">
+                <h5 class="modal-title fw-bolder" id="staticBackdropLabel">選擇印章</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <form method="post" enctype="multipart/form-data" class="pt-3 pb-5 text-center">
+                  <div class="row g-3">
+                    @for (int i = 0; i < 5; i++)
+                    {
+                      <div class="d-flex align-items-stretch col-md-3 col-sm-12" style="height: 150px;">
+                        <div class="card p-3 w-100 h-100 block--hover block--border" onclick="useSealHandler(@(i))">
+                          <div class="d-inline-flex h-100 w-100 justify-content-center align-items-center">
+                            <img id="frame" src="http://fakeimg.pl/300x250/?text=Seal" class="mh-100" />
+                          </div>
+                          <div
+                            class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded operation__card block--show">
+                            <i class="fas fa-check"></i>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                    <!-- 新增印鑑檔 -->
+                    <div class="d-flex align-items-stretch col-md-3 col-sm-12" style="height: 150px;">
+                      <label for="formFile" class="form-label w-100 h-100 mb-0">
+                        <div class="card justify-content-center align-items-center h-100 w-100 block--hover">
+                          <a class="btn btn-lg btn-success rounded-pill opacity-75">
+                            <i class="fal fa-file-plus"></i>
+                          </a>
+                          <span class="h6 fw-bolder p-2">新增印鑑檔</span>
+                          <input id="formFile" class="form-control" type="file" onchange="addSealHandler()">
+
+                          <!--div class="btn btn-lg btn-success rounded-pill opacity-75">
+                          <i class="fal fa-file-plus"></i>
+                        </!--div -->
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-
   </section>
 </div>
 
+<script>
+  // 開啟印鑑 Modal
+  function sealHandler() {
+    $('#sealModal').modal('show');
+  }
+
+  // 選擇印鑑
+  function useSealHandler(index) {
+    $('#sealModal').modal('hide');
+    console.log('印鑑 index:', index);
+    console.log('印鑑sealList:', sealList);
+
+    // 產生一個虛擬 sealBox
+    const sealBox = document.createElement("div");
+    // id 動態產生
+    const uuid = ui_uuid8();
+    sealBox.id = uuid;
+    sealBox.setAttribute('class', 'vmSeal');
+    sealBox.setAttribute('style', 'top:42.5%;left:42.5%;');
+    document.querySelector("#contractImg").appendChild(sealBox);
+    // 產生印章並放到 sealBox
+    const sealImg = document.createElement("img");
+    sealImg.setAttribute('class', 'sealimg mw-100');
+    sealImg.setAttribute('src', 'http://fakeimg.pl/300x250/?text=Seal'); // 動態置入印鑑圖檔-來源 sealList
+    document.querySelector(`#${uuid}`).appendChild(sealImg);
+    // scale 模組
+    const scaleBox = document.createElement("div");
+    scaleBox.id = `scale-${uuid}`;
+    scaleBox.setAttribute('class', 'vmScale');
+    document.querySelector(`#${uuid}`).appendChild(scaleBox);
+    // 刪除 模組
+    const delBox = document.createElement("button");
+    const textNode = document.createTextNode("x");
+    delBox.id = `del-${uuid}`;
+    delBox.setAttribute('class', 'btn btn-sm text-white rounded-pill icon__rounded vmDelete');
+    delBox.appendChild(textNode);
+    document.querySelector(`#${uuid}`).appendChild(delBox);
+
+    // 跟著滑鼠移動
+    const contractArea = document.querySelector("#contractImg");
+    const seal = document.querySelector(`#${uuid}`);
+    seal.onmousedown = function (ev) {
+      var oEvent = ev;
+      // 阻擋瀏覽器的預設行為
+      oEvent.preventDefault();
+      var disX = oEvent.clientX - seal.offsetLeft;
+      var disY = oEvent.clientY - seal.offsetTop;
+      contractArea.onmousemove = function (ev) {
+        oEvent = ev;
+        oEvent.preventDefault();
+        var x = oEvent.clientX - disX;
+        var y = oEvent.clientY - disY;
+
+        // 圖形移動時的邊界判斷-必須在文件內的範圍
+        x = x <= 0 ? 0 : x;
+        x = x >= contractArea.offsetWidth - seal.offsetWidth ? contractArea.offsetWidth - seal.offsetWidth : x;
+        y = y <= 0 ? 0 : y;
+        y = y >= contractArea.offsetHeight - seal.offsetHeight ? contractArea.offsetHeight - seal.offsetHeight : y;
+        // console.log('x', x, 'y:', y);
+        seal.style.left = x + 'px';
+        seal.style.top = y + 'px';
+        const MarginLeft = (x / 37.7).toFixed(2);
+        const MarginTop = (y / 37.7).toFixed(2);
+        console.log('mx-左邊界(cm):', MarginLeft);
+        console.log('my-上邊界(cm):', MarginTop);
+      }
+      // 圖形移出文件範圍取消移動是,防止移動過快觸發滑鼠移出事件，導致滑鼠彈起事件失效
+      contractArea.onmouseleave = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+      // 署標彈起後停止移動
+      contractArea.onmouseup = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+    }
+    // 图片缩放效果
+    const scale = document.querySelector(`#scale-${uuid}`);
+    scale.onmousedown = function (e) {
+      // 阻止冒泡,避免缩放时触发移动事件
+      e.stopPropagation();
+      e.preventDefault();
+      var pos = {
+        'w': seal.offsetWidth,
+        'h': seal.offsetHeight,
+        'x': e.clientX,
+        'y': e.clientY
+      };
+      contractArea.onmousemove = function (ev) {
+        ev.preventDefault();
+        // 设置图片的最小缩放为30*30
+        var w = Math.max(30, ev.clientX - pos.x + pos.w)
+        var h = Math.max(30, ev.clientY - pos.y + pos.h)
+        //console.log(w,h)
+
+        // 设置图片的最大宽高
+        w = w >= contractArea.offsetWidth - seal.offsetLeft ? contractArea.offsetWidth - seal.offsetLeft : w
+        h = h >= contractArea.offsetHeight - seal.offsetTop ? contractArea.offsetHeight - seal.offsetTop : h
+        seal.style.width = w + 'px';
+        seal.style.height = h + 'px';
+        //console.log(seal.offsetWidth,seal.offsetHeight)
+        console.log('圖片的寬的縮放比 %:', ((sealImg.width / sealImg.naturalWidth) * 100).toFixed(2));
+        console.log('圖片的高的縮放比 %:', ((sealImg.height / sealImg.naturalHeight) * 100).toFixed(2));
+      }
+      contractArea.onmouseleave = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+      contractArea.onmouseup = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+    }
+
+    // 刪除印鑑檔
+    const deleteSeal = document.querySelector(`#del-${uuid}`);
+    deleteSeal.onmousedown = function (e) {
+      // 阻止冒泡,避免缩放时触发移动事件
+      e.stopPropagation();
+      e.preventDefault();
+      seal.remove();
+
+      contractArea.onmouseleave = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+      contractArea.onmouseup = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+    }
+  }
+
+  // 新增印鑑檔
+  let sealList = [];
+  function addSealHandler() {
+    const sealImg = URL.createObjectURL(event.target.files[0]);
+    sealList.push(sealImg);
+  }
+</script>
 @functions
 {
   public int GetPdfPageCount(Contract attachment)

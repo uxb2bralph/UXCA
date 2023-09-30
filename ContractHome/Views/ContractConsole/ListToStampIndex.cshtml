@@ -78,10 +78,13 @@
                   <div class="fs-1 px-2 mediumSlateBlue">
                     <i class="fad fa-file-contract fa-lg"></i>
                   </div>
-                  <div>
+                  <div>                   
+                    <div class="fs-12 text-black-50">
+                      {{ contract.ContractDateFrom }}
+                    </div>
                     <div class="fw-bolder">
                       {{ contract.Title }}
-                    </div>
+                    </div> 
                     <div>
                       <a :href="`/ContractConsole/ShowCurrentContract?KeyID=${contract.KeyID}`">
                         {{ contract.No }}
@@ -288,7 +291,8 @@
         </div>
         <div class="modal-body">
           <!-- 拖曳上傳元件-->
-          <div v-if="isUploadFile" class="px-5 alert alert-danger d-flex align-items-center uploadFile__message" role="alert">
+          <div v-if="isUploadFile" class="px-5 alert alert-danger d-flex align-items-center uploadFile__message"
+            role="alert">
             <span class="pe-2"><i class="fas fa-exclamation-triangle"></i></span>
             <div>{{ uploadFileMsg }}</div>
           </div>
@@ -314,8 +318,8 @@
                   <div class="row">
                     <label for="ProjectName" class="col-sm-12 col-md-3 col-form-label fw-bolder">專案名稱</label>
                     <div class="col-sm-12 col-md-9">
-                      <input v-model="formData.ProjectName" type="text" class="form-control"
-                        id="ProjectName" required />
+                      <input v-model="formData.ProjectName" type="text" class="form-control" id="ProjectName"
+                        required />
                       <div class="invalid-feedback">
                         請輸入任務名稱
                       </div>
@@ -448,8 +452,8 @@
       InitiatorSignerID: null,
       ContractorSignerID: null,
       KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D',
-      isInitiator: true, // 是否為甲方
-      isContractor: false, // 是否為乙方
+      isInitiator: false, // 是否為甲方
+      isContractor: true, // 是否為乙方
     },
     {
       uuid: '333',

@@ -9,78 +9,77 @@
 @using CommonLib.Utility
 @using Newtonsoft.Json
 @{
-    Layout = "~/Views/Shared/MasterPage.cshtml";
-    ModelStateDictionary _modelState;
-    ModelSource? models;
-    ContractSealRequest _model = (ContractSealRequest)this.Model;
-    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
-    _modelState = (ModelStateDictionary)ViewBag.ModelState;
-    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+  Layout = "~/Views/Shared/MasterPage.cshtml";
+  ModelStateDictionary _modelState;
+  ModelSource? models;
+  ContractSealRequest _model = (ContractSealRequest)this.Model;
+  models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+  _modelState = (ModelStateDictionary)ViewBag.ModelState;
+  QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
 }
 <main id="login" class="login__wrapper bg-secondary bg-gradient">
-    <div class="login__signin">
-        @* <form ref="form" v-on:submit.prevent id="loginForm" class="needs-validation" :class="{'was-validated':
-        isValidate}" *@
-        <form ref="form" v-on:submit.prevent id="loginForm" class="needs-validation" :class="{'was-validated': isValidate}"
-              novalidate accept-charset="UTF-8" role="form" method="post" autocomplete="off">
-            <div class="card mb-3 shadow-sm">
-                <div class="row g-0">
-                    <div class="col-xl-8 p-5 login__intro bg-secondary bg-opacity-10">
-                        <img src="http://fakeimg.pl/150x50/?text=Logo" class="py-3">
-                        <h1 class="h2 fw-bolder text-white">雲端文件簽署，簡化簽署步驟</h1>
-                        <p class="text-white">高效率完成線上文件簽署，並獲取具有法律約束力的電子簽名。</p>
-                    </div>
-                    <div class="col-xl-4 align-self-center p-5">
-                        <div class="container">
-                            <div class="row">
-                                <div class="col-12">
-                                    <h4 class="text-center fw-bolder">登入</h4>
-                                </div>
-                                <div class="col-xl-12 col-lg-6 col-md-12 input__loginHeight">
-                                    <label for="userAccount" class="fw-bolder">帳號</label>
-                                    <input v-model="formData.pid" type="text" id="userAccount" class="form-control form-control-sm"
-                                           placeholder="" name="PID" required autofocus>
-                                    <div class="invalid-feedback">
-                                        請輸入帳號
-                                    </div>
-                                </div>
-                                <div class="col-xl-12 col-lg-6 col-md-12 input__loginHeight">
-                                    <label for="userPwd" class="fw-bolder">密碼</label>
-                                    <input v-model="formData.password" type="password" id="userPwd" class="form-control form-control-sm"
-                                           placeholder="" name="Password" required>
-                                    <div class="invalid-feedback">
-                                        請輸入密碼
-                                    </div>
-                                </div>
-                                <div class="col-12 hstack gap-3 py-3">
-                                    <div>
-                                        <input v-model="formData.rememberAccount" class="form-check-input" type="checkbox"
-                                               id="rememberAccount">
-                                        <label class="form-check-label" for="rememberAccount">
-                                            記住帳號
-                                        </label>
-                                    </div>
-                                    <div class="ms-auto">
-                                        <a class="fs-6" href="@(Url.Action("ForgetPassword","Account"))">註冊</a>
-                                    </div>
-                                    <div class="vr"></div>
-                                    <div>
-                                        <a class="fs-6" href="@(Url.Action("ForgetPassword","Account"))">忘記密碼</a>
-                                    </div>
-                                </div>
-
-                                <div class="col-12">
-                                    <button type="button" class="w-100 btn btn-primary" v-on:click="loginHandler" elevation="2">
-                                        登入
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+  <div class="login__signin">
+    @* <form ref="form" v-on:submit.prevent id="loginForm" class="needs-validation" :class="{'was-validated':
+    isValidate}" *@
+    <form ref="form" v-on:submit.prevent id="loginForm" class="needs-validation" :class="{'was-validated': isValidate}"
+      novalidate accept-charset="UTF-8" role="form" method="post" autocomplete="off">
+      <div class="card mb-3 shadow-sm">
+        <div class="row g-0">
+          <div class="col-xl-8 p-5 login__intro bg-secondary bg-opacity-10">
+            <img src="~/images/uxSign_logo.png" class="py-3">
+            <h1 class="h2 fw-bolder text-white">雲端文件簽署，簡化簽署步驟</h1>
+            <p class="text-white">高效率完成線上文件簽署，並獲取具有法律約束力的電子簽名。</p>
+          </div>
+          <div class="col-xl-4 align-self-center p-5">
+            <div class="container">
+              <div class="row">
+                <div class="col-12">
+                  <h4 class="text-center fw-bolder">登入</h4>
                 </div>
+                <div class="col-xl-12 col-lg-6 col-md-12 input__loginHeight">
+                  <label for="userAccount" class="fw-bolder">帳號</label>
+                  <input v-model="formData.pid" type="text" id="userAccount" class="form-control form-control-sm"
+                    placeholder="" name="PID" required autofocus>
+                  <div class="invalid-feedback">
+                    請輸入帳號
+                  </div>
+                </div>
+                <div class="col-xl-12 col-lg-6 col-md-12 input__loginHeight">
+                  <label for="userPwd" class="fw-bolder">密碼</label>
+                  <input v-model="formData.password" type="password" id="userPwd" class="form-control form-control-sm"
+                    placeholder="" name="Password" required>
+                  <div class="invalid-feedback">
+                    請輸入密碼
+                  </div>
+                </div>
+                <div class="col-12 hstack gap-3 py-3">
+                  <div>
+                    <input v-model="formData.rememberAccount" class="form-check-input" type="checkbox"
+                      id="rememberAccount">
+                    <label class="form-check-label" for="rememberAccount">
+                      記住帳號
+                    </label>
+                  </div>
+                  <div class="ms-auto">
+                    <a class="fs-6" href="@(Url.Action("ForgetPassword","Account"))">註冊</a>
+                  </div>
+                  <div class="vr"></div>
+                  <div>
+                    <a class="fs-6" href="@(Url.Action("ForgetPassword","Account"))">忘記密碼</a>
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <button type="button" class="w-100 btn btn-primary" v-on:click="loginHandler" elevation="2">
+                    登入</button>
+                </div>
+              </div>
             </div>
-        </form>
-    </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
 </main>
 @{
     /** await Html.RenderPartialAsync("~/Views/Shared/ReportInputError.cshtml"); */

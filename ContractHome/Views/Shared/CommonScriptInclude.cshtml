@@ -14,7 +14,6 @@
   // Notice how this gets configured before we load Font Awesome
   //window.FontAwesomeConfig = { autoReplaceSvg: false }
 </script>
-@*<script src="~/vendor/fontawesome-free/js/all.min.js"></script>*@
 <script src="~/lib/jquery-ui/Scripts/jquery-ui-1.13.2.js"></script>
 <script src="~/js/jquery.ui.datepicker-zh-TW.js"></script>
 <script src="~/js/jquery.form.js"></script>
@@ -27,9 +26,20 @@
 <script src="~/js/linq.jquery.js"></script>
 <script src="~/js/stringformat-1.11.min.js"></script>
 <script src="~/js/base64.js"></script>
+<!-- 拖曳上傳模組 -->
 <script src="~/lib/dropzone/dropzone.min.js"></script>
+<!-- datepicker 和語系檔 -->
+<script src="~/lib/datepicker/core.min.js"></script>
+<script src="~/lib/datepicker/datepicker.min.js"></script>
 
 <script>
+  // 初始化 Bootstrap Tooltip
+  document.addEventListener("DOMContentLoaded", function () {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (element) {
+      return new bootstrap.Tooltip(element);
+    });
+  });
 
   var $global = (function () {
 
@@ -423,22 +433,18 @@
     });
   }
 
-  function toNameValues(jsonObject) {
-    // 将 JSON 对象转换为数组
-    const jsonArray = [];
-    for (const key in jsonObject) {
-        if (jsonObject.hasOwnProperty(key)) {
-        const item = {
-            name: key,
-            value: jsonObject[key]
-        };
-        jsonArray.push(item);
-        }
-    }
+  // 產生8碼 uuid
+  function ui_uuid8() {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    const numbers = '0123456789';
 
-    // 输出转换后的数组
-    console.log(jsonArray);
-    return jsonArray;
+    const firstChar = characters.charAt(Math.floor(Math.random() * characters.length));
+    const thirdChar = characters.charAt(Math.floor(Math.random() * characters.length));
+
+    const numericPart = Array.from({ length: 6 }, () => numbers.charAt(Math.floor(Math.random() * numbers.length))).join('');
+
+    return `${firstChar}${numericPart}${thirdChar}`;
   }
+
 
 </script>
