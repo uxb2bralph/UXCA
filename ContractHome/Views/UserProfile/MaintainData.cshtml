@@ -18,6 +18,7 @@
   _modelState = (ModelStateDictionary)ViewBag.ModelState;
   QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
 
+  var profile = await Context.GetUserAsync();
   _viewModel.UrlAction = Url.Action("InquireData", "UserProfile");
 }
 <div id="userProdile" class="container-lg py-5">
@@ -35,22 +36,25 @@
       <form v-on:submit.prevent="inquireData" id="queryArea" method="post" enctype="multipart/form-data">
         <div class="container">
           <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3 m-3 mb-lg-0 data-item">
-            <div class="col input__height">
-              <div class="row">
-                <label for="CompanyID" class="col-sm-12 col-md-3 col-form-label fw-bolder">隸屬公司</label>
-                <div id="searchCompanyName" class="col-sm-12 col-md-9">
-                  <input v-model="searchFormData.CompanyID" type="text" class="form-control" name="SearchCompany"
-                    placeholder="可輸入鍵字查詢公司名稱" v-on:keyup="keypressHandler(searchFormData.CompanyID)" />
-                  <ul v-show="isSearchOptionsOpen" class="list-group mb-3 shadow__card">
-                    <li v-for="(result, index) in searchResults" :key="index"
-                      class="list-group-item list-group-item-action" v-on:click="setResult(result, 'search')"
-                      :class="{'active': index === currentlyCounter}">
-                      {{ result }}
-                    </li>
-                  </ul>
+            @if (profile.IsSysAdmin())
+            {
+              <div class="col input__height">
+                <div class="row">
+                  <label for="CompanyName" class="col-sm-12 col-md-3 col-form-label fw-bolder">隸屬公司</label>
+                  <div id="searchCompanyName" class="col-sm-12 col-md-9">
+                    <input v-model="searchFormData.CompanyName" type="text" class="form-control" name="SearchCompany"
+                      placeholder="可輸入關鍵字查詢公司名稱" v-on:keyup="keypressHandler(searchFormData.CompanyName)" />
+                    <ul v-show="isSearchOptionsOpen" class="list-group mb-3 shadow__card">
+                      <li v-for="(result, index) in searchResults" :key="index"
+                        class="list-group-item list-group-item-action" v-on:click="setResult(result, 'search')"
+                        :class="{'active': index === currentlyCounter}">
+                        {{ result.CompanyName }}
+                      </li>
+                    </ul>
+                  </div>
                 </div>
               </div>
-            </div>
+            }
             <div class="col input__height">
               <div class="row">
                 <label for="PID" class="col-sm-12 col-md-3 col-form-label fw-bolder">用戶帳號</label>
@@ -68,15 +72,15 @@
                 </div>
               </div>
             </div>
-            <div class="col input__height">
-              <div class="row">
-                <label for="Password" class="col-sm-12 col-md-3 col-form-label fw-bolder">密碼</label>
-                <div class="col-sm-12 col-md-9">
-                  <input v-model="searchFormData.Password" type="password" class="form-control" name="Password"
-                    id="Password" />
-                </div>
-              </div>
+            @* <div class="col input__height">
+            <div class="row">
+            <label for="Password" class="col-sm-12 col-md-3 col-form-label fw-bolder">密碼</label>
+            <div class="col-sm-12 col-md-9">
+            <input v-model="searchFormData.Password" type="password" class="form-control" name="Password"
+            id="Password" />
             </div>
+            </div>
+            </div> *@
             <div class="col input__height">
               <div class="row">
                 <label for="EMail" class="col-sm-12 col-md-3 col-form-label fw-bolder">電子郵件</label>
@@ -100,17 +104,17 @@
                 </div>
               </div>
             </div>
-            <div class="col input__height">
-              <div class="row">
-                <label for="Region" class="col-sm-12 col-md-3 col-form-label fw-bolder">憑證類型</label>
-                <div class="col-sm-12 col-md-9">
-                  <select v-model="searchFormData.Region" id="Region" name="Region" class="form-control">
-                    <option v-for="(item, index) in regionList" :key="index" :value="item.value">{{ item.text }}
-                    </option>
-                  </select>
-                </div>
-              </div>
+            @* <div class="col input__height">
+            <div class="row">
+            <label for="Region" class="col-sm-12 col-md-3 col-form-label fw-bolder">憑證類型</label>
+            <div class="col-sm-12 col-md-9">
+            <select v-model="searchFormData.Region" id="Region" name="Region" class="form-control">
+            <option v-for="(item, index) in regionList" :key="index" :value="item.value">{{ item.text }}
+            </option>
+            </select>
             </div>
+            </div>
+            </div> *@
           </div>
         </div>
       </form>
@@ -119,7 +123,7 @@
       <div class="col-12 hstack gap-3 py-3">
         <div>
           <button type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="新增使用者資料"
-            class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="commitData('addNew')">
+            class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="editData('addNew')">
             <i class="fal fa-file-plus"></i>
           </button>
         </div>
@@ -148,7 +152,7 @@
               <th scope="col">隸屬公司</th>
               <th scope="col">用戶帳號</th>
               <th scope="col">姓名</th>
-              <th scope="col">密碼</th>
+              @* <th scope="col">密碼</th> *@
               <th scope="col">電子郵件</th>
               <th scope="col">角色</th>
               <th scope="col">憑證類型</th>
@@ -157,10 +161,10 @@
           </thead>
           <tbody>
             <tr v-for="(user, index) in userList" :key="`c_${index}`">
-              <td class="text-nowrap">{{ user.CompanyID }}</td>
+              <td class="text-nowrap">{{ user.CompanyName }}</td>
               <td class="text-nowrap">{{ user.PID }}</td>
               <td>{{ user.UserName }}</td>
-              <td>{{ user.Password }}</td>
+              @* <td>{{ user.Password }}</td> *@
               <td>{{ user.EMail }}</td>
               <td>{{ formatData(user.RoleID, 'roleList') }}</td>
               <td>{{ formatData(user.Region, 'regionList') }}</td>
@@ -168,7 +172,7 @@
                 <!-- 編輯 -->
                 <span data-bs-toggle="tooltip" data-bs-placement="top" title="修改" class="d-inline-block mx-1">
                   <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded"
-                    v-on:click="commitData('edit', user)">
+                    v-on:click="editData('edit', user)">
                     <i class="fal fa-edit"></i>
                   </button>
                 </span>
@@ -261,7 +265,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body text-center h5 fw-bolder">
-          確定刪除 <span class="text-primary opacity-75">" {{ currentUserData.CompanyID }} "</span> 相關資料？
+          確定刪除 <span class="text-primary opacity-75">" {{ currentUserData.CompanyName }} "</span> 相關資料？
         </div>
         <div class="modal-footer border-top-0 justify-content-center">
           <button type="button" class="btn btn-secondary opacity-50" data-bs-dismiss="modal">取消</button>
@@ -284,27 +288,30 @@
           <form v-on:submit.prevent method="post" enctype="multipart/form-data">
             <div class="container">
               <div class="row row-cols-1 m-3 mb-lg-0 data-item">
-                <div class="col input__height">
-                  <div class="row">
-                    <label for="iCompanyName" class="col-sm-12 col-md-3 col-form-label fw-bolder">隸屬公司</label>
-                    <div id="InputCompanyName" class="col-sm-12 col-md-9">
-                      <input v-model="formData.CompanyID" type="text" class="form-control form-control-sm"
-                        :class="{'is-invalid': isCompanyName}" id="iCompanyName"
-                        v-on:focus="resetValidate('isCompanyName')"
-                        v-on:blur="validateField('isCompanyName', formData.CompanyID)" autocomplete="off" />
-                      <ul v-show="isInputOptionsOpen" class="list-group mb-3 shadow__card">
-                        <li v-for="(result, index) in searchResults" :key="index"
-                          class="list-group-item list-group-item-action" v-on:click="setResult(result, 'edit')"
-                          :class="{'active': index === currentlyCounter}">
-                          {{ result }}
-                        </li>
-                      </ul>
-                      <div class="invalid-feedback">
-                        請輸入公司名稱
+                @if (profile.IsSysAdmin())
+                {
+                  <div class="col input__height">
+                    <div class="row">
+                      <label for="iCompanyName" class="col-sm-12 col-md-3 col-form-label fw-bolder">隸屬公司</label>
+                      <div id="InputCompanyName" class="col-sm-12 col-md-9">
+                        <input v-model="formData.CompanyName" type="text" class="form-control form-control-sm"
+                          :class="{'is-invalid': isCompanyName}" id="iCompanyName"
+                          v-on:focus="resetValidate('isCompanyName')"
+                          v-on:blur="validateField('isCompanyName', formData.CompanyName)" autocomplete="off" />
+                        <ul v-show="isInputOptionsOpen" class="list-group mb-3 shadow__card">
+                          <li v-for="(result, index) in searchResults" :key="index"
+                            class="list-group-item list-group-item-action" v-on:click="setResult(result, 'edit')"
+                            :class="{'active': index === currentlyCounter}">
+                            {{ result.CompanyName }}
+                          </li>
+                        </ul>
+                        <div class="invalid-feedback">
+                          請輸入公司名稱
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                }
                 <div class="col input__height">
                   <div class="row">
                     <label for="iPID" class="col-sm-12 col-md-3 col-form-label fw-bolder">用戶帳號</label>
@@ -429,12 +436,12 @@
       value: ''
     },
     {
-      text: '角色1',
-      value: 'O'
+      text: '一般使用者',
+      value: '1'
     },
     {
-      text: '角色2',
-      value: 'P'
+      text: '帳號管理員',
+      value: '2'
     },
   ];
 
@@ -451,6 +458,9 @@
     {
       text: '自然人憑證',
       value: 'P'
+    }, {
+      text: '企業憑證',
+      value: 'E'
     },
   ];
 
@@ -466,36 +476,36 @@
 
   // 使用者列表
   const userList = [
-    {
-      uuid: '111',
-      CompanyID: '網際優勢甲方公司',
-      PID: '12345678',
-      UserName: '林大華',
-      Password: '12345679',
-      EMail: 'David@uxb2b.com',
-      RoleID: 'O',
-      Region: 'O'
+  @*{
+    uuid: '111',
+    CompanyName: '網際優勢甲方公司',
+    PID: '12345678',
+    UserName: '林大華',
+    Password: '12345679',
+    EMail: 'David@uxb2b.com',
+    RoleID: 'O',
+    Region: 'O'
     },
     {
-      uuid: '222',
-      CompanyID: '網際優勢甲方公司',
-      PID: '12345678',
-      UserName: '王大華',
-      Password: '12345679',
-      EMail: 'wang@uxb2b.com',
-      RoleID: 'O',
-      Region: 'O'
+    uuid: '222',
+    CompanyName: '網際優勢甲方公司',
+    PID: '12345678',
+    UserName: '王大華',
+    Password: '12345679',
+    EMail: 'wang@uxb2b.com',
+    RoleID: 'O',
+    Region: 'O'
     },
     {
-      uuid: '333',
-      CompanyID: '網際優勢甲方公司',
-      PID: '12345678',
-      UserName: '陳大華',
-      Password: '12345679',
-      EMail: 'cheng@uxb2b.com',
-      RoleID: '',
-      Region: 'O'
-    },
+    uuid: '333',
+    CompanyName: '網際優勢甲方公司',
+    PID: '12345678',
+    UserName: '陳大華',
+    Password: '12345679',
+    EMail: 'cheng@uxb2b.com',
+    RoleID: '',
+    Region: 'O'
+    },*@
   ];
 
   var app = new Vue({
@@ -504,7 +514,7 @@
       isValidate: false,
       /**
        * 使用者基本資料
-       * @@param {string} CompanyID 隸屬公司
+       * @@param {string} CompanyName 隸屬公司
        * @@param {string} PID 用戶帳號
        * @@param {string} UserName 姓名
        * @@param {string} Password 密碼
@@ -513,20 +523,21 @@
        * @@param {string} Region 憑證類型
        */
       searchFormData: {
-        CompanyID: null,
+        CompanyName: null,
         PID: null,
         UserName: null,
         Password: null,
         EMail: null,
         RoleID: null,
-        Region: null
+        Region: null,
+        EncCompanyID: null
       },
       roleList,
       regionList,
       // 編輯
       initialFormData: {
         uuid: null,
-        CompanyID: null,
+        CompanyName: null,
         PID: null,
         UserName: null,
         Password: null,
@@ -535,7 +546,7 @@
         Region: null
       },
       formData: {
-        CompanyID: null,
+        CompanyName: null,
       },
       userList,
       /** 分頁 options
@@ -569,10 +580,10 @@
     },
     watch: {
       // 檢查公司名稱輸入框的值，並執行Autocomplate
-      'searchFormData.CompanyID'() {
+      'searchFormData.CompanyName'() {
         this.filterResults('search');
       },
-      'formData.CompanyID'() {
+      'formData.CompanyName'() {
         this.filterResults('edit');
       }
     },
@@ -618,7 +629,7 @@
     },
     methods: {
       // 新增 / 編輯 表單Modal
-      commitData(type, data) {
+      editData(type, data) {
         $('#addNewModal').modal('show');
         const isNew = type === 'addNew';
         this.editTitle = isNew ? '新增' : '編輯';
@@ -626,11 +637,10 @@
         this.formData.uuid = isNew ? ui_uuid() : this.formData.uuid;
         if (type === 'addNew') {
           this.formData = JSON.parse(JSON.stringify(this.initialFormData));
-        }
-        if (type === 'edit') {
-          this.formData = JSON.parse(JSON.stringify(data));
+        } else if (type === 'edit') {
+          this.formData = data; //JSON.parse(JSON.stringify(data));
           // 輸入欄位檢核
-          this.isCompanyName = !this.formData.CompanyID;
+          this.isCompanyName = !this.formData.CompanyName;
           this.isPID = !this.formData.PID;
           this.isUserName = !this.formData.UserName;
           this.isPassword = !this.formData.Password;
@@ -640,7 +650,7 @@
           // 檢核email格式是否正確
           this.checkMail('isEMail', this.formData.EMail);
           // 如果檢核通過，就會送出表單
-          if (this.isCompanyName || this.isPID || this.isUserName || this.isPassword || this.isEMail || this.isRoleID || this.isRegion) return;
+          if (this.isCompanyName || this.isPID || this.isUserName || /* this.isPassword || */ this.isEMail || this.isRoleID || this.isRegion) return;
         }
       },
       // 開啟刪除Modal
@@ -655,57 +665,56 @@
 
         $("#deleteModal").modal('hide');
 
-        showLoading();
-        setTimeout(() => {
-          // 模擬假資料被刪除
-          const filterUserList = this.userList.filter(item => item.uuid !== userData.uuid);
-          this.userList = filterUserList;
-          /**
-          if (!confirm('請確認刪除資料？刪除後無法復原！')) {
-            return;
-          }
-          var $tr = $(window.event.target).closest('form').find('div.data-item');
-          showLoading();
-          $.ajax({
-            url: '@(Url.Action("DeleteItem", "UserProfile"))',
-            data: JSON.stringify({ 'EncKeyItem': $inquiryAgent.viewModel.EncKeyItem }),
-            type: "POST",
-            //dataType: "json",
-            contentType: "application/json;charset=utf-8",
-            success: function (data) {
-              hideLoading();
-              if ($.isPlainObject(data)) {
-                if (data.result) {
-                  alertModal('資料已刪除!!');
-                  delete $inquiryAgent.viewModel.EncKeyItem;
-                  delete $inquiryAgent.viewModel.KeyItem;
-                  $global.dataTable.inquireData($tr);
-                } else {
-                  alertModal('刪除未完成，原因：' + data.message);
-                }
-              } else {
-                $(data).appendTo($('body')).remove();
-              }
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-              hideLoading();
-              alertModal(thrownError);
-              console.log(xhr.status);
-              console.log(thrownError);
-            }
-          });
-          */
-          hideLoading();
-          // 開啟訊息視窗
-          this.infoMsg = `<span class='text-primary opacity-75'>" ${this.currentUserData.CompanyID} "</span> 資料已刪除`;
-          $('#infoModal').modal('show');
-        }, 2000);
-      },
+        // showLoading();
+        // setTimeout(() => {
+        //   // 模擬假資料被刪除
+        //   const filterUserList = this.userList.filter(item => item.uuid !== userData.uuid);
+        //   this.userList = filterUserList;
 
+        //   hideLoading();
+        //   // 開啟訊息視窗
+        //   this.infoMsg = `<span class='text-primary opacity-75'>" ${this.currentUserData.CompanyName} "</span> 資料已刪除`;
+        //   $('#infoModal').modal('show');
+        // }, 2000);
+
+        var viewModel = userData;
+
+        showLoading();
+        $.ajax({
+          url: '@(Url.Action("VueDeleteItem", "UserProfile"))',
+          data: JSON.stringify(viewModel),
+          type: "POST",
+          //dataType: "json",
+          contentType: "application/json;charset=utf-8",
+          success: function (data) {
+            hideLoading();
+            if ($.isPlainObject(data)) {
+              if (data.result) {
+                // alertModal('資料已刪除!!');
+                debugger;
+                const filterUserList = app.userList.filter(item => item.KeyID !== userData.KeyID);
+                app.userList = filterUserList;
+                app.infoMsg = `<span class='text-primary opacity-75'>" ${userData.UserName} "</span> 資料已刪除`;
+                $('#infoModal').modal('show');
+              } else {
+                alertModal('刪除未完成，原因：' + data.message);
+              }
+            } else {
+              $(data).appendTo($('body')).remove();
+            }
+          },
+          error: function (xhr, ajaxOptions, thrownError) {
+            hideLoading();
+            alertModal(thrownError);
+            console.log(xhr.status);
+            console.log(thrownError);
+          }
+        });
+      },
       // 儲存表單
       saveHandler() {
         // 輸入欄位檢核
-        this.isCompanyName = !this.formData.CompanyID;
+        this.isCompanyName = !this.formData.CompanyName;
         this.isPID = !this.formData.PID;
         this.isUserName = !this.formData.UserName;
         this.isPassword = !this.formData.Password;
@@ -715,25 +724,27 @@
         // 檢核email格式是否正確
         this.checkMail('isEMail', this.formData.EMail);
         // 如果檢核通過，就會送出表單
-        if (this.isCompanyName || this.isPID || this.isUserName || this.isPassword || this.isEMail || this.isRoleID || this.isRegion) return;
+        if (this.isCompanyName || this.isPID || this.isUserName || /* this.isPassword || */ this.isEMail || this.isRoleID || this.isRegion) return;
 
         console.log('儲存表單');
         $('#addNewModal').modal('hide');
-        showLoading();
+        // showLoading();
 
-        /*
-        if (addNew) {
-          delete $inquiryAgent.viewModel.EncKeyItem;
-          delete $inquiryAgent.viewModel.KeyItem;
-        }
-        var $tr = $(window.event.target).closest('form');
-        var viewModel = $tr.find('input,select,textArea').serializeObject();
-        viewModel = $.extend({}, $inquiryAgent.viewModel, viewModel);
-        viewModel.DataItem = $tr.find('div.data-item').find('input,select,textArea').serializeArray();
-        clearErrors();
+        // 模擬儲存表單
+        // setTimeout(() => {
+        //   hideLoading();
+        //   this.initialValidate();
+        //   // 開啟訊息視窗
+        //   this.infoMsg = "存檔完成";
+        //   $('#infoModal').modal('show');
+        // }, 2000);
+
+        var viewModel = this.formData;
+        viewModel.RoleID = Number(viewModel.RoleID);
+
         showLoading();
         $.ajax({
-          url: '@(Url.Action("CommitItem", "UserProfile"))',
+          url: '@(Url.Action("VueCommitItem", "UserProfile"))',
           data: JSON.stringify(viewModel),
           type: "POST",
           //dataType: "json",
@@ -742,7 +753,9 @@
             hideLoading();
             if ($.isPlainObject(data)) {
               if (data.result) {
-                alertModal('存檔完成!!');
+                app.infoMsg = "存檔完成";
+                $('#infoModal').modal('show');
+                app.inquireData();
               } else {
                 alertModal('存檔失敗，原因：' + data.message);
               }
@@ -757,16 +770,6 @@
             console.log(thrownError);
           }
         });
-        */
-
-        // 模擬儲存表單
-        setTimeout(() => {
-          hideLoading();
-          this.initialValidate();
-          // 開啟訊息視窗
-          this.infoMsg = "存檔完成";
-          $('#infoModal').modal('show');
-        }, 2000);
       },
       // 查詢使用者資料
       inquireData() {
@@ -790,6 +793,17 @@
           page: this.page
         }
         console.log('payload:', payload);
+
+        var viewModel = $.extend({
+          PageSize: this.pageSize,
+          PageIndex: this.page,
+        }, this.searchFormData);
+
+        if (viewModel.CompanyName == '') {
+          delete viewModel.EncCompanyID;
+        }
+
+        fetchDataList(viewModel, '@(Url.Action("VueInquireData", "UserProfile"))');
       },
 
       // 重設查詢
@@ -885,37 +899,50 @@
         this.fetchAPI();
       },
       formatData(value, data) {
-        const filterResults = this[data].filter(item => item.value === value);
-        return filterResults[0].text === '請選擇' ? null : filterResults[0].text;
+        const filterResults = this[data].filter(item => item.value == value);
+        return filterResults.length == 0 || filterResults[0].text === '請選擇' ? null : filterResults[0].text;
       },
       keypressHandler(value) {
         console.log(value);
-        this.filterResults()
+        // this.filterResults();
       },
       /** 公司名稱 Autocomplate
        * 篩選出對應輸入框的清單
        */
       filterResults(type) {
         // 搜尋和輸入資料來源不同
-        const inputValue = type === 'search' ? this.searchFormData.CompanyID : this.formData.CompanyID;
+        const inputValue = type === 'search' ? this.searchFormData.CompanyName : this.formData.CompanyName;
         this.searchResults = !inputValue ? [] : this.companyOptions.filter((item) => {
           return item.toLowerCase().indexOf(inputValue.toLowerCase()) > -1;
         });
-        if (type === 'search') {
-          this.isSearchOptionsOpen = this.searchResults.length > 0;
-        }
-        if (type === 'edit') {
-          this.isInputOptionsOpen = this.searchResults.length > 0;
-        }
+
+        var viewModel = {
+          Term: inputValue
+        };
+
+        fetchDataList(viewModel, '@(Url.Action("VueSearchCompany", "Home"))',
+          function (dataItems) {
+            app.searchResults = dataItems;
+            if (type === 'search') {
+              // this.isInputOptionsOpen = this.searchResults.length > 0;
+              app.isSearchOptionsOpen = $.isArray(dataItems) && dataItems.length > 0;
+            } else if (type === 'edit') {
+              //this.isInputOptionsOpen = this.searchResults.length > 0;
+              app.isInputOptionsOpen = $.isArray(dataItems) && dataItems.length > 0;
+            }
+          });
       },
       // 選取值後代入欄位
       setResult(result, type) {
-        if (this.searchResults.length !== 0) {
+        debugger;
+        if (this.searchResults.length > 0) {
           if (type === 'search') {
-            this.searchFormData.CompanyID = result;
+            this.searchFormData.CompanyName = result.CompanyName;
+            this.searchFormData.EncCompanyID = result.KeyID;
           }
           if (type === 'edit') {
-            this.formData.CompanyID = result;
+            this.formData.CompanyName = result.CompanyName;
+            this.formData.EncCompanyID = result.KeyID;
           }
           this.clearAll(type);
         }

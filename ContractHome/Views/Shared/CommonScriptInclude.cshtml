@@ -423,4 +423,22 @@
     });
   }
 
+  function toNameValues(jsonObject) {
+    // 将 JSON 对象转换为数组
+    const jsonArray = [];
+    for (const key in jsonObject) {
+        if (jsonObject.hasOwnProperty(key)) {
+        const item = {
+            name: key,
+            value: jsonObject[key]
+        };
+        jsonArray.push(item);
+        }
+    }
+
+    // 输出转换后的数组
+    console.log(jsonArray);
+    return jsonArray;
+  }
+
 </script>

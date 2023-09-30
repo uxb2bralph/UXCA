@@ -156,7 +156,12 @@ namespace ContractHome.Helper
             return profile != null && (profile.UserRole.Any(r => r.RoleID == (int)UserRoleDefinition.RoleEnum.SystemAdmin));
         }
 
-        public static bool IsAuthorized(this UserProfile profile, int[] roleID)
+        public static bool IsMemberAdmin(this UserProfile profile)
+        {
+            return profile != null && (profile.UserRole.Any(r => r.RoleID == (int)UserRoleDefinition.RoleEnum.MemberAdmin));
+        }
+
+        public static bool IsAuthorized(this UserProfile profile, params int[] roleID)
         {
             return profile != null && profile.UserRole.Join(roleID, r => r.RoleID, o => o, (r, o) => r).Any();
         }

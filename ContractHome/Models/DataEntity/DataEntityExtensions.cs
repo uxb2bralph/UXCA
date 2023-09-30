@@ -77,6 +77,12 @@ namespace ContractHome.Models.DataEntity
             }
         }
 
+        public static UserProfile PrepareNewItem(DCDataContext models)
+        {
+            UserProfile item = new UserProfile();
+            models.UserProfile.InsertOnSubmit(item);
+            return item;
+        }
     }
 
     public partial class CDS_Document
@@ -96,6 +102,16 @@ namespace ContractHome.Models.DataEntity
         {
             Initiator = 1,
             Contractor = 2,
+        }
+    }
+
+    public partial class Organization
+    {
+        public static Organization PrepareNewItem(DCDataContext models)
+        {
+            Organization item = new Organization();
+            models.Organization.InsertOnSubmit(item);
+            return item;
         }
     }
 
