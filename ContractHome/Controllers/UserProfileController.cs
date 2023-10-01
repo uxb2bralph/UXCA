@@ -36,6 +36,87 @@ namespace ContractHome.Controllers
             _logger = logger;
         }
 
+        [RoleAuthorize(roleID:new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
+        public ActionResult MaintainData(QueryViewModel viewModel)
+        {
+            ViewBag.ViewModel = viewModel;
+            return View("~/Views/UserProfile/MaintainData.cshtml");
+        }
+
+        public async Task<ActionResult> VueInquireDataAsync([FromBody] UserProfileViewModel viewModel)
+        {
+            ViewBag.ViewModel = viewModel;
+
+            var profile = await HttpContext.GetUserAsync();
+
+            IQueryable<UserProfile> items = models.GetTable<UserProfile>();
+            if(profile?.IsSysAdmin()==true)
+            {
+
+            }
+            else if(profile?.IsMemberAdmin()==true)
+            {
+                var orgUser = models.GetTable<OrganizationUser>()
+                                .Where(o => o.UID == profile.UID).FirstOrDefault();
+                if(orgUser != null)
+                {
+                    var orgUsers = models.GetTable<OrganizationUser>().Where(o => o.CompanyID == orgUser.CompanyID);
+                    items = items.Where(u => orgUsers.Any(o => o.UID == u.UID));
+                }
+                else
+                {
+                    items = items.Where(p => false);
+                }
+            }
+            else
+            {
+                items = items.Where(p => false);
+            }
+
+            int? companyID = viewModel.GetCompanyID();
+            if (companyID.HasValue)
+            {
+                var orgUsers = models.GetTable<OrganizationUser>()
+                                .Where(c => c.CompanyID == companyID);
+                items = items.Where(u => orgUsers.Any(c => c.UID == u.UID));
+            }
+
+            viewModel.PID = viewModel.PID.GetEfficientString(); 
+            if (viewModel.PID != null) 
+            { 
+                items = items.Where(o => o.PID.StartsWith(viewModel.PID)); 
+            }
+
+            viewModel.UserName = viewModel.UserName.GetEfficientString(); 
+            if (viewModel.UserName != null) 
+            { 
+                items = items.Where(o => o.UserName.StartsWith(viewModel.UserName)); 
+            }
+
+            viewModel.EMail = viewModel.EMail.GetEfficientString(); 
+            if (viewModel.EMail != null) 
+            { 
+                items = items.Where(o => o.EMail.StartsWith(viewModel.EMail)); 
+            }
+
+
+            //if (viewModel.DataItem != null && viewModel.DataItem.Length > 0)
+            //{
+            //    items = items.BuildQuery(viewModel.DataItem);
+            //}
+
+            if (viewModel.PageIndex.HasValue)
+            {
+                viewModel.PageIndex--;
+            }
+            else
+            {
+                viewModel.PageIndex = 0;
+            }
+
+            return View("~/Views/UserProfile/VueModule/UserProfileList.cshtml", items);
+        }
+
         public ActionResult InquireData(UserProfileViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
@@ -85,6 +166,97 @@ namespace ContractHome.Controllers
 
             var dataItem = items.FirstOrDefault();
             return View("~/Views/UserProfile/Module/EditItem.cshtml", dataItem);
+        }
+
+        public ActionResult VueCommitItem([FromBody]UserProfileViewModel viewModel)
+        {
+            ViewBag.ViewModel = viewModel;
+
+            int? uid = null;
+            if (viewModel.KeyID!=null)
+            {
+                uid = viewModel.DecryptKeyValue();
+            }
+
+            var dataItem = models.GetTable<UserProfile>()
+                .Where(u => u.UID == uid)
+                .FirstOrDefault();
+
+            int? companyID = viewModel.GetCompanyID();
+            if (dataItem == null)
+            {
+                if (String.IsNullOrEmpty(viewModel.Password))
+                {
+                    ModelState.AddModelError("Password", "請設定密碼");
+                }
+            }
+
+            if (!companyID.HasValue)
+            {
+                ModelState.AddModelError("EncCompanyID", "請選擇隸屬公司");
+            }
+
+            if (!viewModel.RoleID.HasValue)
+            {
+                ModelState.AddModelError("RoleID", "請選擇角色");
+            }
+
+            viewModel.PID = viewModel.PID.GetEfficientString();
+            if (viewModel.PID == null)
+            {
+                ModelState.AddModelError("PID", "請輸入帳號");
+            }
+
+            viewModel.EMail = viewModel.EMail.GetEfficientString();
+            if (viewModel.EMail == null)
+            {
+                ModelState.AddModelError("EMail", "請輸入EMail");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return Json(new { result = false, message = ModelState.ErrorMessage() });
+            }
+
+            UserProfile item = dataItem ?? UserProfile.PrepareNewItem(models.DataContext);
+
+            if (item.OrganizationUser == null)
+            {
+                item.OrganizationUser = new OrganizationUser
+                {
+
+                };
+            }
+
+            item.OrganizationUser.CompanyID = companyID!.Value;
+            item.PID = viewModel.PID;
+            item.EMail = viewModel.EMail;
+            item.UserName = viewModel.UserName.GetEfficientString();
+            item.Region = viewModel.Region.GetEfficientString();
+
+            if (!String.IsNullOrEmpty(viewModel.Password))
+            {
+                item.Password = null;
+                item.Password2 = viewModel.Password.HashPassword();
+            }
+
+            try
+            {
+                models.SubmitChanges();
+                if (viewModel.RoleID.HasValue)
+                {
+                    models.ExecuteCommand(@"DELETE FROM UserRole WHERE (UID = {0})", item.UID);
+                    models.ExecuteCommand(@"INSERT INTO UserRole (UID, RoleID)
+                                            VALUES ({0},{1})", item.UID, (int?)viewModel.RoleID);
+                }
+
+                return Json(new { result = true });
+            }
+            catch (Exception ex)
+            {
+                FileLogger.Logger.Error(ex);
+                return Json(new { result = false, message = ex.Message });
+            }
         }
 
 
@@ -198,6 +370,36 @@ namespace ContractHome.Controllers
             return Json(new { result = false, message = "資料錯誤！" });
         }
 
+        public ActionResult VueDeleteItem([FromBody] UserProfileViewModel viewModel)
+        {
+            ViewBag.ViewModel = viewModel;
+
+            if (viewModel.KeyID != null)
+            {
+                viewModel.UID = viewModel.DecryptKeyValue();
+            }
+
+            var item = models.GetTable<UserProfile>().Where(o => o.UID == viewModel.UID)
+                .FirstOrDefault();
+
+            ITable dataTable = models.GetTable<UserProfile>();
+            if (item != null)
+            {
+                dataTable.DeleteOnSubmit(item);
+                try
+                {
+                    models.SubmitChanges();
+                    return Json(new { result = true });
+                }
+                catch (Exception ex)
+                {
+                    FileLogger.Logger.Error(ex);
+                    return Json(new { result = false, message = ex.Message });
+                }
+            }
+
+            return Json(new { result = false, message = "資料錯誤！" });
+        }
 
     }
 }

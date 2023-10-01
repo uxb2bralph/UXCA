@@ -1,0 +1,92 @@
+
+@using System.Linq
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using ContractHome.Helper.DataQuery
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@functions
+{
+    ModelSource? models;
+    IQueryable<dynamic> _model;
+    IOrderedQueryable<dynamic> _order;
+    QueryViewModel _viewModel;
+    UserProfile? profile;
+}
+@{
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _model = (IQueryable<dynamic>)this.Model;
+    _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+    profile = await Context.GetUserAsync();
+    if (profile != null)
+    {
+        profile = profile.LoadInstance(models!);
+    }
+
+    await Html.RenderPartialAsync("~/Views/DataExchange/Module/ItemListSorting.cshtml");
+
+    IQueryable<dynamic> items;
+    int pageIndex = _viewModel.PageIndex ?? 0;
+    int pageSize = _viewModel.PageSize ?? 10;
+
+    if (TempData["SortedItems"] == null)
+    {
+        if (_viewModel.Paging == false)
+        {
+            items = _model;
+        }
+        else
+        {
+            items = _model
+                .Skip(pageIndex * pageSize)
+                .Take(pageSize);
+        }
+    }
+    else
+    {
+        if (_viewModel.Paging == false)
+        {
+            items = ((IQueryable<dynamic>)TempData["SortedItems"]);
+        }
+        else
+        {
+            items = ((IQueryable<dynamic>)TempData["SortedItems"])
+                .Skip(pageIndex * pageSize)
+                .Take(pageSize);
+        }
+    }
+
+}
+
+@functions
+{
+    object BuildData(Organization item)
+    {
+        return new
+        {
+            item.CompanyName,
+            item.ReceiptNo,
+            item.Phone,
+            item.Addr,
+            item.Fax,
+            item.UndertakerName,
+            item.ContactEmail,
+            KeyID = item.CompanyID.EncryptKey(),
+        };
+    }
+}
+
+<script>
+    $(function () {
+        app.companyList = @Html.Raw(items!.ToArray().Select(c=>BuildData((Organization)c)).JsonStringify());
+        app.totalRecordCount = @(_model.Count());
+    });
+</script>

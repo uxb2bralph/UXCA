@@ -1,4 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8"?><Database Name="DigitalContract" Class="DCDataContext" Serialization="Unidirectional" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Database Name="DigitalContract" Class="DCDataContext" Serialization="Unidirectional" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
   <Table Name="dbo.CDS_Document" Member="CDS_Document">
     <Type Name="CDS_Document">
       <Column Name="DocID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
@@ -15,7 +16,8 @@
       <Column Name="ContractID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
       <Column Name="FilePath" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
       <Column Name="ContractNo" Type="System.String" DbType="NVarChar(64) NOT NULL" CanBeNull="false" />
-      <Association Name="Contract_ContractingParty" Member="ContractingParty" ThisKey="ContractID" OtherKey="ContractID" Type="ContractingParty" />
+		<Column Name="Title" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
+		<Association Name="Contract_ContractingParty" Member="ContractingParty" ThisKey="ContractID" OtherKey="ContractID" Type="ContractingParty" />
       <Association Name="Contract_ContractSealRequest" Member="ContractSealRequest" ThisKey="ContractID" OtherKey="ContractID" Type="ContractSealRequest" />
       <Association Name="Contract_ContractSignature" Member="ContractSignature" ThisKey="ContractID" OtherKey="ContractID" Type="ContractSignature" Cardinality="One" />
       <Association Name="Contract_ContractSignatureRequest" Member="ContractSignatureRequest" ThisKey="ContractID" OtherKey="ContractID" Type="ContractSignatureRequest" />

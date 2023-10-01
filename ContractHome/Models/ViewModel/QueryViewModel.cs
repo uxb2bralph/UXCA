@@ -44,7 +44,7 @@ namespace ContractHome.Models.ViewModel
         public DataTableColumn[]? KeyItem { get; set; }
         public String? EncKeyItem { get; set; }
         public DataTableColumn[]? DataItem { get; set; }
-
+        public String? Term { get; set; }
     }
 
     public partial class SignContractViewModel : QueryViewModel
@@ -175,12 +175,15 @@ namespace ContractHome.Models.ViewModel
         public String? EMail { get; set; }
         public String? Address { get; set; }
         public String? Phone { get; set; }
+        public String? Region { get; set; }
+
         public String? MobilePhone { get; set; }
         public bool? WaitForCheck { get; set; }
         public Guid? ResetID { get; set; }
         public bool? ResetPass { get; set; }
         public String? EncCompanyID { get; set; }
         public UserRoleDefinition.RoleEnum? RoleID { get; set; }
+        public int? UID { get; set; }
     }
 
 }

@@ -491,6 +491,8 @@ namespace ContractHome.Models.DataEntity
 		
 		private string _ContractNo;
 		
+		private string _Title;
+		
 		private EntitySet<ContractingParty> _ContractingParty;
 		
 		private EntitySet<ContractSealRequest> _ContractSealRequest;
@@ -513,6 +515,8 @@ namespace ContractHome.Models.DataEntity
     partial void OnFilePathChanged();
     partial void OnContractNoChanging(string value);
     partial void OnContractNoChanged();
+    partial void OnTitleChanging(string value);
+    partial void OnTitleChanged();
     #endregion
 		
 		public Contract()
@@ -587,8 +591,29 @@ namespace ContractHome.Models.DataEntity
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Title", DbType="NVarChar(64)")]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=4)]
+		public string Title
+		{
+			get
+			{
+				return this._Title;
+			}
+			set
+			{
+				if ((this._Title != value))
+				{
+					this.OnTitleChanging(value);
+					this.SendPropertyChanging();
+					this._Title = value;
+					this.SendPropertyChanged("Title");
+					this.OnTitleChanged();
+				}
+			}
+		}
+		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Contract_ContractingParty", Storage="_ContractingParty", ThisKey="ContractID", OtherKey="ContractID")]
-		[global::System.Runtime.Serialization.DataMemberAttribute(Order=4, EmitDefaultValue=false)]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=5, EmitDefaultValue=false)]
 		public EntitySet<ContractingParty> ContractingParty
 		{
 			get
@@ -607,7 +632,7 @@ namespace ContractHome.Models.DataEntity
 		}
 		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Contract_ContractSealRequest", Storage="_ContractSealRequest", ThisKey="ContractID", OtherKey="ContractID")]
-		[global::System.Runtime.Serialization.DataMemberAttribute(Order=5, EmitDefaultValue=false)]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=6, EmitDefaultValue=false)]
 		public EntitySet<ContractSealRequest> ContractSealRequest
 		{
 			get
@@ -626,7 +651,7 @@ namespace ContractHome.Models.DataEntity
 		}
 		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Contract_ContractSignature", Storage="_ContractSignature", ThisKey="ContractID", OtherKey="ContractID", IsUnique=true, IsForeignKey=false)]
-		[global::System.Runtime.Serialization.DataMemberAttribute(Order=6, EmitDefaultValue=false)]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=7, EmitDefaultValue=false)]
 		public ContractSignature ContractSignature
 		{
 			get
@@ -661,7 +686,7 @@ namespace ContractHome.Models.DataEntity
 		}
 		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Contract_ContractSignatureRequest", Storage="_ContractSignatureRequest", ThisKey="ContractID", OtherKey="ContractID")]
-		[global::System.Runtime.Serialization.DataMemberAttribute(Order=7, EmitDefaultValue=false)]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=8, EmitDefaultValue=false)]
 		public EntitySet<ContractSignatureRequest> ContractSignatureRequest
 		{
 			get

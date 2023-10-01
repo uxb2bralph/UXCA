@@ -264,7 +264,7 @@ namespace ContractHome.Controllers
             return new EmptyResult { };
         }
 
-        public ActionResult SearchCompany(String term)
+        public ActionResult SearchCompany(String? term)
         {
             IQueryable<Organization> items = models.GetTable<Organization>();
 
@@ -278,6 +278,8 @@ namespace ContractHome.Controllers
                 items = items.Where(f => false);
             }
 
+            ViewBag.DataItems = items;
+
             return Json(items.OrderBy(o => o.ReceiptNo).ToArray()
                 .Select(o => new
                 {
@@ -285,5 +287,14 @@ namespace ContractHome.Controllers
                     value = o.CompanyID.EncryptKey()
                 }));
         }
+
+        public ActionResult VueSearchCompany([FromBody] QueryViewModel viewModel)
+        {
+            ViewBag.ViewModel = viewModel;
+            SearchCompany(viewModel.Term);
+            IQueryable<Organization> items = (IQueryable<Organization>)ViewBag.DataItems;
+            return View("~/Views/Organization/VueModule/OrganizationItems.cshtml", items);
+        }
+
     }
 }

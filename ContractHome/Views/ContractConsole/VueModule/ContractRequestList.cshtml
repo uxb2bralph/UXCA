@@ -1,0 +1,105 @@
+
+@using System.Linq
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using ContractHome.Helper.DataQuery
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@functions
+{
+    ModelSource? models;
+    IQueryable<dynamic> _model;
+    IOrderedQueryable<dynamic> _order;
+    QueryViewModel _viewModel;
+    UserProfile? profile;
+}
+@{
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _model = (IQueryable<dynamic>)this.Model;
+    _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+    profile = await Context.GetUserAsync();
+    if (profile != null)
+    {
+        profile = profile.LoadInstance(models!);
+    }
+
+    await Html.RenderPartialAsync("~/Views/DataExchange/Module/ItemListSorting.cshtml");
+
+    IQueryable<dynamic> items;
+    int pageIndex = _viewModel.PageIndex ?? 0;
+    int pageSize = _viewModel.PageSize ?? 10;
+
+    if (TempData["SortedItems"] == null)
+    {
+        if (_viewModel.Paging == false)
+        {
+            items = _model;
+        }
+        else
+        {
+            items = _model
+                .Skip(pageIndex * pageSize)
+                .Take(pageSize);
+        }
+    }
+    else
+    {
+        if (_viewModel.Paging == false)
+        {
+            items = ((IQueryable<dynamic>)TempData["SortedItems"]);
+        }
+        else
+        {
+            items = ((IQueryable<dynamic>)TempData["SortedItems"])
+                .Skip(pageIndex * pageSize)
+                .Take(pageSize);
+        }
+    }
+
+}
+
+@functions
+{
+    object BuildData(Contract item)
+    {
+        var initiator = item.ContractingParty.Where(p => p.IsInitiator == true).First();
+        var contractor = item.ContractingParty.Where(p => !p.IsInitiator.HasValue || p.IsInitiator == false).First();
+
+        var initatorRequest = item.ContractSignatureRequest.Where(s => s.CompanyID == initiator.CompanyID).FirstOrDefault();
+        var contractorRequest = item.ContractSignatureRequest.Where(s => s.CompanyID == contractor.CompanyID).FirstOrDefault();
+
+        return new
+        {
+            uuid = "",
+            No = item.ContractNo,
+            Title = item.Title,
+            ContractDateFrom = "",
+            Initiator = initiator?.Organization.CompanyName,
+            Contractor = contractor?.Organization.CompanyName,
+            InitiatorStampDate = initatorRequest?.StampDate?.ToString("yyyy/MM/dd HH:mm"),
+            ContractorStampDate = contractorRequest?.StampDate?.ToString("yyyy/MM/dd HH:mm"),
+            InitiatorSignerDate = initatorRequest?.SignatureDate?.ToString("yyyy/MM/dd HH:mm"),
+            ContractorSignerDate = contractorRequest?.SignatureDate?.ToString("yyyy/MM/dd HH:mm"),
+            InitiatorSignerID = initatorRequest?.UserProfile?.PID,
+            ContractorSignerID = contractorRequest?.UserProfile?.PID,
+            KeyID = item.ContractID.EncryptKey(),
+            isInitiator = initiator?.CompanyID == profile?.OrganizationUser?.CompanyID, // 是否為甲方
+            isContractor = contractor?.CompanyID == profile?.OrganizationUser?.CompanyID, // 是否為乙方
+        };
+    }
+}
+
+<script>
+    $(function () {
+        app.contractList = @Html.Raw(items!.ToArray().Select(c=>BuildData((Contract)c)).JsonStringify());
+        app.totalRecordCount = @(_model.Count());
+    });
+</script>

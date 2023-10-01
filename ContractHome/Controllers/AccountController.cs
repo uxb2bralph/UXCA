@@ -34,6 +34,24 @@ namespace ContractHome.Controllers
             _logger = logger;
         }
 
+        [HttpPost]
+        [AllowAnonymous]
+        public ActionResult CheckLogin([FromBody]LoginViewModel viewModel)
+        {
+            LoginHandler login = new LoginHandler(this);
+            if (!login.ProcessLogin(viewModel.PID, viewModel.Password, out string msg))
+            {
+                ModelState.AddModelError("PID", msg);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return Json(new { result = false,message = ModelState.ErrorMessage()});
+            }
+
+            return Json(new { result = true, message = Url.Action("ListToStampIndex", "ContractConsole") });
+        }
+
         // GET: Account
         [HttpPost]
         [AllowAnonymous]
