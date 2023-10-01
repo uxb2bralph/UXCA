@@ -342,6 +342,11 @@
   background-color: #b1d8ff;
 }
 
+.select2-selection--multiple {
+  overflow-y: scroll;
+  height: 100px;
+}
+
 .fs-12 {
   font-size: 12px;
 }/*# sourceMappingURL=site.css.map */

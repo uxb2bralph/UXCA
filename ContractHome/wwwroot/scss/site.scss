@@ -5,21 +5,25 @@
     @content
   }
 }
+
 @mixin md {
   @media(max-width: 768px) {
     @content
   }
 }
+
 @mixin lg {
   @media(max-width: 992px) {
     @content
   }
 }
+
 @mixin xl {
   @media(max-width: 1200px) {
     @content
   }
 }
+
 @mixin xxl {
   @media(max-width: 1400px) {
     @content
@@ -50,11 +54,13 @@
     border-bottom: 1px solid #bec2c6 !important;
   }
 }
+
 .shadow {
   &__card {
     box-shadow: 0 .20rem .25rem rgba(0, 0, 0, .095) !important;
   }
 }
+
 .navbar-uxb2b {
   background-color: rgba(133, 187, 249, 0.75);
   background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
@@ -67,26 +73,32 @@
     justify-content: center;
     height: 100vh;
   }
+
   &__signin {
     width: 100%;
     max-width: 1280px;
     margin: auto;
+
     @include xxl {
       max-width: 80%;
     }
+
     @include md {
       max-width: 80%;
     }
+
     @include sm {
       max-width: 90%;
     }
   }
+
   &__intro {
     min-height: 450px;
     background-image: url('https://picsum.photos/900/480?ramdom=10');
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
+
     @include xl {
       min-height: 300px;
     }
@@ -95,15 +107,18 @@
 
 // 輸入框高度
 .input {
+
   // 登入
   &__loginHeight {
     height: 82px;
     padding-top: 5px;
     padding-bottom: 0;
   }
+
   // 搜尋
   &__height {
     height: 62px;
+
     @include md {
       height: auto;
     }
@@ -114,7 +129,8 @@
 .icon {
   &__rounded {
     width: 33px;
-    > i {
+
+    >i {
       width: 15px;
     }
   }
@@ -133,6 +149,7 @@
     align-items: center;
     justify-content: center;
   }
+
   &__stepGroup {
     display: flex;
     flex-direction: column;
@@ -141,6 +158,7 @@
     font-size: 14px !important;
     z-index: 2;
   }
+
   &__steps {
     display: flex;
     width: 35px;
@@ -153,31 +171,38 @@
     color: #fff;
     font-size: 14px;
     border-radius: 50%;
+
     &--done {
       background-color: #63d19e;
     }
   }
+
   &__line {
     width: 90px;
     height: 3px;
     margin-left: -30px;
     margin-right: -30px;
     background-color: #B5BABE;
+
     &--done {
       background-color: #63d19e;
     }
+
     &--w200 {
       width: 200px;
     }
   }
-  &__signature {    
+
+  &__signature {
     &.progresses__steps--done {
       background-color: #FFA500;
     }
+
     &.progresses__line--done {
       background-color: #FFA500;
     }
   }
+
   // 流程廠商區塊設定
   &__company {
     width: 90px;
@@ -199,11 +224,13 @@
   border-radius: 1rem;
   background: #f1f6ff;
 }
+
 .dz-button {
   &.btn:focus {
     box-shadow: none;
   }
 }
+
 .uploadFile {
   &__message {
     position: absolute;
@@ -217,6 +244,7 @@
 .cornflowerBlue {
   color: #6495ED;
 }
+
 .mediumSlateBlue {
   color: #7B68EE;
 }
@@ -231,11 +259,13 @@
   color: #fff;
   background-color: #21b22c;
   border-color: #21b22c;
+
   &:hover {
     color: #fff;
     background-color: #1aa926;
     border-color: #1aa926;
   }
+
   &:focus {
     box-shadow: 0 0 0 0.25rem rgba(172, 241, 159, 0.25);
   }
@@ -245,6 +275,7 @@
   color: #fff;
   background-color: #fc9600;
   border-color: #fc9600;
+
   &:hover {
     color: #fff;
     background-color: #e28a05;
@@ -259,21 +290,26 @@
 .block {
   &--hover {
     cursor: pointer;
+
     .block--show {
       display: none;
     }
+
     &:hover {
       background-color: #f4f2f2;
+
       .block--show {
         display: block;
       }
     }
+
     [type="file"] {
       position: absolute;
-      top:50px;
+      top: 50px;
       opacity: 0;
     }
   }
+
   &--border {
     &:hover {
       outline: #9cc2fa solid 3px;
@@ -295,6 +331,7 @@
     height: 100%;
     position: relative;
   }
+
   &__arrow {
     &--left {
       position: absolute;
@@ -302,6 +339,7 @@
       left: 50px;
       z-index: 10;
     }
+
     &--right {
       position: absolute;
       top: 50%;
@@ -334,6 +372,7 @@
   position: absolute;
   cursor: move;
 }
+
 // 虛擬縮放區塊
 .vmScale {
   height: 15px;
@@ -345,9 +384,10 @@
   border-bottom: #6495ED 3px solid;
   border-right: #6495ED 3px solid;
   cursor: se-resize;
- }
- // 虛擬刪除區塊
- .vmDelete{
+}
+
+// 虛擬刪除區塊
+.vmDelete {
   padding: 0;
   height: 24px;
   width: 24px;
@@ -357,10 +397,11 @@
   left: -15px;
   line-height: 1;
   background-color: #B5BABE;
+
   &:hover {
     background-color: #a0a4a8;
   }
-  }
+}
 
 // 印鑑檔管理
 .inputSale {
@@ -368,6 +409,7 @@
   height: 50px;
   display: inline-flex;
   justify-content: center;
+
   input {
     position: relative;
     top: -3rem;
@@ -391,6 +433,7 @@
     display: block;
     max-width: 170px;
     height: 100%;
+
     img {
       width: 100%;
     }
@@ -408,6 +451,14 @@
 .list-group-item-action:hover {
   color: #000000;
   background-color: #b1d8ff;
+}
+
+// 選單設定
+.select2-selection {
+  &--multiple {
+    overflow-y: scroll;
+    height: 100px;
+  }
 }
 
 // 12級字
