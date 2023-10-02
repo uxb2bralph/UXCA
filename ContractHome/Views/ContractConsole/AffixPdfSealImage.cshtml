@@ -67,36 +67,35 @@
                 <h5 class="h5 fw-bolder text-primary">Step 1：指定合約雙方</h5>
                 <div class="mb-2">
                   <label for="Initiator" class="form-label h6 text-secondary fw-bolder mb-1">起約方</label>
-                  <select id="Initiator" name="Initiator" class="form-select form-select-sm">
-                    <option value="0" selected="0">網際優勢甲方公司</option>
+                  <select id="Initiator" name="Initiator" class="form-select form-select-sm" data-placeholder="請選擇">
+                    <option></option>
                   </select>
                 </div>
                 <div>
-                  <label for="Contractor" class="form-label h6 text-secondary fw-bolder mb-1">簽約方 (按 Ctrl 鍵可複選)</label>
+                  <label for="Contractor" class="form-label h6 text-secondary fw-bolder mb-1">簽約方 (可複選)</label>
                   <select id="Contractor" name="Contractor" class="form-select form-select-sm" multiple
-                    aria-label="multiple select">
-                    <option value="0">網際優勢乙方公司</option>
-                    <option value="1">網際優勢丙方公司</option>
-                    <option value="2">網際優勢丁方公司</option>
-                    <option value="3">網際優勢戊方公司</option>
-                    <option value="4">網際優勢己方公司</option>
+                    data-placeholder="請選擇">
+                    <option></option>
                   </select>
                 </div>
               </div>
 
-              
+              @*
+            系統判斷為起約人時，請在簽約人的 input 加入 disabled 禁止選取
+            系統判斷為簽約人時，請在起約人的 input 加入 disabled 禁止選取，下面有範例
+            *@
               <div class="card p-3 mb-3">
                 <h5 class="h5 fw-bolder text-primary">Step 2：文件審閱</h5>
                 <div class="pb-3">
                   <input class="form-check-input" type="checkbox" id="isInitiatorStamp">
                   <label class="form-check-label" for="isInitiatorStamp">
-                    起約人上傳合約已用印
+                    起約人：上傳合約已用印
                   </label>
                 </div>
                 <div>
-                  <input class="form-check-input" type="checkbox" id="isReject">
+                  <input class="form-check-input" type="checkbox" id="isReject" disabled>
                   <label class="form-check-label" for="isReject">
-                    簽約人審閱後退回合約
+                    簽約人：審閱後退回合約
                   </label>
                 </div>
               </div>
@@ -125,34 +124,47 @@
                 </div>
               </div>
 
-              <!--
-              <div class="pb-3">
-                <label class="form-label fw-bolder" for="SealImage">請選擇印鑑章</label>
-                <input type="file" class="form-control form-control-sm" id="SealImage" name="SealImage" />
-              </div>
+              @* <!-- 不需要可刪除
+            <div class="pb-3">
+            <label class="form-label fw-bolder" for="SealImage">請選擇印鑑章</label>
+            <input type="file" class="form-control form-control-sm" id="SealImage" name="SealImage" />
+            </div>
 
-              <div class="pb-3">
-                <label class="form-label fw-bolder" for="MarginTop">請指定上邊界位置(公分)</label>
-                <input type="text" class="form-control form-control-sm" id="MarginTop" name="MarginTop"
-                  value="@(_model?.MarginTop ?? 0)" />
-              </div>
-              <div class="pb-3">
-                <label class="form-label fw-bolder" for="MarginLeft" style="white-space: nowrap;">請指定左邊界位置(公分)</label>
-                <input type="text" class="form-control form-control-sm" id="MarginLeft" name="MarginLeft"
-                  value="@(_model?.MarginLeft ?? 0)" />
-              </div>
-              <div class="pb-3">
-                <label class="form-label fw-bolder" for="SealScale" style="white-space: nowrap;">印鑑章縮放比例(%)</label>
-                <input type="text" class="form-control form-control-sm" id="SealScale" name="SealScale"
-                  value="@(_model?.SealScale ?? 100)" />
-              </div>
-              -->
-              
+            <div class="pb-3">
+            <label class="form-label fw-bolder" for="MarginTop">請指定上邊界位置(公分)</label>
+            <input type="text" class="form-control form-control-sm" id="MarginTop" name="MarginTop"
+            value="@(_model?.MarginTop ?? 0)" />
+            </div>
+            <div class="pb-3">
+            <label class="form-label fw-bolder" for="MarginLeft" style="white-space: nowrap;">請指定左邊界位置(公分)</label>
+            <input type="text" class="form-control form-control-sm" id="MarginLeft" name="MarginLeft"
+            value="@(_model?.MarginLeft ?? 0)" />
+            </div>
+            <div class="pb-3">
+            <label class="form-label fw-bolder" for="SealScale" style="white-space: nowrap;">印鑑章縮放比例(%)</label>
+            <input type="text" class="form-control form-control-sm" id="SealScale" name="SealScale"
+            value="@(_model?.SealScale ?? 100)" />
+            </div>
+            --> *@
+
               <div class="row g-2">
+                @*
+              if (isReturnContract === true) {退回合約} else {送出合約}
+              下面script有回傳，但這裡會說找不到isReturnContract，請協助調整
+              *@
                 <div class="col-8">
-                  <button type="button" onclick="commitSignature(false);" class="btn btn-primary opacity-75 w-100">
-                    <i class="fas fa-stamp"></i> 送出合約
-                  </button>
+                  @if (true)
+                  {
+                    <button type="button" onclick="rejectSignature();" class="btn btn-primary opacity-75 w-100">
+                      <i class="far fa-share"></i> 退回合約
+                    </button>
+                  }
+                  else
+                  {
+                    <button type="button" onclick="commitSignature(false);" class="btn btn-primary opacity-75 w-100">
+                      <i class="far fa-file-export"></i> 送出合約
+                    </button>
+                  }
                 </div>
                 <div class="col-4">
                   <button type="button" onclick="commitSignature(true);" class="btn btn-success opacity-75 w-100">
@@ -198,7 +210,7 @@
 
               function loadContractPage(pageIndex) {
                 showLoading();
-                $.post('@Html.Raw(Url.Action("LoadContractPage","ContractConsole"))', { 'KeyID': '@Html.Raw(_model!.ContractID.EncryptKey())', 'PageIndex': pageIndex }, function (data) {
+                $.post('@Html.Raw(Url.Action("LoadContractPage", "ContractConsole"))', { 'KeyID': '@Html.Raw(_model!.ContractID.EncryptKey())', 'PageIndex': pageIndex }, function (data) {
                   hideLoading();
                   if ($.isPlainObject(data)) {
                     $('#contractImg').css(data);
@@ -245,10 +257,6 @@
                           </a>
                           <span class="h6 fw-bolder p-2">新增印鑑檔</span>
                           <input id="formFile" class="form-control" type="file" onchange="addSealHandler()">
-
-                          <!--div class="btn btn-lg btn-success rounded-pill opacity-75">
-                          <i class="fal fa-file-plus"></i>
-                        </!--div -->
                         </div>
                       </label>
                     </div>
@@ -264,6 +272,95 @@
 </div>
 
 <script>
+  // 起約人資料清單
+  const dataInitiator = [
+    { id: 0, text: '網際優勢甲方公司' },
+    { id: 1, text: '網際優勢甲1方公司' },
+    { id: 2, text: '網際優勢甲2方公司' },
+    { id: 3, text: '網際優勢甲3方公司' },
+    { id: 4, text: '網際優勢甲4方公司' },
+    { id: 5, text: '網際優勢甲5方公司' }
+  ];
+  /** 起約人 select2 元件控制項
+   * data: 下拉選單傳入資料,
+   * theme: Bootstrap5 模版,
+   * width: 寬度設定,
+   * placeholder: placeholder設定,
+   * selectionCssClass: select 選單樣式,
+   * dropdownCssClass: 下拉選項樣式,
+   */
+  $('#Initiator').select2({
+    data: dataInitiator,
+    theme: "bootstrap-5",
+    width: $(this).data('width') ? $(this).data('width') : $(this).hasClass('w-100') ? '100%' : 'style',
+    placeholder: $(this).data('placeholder'),
+    selectionCssClass: 'select2--small',
+    dropdownCssClass: 'select2--small',
+  });
+
+  // 取得起約人選取資料
+  $('#Initiator').on('select2:select', function (e) {
+    // 取得當前選取項目資料
+    var data = e.params.data;
+    console.log(data);
+    // 取得已選取項目陣列資料
+    const selected = $('#Initiator').select2('data');
+    console.log({ selected });
+  });
+
+  // 簽約人資料清單
+  const dataContractor = [
+    { id: 0, text: '網際優勢乙方公司' },
+    { id: 1, text: '網際優勢丙方公司' },
+    { id: 2, text: '網際優勢丁方公司' },
+    { id: 3, text: '網際優勢戊方公司' },
+    { id: 4, text: '網際優勢己方公司' },
+    { id: 5, text: '網際優勢乙方公司' },
+    { id: 6, text: '網際優勢丙方公司' },
+    { id: 7, text: '網際優勢丁方公司' },
+    { id: 8, text: '網際優勢戊方公司' },
+    { id: 9, text: '網際優勢己方公司' }
+  ];
+
+  /** 簽約人 select2 元件控制項
+   * data: 下拉選單傳入資料,
+   * theme: Bootstrap5 模版,
+   * width: 寬度設定,
+   * placeholder: placeholder設定,
+   * closeOnSelect: 選取後是否關閉選單,
+   * selectionCssClass: select 選單樣式,
+   * dropdownCssClass: 下拉選項樣式,
+   * tags: 選取的選項以 tag 模式顯示,
+   */
+  $('#Contractor').select2({
+    data: dataContractor,
+    theme: "bootstrap-5",
+    width: $(this).data('width') ? $(this).data('width') : $(this).hasClass('w-100') ? '100%' : 'style',
+    placeholder: $(this).data('placeholder'),
+    closeOnSelect: false,
+    selectionCssClass: 'select2--small',
+    dropdownCssClass: 'select2--small',
+    tags: true
+  });
+
+  // 取得簽約人選取資料
+  $('#Contractor').on('select2:select', function (e) {
+    // 取得當前選取項目資料
+    var data = e.params.data;
+    console.log(data);
+    // 取得已選取項目陣列資料
+    const selected = $('#Contractor').select2('data');
+    console.log({ selected });
+  });
+
+  // 簽約人審閱後退回合約
+  const isReject = document.querySelector('#isReject');
+  var isReturnContract = false;
+  isReject.addEventListener('change', (e) => {
+    isReturnContract = e.target.checked;
+    console.log({ isReturnContract });
+  });
+
   // 開啟印鑑 Modal
   function sealHandler() {
     $('#sealModal').modal('show');
@@ -340,10 +437,10 @@
         contractArea.onmouseup = null;
       }
     }
-    // 图片缩放效果
+    // 圖片縮放效果
     const scale = document.querySelector(`#scale-${uuid}`);
     scale.onmousedown = function (e) {
-      // 阻止冒泡,避免缩放时触发移动事件
+      // 阻止冒泡,避免縮放時觸發移動事件
       e.stopPropagation();
       e.preventDefault();
       var pos = {
@@ -354,12 +451,12 @@
       };
       contractArea.onmousemove = function (ev) {
         ev.preventDefault();
-        // 设置图片的最小缩放为30*30
+        // 設置圖片的最小縮放為30*30
         var w = Math.max(30, ev.clientX - pos.x + pos.w)
         var h = Math.max(30, ev.clientY - pos.y + pos.h)
         //console.log(w,h)
 
-        // 设置图片的最大宽高
+        // 設置圖片的最大寬高
         w = w >= contractArea.offsetWidth - seal.offsetLeft ? contractArea.offsetWidth - seal.offsetLeft : w
         h = h >= contractArea.offsetHeight - seal.offsetTop ? contractArea.offsetHeight - seal.offsetTop : h
         seal.style.width = w + 'px';
@@ -381,7 +478,7 @@
     // 刪除印鑑檔
     const deleteSeal = document.querySelector(`#del-${uuid}`);
     deleteSeal.onmousedown = function (e) {
-      // 阻止冒泡,避免缩放时触发移动事件
+      // 阻止冒泡,避免縮放時觸發移動事件
       e.stopPropagation();
       e.preventDefault();
       seal.remove();
