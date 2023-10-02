@@ -57,51 +57,43 @@
                   <i class="fas fa-sort-amount-down"></i>
                 </a>
                 <!-- ASC -->
-                                <a v-else href="javascript:void(0);" v-on:click="sortHandler('ContractNo', 'isSortNo', false)">
+                <a v-else href="javascript:void(0);" v-on:click="sortHandler('ContractNo', 'isSortNo', false)">
                   <i class="fas fa-sort-amount-down-alt"></i>
                 </a>
               </th>
-              <th scope="col"></th>
               <th scope="col">合約用印</th>
               <th scope="col">合約數位簽章</th>
+              <th scope="col"></th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(contract, index) in contractList" :key="`c_${index}`">
-              <!--
-              <td class="align-middle text-nowrap">{{ contract.ContractDateFrom }}</td>
-              <td class="align-middle text-nowrap">{{ contract.Initiator }}</td>
-              <td class="align-middle text-nowrap">{{ contract.Contractor }}</td>
-              -->
-              <td class="align-middle">
-                <div class="d-flex align-items-center">
+              <td class="align-middle text-nowrap">
+                <div class="d-flex align-items-start">
                   <div class="fs-1 px-2 mediumSlateBlue">
                     <i class="fad fa-file-contract fa-lg"></i>
                   </div>
-                  <div>                   
+                  <div>
                     <div class="fs-12 text-black-50">
                       {{ contract.ContractDateFrom }}
                     </div>
                     <div class="fw-bolder">
                       {{ contract.Title }}
-                    </div> 
+                    </div>
                     <div>
                       <a :href="`/ContractConsole/ShowCurrentContract?KeyID=${contract.KeyID}`">
                         {{ contract.No }}
                       </a>
                     </div>
+                    <div class="pt-1">
+                      <span class="badge bg-primary opacity-75">起約人</span>：
+                      <span class="fs-14">{{ contract.Initiator }}</span>
+                    </div>
+                    <div>
+                      <span class="badge bg-warning text-dark opacity-75">簽約人</span>：
+                      <span class="fs-14">{{ contract.Contractor }}</span>
+                    </div>
                   </div>
-                </div>
-
-              </td>
-              <td class="align-middle">
-                <div>
-                  <span class="badge bg-primary opacity-75">起約人</span>：
-                  <span class="fw-bolder">{{ contract.Initiator }}</span>
-                </div>
-                <div>
-                  <span class="badge bg-warning text-dark opacity-75">簽約人</span>：
-                  <span class="fw-bolder">{{ contract.Contractor }}</span>
                 </div>
               </td>
               <td>
@@ -208,6 +200,33 @@
                       <span class="badge bg-warning text-dark opacity-75">簽約人</span>
                     </div>
                   </div>
+                </div>
+              </td>
+              <td class="text-center align-middle">
+                <div>
+                  <!-- 簽署者狀態 -->
+                  <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded m-1"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="簽署者狀態" v-on:click="editData('edit', user)">
+                    <i class="fas fa-info"></i>
+                  </button>
+                  <!-- 稽核軌跡 -->
+                  <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded m-1"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="稽核軌跡" v-on:click="editData('edit', user)">
+                    <i class="fas fa-shoe-prints fa-rotate-270"></i>
+                  </button>
+                </div>
+                <div>
+                  <!-- 下載檔案 -->
+                  <button type="button" class="btn btn-sm btn-secondary opacity-75 rounded-pill icon__rounded m-1"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="下載檔案" v-on:click="editData('edit', user)">
+                    <i class="far fa-download"></i>
+                  </button>
+                  <!-- 中止合約 -->
+                  <button type="button" id="deleteCompany"
+                    class="btn btn-sm btn-danger rounded-pill icon__rounded opacity-75 m-1" data-bs-toggle="tooltip"
+                    data-bs-placement="top" title="中止合約" v-on:click="openDeleteDialog(user)">
+                    <i class="far fa-times"></i>
+                  </button>
                 </div>
               </td>
             </tr>
@@ -566,14 +585,7 @@
     mounted() {
       // 初始化新增合約表單
       this.formData = JSON.parse(JSON.stringify(this.initialFormData));
-
-      // 初始化 Bootstrap Tooltip
-      document.addEventListener("DOMContentLoaded", function () {
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function (element) {
-          return new bootstrap.Tooltip(element);
-        });
-      });
+      this.inquireData();
 
       if (this.isUpload) {
         const self = this;
@@ -662,7 +674,6 @@
       },
       fetchAPI() {
         // 執行查詢合約列表
-          debugger;
         const payload = {
           data: this.contractList,
           pageSize: this.pageSize,
