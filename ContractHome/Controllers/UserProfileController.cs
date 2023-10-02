@@ -401,5 +401,63 @@ namespace ContractHome.Controllers
             return Json(new { result = false, message = "資料錯誤！" });
         }
 
+        [UserAuthorize]
+        public async Task<ActionResult> ShowSealModalAsync([FromBody]QueryViewModel viewModel)
+        {
+            ViewBag.ViewModel = viewModel;
+
+            var profile = await HttpContext.GetUserAsync();
+
+            IQueryable<SealTemplate> items = models.GetTable<SealTemplate>();
+            if (profile!=null)
+            {
+                items = items.Where(s => s.UID == profile.UID);
+            }
+            else 
+            {
+                items = items.Where(s => false);
+            }
+
+            return View("~/Views/UserProfile/VueModule/SealModal.cshtml", items);
+        }
+
+        [UserAuthorize]
+        public async Task<ActionResult> CommitSealTemplateAsync(QueryViewModel viewModel, IFormFile sealImage)
+        {
+            if (sealImage == null)
+            {
+                return Json(new { result = false, message = "請選擇印鑑章!!" });
+            }
+
+            var profile = await HttpContext.GetUserAsync();
+
+            if (profile == null)
+            {
+                return Json(new { result = false, message = "請重新登入!!" });
+            }
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                sealImage.CopyTo(ms);
+                using(Bitmap bmp = new Bitmap(ms))
+                {
+                    SealTemplate item = new SealTemplate
+                    {
+                        UID = profile.UID,
+                        FilePath = sealImage.FileName,
+                        SealImage = new System.Data.Linq.Binary(ms.ToArray()),
+                        Width = bmp.Width,
+                        Height = bmp.Height,
+                    };
+
+                    models.GetTable<SealTemplate>().InsertOnSubmit(item);
+                    models.SubmitChanges();
+
+                    return View("~/Views/UserProfile/VueModule/SealModalItem.cshtml", item);
+
+                }
+            }
+        }
+
     }
 }

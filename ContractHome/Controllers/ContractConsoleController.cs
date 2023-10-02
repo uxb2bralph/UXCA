@@ -52,10 +52,10 @@ namespace ContractHome.Controllers
                 return Json(new { result = false, message = "合約檔案類型只能是MS Word或pdf!!" });
             }
 
-            viewModel.No = viewModel.No.GetEfficientString();
-            if (viewModel.No == null)
+            viewModel.ContractNo = viewModel.ContractNo.GetEfficientString();
+            if (viewModel.ContractNo == null)
             {
-                ModelState.AddModelError("No", "請輸入合約編號!!");
+                ModelState.AddModelError("ContractNo", "請輸入合約編號!!");
             }
 
             if(viewModel.Initiator!=null)
@@ -98,7 +98,7 @@ namespace ContractHome.Controllers
             Contract contract = new Contract
             {
                 FilePath = contractDoc.StoreContractDocument(),
-                ContractNo = viewModel.No,
+                ContractNo = viewModel.ContractNo,
                 CDS_Document = new CDS_Document
                 {
                     DocDate = DateTime.Now,
@@ -193,6 +193,50 @@ namespace ContractHome.Controllers
             return result;
         }
 
+        public IActionResult VueApplyContract([FromBody]SignContractViewModel viewModel)
+        {
+            ViewBag.ViewModel = viewModel;
+
+            if(viewModel.KeyID != null)
+            {
+                viewModel.ContractID = viewModel.DecryptKeyValue();
+            }
+
+            var item = models.GetTable<Contract>()
+                                .Where(c => c.ContractID == viewModel.ContractID)
+                                .FirstOrDefault();
+
+            if (item == null)
+            {
+                return Json(new { result = false, message = "合約資料錯誤!!" });
+            }
+
+            viewModel.ContractNo = viewModel.ContractNo.GetEfficientString();
+            if (viewModel.ContractNo == null)
+            {
+                ModelState.AddModelError("ContractNo", "請輸入合約編號!!");
+            }
+
+            viewModel.Title = viewModel.Title.GetEfficientString();
+            if (viewModel.Title == null)
+            {
+                ModelState.AddModelError("Title", "請輸入合約編號!!");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return Json(new { result = false, message = ModelState.ErrorMessage() });
+            }
+
+            item.ContractNo = viewModel.ContractNo;
+            item.Title = viewModel.Title;
+
+            models.SubmitChanges();
+
+            return Json(new { result = true });
+        }
+
+
         public async Task<ActionResult> InquireDataAsync(ContractQueryViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
@@ -200,10 +244,10 @@ namespace ContractHome.Controllers
             var profile = await HttpContext.GetUserAsync();
             IQueryable<Contract> items = PromptContractItems(profile);
 
-            viewModel.No = viewModel.No.GetEfficientString();
-            if (viewModel.No != null)
+            viewModel.ContractNo = viewModel.ContractNo.GetEfficientString();
+            if (viewModel.ContractNo != null)
             {
-                items = items.Where(c => c.ContractNo.StartsWith(viewModel.No));
+                items = items.Where(c => c.ContractNo.StartsWith(viewModel.ContractNo));
             }
 
             bool queryByDate = false;
@@ -737,6 +781,44 @@ namespace ContractHome.Controllers
             await DumpAsync();
             return Content("");
         }
+
+        public IActionResult InitialContract(IFormFile file)
+        {
+            if (file == null)
+            {
+                return Json(new { result = false, message = "請選擇檔案!!" });
+            }
+
+            String extName = Path.GetExtension(file.FileName).ToLower();
+            if (extName != ".pdf")
+            {
+                return Json(new { result = false, message = "合約檔案類型只能是pdf!!" });
+            }
+
+            Contract contract = new Contract
+            {
+                FilePath = file.StoreContractDocument(),
+                ContractNo = String.Empty,
+                CDS_Document = new CDS_Document
+                {
+                    DocDate = DateTime.Now,
+                },
+            };
+
+            models.GetTable<Contract>().InsertOnSubmit(contract);
+            try
+            {
+                models.SubmitChanges();
+                return Json(new { result = true, message = contract.ContractID.EncryptKey() });
+            }
+            catch (Exception ex)
+            {
+                FileLogger.Logger.Error(ex);
+                return Json(new { result = false, message = ex.Message });
+            }
+
+        }
+
     }
 
 

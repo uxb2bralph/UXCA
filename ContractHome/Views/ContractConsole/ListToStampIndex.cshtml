@@ -316,19 +316,31 @@
               <div class="row row-cols-1 m-3 mb-lg-0 data-item">
                 <div class="col input__height">
                   <div class="row">
-                    <label for="ProjectName" class="col-sm-12 col-md-3 col-form-label fw-bolder">專案名稱</label>
+                    <label for="Title" class="col-sm-12 col-md-3 col-form-label fw-bolder">合約名稱</label>
                     <div class="col-sm-12 col-md-9">
-                      <input v-model="formData.ProjectName" type="text" class="form-control" id="ProjectName"
+                      <input v-model="formData.Title" type="text" class="form-control" id="Title"
                         required />
                       <div class="invalid-feedback">
-                        請輸入任務名稱
+                        請輸入合約名稱
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col input__height">
+                  <div class="row">
+                    <label for="ContractNo" class="col-sm-12 col-md-3 col-form-label fw-bolder">合約編號</label>
+                    <div class="col-sm-12 col-md-9">
+                      <input v-model="formData.ContractNo" type="text" class="form-control" id="ContractNo"
+                        required />
+                      <div class="invalid-feedback">
+                        請輸入合約編號
                       </div>
                     </div>
                   </div>
                 </div>
                 <div class="col input__height">
                   <div class="row align-items-center">
-                    <label for="FileTitle" class="col-sm-12 col-md-3 col-form-label fw-bolder">合約名稱</label>
+                    <label for="FileTitle" class="col-sm-12 col-md-3 col-form-label fw-bolder">合約內容</label>
                     <div class="col-sm-12 col-md-9">
                       <span class="pe-3 fw-bolder">{{ formData.FileTitle }}</span>
                       <br>
@@ -589,17 +601,27 @@
            * acceptedFiles: 檔案格式
            * dictDefaultMessage: 畫面顯示內容
            */
-          url: '/file-upload/',
+          url: '@Url.Action("InitialContract", "ContractConsole")',
           autoProcessQueue: true,
           uploadMultiple: false,
           parallelUploads: 1,
           maxFiles: 1,
           maxFilesize: 100000,
           addRemoveLinks: true,
-          acceptedFiles: '.doc,.docx,application/msword,application/pdf',
+          acceptedFiles: 'application/pdf',
           dictDefaultMessage: "<div class='text-center h2 text-primary opacity-75'><i class='fas fa-cloud-upload-alt fa-lg'></i></div><div class='fs-5 fw-bolder text-secondary'>請將檔案拖曳到這裡，或是點一下，就可以上傳檔案</div>",
           init: function () {
             var myDropzone = this;
+            this.on("success", function (file, data) {
+                    // 文件上传成功后的处理
+                    // console.log("文件上传成功: " + file.name);
+                    delete self.formData.KeyID;
+                    if($.isPlainObject(data)) {
+                        if(data.result) {
+                            self.formData.KeyID = data.message;
+                        }
+                    }
+                });
             this.on("addedfile", function (file) {
               console.log(file.status);
             });
@@ -622,7 +644,7 @@
                   Size: file.size,
                   Type: file.type,
                   FileTitle: file.name,
-                  ProjectName: projectName[0]
+                  Title: projectName[0]
                 };
                 $('#addNewModal').modal('hide');
                 $('#addProjectModal').modal('show');
@@ -638,7 +660,7 @@
                   Size: file.size,
                   Type: file.type,
                   FileTitle: file.name,
-                  ProjectName: projectName[0]
+                  Title: projectName[0]
                 };
                 $('#addNewModal').modal('hide');
                 $('#addProjectModal').modal('show');
@@ -713,8 +735,34 @@
       // 編輯合約
       editContract() {
         console.log(this.formData);
-        // window.location.href = "/ContractConsole/AffixPdfSeal";
-        affixPdfSeal('6mrCvfuqYJmGWTbMD8gzOjuBHVVF7TWFV0u7I1D8WZOgFGT1WNG3FliJd7cJTiWMv9W9CSVhvBAjVymJYDGKvfJusTMUYGiyWqrqti2LDlc=');
+        var viewModel = {...this.formData};
+
+          showLoading();
+                  $.ajax({
+                      type: 'POST',
+                      url: '@(Url.Action("VueApplyContract", "ContractConsole"))',
+                      data: JSON.stringify(viewModel),
+                      type: "POST",
+                      //dataType: "json",
+                      contentType: "application/json;charset=utf-8",
+                      success: function (data) {
+                          hideLoading();
+                          if ($.isPlainObject(data)) {
+                              if (data.result) {
+                                  affixPdfSeal(viewModel.KeyID);
+                              } else {
+                                  alertModal(data.message);
+                              }
+                          } else {
+                              $(data).appendTo($('body')).remove();
+                          }
+                      },
+                      error: function (xhr, ajaxOptions, thrownError) {
+                          hideLoading();
+                          console.log(xhr.status);
+                          console.log(thrownError);
+                      }
+                  });
       },
       // 用印
       stampHandler(contract, rule) {
@@ -830,5 +878,5 @@
   }
 </script>
 @{
-    await Html.RenderPartialAsync("~/Views/ContractConsole/VueModule/ContractRequestList.cshtml");
+  await Html.RenderPartialAsync("~/Views/ContractConsole/VueModule/ContractRequestList.cshtml");
 }

@@ -217,7 +217,7 @@ namespace ContractHome.Controllers
                 data.Add("EndDate", viewModel.EndDate);
                 data.Add("CreditDate", viewModel.CreditDate);
                 data.Add("Amount", viewModel.Amount);
-                data.Add("No", viewModel.No);
+                data.Add("No", viewModel.ContractNo);
                 data.Add("BuyerSeal", viewModel.BuyerSeal);
                 data.Add("SellerSeal", viewModel.SellerSeal);
 

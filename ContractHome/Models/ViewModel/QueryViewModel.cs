@@ -57,7 +57,7 @@ namespace ContractHome.Models.ViewModel
         public String? EndDate { get; set;}
         public String? CreditDate { get; set;}
         public String? Amount { get; set; }
-        public String? No { get; set; }
+        public String? ContractNo { get; set; }
         public String? BuyerSeal { get; set; }
         public String? SellerSeal { get; set; }
         public bool? UseTemplate { get; set; }
@@ -69,6 +69,7 @@ namespace ContractHome.Models.ViewModel
         public String? Contractor { get; set; }
         public int? ContractorIntent { get; set; }
         public bool? Preview { get; set; }
+        public String? Title { get; set; }
 
     }
 
