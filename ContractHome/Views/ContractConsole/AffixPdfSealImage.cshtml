@@ -153,18 +153,19 @@
               下面script有回傳，但這裡會說找不到isReturnContract，請協助調整
               *@
                 <div class="col-8">
-                  @if (true)
-                  {
-                    <button type="button" onclick="rejectSignature();" class="btn btn-primary opacity-75 w-100">
-                      <i class="far fa-share"></i> 退回合約
-                    </button>
-                  }
-                  else
-                  {
-                    <button type="button" onclick="commitSignature(false);" class="btn btn-primary opacity-75 w-100">
-                      <i class="far fa-file-export"></i> 送出合約
-                    </button>
-                  }
+
+                  <button type="button" onclick="commitSignature();" class="btn btn-primary opacity-75 w-100">
+                    @if (true)
+                    {
+                      <i class="far fa-share"></i>
+                      退回合約
+                              }
+                    else
+                    {
+                      <i class="far fa-file-export"></i>
+                      送出合約
+                              }
+                  </button>
                 </div>
                 <div class="col-4">
                   <button type="button" onclick="commitSignature(true);" class="btn btn-success opacity-75 w-100">
@@ -272,6 +273,14 @@
 </div>
 
 <script>
+  // 簽約人審閱後退回合約
+  const isReject = document.querySelector('#isReject');
+  var isReturnContract = false;
+  isReject.addEventListener('change', (e) => {
+    isReturnContract = e.target.checked;
+    console.log({ isReturnContract });
+  });
+
   // 起約人資料清單
   const dataInitiator = [
     { id: 0, text: '網際優勢甲方公司' },
@@ -351,14 +360,6 @@
     // 取得已選取項目陣列資料
     const selected = $('#Contractor').select2('data');
     console.log({ selected });
-  });
-
-  // 簽約人審閱後退回合約
-  const isReject = document.querySelector('#isReject');
-  var isReturnContract = false;
-  isReject.addEventListener('change', (e) => {
-    isReturnContract = e.target.checked;
-    console.log({ isReturnContract });
   });
 
   // 開啟印鑑 Modal
