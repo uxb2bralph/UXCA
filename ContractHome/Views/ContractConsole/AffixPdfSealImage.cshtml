@@ -154,7 +154,7 @@
                   </button>
                 </div>
                 <div class="col py-1">
-                  <button type="button" onclick="commitSignature(true);" class="btn btn-success opacity-75 w-100">
+                  <button type="button" onclick="openPdfModal()" class="btn btn-success opacity-75 w-100">
                     <i class="fas fa-file-pdf"></i> 預覽
                   </button>
                 </div>
@@ -266,6 +266,30 @@
       </div>
     </div>
   </section>
+
+  <!-- PDF 預覽 Dialog -->
+  <div class="modal fade" id="pdfModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="pdfModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bolder" id="staticBackdropLabel">合約預覽</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body pb-0">
+          <!-- PDF 內嵌頁面 -->
+          <div class="card pdf__wrapper">
+            @{
+              await Html.RenderPartialAsync("~/Views/ContractConsole/Module/ShowContractImage.cshtml", _model.Contract);
+            }
+          </div>
+        </div>
+        <div class="modal-footer border-top-0 justify-content-center">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -552,6 +576,11 @@
       }).submit();
     }
   }
+
+  // 開啟預覽
+  function openPdfModal() {
+    $('#pdfModal').modal('show');
+  };
 </script>
 @functions
 {
