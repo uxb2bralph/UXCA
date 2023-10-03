@@ -118,12 +118,11 @@
                   </script>
                 </div>
                 <div>
-                  <button type="button" onclick="sealHandler()" class="btn btn-primary opacity-75 w-100">
+                  <button type="button" onclick="sealHandler()" class="btn btn-brown w-100">
                     <i class="fas fa-stamp"></i> 選擇印鑑
                   </button>
                 </div>
               </div>
-
               @* <!-- 不需要可刪除
             <div class="pb-3">
             <label class="form-label fw-bolder" for="SealImage">請選擇印鑑章</label>
@@ -147,24 +146,28 @@
             </div>
             --> *@
 
-              <div class="row g-2">
-                @*
-              if (isReturnContract === true) {退回合約} else {送出合約}
-              下面script有回傳，但這裡會說找不到isReturnContract，請協助調整
-              *@
-                <div class="col-8">
-
-                  <button type="button" onclick="commitSignature();" class="btn btn-primary opacity-75 w-100">
-
-                    <i class="far fa-share"></i> 退回合約
-                    <i class="far fa-file-export"></i> 送出合約
+              <div class="row g-2 mt-2">
+                <!-- 燈入為簽約人時取消整組不顯示 -->
+                <div class="col py-1">
+                  <button type="button" onclick="commitSignature(true);" class="btn btn-secondary opacity-50 w-100">
+                    <i class="far fa-times"></i> 取消
                   </button>
                 </div>
-                <div class="col-4">
+                <div class="col py-1">
                   <button type="button" onclick="commitSignature(true);" class="btn btn-success opacity-75 w-100">
                     <i class="fas fa-file-pdf"></i> 預覽
                   </button>
                 </div>
+              </div>
+              @*
+            if (isReturnContract === true) {退回合約} else {送出合約}
+            下面script有回傳，但這裡會說找不到isReturnContract，請協助調整
+            *@
+              <div class="col-12 py-1">
+                <button type="button" onclick="commitSignature();" class="btn btn-primary opacity-75 w-100">
+                  <i class="far fa-share"></i> 退回合約
+                  <i class="far fa-file-export"></i> 送出合約
+                </button>
               </div>
             </form>
             <script>
