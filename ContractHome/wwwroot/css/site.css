@@ -208,6 +208,20 @@
   box-shadow: 0 0 0 0.25rem rgba(241, 215, 159, 0.25);
 }
 
+.btn-brown {
+  color: #fff;
+  background-color: #fc9600;
+  border-color: #fc9600;
+}
+.btn-brown:hover {
+  color: #fff;
+  background-color: #e28a05;
+  border-color: #e28a05;
+}
+.btn-brown:focus {
+  box-shadow: 0 0 0 0.25rem rgba(241, 215, 159, 0.25);
+}
+
 .block--hover {
   cursor: pointer;
 }
@@ -353,8 +367,4 @@
 
 .fs-14 {
   font-size: 14px;
-}
-
-.w-110 {
-  width: 110px;
 }/*# sourceMappingURL=site.css.map */

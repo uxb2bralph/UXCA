@@ -112,12 +112,11 @@
                   </script>
                 </div>
                 <div>
-                  <button type="button" onclick="sealHandler()" class="btn btn-primary opacity-75 w-100">
+                  <button type="button" onclick="sealHandler()" class="btn btn-brown w-100">
                     <i class="fas fa-stamp"></i> 選擇印鑑
                   </button>
                 </div>
               </div>
-
               @* <!-- 不需要可刪除
             <div class="pb-3">
             <label class="form-label fw-bolder" for="SealImage">請選擇印鑑章</label>
@@ -141,24 +140,28 @@
             </div>
             --> *@
 
-              <div class="row g-2">
-                @*
-              if (isReturnContract === true) {退回合約} else {送出合約}
-              下面script有回傳，但這裡會說找不到isReturnContract，請協助調整
-              *@
-                <div class="col-8">
-
-                  <button type="button" onclick="commitSignature();" class="btn btn-primary opacity-75 w-100">
-
-                    <i class="far fa-share"></i> 退回合約
-                    <i class="far fa-file-export"></i> 送出合約
+              <div class="row g-2 mt-2">
+                <!-- 燈入為簽約人時取消整組不顯示 -->
+                <div class="col py-1">
+                  <button type="button" onclick="commitSignature(true);" class="btn btn-secondary opacity-50 w-100">
+                    <i class="far fa-times"></i> 取消
                   </button>
                 </div>
-                <div class="col-4">
-                  <button type="button" onclick="commitSignature(true);" class="btn btn-success opacity-75 w-100">
+                <div class="col py-1">
+                  <button type="button" onclick="openPdfModal()" class="btn btn-success opacity-75 w-100">
                     <i class="fas fa-file-pdf"></i> 預覽
                   </button>
                 </div>
+              </div>
+              @*
+            if (isReturnContract === true) {退回合約} else {送出合約}
+            下面script有回傳，但這裡會說找不到isReturnContract，請協助調整
+            *@
+              <div class="col-12 py-1">
+                <button type="button" onclick="commitSignature();" class="btn btn-primary opacity-75 w-100">
+                  <i class="far fa-share"></i> 退回合約
+                  <i class="far fa-file-export"></i> 送出合約
+                </button>
               </div>
             </form>
             <script>
@@ -254,9 +257,33 @@
         </div>
         </div>
         </div> *@
-            </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PDF 預覽 Dialog -->
+  <div class="modal fade" id="pdfModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="pdfModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bolder" id="staticBackdropLabel">合約預覽</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-    </section>
+        <div class="modal-body pb-0">
+          <!-- PDF 內嵌頁面 -->
+          <div class="card pdf__wrapper">
+            @{
+              await Html.RenderPartialAsync("~/Views/ContractConsole/Module/ShowContractImage.cshtml", _model.Contract);
+            }
+          </div>
+        </div>
+        <div class="modal-footer border-top-0 justify-content-center">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -559,6 +586,11 @@
       }).submit();
     }
   }
+
+  // 開啟預覽
+  function openPdfModal() {
+    $('#pdfModal').modal('show');
+  };
 </script>
 @functions
 {
