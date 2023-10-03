@@ -70,14 +70,14 @@
                     {
                         <button type="button" class="btn" onclick="affixSeal('@Html.Raw((new { ContractID=req.ContractID,SealID=req.SealID}).JsonStringify().EncryptData())');">
                             待@(req.SealTemplate.ContractingIntent?.Description)
-                            @(req.SealTemplate.UserRoleDefinition?.Role)用印
+                            用印
                         </button>
                     }
                     else
                     {
                         <span>
                             待@(req.SealTemplate.ContractingIntent?.Description)
-                            @(req.SealTemplate.UserRoleDefinition?.Role)用印
+                            用印
                         </span>
                     }
                 }

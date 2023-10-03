@@ -1,0 +1,68 @@
+﻿
+@using System.Linq
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using ContractHome.Helper.DataQuery
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@functions
+{
+    ModelSource? models;
+    IQueryable<SealTemplate> _model;
+    QueryViewModel _viewModel;
+}
+@{
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _model = (IQueryable<SealTemplate>)this.Model;
+    _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+}
+
+<div class="modal fade" id="sealModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="sealModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header border-bottom-0">
+                <h5 class="modal-title fw-bolder" id="staticBackdropLabel">選擇印章</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" enctype="multipart/form-data" class="pt-3 pb-5 text-center">
+                    <div class="row g-3">
+                        @if (_model != null)
+                        {
+                            foreach (var item in _model)
+                            {
+                                await Html.RenderPartialAsync("~/Views/UserProfile/VueModule/SealModalItem.cshtml", item);
+                            }
+                        }
+                        <!-- 新增印鑑檔 -->
+                        <div id="addSeal" class="d-flex align-items-stretch col-md-3 col-sm-12" style="height: 150px;">
+                            <label for="formFile" class="form-label w-100 h-100 mb-0">
+                                <div class="card justify-content-center align-items-center h-100 w-100 block--hover">
+                                    <a class="btn btn-lg btn-success rounded-pill opacity-75">
+                                        <i class="fal fa-file-plus"></i>
+                                    </a>
+                                    <span class="h6 fw-bolder p-2">新增印鑑檔</span>
+                                    <input id="sealImage" name="sealImage" class="form-control" type="file" onchange="addSealHandler();">
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(function(){
+        $('#sealModal').modal('show');
+    });
+</script>

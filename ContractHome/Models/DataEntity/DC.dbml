@@ -1,5 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Database Name="DigitalContract" Class="DCDataContext" Serialization="Unidirectional" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
+﻿<?xml version="1.0" encoding="utf-8"?><Database Name="DigitalContract" Class="DCDataContext" Serialization="Unidirectional" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
   <Table Name="dbo.CDS_Document" Member="CDS_Document">
     <Type Name="CDS_Document">
       <Column Name="DocID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
@@ -16,8 +15,9 @@
       <Column Name="ContractID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
       <Column Name="FilePath" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
       <Column Name="ContractNo" Type="System.String" DbType="NVarChar(64) NOT NULL" CanBeNull="false" />
-		<Column Name="Title" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
-		<Association Name="Contract_ContractingParty" Member="ContractingParty" ThisKey="ContractID" OtherKey="ContractID" Type="ContractingParty" />
+      <Column Name="Title" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
+      <Column Name="ContractContent" Type="System.Data.Linq.Binary" DbType="VarBinary(MAX)" CanBeNull="true" UpdateCheck="Never" />
+      <Association Name="Contract_ContractingParty" Member="ContractingParty" ThisKey="ContractID" OtherKey="ContractID" Type="ContractingParty" />
       <Association Name="Contract_ContractSealRequest" Member="ContractSealRequest" ThisKey="ContractID" OtherKey="ContractID" Type="ContractSealRequest" />
       <Association Name="Contract_ContractSignature" Member="ContractSignature" ThisKey="ContractID" OtherKey="ContractID" Type="ContractSignature" Cardinality="One" />
       <Association Name="Contract_ContractSignatureRequest" Member="ContractSignatureRequest" ThisKey="ContractID" OtherKey="ContractID" Type="ContractSignatureRequest" />
@@ -81,6 +81,7 @@
       <Association Name="UserProfile_UserRole" Member="UserRole" ThisKey="UID" OtherKey="UID" Type="UserRole" />
       <Association Name="UserProfile_ContractSealRequest" Member="ContractSealRequest" ThisKey="UID" OtherKey="StampUID" Type="ContractSealRequest" />
       <Association Name="UserProfile_ContractSignatureRequest" Member="ContractSignatureRequest" ThisKey="UID" OtherKey="SignerID" Type="ContractSignatureRequest" />
+      <Association Name="UserProfile_SealTemplate" Member="SealTemplate" ThisKey="UID" OtherKey="UID" Type="SealTemplate" />
       <Association Name="UserProfile_UserProfile" Member="UserProfile1" ThisKey="Creator" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
       <Association Name="UserProfile_UserProfile1" Member="UserProfile3" ThisKey="AuthID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
     </Type>
@@ -98,21 +99,6 @@
       <Column Name="RoleID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
       <Column Name="Role" Type="System.String" DbType="NVarChar(64) NOT NULL" CanBeNull="false" />
       <Association Name="UserRoleDefinition_UserRole" Member="UserRole" ThisKey="RoleID" OtherKey="RoleID" Type="UserRole" />
-      <Association Name="UserRoleDefinition_SealTemplate" Member="SealTemplate" ThisKey="RoleID" OtherKey="RoleID" Type="SealTemplate" />
-    </Type>
-  </Table>
-  <Table Name="dbo.SealTemplate" Member="SealTemplate">
-    <Type Name="SealTemplate">
-      <Column Name="SealID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="Width" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="Height" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="FilePath" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
-      <Column Name="Intent" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
-      <Column Name="IntentID" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="RoleID" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Association Name="SealTemplate_ContractSealRequest" Member="ContractSealRequest" ThisKey="SealID" OtherKey="SealID" Type="ContractSealRequest" />
-      <Association Name="ContractingIntent_SealTemplate" Member="ContractingIntent" ThisKey="IntentID" OtherKey="IntentID" Type="ContractingIntent" IsForeignKey="true" />
-      <Association Name="UserRoleDefinition_SealTemplate" Member="UserRoleDefinition" ThisKey="RoleID" OtherKey="RoleID" Type="UserRoleDefinition" IsForeignKey="true" />
     </Type>
   </Table>
   <Table Name="dbo.ContractSealRequest" Member="ContractSealRequest">
@@ -124,8 +110,8 @@
       <Column Name="StampUID" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="SealScale" Type="System.Double" DbType="Float" CanBeNull="true" />
       <Association Name="Contract_ContractSealRequest" Member="Contract" ThisKey="ContractID" OtherKey="ContractID" Type="Contract" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-      <Association Name="SealTemplate_ContractSealRequest" Member="SealTemplate" ThisKey="SealID" OtherKey="SealID" Type="SealTemplate" IsForeignKey="true" />
       <Association Name="UserProfile_ContractSealRequest" Member="UserProfile" ThisKey="StampUID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
+      <Association Name="SealTemplate_ContractSealRequest" Member="SealTemplate" ThisKey="SealID" OtherKey="SealID" Type="SealTemplate" IsForeignKey="true" />
     </Type>
   </Table>
   <Table Name="dbo.Organization" Member="Organization">
@@ -209,6 +195,21 @@
       <Column Name="KeyID" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
       <Column Name="IsActivated" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
       <Association Name="Organization_OrganizationToken" Member="Organization" ThisKey="CompanyID" OtherKey="CompanyID" Type="Organization" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.SealTemplate" Member="SealTemplate">
+    <Type Name="SealTemplate">
+      <Column Name="SealID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="Width" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Height" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="FilePath" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
+      <Column Name="Intent" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
+      <Column Name="IntentID" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="UID" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="SealImage" Type="System.Data.Linq.Binary" DbType="VarBinary(MAX)" CanBeNull="true" UpdateCheck="Never" />
+      <Association Name="SealTemplate_ContractSealRequest" Member="ContractSealRequest" ThisKey="SealID" OtherKey="SealID" Type="ContractSealRequest" />
+      <Association Name="ContractingIntent_SealTemplate" Member="ContractingIntent" ThisKey="IntentID" OtherKey="IntentID" Type="ContractingIntent" IsForeignKey="true" />
+      <Association Name="UserProfile_SealTemplate" Member="UserProfile" ThisKey="UID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
     </Type>
   </Table>
 </Database>

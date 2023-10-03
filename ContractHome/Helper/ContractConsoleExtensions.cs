@@ -25,19 +25,13 @@ namespace ContractHome.Helper
 
         public static bool CanAffixSeal(this GenericManager<DCDataContext> models, ContractSealRequest request, int uid)
         {
-            if (!request.SealTemplate.RoleID.HasValue 
-                || models.GetTable<UserRole>()
-                    .Where(r => r.UID == uid)
-                    .Where(r => r.RoleID == request.SealTemplate.RoleID).Any())
+            if (models.GetTable<ContractingParty>().Where(p => p.ContractID == request.ContractID)
+                        .Where(p => p.IntentID == request.SealTemplate.IntentID)
+                        .Join(models.GetTable<OrganizationUser>().Where(o => o.UID == uid),
+                            p => p.CompanyID, o => o.CompanyID, (p, o) => p)
+                        .Any())
             {
-                if (models.GetTable<ContractingParty>().Where(p => p.ContractID == request.ContractID)
-                            .Where(p => p.IntentID == request.SealTemplate.IntentID)
-                            .Join(models.GetTable<OrganizationUser>().Where(o => o.UID == uid),
-                                p => p.CompanyID, o => o.CompanyID, (p, o) => p)
-                            .Any())
-                {
-                    return true;
-                }
+                return true;
             }
 
             return false;
