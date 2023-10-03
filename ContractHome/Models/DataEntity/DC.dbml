@@ -109,6 +109,9 @@
       <Column Name="SealImage" Type="System.Data.Linq.Binary" DbType="VarBinary(MAX)" CanBeNull="true" UpdateCheck="Never" />
       <Column Name="StampUID" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="SealScale" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="MarginTop" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="MarginLeft" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="PageIndex" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Association Name="Contract_ContractSealRequest" Member="Contract" ThisKey="ContractID" OtherKey="ContractID" Type="Contract" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
       <Association Name="UserProfile_ContractSealRequest" Member="UserProfile" ThisKey="StampUID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
       <Association Name="SealTemplate_ContractSealRequest" Member="SealTemplate" ThisKey="SealID" OtherKey="SealID" Type="SealTemplate" IsForeignKey="true" />

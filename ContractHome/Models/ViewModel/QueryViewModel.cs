@@ -66,6 +66,7 @@ namespace ContractHome.Models.ViewModel
         public String? Initiator { get; set; }
         public int? InitiatorIntent { get; set; }
         public int? ContractorID { get; set; }
+        public int[]? MultiContractorID { get; set; }
         public String? Contractor { get; set; }
         public int? ContractorIntent { get; set; }
         public bool? Preview { get; set; }

@@ -15,20 +15,21 @@
 
   ModelStateDictionary _modelState;
   ModelSource? models;
-  ContractSignatureRequest _model = (ContractSignatureRequest)this.Model;
+  Contract _model = (Contract)this.Model;
 
   models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
   _modelState = (ModelStateDictionary)ViewBag.ModelState;
   QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
 
-  var party = _model.Contract.ContractingParty.Where(p => p.CompanyID == _model.CompanyID).First();
+  var profile = await Context.GetUserAsync();
+
 }
 <div id="AffixPdfSealImage" class="container-fluid py-4 pb-3">
   <section>
     <!-- 標題 - 甲方 / 乙方 -->
     @{
       await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
-      await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", party.ContractingIntent.Description);
+      await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "合約用印");
     }
     <div class="row" style="height: calc(100vh - 160px);">
       <!-- 合約影像檔 -->
@@ -41,7 +42,7 @@
         </div>
         <div class="card pdf__wrapper">
           @{
-            await Html.RenderPartialAsync("~/Views/ContractConsole/Module/ShowContractImage.cshtml", _model.Contract);
+            await Html.RenderPartialAsync("~/Views/ContractConsole/Module/ShowContractImage.cshtml", _model);
           }
         </div>
         <div class="contract__arrow--right">
@@ -53,14 +54,7 @@
       </div>
       <!-- 操作介面 -->
       <div class="col col-xl-2 col-md-4">
-        @if (_model.StampDate.HasValue)
-        {
-          <h5 class="h5 fw-bolder text-center">
-            合約已用印，@(_model.StampDate)
-          </h5>
-        }
-        else
-        {
+        @{
           <div id="toAffix" class="row ps-2 pe-4">
             <form method="post" enctype="multipart/form-data">
               <div class="card p-3 mb-3">
@@ -106,9 +100,9 @@
                   <label class="form-label fw-bolder" for="PageIndex">選擇用印所在頁碼</label>
                   <select name="PageIndex" class="form-select form-select-sm">
                     <option value="0" selected="0">第 1 頁</option>
-                    @for (int i = 0; i < GetPdfPageCount(_model.Contract); i++)
+                    @for (int i = 0; i < GetPdfPageCount(_model); i++)
                     {
-                      <option value="@(i)" selected="@(i==_model.PageIndex)">第@(i + 1)頁</option>
+                      <option value="@(i)">第@(i + 1)頁</option>
                     }
                   </select>
                   <script>
@@ -215,9 +209,9 @@
               }
             </script>
           </div>
-        }
-        <!-- 印章 Modal -->
-        @* <div class="modal fade" id="sealModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+                }
+                <!-- 印章 Modal -->
+                @* <div class="modal fade" id="sealModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
         aria-labelledby="sealModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
         <div class="modal-content">
@@ -260,29 +254,33 @@
         </div>
         </div>
         </div> *@
-      </div>
-    </div>
-  </section>
+            </div>
+        </div>
+    </section>
 </div>
 
 <script>
-  // 簽約人審閱後退回合約
-  const isReject = document.querySelector('#isReject');
-  var isReturnContract = false;
-  isReject.addEventListener('change', (e) => {
+    // 簽約人審閱後退回合約
+    const isReject = document.querySelector('#isReject');
+    var isReturnContract = false;
+    isReject.addEventListener('change', (e) => {
     isReturnContract = e.target.checked;
     console.log({ isReturnContract });
-  });
+    });
 
+    @{
+        var userOrgItems = models.GetTable<OrganizationUser>().Where(u => u.UID == profile.UID);
+    }
   // 起約人資料清單
-  const dataInitiator = [
+  const dataInitiator = @Html.Raw(userOrgItems.Select(u=>new { id = u.CompanyID, text = u.Organization.CompanyName}).ToArray().JsonStringify());    
+  @*[
     { id: 0, text: '網際優勢甲方公司' },
     { id: 1, text: '網際優勢甲1方公司' },
     { id: 2, text: '網際優勢甲2方公司' },
     { id: 3, text: '網際優勢甲3方公司' },
     { id: 4, text: '網際優勢甲4方公司' },
     { id: 5, text: '網際優勢甲5方公司' }
-  ];
+  ];*@
   /** 起約人 select2 元件控制項
    * data: 下拉選單傳入資料,
    * theme: Bootstrap5 模版,
@@ -308,10 +306,15 @@
     // 取得已選取項目陣列資料
     const selected = $('#Initiator').select2('data');
     console.log({ selected });
+    delete $global.viewModel.InitiatorID;
+    if(selected.length>0) {
+        $global.viewModel.InitiatorID = Number(selected[0].id);
+    }
   });
 
   // 簽約人資料清單
-  const dataContractor = [
+  const dataContractor =  @Html.Raw(models.GetTable<Organization>().Where(o=>!userOrgItems.Any(u=>u.CompanyID==o.CompanyID)).Select(u=>new { id = u.CompanyID, text = u.CompanyName}).ToArray().JsonStringify());
+  @*[
     { id: 0, text: '網際優勢乙方公司' },
     { id: 1, text: '網際優勢丙方公司' },
     { id: 2, text: '網際優勢丁方公司' },
@@ -322,7 +325,7 @@
     { id: 7, text: '網際優勢丁方公司' },
     { id: 8, text: '網際優勢戊方公司' },
     { id: 9, text: '網際優勢己方公司' }
-  ];
+  ];*@
 
   /** 簽約人 select2 元件控制項
    * data: 下拉選單傳入資料,
@@ -353,6 +356,13 @@
     // 取得已選取項目陣列資料
     const selected = $('#Contractor').select2('data');
     console.log({ selected });
+    delete $global.viewModel.MultiContractorID;
+    if(selected.length>0)   {
+        $global.viewModel.MultiContractorID = [];
+        selected.forEach((element)=> {
+            $global.viewModel.MultiContractorID.push(Number(element.id));
+        });
+    }
   });
 
   // 開啟印鑑 Modal

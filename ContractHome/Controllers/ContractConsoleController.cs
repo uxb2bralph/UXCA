@@ -445,25 +445,17 @@ namespace ContractHome.Controllers
 
         public ActionResult AffixPdfSeal(SignatureRequestViewModel viewModel)
         {
-            var result = StartSigning(viewModel);
-            if (result is not ViewResult)
-            {
-                return result;
-            }
-
-
             ViewBag.ViewModel = viewModel;
-            SignatureRequestViewModel tmpModel = viewModel;
-            viewModel.KeyID = viewModel.KeyID.GetEfficientString();
+
+            int? contractID = viewModel.ContractID;
             if (viewModel.KeyID != null)
             {
-                tmpModel = JsonConvert.DeserializeObject<SignatureRequestViewModel>(viewModel.KeyID.DecryptData()) ?? new SignatureRequestViewModel { };
+                contractID = viewModel.DecryptKeyValue();
             }
 
-            var item = models.GetTable<ContractSignatureRequest>()
-                        .Where(r => r.ContractID == tmpModel.ContractID)
-                        .Where(r => r.CompanyID == tmpModel.CompanyID)
-                        .FirstOrDefault();
+            var item = models.GetTable<Contract>()
+                                .Where(c => c.ContractID == contractID)
+                                .FirstOrDefault();
 
             if (item == null)
             {

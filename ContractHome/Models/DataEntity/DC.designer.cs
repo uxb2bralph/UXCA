@@ -2787,6 +2787,12 @@ namespace ContractHome.Models.DataEntity
 		
 		private System.Nullable<double> _SealScale;
 		
+		private System.Nullable<double> _MarginTop;
+		
+		private System.Nullable<double> _MarginLeft;
+		
+		private System.Nullable<int> _PageIndex;
+		
 		private EntityRef<Contract> _Contract;
 		
 		private EntityRef<UserProfile> _UserProfile;
@@ -2809,6 +2815,12 @@ namespace ContractHome.Models.DataEntity
     partial void OnStampUIDChanged();
     partial void OnSealScaleChanging(System.Nullable<double> value);
     partial void OnSealScaleChanged();
+    partial void OnMarginTopChanging(System.Nullable<double> value);
+    partial void OnMarginTopChanged();
+    partial void OnMarginLeftChanging(System.Nullable<double> value);
+    partial void OnMarginLeftChanged();
+    partial void OnPageIndexChanging(System.Nullable<int> value);
+    partial void OnPageIndexChanged();
     #endregion
 		
 		public ContractSealRequest()
@@ -2950,6 +2962,69 @@ namespace ContractHome.Models.DataEntity
 					this._SealScale = value;
 					this.SendPropertyChanged("SealScale");
 					this.OnSealScaleChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_MarginTop", DbType="Float")]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=7)]
+		public System.Nullable<double> MarginTop
+		{
+			get
+			{
+				return this._MarginTop;
+			}
+			set
+			{
+				if ((this._MarginTop != value))
+				{
+					this.OnMarginTopChanging(value);
+					this.SendPropertyChanging();
+					this._MarginTop = value;
+					this.SendPropertyChanged("MarginTop");
+					this.OnMarginTopChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_MarginLeft", DbType="Float")]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=8)]
+		public System.Nullable<double> MarginLeft
+		{
+			get
+			{
+				return this._MarginLeft;
+			}
+			set
+			{
+				if ((this._MarginLeft != value))
+				{
+					this.OnMarginLeftChanging(value);
+					this.SendPropertyChanging();
+					this._MarginLeft = value;
+					this.SendPropertyChanged("MarginLeft");
+					this.OnMarginLeftChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PageIndex", DbType="Int")]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=9)]
+		public System.Nullable<int> PageIndex
+		{
+			get
+			{
+				return this._PageIndex;
+			}
+			set
+			{
+				if ((this._PageIndex != value))
+				{
+					this.OnPageIndexChanging(value);
+					this.SendPropertyChanging();
+					this._PageIndex = value;
+					this.SendPropertyChanged("PageIndex");
+					this.OnPageIndexChanged();
 				}
 			}
 		}
