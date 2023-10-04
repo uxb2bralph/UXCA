@@ -29,6 +29,11 @@
   align-items: center;
   justify-content: center;
   height: 100vh;
+  background-color: #2c70a6;
+  background-image: url("../images/login-bg.jpg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
 }
 .login__signin {
   width: 100%;
@@ -52,15 +57,22 @@
 }
 .login__intro {
   min-height: 450px;
-  background-image: url("https://picsum.photos/900/480?ramdom=10");
+  background-image: url("../images/login-banner.png");
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
+  border-bottom-left-radius: 3px;
+  border-top-left-radius: 3px;
 }
 @media (max-width: 1200px) {
   .login__intro {
     min-height: 300px;
+    border-top-right-radius: 3px;
+    border-bottom-left-radius: 0;
   }
+}
+.login__intro img {
+  height: 75px;
 }
 
 .input__loginHeight {
