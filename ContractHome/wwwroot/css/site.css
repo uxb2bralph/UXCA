@@ -234,6 +234,62 @@
   box-shadow: 0 0 0 0.25rem rgba(241, 215, 159, 0.25);
 }
 
+.btn-block {
+  color: #fff;
+  background-color: #000000;
+  border-color: #000000;
+}
+.btn-block:hover {
+  background-color: #000000;
+  border-color: #000000;
+}
+.btn-block.active {
+  outline: #000000 4px double;
+}
+.btn-block:focus {
+  box-shadow: 0 0 0 0.25rem rgba(241, 215, 159, 0.25);
+  outline: #000000 4px double !important;
+}
+
+.btn-blue {
+  color: #fff;
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+.btn-blue:hover {
+  background-color: #0b5ed7;
+  border-color: #0b5ed7;
+}
+.btn-blue.active {
+  outline: #0b5ed7 4px double;
+}
+.btn-blue:focus {
+  box-shadow: 0 0 0 0.25rem rgba(241, 215, 159, 0.25);
+  outline: #0b5ed7 4px double !important;
+}
+
+.btn-red {
+  color: #fff;
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+.btn-red:hover {
+  background-color: #bb2d3b;
+  border-color: #b02a37;
+}
+.btn-red.active {
+  outline: #b02a37 4px double;
+}
+.btn-red:focus {
+  box-shadow: 0 0 0 0.25rem rgba(241, 215, 159, 0.25);
+  outline: #b02a37 4px double !important;
+}
+
+.btn--size-20 {
+  width: 20px;
+  height: 20px;
+}
+
 .block--hover {
   cursor: pointer;
 }
@@ -278,6 +334,10 @@
   top: 50%;
   right: 70px;
   z-index: 10;
+}
+
+#signatureCanvas > canvas {
+  border-radius: 3px;
 }
 
 .pdf__wrapper {

@@ -315,6 +315,73 @@
   }
 }
 
+.btn-block {
+  color: #fff;
+  background-color: #000000;
+  border-color: #000000;
+
+  &:hover {
+    background-color: #000000;
+    border-color: #000000;
+  }
+
+  &.active {
+    outline: #000000 4px double;
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 0.25rem rgba(241, 215, 159, 0.25);
+    outline: #000000 4px double !important;
+  }
+}
+
+.btn-blue {
+  color: #fff;
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+
+  &:hover {
+    background-color: #0b5ed7;
+    border-color: #0b5ed7;
+  }
+
+  &.active {
+    outline: #0b5ed7 4px double;
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 0.25rem rgba(241, 215, 159, 0.25);
+    outline: #0b5ed7 4px double !important;
+  } 
+}
+
+.btn-red {
+  color: #fff;
+  background-color: #dc3545;
+  border-color: #dc3545;
+
+  &:hover {
+    background-color: #bb2d3b;
+    border-color: #b02a37;
+  }
+
+  &.active {
+    outline: #b02a37 4px double;
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 0.25rem rgba(241, 215, 159, 0.25);
+    outline: #b02a37 4px double !important;
+  }
+}
+
+.btn {
+  &--size-20 {
+    width: 20px;
+    height: 20px;
+  }
+}
+
 .block {
   &--hover {
     cursor: pointer;
@@ -374,6 +441,12 @@
       right: 70px;
       z-index: 10;
     }
+  }
+}
+// 用印簽名區
+#signatureCanvas {
+  > canvas {
+    border-radius: 3px;
   }
 }
 
