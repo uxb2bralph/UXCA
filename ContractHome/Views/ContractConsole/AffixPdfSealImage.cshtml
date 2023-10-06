@@ -119,7 +119,15 @@
                 </div>
                 <div>
                   <button type="button" onclick="sealHandler()" class="btn btn-brown w-100">
-                    <i class="fas fa-stamp"></i> 選擇印鑑
+                    <i class="fas fa-stamp"></i> 簽名 或 蓋章
+                  </button>
+
+                  <button type="button" onclick="dateHandler()" class="btn btn-brown w-100 mt-2">
+                    <i class="fas fa-calendar-alt"></i> 日期
+                  </button>
+
+                  <button type="button" onclick="textHandler()" class="btn btn-brown w-100 mt-2">
+                    <i class="fas fa-text"></i> 文字
                   </button>
                 </div>
               </div>
@@ -266,6 +274,26 @@
       </div>
     </div>
   </section>
+
+  <!-- 文字輸入 Dialog -->
+  <div class="modal fade" id="textModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="textModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bolder" id="staticBackdropLabel">文字</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body pb-0">
+          <input type="text" id="noteItem" name="inputText" class="form-control">
+        </div>
+        <div class="modal-footer border-top-0 justify-content-center">
+          <button type="button" id="noteItemBtn" class="btn btn-primary opacity-75 invisible" tabindex="-1"
+            role="button">使用</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- PDF 預覽 Dialog -->
   <div class="modal fade" id="pdfModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
@@ -431,6 +459,7 @@
     document.querySelector("#contractImg").appendChild(sealBox);
     // 產生印章並放到 sealBox
     const sealImg = document.createElement("img");
+    sealImg.id = `scale-${uuid}-img`;
     sealImg.setAttribute('class', 'sealimg mw-100');
     sealImg.setAttribute('src', 'http://fakeimg.pl/300x250/?text=Seal'); // 動態置入印鑑圖檔-來源 sealList
     document.querySelector(`#${uuid}`).appendChild(sealImg);
@@ -506,8 +535,9 @@
         //console.log(w,h)
 
         // 設置圖片的最大寬高
-        w = w >= contractArea.offsetWidth - seal.offsetLeft ? contractArea.offsetWidth - seal.offsetLeft : w
-        h = h >= contractArea.offsetHeight - seal.offsetTop ? contractArea.offsetHeight - seal.offsetTop : h
+        const sealImgHeight = sealImg.offsetHeight;
+        w = w >= contractArea.offsetWidth - seal.offsetLeft ? contractArea.offsetWidth - seal.offsetLeft : w;
+        h = h >= contractArea.offsetHeight - seal.offsetTop ? contractArea.offsetHeight - seal.offsetTop : h < sealImgHeight + 5 ? sealImgHeight + 15 : h;
         seal.style.width = w + 'px';
         seal.style.height = h + 'px';
         //console.log(seal.offsetWidth,seal.offsetHeight)
@@ -576,6 +606,174 @@
       }).submit();
     }
   }
+
+  // 置入日期
+  function dateHandler() {
+  };
+
+  // 開啟 文字輸入Modal
+  function textHandler() {
+    $('#textModal').modal('show');
+  };
+  // 置入文字-顯示使用按鈕
+  const noteItem = document.querySelector('#noteItem');
+  const noteItemBtn = document.querySelector('#noteItemBtn');
+  noteItem.addEventListener('keyup', function () {
+    console.log(noteItem.value.length)
+    if (noteItem.value.length > 0) {
+      noteItemBtn.classList.remove('invisible');
+    } else {
+      noteItemBtn.classList.add('invisible');
+    }
+  });
+
+  noteItemBtn.addEventListener('click', function () {
+    $('#textModal').modal('hide');
+
+    // 產生一個虛擬 textBox
+    const textBox = document.createElement("div");
+    // id 動態產生
+    const uuid = ui_uuid8();
+    textBox.id = uuid;
+    textBox.setAttribute('class', 'vmNote');
+    textBox.setAttribute('style', 'top:42.5%;left:42.5%;');
+    document.querySelector("#contractImg").appendChild(textBox);
+    // 產生印章並放到 textBox
+    const textInput = document.createElement("div");
+    textInput.id = `scale-${uuid}-text`;
+    textInput.setAttribute('class', 'note');
+    textInput.textContent = 'qaazxswedcf'; // 動態置入輸入文字
+    document.querySelector(`#${uuid}`).appendChild(textInput);
+    // scale 模組
+    const scaleBox = document.createElement("div");
+    scaleBox.id = `scale-${uuid}`;
+    scaleBox.setAttribute('class', 'vmScale');
+    document.querySelector(`#${uuid}`).appendChild(scaleBox);
+    // 刪除 模組
+    const delBox = document.createElement("button");
+    delBox.id = `delNote-${uuid}`;
+    delBox.innerHTML = '<i class="far fa-times"></i>';
+    delBox.setAttribute('class', 'btn btn-sm text-white vmDelete');
+    document.querySelector(`#${uuid}`).appendChild(delBox);
+    // 套用 模組
+    const useBox = document.createElement("button");
+    useBox.id = `useNote-${uuid}`;
+    useBox.innerHTML = '套用';
+    useBox.setAttribute('class', 'btn btn-success opacity-75 btn-sm vmUse');
+    document.querySelector(`#${uuid}`).appendChild(useBox);
+
+    // 跟著滑鼠移動
+    const contractArea = document.querySelector("#contractImg");
+    const note = document.querySelector(`#${uuid}`);
+    note.onmousedown = function (ev) {
+      var oEvent = ev;
+      // 阻擋瀏覽器的預設行為
+      oEvent.preventDefault();
+      var disX = oEvent.clientX - note.offsetLeft;
+      var disY = oEvent.clientY - note.offsetTop;
+      contractArea.onmousemove = function (ev) {
+        oEvent = ev;
+        oEvent.preventDefault();
+        var x = oEvent.clientX - disX;
+        var y = oEvent.clientY - disY;
+
+        // 文字區塊移動時的邊界判斷-必須在文件內的範圍
+        x = x <= 0 ? 0 : x;
+        x = x >= contractArea.offsetWidth - note.offsetWidth ? contractArea.offsetWidth - note.offsetWidth : x;
+        y = y <= 0 ? 0 : y;
+        y = y >= contractArea.offsetHeight - note.offsetHeight ? contractArea.offsetHeight - note.offsetHeight : y;
+        // console.log('x', x, 'y:', y);
+        note.style.left = x + 'px';
+        note.style.top = y + 'px';
+        const MarginLeft = (x / 37.7).toFixed(2);
+        const MarginTop = (y / 37.7).toFixed(2);
+        // console.log('mx-左邊界(cm):', MarginLeft);
+        // console.log('my-上邊界(cm):', MarginTop);
+      }
+      // 文字區塊移出文件範圍取消移動是,防止移動過快觸發滑鼠移出事件，導致滑鼠彈起事件失效
+      contractArea.onmouseleave = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+      // 署標彈起後停止移動
+      contractArea.onmouseup = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+    }
+    // 文字區塊縮放效果
+    const scale = document.querySelector(`#scale-${uuid}`);
+    const noteHeight = textInput.offsetHeight;
+    scale.onmousedown = function (e) {
+      // 阻止冒泡,避免縮放時觸發移動事件
+      e.stopPropagation();
+      e.preventDefault();
+      var pos = {
+        'w': note.offsetWidth,
+        'h': note.offsetHeight,
+        'x': e.clientX,
+        'y': e.clientY
+      };
+      contractArea.onmousemove = function (ev) {
+        ev.preventDefault();
+        // 設置文字區塊的最小縮放為30*30
+        var w = Math.max(30, ev.clientX - pos.x + pos.w)
+        var h = Math.max(30, ev.clientY - pos.y + pos.h)
+        //console.log(w,h)
+
+        // 設置文字區塊的最大寬高
+        w = w >= contractArea.offsetWidth - note.offsetLeft ? contractArea.offsetWidth - note.offsetLeft : w < 85 ? 85 : w;
+        h = h >= contractArea.offsetHeight - note.offsetTop ? contractArea.offsetHeight - note.offsetTop : h < noteHeight + 5 ? noteHeight + 15 : h;
+        note.style.width = w + 'px';
+        note.style.height = h + 'px';
+        //console.log(note.offsetWidth,note.offsetHeight)
+      }
+      contractArea.onmouseleave = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+      contractArea.onmouseup = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+    }
+
+    // 刪除文字區塊
+    const deleteNote = document.querySelector(`#delNote-${uuid}`);
+    deleteNote.onmousedown = function (e) {
+      // 阻止冒泡,避免縮放時觸發移動事件
+      e.stopPropagation();
+      e.preventDefault();
+      note.remove();
+
+      contractArea.onmouseleave = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+      contractArea.onmouseup = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+    }
+
+    // 套用文字區塊
+    const deleteNote = document.querySelector(`#useNote-${uuid}`);
+    deleteNote.onmousedown = function (e) {
+      // 阻止冒泡,避免縮放時觸發移動事件
+      e.stopPropagation();
+      e.preventDefault();
+      note.remove();
+
+      contractArea.onmouseleave = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+      contractArea.onmouseup = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+    }
+  });
 
   // 開啟預覽
   function openPdfModal() {
