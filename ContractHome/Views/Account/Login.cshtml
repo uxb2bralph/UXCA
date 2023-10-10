@@ -17,17 +17,15 @@
   _modelState = (ModelStateDictionary)ViewBag.ModelState;
   QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
 }
-<main id="login" class="login__wrapper bg-secondary bg-gradient">
+<main id="login" class="login__wrapper bg-secondary">
   <div class="login__signin">
-    @* <form ref="form" v-on:submit.prevent id="loginForm" class="needs-validation" :class="{'was-validated':
-    isValidate}" *@
     <form ref="form" v-on:submit.prevent id="loginForm" class="needs-validation" :class="{'was-validated': isValidate}"
       novalidate accept-charset="UTF-8" role="form" method="post" autocomplete="off">
-      <div class="card mb-3 shadow-sm">
+      <div class="card mb-3 shadow">
         <div class="row g-0">
           <div class="col-xl-8 p-5 login__intro bg-secondary bg-opacity-10">
-            <img src="~/images/uxSign_logo.png" class="py-3">
-            <h1 class="h2 fw-bolder text-white">雲端文件簽署，簡化簽署步驟</h1>
+            <img src="~/images/uxSign-logo.png" class="py-3">
+            <h1 class="h2 fw-bolder pt-2">雲端文件簽署，簡化簽署步驟</h1>
             <p class="text-white">高效率完成線上文件簽署，並獲取具有法律約束力的電子簽名。</p>
           </div>
           <div class="col-xl-4 align-self-center p-5">
@@ -60,11 +58,13 @@
                       記住帳號
                     </label>
                   </div>
+                  <!--
                   <div class="ms-auto">
-                    <a class="fs-6" href="@(Url.Action("ForgetPassword","Account"))">註冊</a>
+                    <a class="fs-6" href="@(Url.Action("ForgetPassword", "Account"))">註冊</a>
                   </div>
                   <div class="vr"></div>
-                  <div>
+                  -->
+                  <div class="ms-auto">
                     <a class="fs-6" href="@(Url.Action("ForgetPassword","Account"))">忘記密碼</a>
                   </div>
                 </div>
@@ -81,83 +81,55 @@
     </form>
   </div>
 </main>
-@{
-    /** await Html.RenderPartialAsync("~/Views/Shared/ReportInputError.cshtml"); */
-}
 <script>
-
-    /**
-    $('#btn').click(function () {
-      var event = event || window.event;
-      $('form').prop('action', '@(Url.Action("Login", "Account"))').submit();
-    });
-    */
-
-    // Vue.use(VeeValidate);
-    var app = new Vue({
-        el: '#login',
-        // vuetify: new Vuetify(),
-        data: {
-            isValidate: false,
-            formData: {
-                pid: null,
-                password: null,
-                rememberAccount: false
-            }
-        },
-        methods: {
-            loginHandler() {
-                const isPid = !!this.formData.pid;
-                const isPassword = !!this.formData.password;
-                console.log({ isPid, isPassword });
-                // 帳號及密碼輸入檢核
-                if (!isPid || !isPassword) {
-                    return this.isValidate = true;
-                }
-
-                console.log('go');
-                // axios 送出表單
-                /**
-                axios.post('@(Url.Action("Login", "Account"))', this.formData)
-                  .then((response) => {
-                    console.log(response);
-                  })
-                  .catch((error) => {
-                    console.error(error);
-                  });
-                */
-                // ajax 送出表單
-                showLoading();
-                $.ajax({
-                    type: 'POST',
-                    url: '@(Url.Action("CheckLogin", "Account"))',
-                    data: JSON.stringify(this.formData),
-                    type: "POST",
-                    //dataType: "json",
-                    contentType: "application/json;charset=utf-8",
-                    success: function (data) {
-                        hideLoading();
-                        if ($.isPlainObject(data)) {
-                            if (data.result) {
-                                showLoading();
-                                window.location.href = data.message;
-                            } else {
-                                alertModal(data.message);
-                            }
-                        } else {
-                            $(data).appendTo($('body')).remove();
-                        }
-                    },
-                    error: function (xhr, ajaxOptions, thrownError) {
-                        hideLoading();
-                        console.log(xhr.status);
-                        console.log(thrownError);
-                    }
-                });
-
-
-                // $('form').prop('action', '@(Url.Action("Login", "Account"))').submit();
-            }
+  var app = new Vue({
+    el: '#login',
+    data: {
+      isValidate: false,
+      formData: {
+        pid: null,
+        password: null,
+        rememberAccount: false
+      }
+    },
+    methods: {
+      loginHandler() {
+        const isPid = !!this.formData.pid;
+        const isPassword = !!this.formData.password;
+        // 帳號及密碼輸入檢核
+        if (!isPid || !isPassword) {
+          return this.isValidate = true;
         }
-    });
+
+        // ajax 送出表單
+        showLoading();
+        $.ajax({
+          type: 'POST',
+          url: '@(Url.Action("CheckLogin", "Account"))',
+          data: JSON.stringify(this.formData),
+          type: "POST",
+          //dataType: "json",
+          contentType: "application/json;charset=utf-8",
+          success: function (data) {
+            hideLoading();
+            if ($.isPlainObject(data)) {
+              if (data.result) {
+                showLoading();
+                window.location.href = data.message;
+              } else {
+                alertModal(data.message);
+              }
+            } else {
+              $(data).appendTo($('body')).remove();
+            }
+          },
+          error: function (xhr, ajaxOptions, thrownError) {
+            hideLoading();
+            console.log(xhr.status);
+            console.log(thrownError);
+          }
+        });
+      }
+    }
+  });
 </script>

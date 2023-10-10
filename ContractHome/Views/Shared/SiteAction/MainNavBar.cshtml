@@ -24,7 +24,7 @@
     <nav class="navbar navbar-expand-lg navbar-light navbar-uxb2b py-0">
       <div class="container-fluid">
         <a class=" navbar-brand" href="#">
-          <img src="~/images/uxSign_logo.png" alt="安心簽" style="height: 40px;">
+          <img src="~/images/uxSign-logo.png" alt="安心簽" style="height: 40px;">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
           aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,7 +60,8 @@
                 <span style="font-size: 2rem;"><i class="fas fa-user-circle"></i></span>
               </a>
               <ul class="dropdown-menu dropdown-menu-end shadow__card" aria-labelledby="navbarDropdown">
-                @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin))
+                @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.SystemAdmin,
+                (int)UserRoleDefinition.RoleEnum.MemberAdmin))
                 {
                   <li>
                     <a class="dropdown-item" href="@Html.Raw(Url.Action("MaintainData","UserProfile"))">

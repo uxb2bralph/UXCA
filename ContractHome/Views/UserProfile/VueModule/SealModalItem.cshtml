@@ -28,10 +28,10 @@
 {
   var id = $"s_{_model?.SealID}";
   <div class="d-flex align-items-stretch col-md-3 col-sm-12" style="height: 150px;">
-    <div class="card p-3 w-100 h-100 block--hover block--border" onclick="useSealHandler(@(_model?.SealID),'@(id)')">
+    <div class="card p-1 w-100 h-100 block--hover block--border" onclick="useSealHandler(@(_model?.SealID),'@(id)')">
       <div class="d-inline-flex h-100 w-100 justify-content-center align-items-center">
         <img id="@(id)" src="@Html.Raw($"data:application/octet-stream;base64,{Convert.ToBase64String(buf)}")"
-          class="mh-100" />
+          class="mw-100" />
       </div>
       <div class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded operation__card block--show">
         <i class="fas fa-check"></i>
