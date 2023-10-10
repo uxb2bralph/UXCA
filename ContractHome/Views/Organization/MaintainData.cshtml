@@ -132,7 +132,7 @@
   <section>
     <!-- 標題 -->
     @{
-      await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "廠商列表");
+      await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "查詢列表");
     }
     <div v-if="companyList.length > 0">
       <div class="card p-2 mb-3 table-responsive">
@@ -241,7 +241,7 @@
       <span class="text-danger opacity-50" style="font-size: 50px;">
         <i class="fal fa-box-full"></i>
       </span>
-      <span class="text-primary">目前尚無廠商資料</span>
+      <span class="text-primary">目前尚無查詢資料</span>
     </div>
   </section>
 

@@ -121,5 +121,18 @@ namespace ContractHome.Helper
             }
         }
 
+        public static void TransitStep(this CDS_Document document, GenericManager<DCDataContext> models, int actorID,CDS_Document.StepEnum step)
+        {
+            document.DocumentProcessLog.Add(new DocumentProcessLog
+            {
+                LogDate = DateTime.Now,
+                ActorID = actorID,
+                StepID = (int)step,
+            });
+
+            document.CurrentStep = (int)step;
+            models.SubmitChanges();
+        }
+
     }
 }

@@ -57,7 +57,7 @@
                 }
 
                 var $formData = $currentModal.find('input,select,textarea').serializeObject();
-                $formData.KeyID = '@Html.Raw(JsonConvert.SerializeObject(new { ContractID = _item?.ContractID, CompanyID = _item?.CompanyID}).EncryptData())';
+                $formData.KeyID = '@Html.Raw(_item?.ContractID.EncryptKey())';
 
                 showLoading();
                 clearErrors();
@@ -66,8 +66,9 @@
                     if ($.isPlainObject(data)) {
                         if (data.result) {
                             alertModal('簽章完成!!');
-                            $inquiryAgent.inquire($inquiryAgent.viewModel.PageIndex);
-                            $currentModal.modal('hide');
+                            setTimeout(() => {
+                              window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+                            }, 3000);
                         } else {
                             alertModal('簽章失敗!!');
                         }

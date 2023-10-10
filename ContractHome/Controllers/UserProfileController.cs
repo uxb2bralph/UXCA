@@ -408,7 +408,10 @@ namespace ContractHome.Controllers
 
             var profile = await HttpContext.GetUserAsync();
 
-            IQueryable<SealTemplate> items = models.GetTable<SealTemplate>();
+            IQueryable<SealTemplate> items =
+                models.GetTable<SealTemplate>()
+                    .Where(s => !s.Disabled.HasValue || s.Disabled == false);
+
             if (profile!=null)
             {
                 items = items.Where(s => s.UID == profile.UID);
@@ -453,10 +456,56 @@ namespace ContractHome.Controllers
                     models.GetTable<SealTemplate>().InsertOnSubmit(item);
                     models.SubmitChanges();
 
-                    return View("~/Views/UserProfile/VueModule/SealModalItem.cshtml", item);
+                    if(viewModel.ResultMode == DataResultMode.DataContent)
+                    {
+                        return Content((new
+                        {
+                            result = true,
+                            dataItem =
+                            new
+                            {
+                                KeyID = item.SealID.EncryptKey(),
+                                Src = $"data:application/octet-stream;base64,{Convert.ToBase64String(item.SealImage.ToArray())}",
+                            }
+                        }).JsonStringify(), "application/json");
+                    }
+                    else
+                    {
+                        return View("~/Views/UserProfile/VueModule/SealModalItem.cshtml", item);
+                    }
 
                 }
             }
+        }
+
+        [UserAuthorize]
+        public async Task<ActionResult> CommitToDeleteSealAsync(SealRequestViewModel viewModel)
+        {
+            ViewBag.ViewModel = viewModel;
+
+            var sealID = viewModel.SealID;
+            if (viewModel.KeyID != null)
+            {
+                sealID = viewModel.DecryptKeyValue();
+            }
+
+            var profile = await HttpContext.GetUserAsync();
+
+            var item = models.GetTable<SealTemplate>()
+                .Where(s => s.SealID == sealID)
+                .Where(s => s.UID == profile.UID)
+                .FirstOrDefault();
+
+            if (item == null)
+            {
+                return Json(new { result = false, message = "印鑑資料錯誤!!" });
+            }
+
+            item.Disabled = true;
+            models.SubmitChanges();
+
+            return Json(new { result = true });
+
         }
 
     }

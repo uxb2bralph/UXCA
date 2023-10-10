@@ -22,6 +22,11 @@
   QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
 
   var profile = await Context.GetUserAsync();
+  var party = models!.GetTable<ContractingParty>()
+                  .Where(p => p.ContractID == _model.ContractID)
+                  .Where(p => models.GetTable<OrganizationUser>()
+                  .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
+                  .FirstOrDefault();
 
 }
 <div id="AffixPdfSealImage" class="container-fluid py-4 pb-3">
@@ -29,7 +34,11 @@
     <!-- 標題 - 甲方 / 乙方 -->
     @{
       await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
-      await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "合約用印");
+      await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml",
+      party == null
+      ? "建立新合約"
+      : party.IsInitiator == true
+      ? "起約人用印" : "簽約人用印");
     }
     <div class="row" style="height: calc(100vh - 160px);">
       <!-- 合約影像檔 -->
@@ -40,7 +49,7 @@
             <i class="fas fa-chevron-left"></i>
           </button>
         </div>
-        <div class="card pdf__wrapper">
+        <div class="card pdf__wrapper" style="height:fit-content;">
           @{
             await Html.RenderPartialAsync("~/Views/ContractConsole/Module/ShowContractImage.cshtml", _model);
           }
@@ -57,45 +66,48 @@
         @{
           <div id="toAffix" class="row ps-2 pe-4">
             <form method="post" enctype="multipart/form-data">
+              @if (party == null || party.IsInitiator == true)
+              {
+                <div class="card p-3 mb-3">
+                  <h5 class="h5 fw-bolder text-primary">Step 1：指定合約雙方</h5>
+                  <div class="mb-2">
+                    <label for="Initiator" class="form-label h6 text-secondary fw-bolder mb-1">起約方</label>
+                    <select id="Initiator" name="Initiator" class="form-select form-select-sm" data-placeholder="請選擇">
+                      <option></option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="Contractor" class="form-label h6 text-secondary fw-bolder mb-1">簽約方 (可複選)</label>
+                    <select id="Contractor" name="Contractor" class="form-select form-select-sm" multiple
+                      data-placeholder="請選擇">
+                      <option></option>
+                    </select>
+                  </div>
+                </div>
+                <div class="card p-3 mb-3">
+                  <h5 class="h5 fw-bolder text-primary">Step 2：文件審閱</h5>
+                  <div class="pb-3">
+                    <input class="form-check-input" type="checkbox" id="isInitiatorStamp" name="IgnoreSeal" value="True" />
+                    <label class="form-check-label" for="isInitiatorStamp">
+                      起約人：上傳合約已用印
+                    </label>
+                  </div>
+                  @* <div>
+              <input class="form-check-input" type="checkbox" id="isReject" disabled>
+              <label class="form-check-label" for="isReject">
+              簽約人：審閱後退回合約
+              </label>
+              </div> *@
+                </div>
+              }
               <div class="card p-3 mb-3">
-                <h5 class="h5 fw-bolder text-primary">Step 1：指定合約雙方</h5>
-                <div class="mb-2">
-                  <label for="Initiator" class="form-label h6 text-secondary fw-bolder mb-1">起約方</label>
-                  <select id="Initiator" name="Initiator" class="form-select form-select-sm" data-placeholder="請選擇">
-                    <option></option>
-                  </select>
-                </div>
-                <div>
-                  <label for="Contractor" class="form-label h6 text-secondary fw-bolder mb-1">簽約方 (可複選)</label>
-                  <select id="Contractor" name="Contractor" class="form-select form-select-sm" multiple
-                    data-placeholder="請選擇">
-                    <option></option>
-                  </select>
-                </div>
-              </div>
-
-              @*
-            系統判斷為起約人時，請在簽約人的 input 加入 disabled 禁止選取
-            系統判斷為簽約人時，請在起約人的 input 加入 disabled 禁止選取，下面有範例
-            *@
-              <div class="card p-3 mb-3">
-                <h5 class="h5 fw-bolder text-primary">Step 2：文件審閱</h5>
-                <div class="pb-3">
-                  <input class="form-check-input" type="checkbox" id="isInitiatorStamp">
-                  <label class="form-check-label" for="isInitiatorStamp">
-                    起約人：上傳合約已用印
-                  </label>
-                </div>
-                <div>
-                  <input class="form-check-input" type="checkbox" id="isReject" disabled>
-                  <label class="form-check-label" for="isReject">
-                    簽約人：審閱後退回合約
-                  </label>
-                </div>
-              </div>
-
-              <div class="card p-3 mb-3">
-                <h5 class="h5 fw-bolder text-primary">Step 3：創建欄位</h5>
+                <h5 class="h5 fw-bolder text-primary">
+                  @if (party == null || party.IsInitiator == true)
+                  {
+                    <text>Step 3：</text>
+                  }
+                  創建欄位
+                </h5>
                 <div class="pb-3">
                   <label class="form-label fw-bolder" for="PageIndex">選擇用印所在頁碼</label>
                   <select name="PageIndex" class="form-select form-select-sm">
@@ -117,59 +129,70 @@
                   </button>
                 </div>
               </div>
-              @* <!-- 不需要可刪除
-            <div class="pb-3">
-            <label class="form-label fw-bolder" for="SealImage">請選擇印鑑章</label>
-            <input type="file" class="form-control form-control-sm" id="SealImage" name="SealImage" />
-            </div>
-
-            <div class="pb-3">
-            <label class="form-label fw-bolder" for="MarginTop">請指定上邊界位置(公分)</label>
-            <input type="text" class="form-control form-control-sm" id="MarginTop" name="MarginTop"
-            value="@(_model?.MarginTop ?? 0)" />
-            </div>
-            <div class="pb-3">
-            <label class="form-label fw-bolder" for="MarginLeft" style="white-space: nowrap;">請指定左邊界位置(公分)</label>
-            <input type="text" class="form-control form-control-sm" id="MarginLeft" name="MarginLeft"
-            value="@(_model?.MarginLeft ?? 0)" />
-            </div>
-            <div class="pb-3">
-            <label class="form-label fw-bolder" for="SealScale" style="white-space: nowrap;">印鑑章縮放比例(%)</label>
-            <input type="text" class="form-control form-control-sm" id="SealScale" name="SealScale"
-            value="@(_model?.SealScale ?? 100)" />
-            </div>
-            --> *@
-
               <div class="row g-2 mt-2">
-                <!-- 燈入為簽約人時取消整組不顯示 -->
                 <div class="col py-1">
-                  <button type="button" onclick="commitSignature(true);" class="btn btn-secondary opacity-50 w-100">
-                    <i class="far fa-times"></i> 取消
+                  <button type="button" onclick="resetSignature();" class="btn btn-secondary opacity-50 w-100">
+                    <i class="far fa-times"></i> 清除用印
                   </button>
                 </div>
                 <div class="col py-1">
-                  <button type="button" onclick="openPdfModal()" class="btn btn-success opacity-75 w-100">
+                  <button type="button" onclick="commitSignature(true)" class="btn btn-success opacity-75 w-100">
                     <i class="fas fa-file-pdf"></i> 預覽
                   </button>
                 </div>
               </div>
-              @*
-            if (isReturnContract === true) {退回合約} else {送出合約}
-            下面script有回傳，但這裡會說找不到isReturnContract，請協助調整
-            *@
-              <div class="col-12 py-1">
-                <button type="button" onclick="commitSignature();" class="btn btn-primary opacity-75 w-100">
-                  <i class="far fa-share"></i> 退回合約
-                  <i class="far fa-file-export"></i> 送出合約
-                </button>
+              <div class="row g-2">
+                <div class="col py-1">
+                  <button type="button" onclick="abortContract();" class="btn btn-primary opacity-75 w-100">
+                    <i class="far fa-share"></i> 退回合約
+                  </button>
+                </div>
+                <div class="col py-1">
+                  <button type="button" onclick="commitContract();" class="btn btn-primary opacity-75 w-100">
+                    <i class="far fa-file-export"></i> 送出合約
+                  </button>
+                </div>
               </div>
+              @*<div class="col-12 py-1">
+            <button type="button" onclick="commitSignature();" class="btn btn-primary opacity-75 w-100">
+            <i class="far fa-share"></i> 退回合約
+            <i class="far fa-file-export"></i> 送出合約
+            </button>
+            </div>*@
             </form>
             <script>
               function commitSignature(preview) {
                 clearErrors();
                 $global.viewModel.Preview = preview;
+                $global.viewModel.PageIndex = Number($('select[name="PageIndex"]').val());
+                showLoading();
+                $.post('@Html.Raw(Url.Action("CommitPdfSignature", "ContractConsole"))', $global.viewModel, function (data) {
+                  hideLoading();
+                  if ($.isPlainObject(data)) {
+                    if (data.result) {
+                      if (preview) {
+                      } else {
+                        alertModal('已用印完成!!');
+                      }
+                      loadContractPage($('select[name="PageIndex"]').val());
+                      if ($global.currentSeal) {
+                        $global.currentSeal.remove();
+                      }
+                      delete $global.viewModel.SealID;
+                    } else {
+                      alertModal(data.message);
+                    }
+                  } else {
+                    $(data).appendTo($('body'));
+                  }
+                });
+              }
+
+              function resetSignature() {
+                clearErrors();
+                $global.viewModel.PageIndex = Number($('select[name="PageIndex"]').val());
                 $('form').ajaxForm({
-                  url: '@Html.Raw(Url.Action("CommitPdfSignature", "ContractConsole"))',
+                  url: '@Html.Raw(Url.Action("ResetPdfSignature", "ContractConsole"))',
                   data: $global.viewModel,
                   beforeSubmit: function () {
                     showLoading();
@@ -178,11 +201,12 @@
                     hideLoading();
                     if ($.isPlainObject(data)) {
                       if (data.result) {
-                        if (preview) {
-                        } else {
-                          alertModal('已用印完成!!');
-                        }
+                        alertModal('已清除用印!!');
                         loadContractPage($('select[name="PageIndex"]').val());
+                        if ($global.currentSeal) {
+                          $global.currentSeal.remove();
+                        }
+                        delete $global.viewModel.SealID;
                       } else {
                         alertModal(data.message);
                       }
@@ -210,11 +234,65 @@
                   }
                 });
               }
+
+              function abortContract() {
+                if (!confirm('合約退回後，資料將被清除，確定退回？')) {
+                  return;
+                }
+                showLoading();
+                $.post('@Html.Raw(Url.Action("AbortContract", "ContractConsole"))', { 'KeyID': '@Html.Raw(_model!.ContractID.EncryptKey())' }, function (data) {
+                  hideLoading();
+                  if ($.isPlainObject(data)) {
+                    if (data.result) {
+                      alertModal('合約已退回!!');
+                      window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+                    } else {
+                      alertModal(data.message);
+                    }
+                    $('#contractImg').css(data);
+                  } else {
+                    $(data).appendTo($('body'));
+                  }
+                });
+              }
+
+              function commitContract() {
+                $global.viewModel.IgnoreSeal = $('#isInitiatorStamp').is(':checked');
+                showLoading();
+                $.ajax({
+                  type: 'POST',
+                  url: '@(Url.Action(party==null || party.IsInitiator==true ? "CommitContract" : "AcceptContract", "ContractConsole"))',
+                  data: JSON.stringify($global.viewModel),
+                  type: "POST",
+                  //dataType: "json",
+                  contentType: "application/json;charset=utf-8",
+                  success: function (data) {
+                    hideLoading();
+                    if ($.isPlainObject(data)) {
+                      if (data.result) {
+                        alertModal(`@(Html.Raw(party==null || party.IsInitiator==true ? "已建立新合約" : "合約已用印"))(${data.dataItem.contractNo})。`);
+                        setTimeout(() => {
+                          window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+                        }, 3000);
+                      } else {
+                        alertModal(data.message);
+                      }
+                    } else {
+                      $(data).appendTo($('body'));
+                    }
+                  },
+                  error: function (xhr, ajaxOptions, thrownError) {
+                    hideLoading();
+                    console.log(xhr.status);
+                    console.log(thrownError);
+                  }
+                });
+              }
             </script>
           </div>
-                }
-                <!-- 印章 Modal -->
-                @* <div class="modal fade" id="sealModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        }
+        <!-- 印章 Modal -->
+        @* <div class="modal fade" id="sealModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
         aria-labelledby="sealModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
         <div class="modal-content">
@@ -274,7 +352,7 @@
           <!-- PDF 內嵌頁面 -->
           <div class="card pdf__wrapper">
             @{
-              await Html.RenderPartialAsync("~/Views/ContractConsole/Module/ShowContractImage.cshtml", _model.Contract);
+              await Html.RenderPartialAsync("~/Views/ContractConsole/Module/ShowContractImage.cshtml", _model);
             }
           </div>
         </div>
@@ -287,19 +365,19 @@
 </div>
 
 <script>
-    // 簽約人審閱後退回合約
-    const isReject = document.querySelector('#isReject');
-    var isReturnContract = false;
-    isReject.addEventListener('change', (e) => {
+  // 簽約人審閱後退回合約
+  @*const isReject = document.querySelector('#isReject');
+  var isReturnContract = false;
+  isReject.addEventListener('change', (e) => {
     isReturnContract = e.target.checked;
     console.log({ isReturnContract });
-    });
+  });*@
 
-    @{
-        var userOrgItems = models.GetTable<OrganizationUser>().Where(u => u.UID == profile.UID);
-    }
+  @{
+    var userOrgItems = models.GetTable<OrganizationUser>().Where(u => u.UID == profile.UID);
+  }
   // 起約人資料清單
-  const dataInitiator = @Html.Raw(userOrgItems.Select(u=>new { id = u.CompanyID, text = u.Organization.CompanyName}).ToArray().JsonStringify());    
+  const dataInitiator = @Html.Raw(userOrgItems.Select(u => new { id = u.CompanyID.EncryptKey(), text = u.Organization.CompanyName }).ToArray().JsonStringify());
   @*[
     { id: 0, text: '網際優勢甲方公司' },
     { id: 1, text: '網際優勢甲1方公司' },
@@ -307,23 +385,23 @@
     { id: 3, text: '網際優勢甲3方公司' },
     { id: 4, text: '網際優勢甲4方公司' },
     { id: 5, text: '網際優勢甲5方公司' }
-  ];*@
-  /** 起約人 select2 元件控制項
-   * data: 下拉選單傳入資料,
-   * theme: Bootstrap5 模版,
-   * width: 寬度設定,
-   * placeholder: placeholder設定,
-   * selectionCssClass: select 選單樣式,
-   * dropdownCssClass: 下拉選項樣式,
-   */
-  $('#Initiator').select2({
-    data: dataInitiator,
-    theme: "bootstrap-5",
-    width: $(this).data('width') ? $(this).data('width') : $(this).hasClass('w-100') ? '100%' : 'style',
-    placeholder: $(this).data('placeholder'),
-    selectionCssClass: 'select2--small',
-    dropdownCssClass: 'select2--small',
-  });
+    ];*@
+    /** 起約人 select2 元件控制項
+     * data: 下拉選單傳入資料,
+     * theme: Bootstrap5 模版,
+     * width: 寬度設定,
+     * placeholder: placeholder設定,
+     * selectionCssClass: select 選單樣式,
+     * dropdownCssClass: 下拉選項樣式,
+     */
+    $('#Initiator').select2({
+      data: dataInitiator,
+      theme: "bootstrap-5",
+      width: $(this).data('width') ? $(this).data('width') : $(this).hasClass('w-100') ? '100%' : 'style',
+      placeholder: $(this).data('placeholder'),
+      selectionCssClass: 'select2--small',
+      dropdownCssClass: 'select2--small',
+    });
 
   // 取得起約人選取資料
   $('#Initiator').on('select2:select', function (e) {
@@ -333,14 +411,14 @@
     // 取得已選取項目陣列資料
     const selected = $('#Initiator').select2('data');
     console.log({ selected });
-    delete $global.viewModel.InitiatorID;
-    if(selected.length>0) {
-        $global.viewModel.InitiatorID = Number(selected[0].id);
+    delete $global.viewModel.Initiator;
+    if (selected.length > 0) {
+      $global.viewModel.Initiator = selected[0].id;
     }
   });
 
   // 簽約人資料清單
-  const dataContractor =  @Html.Raw(models.GetTable<Organization>().Where(o=>!userOrgItems.Any(u=>u.CompanyID==o.CompanyID)).Select(u=>new { id = u.CompanyID, text = u.CompanyName}).ToArray().JsonStringify());
+  const dataContractor = @Html.Raw(models.GetTable<Organization>().Where(o => !userOrgItems.Any(u => u.CompanyID == o.CompanyID)).Select(u => new { id = u.CompanyID.EncryptKey(), text = u.CompanyName }).ToArray().JsonStringify());
   @*[
     { id: 0, text: '網際優勢乙方公司' },
     { id: 1, text: '網際優勢丙方公司' },
@@ -352,28 +430,28 @@
     { id: 7, text: '網際優勢丁方公司' },
     { id: 8, text: '網際優勢戊方公司' },
     { id: 9, text: '網際優勢己方公司' }
-  ];*@
+    ];*@
 
-  /** 簽約人 select2 元件控制項
-   * data: 下拉選單傳入資料,
-   * theme: Bootstrap5 模版,
-   * width: 寬度設定,
-   * placeholder: placeholder設定,
-   * closeOnSelect: 選取後是否關閉選單,
-   * selectionCssClass: select 選單樣式,
-   * dropdownCssClass: 下拉選項樣式,
-   * tags: 選取的選項以 tag 模式顯示,
-   */
-  $('#Contractor').select2({
-    data: dataContractor,
-    theme: "bootstrap-5",
-    width: $(this).data('width') ? $(this).data('width') : $(this).hasClass('w-100') ? '100%' : 'style',
-    placeholder: $(this).data('placeholder'),
-    closeOnSelect: false,
-    selectionCssClass: 'select2--small',
-    dropdownCssClass: 'select2--small',
-    tags: true
-  });
+    /** 簽約人 select2 元件控制項
+     * data: 下拉選單傳入資料,
+     * theme: Bootstrap5 模版,
+     * width: 寬度設定,
+     * placeholder: placeholder設定,
+     * closeOnSelect: 選取後是否關閉選單,
+     * selectionCssClass: select 選單樣式,
+     * dropdownCssClass: 下拉選項樣式,
+     * tags: 選取的選項以 tag 模式顯示,
+     */
+    $('#Contractor').select2({
+      data: dataContractor,
+      theme: "bootstrap-5",
+      width: $(this).data('width') ? $(this).data('width') : $(this).hasClass('w-100') ? '100%' : 'style',
+      placeholder: $(this).data('placeholder'),
+      closeOnSelect: false,
+      selectionCssClass: 'select2--small',
+      dropdownCssClass: 'select2--small',
+      tags: true
+    });
 
   // 取得簽約人選取資料
   $('#Contractor').on('select2:select', function (e) {
@@ -384,11 +462,11 @@
     const selected = $('#Contractor').select2('data');
     console.log({ selected });
     delete $global.viewModel.MultiContractorID;
-    if(selected.length>0)   {
-        $global.viewModel.MultiContractorID = [];
-        selected.forEach((element)=> {
-            $global.viewModel.MultiContractorID.push(Number(element.id));
-        });
+    if (selected.length > 0) {
+      $global.viewModel.MultiContractor = [];
+      selected.forEach((element) => {
+        $global.viewModel.MultiContractor.push(element.id);
+      });
     }
   });
 
@@ -426,11 +504,13 @@
   }
 
   // 選擇印鑑
-  function useSealHandler(index) {
+  function useSealHandler(sealID, id) {
     $('#sealModal').modal('hide');
-    console.log('印鑑 index:', index);
-    console.log('印鑑sealList:', sealList);
+  @*console.log('印鑑 index:', index);
+      console.log('印鑑sealList:', sealList);*@
 
+      $global.viewModel.SealID = sealID;
+    $global.viewModel.SealScale = 100;
     // 產生一個虛擬 sealBox
     const sealBox = document.createElement("div");
     // id 動態產生
@@ -442,7 +522,7 @@
     // 產生印章並放到 sealBox
     const sealImg = document.createElement("img");
     sealImg.setAttribute('class', 'sealimg mw-100');
-    sealImg.setAttribute('src', 'http://fakeimg.pl/300x250/?text=Seal'); // 動態置入印鑑圖檔-來源 sealList
+    sealImg.setAttribute('src', document.getElementById(id).getAttribute('src')); // 動態置入印鑑圖檔-來源 sealList
     document.querySelector(`#${uuid}`).appendChild(sealImg);
     // scale 模組
     const scaleBox = document.createElement("div");
@@ -460,6 +540,10 @@
     // 跟著滑鼠移動
     const contractArea = document.querySelector("#contractImg");
     const seal = document.querySelector(`#${uuid}`);
+    if ($global.currentSeal) {
+      $global.currentSeal.remove();
+    }
+    $global.currentSeal = seal;
     seal.onmousedown = function (ev) {
       var oEvent = ev;
       // 阻擋瀏覽器的預設行為
@@ -480,10 +564,12 @@
         // console.log('x', x, 'y:', y);
         seal.style.left = x + 'px';
         seal.style.top = y + 'px';
-        const MarginLeft = (x / 37.7).toFixed(2);
-        const MarginTop = (y / 37.7).toFixed(2);
+        const MarginLeft = (x / 37.795).toFixed(2);
+        const MarginTop = (y / 37.795).toFixed(2);
         console.log('mx-左邊界(cm):', MarginLeft);
         console.log('my-上邊界(cm):', MarginTop);
+        $global.viewModel.MarginLeft = MarginLeft;
+        $global.viewModel.MarginTop = MarginTop;
       }
       // 圖形移出文件範圍取消移動是,防止移動過快觸發滑鼠移出事件，導致滑鼠彈起事件失效
       contractArea.onmouseleave = function () {
@@ -521,8 +607,11 @@
         seal.style.width = w + 'px';
         seal.style.height = h + 'px';
         //console.log(seal.offsetWidth,seal.offsetHeight)
-        console.log('圖片的寬的縮放比 %:', ((sealImg.width / sealImg.naturalWidth) * 100).toFixed(2));
-        console.log('圖片的高的縮放比 %:', ((sealImg.height / sealImg.naturalHeight) * 100).toFixed(2));
+        var hScale = ((sealImg.width / sealImg.naturalWidth) * 100).toFixed(2);
+        var vScale = ((sealImg.height / sealImg.naturalHeight) * 100).toFixed(2);
+        console.log('圖片的寬的縮放比 %:', hScale);
+        console.log('圖片的高的縮放比 %:', vScale);
+        $global.viewModel.SealScale = Math.max(hScale, vScale);
       }
       contractArea.onmouseleave = function () {
         contractArea.onmousemove = null;
@@ -541,6 +630,7 @@
       e.stopPropagation();
       e.preventDefault();
       seal.remove();
+      delete $global.viewModel.SealID;
 
       contractArea.onmouseleave = function () {
         contractArea.onmousemove = null;

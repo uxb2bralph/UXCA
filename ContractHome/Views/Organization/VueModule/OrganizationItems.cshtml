@@ -33,7 +33,7 @@
     {
         return new
         {
-            item.CompanyName,
+            CompanyName = $"{item.CompanyName}({item.ReceiptNo})",
             item.ReceiptNo,
             item.Phone,
             item.Addr,

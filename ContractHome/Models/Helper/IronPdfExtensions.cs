@@ -49,7 +49,7 @@ namespace ContractHome.Models.Helper
             if (pdf != null)
             {
                 using AnyBitmap bmp = pdf.PageToBitmap(pageIndex);
-                String filePath = Path.Combine(FileLogger.Logger.LogDailyPath, $"{Guid.NewGuid()}.jpg");
+                String filePath = Path.Combine(FileLogger.Logger.LogDailyPath, $"{contract.ContractID:00000000}-{pageIndex:000}-{DateTime.Now.Ticks}.jpg");
                 bmp.SaveAs(filePath, AnyBitmap.ImageFormat.Jpeg);
                 return filePath;
             }
@@ -59,10 +59,19 @@ namespace ContractHome.Models.Helper
 
         public static PdfDocument? BuildContractDocument(this Contract contract)
         {
+            PdfDocument? pdf = null;
             if (contract.FilePath != null && System.IO.File.Exists(contract.FilePath))
             {
+                pdf = PdfDocument.FromFile(contract.FilePath/*, TrackChanges: true*/);
+            }
+            else if(contract.ContractContent!=null)
+            {
+                pdf = new PdfDocument(contract.ContractContent.ToArray());
+            }
+
+            if (pdf != null)
+            {
                 // Load Word document from file's path.
-                PdfDocument pdf = PdfDocument.FromFile(contract.FilePath/*, TrackChanges: true*/);
                 foreach (var sig in contract.ContractSignatureRequest)
                 {
                     if (sig.SealImage != null)
@@ -82,31 +91,45 @@ namespace ContractHome.Models.Helper
                         //    pdf.ApplyStamp(imgStamper, sig.PageIndex ?? 0);
                         //}
                         byte[] buf = sig.SealImage.ToArray();
-                        using (MemoryStream stream = new MemoryStream(buf))
-                        {
-                            using (Bitmap bmp = new Bitmap(stream))
-                            {
-                                var backgroundStamp = new HtmlStamper($"<img style='width:{bmp.Width * ((sig.SealScale ?? 100) / 100 * 2.54 / bmp.HorizontalResolution)}cm;' src='data:application/octet-stream;base64,{Convert.ToBase64String(buf)}'/>")
-                                {
-                                    Opacity = 60,
-                                    HorizontalOffset = new Length(unit: MeasurementUnit.Centimeter) { Value = sig.MarginLeft ?? 0, },
-                                    VerticalOffset = new Length(unit: MeasurementUnit.Centimeter) { Value = sig.MarginTop ?? 0 },
-                                    VerticalAlignment = IronPdf.Editing.VerticalAlignment.Top,
-                                    HorizontalAlignment = IronPdf.Editing.HorizontalAlignment.Left,
-                                    IsStampBehindContent = true,
-                                };
-                                pdf.ApplyStamp(backgroundStamp, sig.PageIndex ?? 0);
-                            }
-                        }
+                        ApplyStamp(pdf, buf, sig.MarginLeft, sig.MarginTop, sig.SealScale, sig.PageIndex);
 
                     }
                 }
 
-                pdf.SaveAs(Path.Combine(FileLogger.Logger.LogDailyPath, $"DBG-{DateTime.Now.Ticks}.pdf"));
+                foreach (var sig in contract.ContractSealRequest)
+                {
+                    if (sig.SealTemplate?.SealImage != null)
+                    {
+                        byte[] buf = sig.SealTemplate.SealImage.ToArray();
+                        ApplyStamp(pdf, buf, sig.MarginLeft, sig.MarginTop, sig.SealScale, sig.PageIndex);
+                    }
+                }
+
+                pdf.SaveAs(Path.Combine(FileLogger.Logger.LogDailyPath, $"DBG-{contract.ContractID:00000000}.pdf"));
                 return pdf;
             }
 
             return null;
+        }
+
+        private static void ApplyStamp(PdfDocument pdf, byte[] buf,double? marginLeft,double? marginTop,double? sealScale,int? pageIndex)
+        {
+            using (MemoryStream stream = new MemoryStream(buf))
+            {
+                using (Bitmap bmp = new Bitmap(stream))
+                {
+                    var backgroundStamp = new HtmlStamper($"<img style='width:{bmp.Width * ((sealScale ?? 100) / 100 * 2.54 / bmp.HorizontalResolution)}cm;' src='data:application/octet-stream;base64,{Convert.ToBase64String(buf)}'/>")
+                    {
+                        Opacity = 60,
+                        HorizontalOffset = new Length(unit: MeasurementUnit.Centimeter) { Value = marginLeft ?? 0, },
+                        VerticalOffset = new Length(unit: MeasurementUnit.Centimeter) { Value = marginTop ?? 0 },
+                        VerticalAlignment = IronPdf.Editing.VerticalAlignment.Top,
+                        HorizontalAlignment = IronPdf.Editing.HorizontalAlignment.Left,
+                        IsStampBehindContent = true,
+                    };
+                    pdf.ApplyStamp(backgroundStamp, pageIndex ?? 0);
+                }
+            }
         }
 
         public static bool SignPdfByLocalUser(this GenericManager<DCDataContext> models, ContractSignatureRequest request, UserProfile signer)
