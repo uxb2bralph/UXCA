@@ -23,10 +23,10 @@
 
   var profile = await Context.GetUserAsync();
   var party = models!.GetTable<ContractingParty>()
-                  .Where(p => p.ContractID == _model.ContractID)
-                  .Where(p => models.GetTable<OrganizationUser>()
-                  .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
-                  .FirstOrDefault();
+  .Where(p => p.ContractID == _model.ContractID)
+  .Where(p => models.GetTable<OrganizationUser>()
+  .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
+  .FirstOrDefault();
 
 }
 <div id="AffixPdfSealImage" class="container-fluid py-4 pb-3">
@@ -269,7 +269,7 @@
                 showLoading();
                 $.ajax({
                   type: 'POST',
-                  url: '@(Url.Action(party==null || party.IsInitiator==true ? "CommitContract" : "AcceptContract", "ContractConsole"))',
+                  url: '@(Url.Action(party == null || party.IsInitiator == true ? "CommitContract" : "AcceptContract", "ContractConsole"))',
                   data: JSON.stringify($global.viewModel),
                   type: "POST",
                   //dataType: "json",
@@ -278,7 +278,7 @@
                     hideLoading();
                     if ($.isPlainObject(data)) {
                       if (data.result) {
-                        alertModal(`@(Html.Raw(party==null || party.IsInitiator==true ? "已建立新合約" : "合約已用印"))(${data.dataItem.contractNo})。`);
+                        alertModal(`@(Html.Raw(party == null || party.IsInitiator == true ? "已建立新合約" : "合約已用印"))(${data.dataItem.contractNo})。`);
                         setTimeout(() => {
                           window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
                         }, 3000);
@@ -395,11 +395,11 @@
 <script>
   // 簽約人審閱後退回合約
   @*const isReject = document.querySelector('#isReject');
-  var isReturnContract = false;
-  isReject.addEventListener('change', (e) => {
+    var isReturnContract = false;
+    isReject.addEventListener('change', (e) => {
     isReturnContract = e.target.checked;
     console.log({ isReturnContract });
-  });*@
+    });*@
 
   @{
     var userOrgItems = models.GetTable<OrganizationUser>().Where(u => u.UID == profile.UID);
@@ -562,9 +562,15 @@
     const delBox = document.createElement("button");
     const textNode = document.createTextNode("x");
     delBox.id = `del-${uuid}`;
-    delBox.setAttribute('class', 'btn btn-sm text-white rounded-pill icon__rounded vmDelete');
+    delBox.setAttribute('class', 'btn btn-sm text-white vmDelete');
     delBox.appendChild(textNode);
     document.querySelector(`#${uuid}`).appendChild(delBox);
+    // 套用 模組
+    const useBox = document.createElement("button");
+    useBox.id = `useSeal-${uuid}`;
+    useBox.innerHTML = '套用';
+    useBox.setAttribute('class', 'btn btn-success opacity-75 btn-sm vmUse');
+    document.querySelector(`#${uuid}`).appendChild(useBox);
 
     // 跟著滑鼠移動
     const contractArea = document.querySelector("#contractImg");
@@ -661,6 +667,25 @@
       e.preventDefault();
       seal.remove();
       delete $global.viewModel.SealID;
+
+      contractArea.onmouseleave = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+      contractArea.onmouseup = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+    }
+
+    // 套用印鑑檔
+    const useSeal = document.querySelector(`#useSeal-${uuid}`);
+    useSeal.onmousedown = function (e) {
+      // 阻止冒泡,避免縮放時觸發移動事件
+      e.stopPropagation();
+      e.preventDefault();
+      // 套用文字區塊
+      commitSignature(true);
 
       contractArea.onmouseleave = function () {
         contractArea.onmousemove = null;
