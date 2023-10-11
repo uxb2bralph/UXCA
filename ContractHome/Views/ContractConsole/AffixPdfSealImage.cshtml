@@ -23,10 +23,10 @@
 
   var profile = await Context.GetUserAsync();
   var party = models!.GetTable<ContractingParty>()
-                  .Where(p => p.ContractID == _model.ContractID)
-                  .Where(p => models.GetTable<OrganizationUser>()
-                  .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
-                  .FirstOrDefault();
+  .Where(p => p.ContractID == _model.ContractID)
+  .Where(p => models.GetTable<OrganizationUser>()
+  .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
+  .FirstOrDefault();
 
 }
 <div id="AffixPdfSealImage" class="container-fluid py-4 pb-3">
@@ -161,12 +161,6 @@
                   </button>
                 </div>
               </div>
-              @*<div class="col-12 py-1">
-            <button type="button" onclick="commitSignature();" class="btn btn-primary opacity-75 w-100">
-            <i class="far fa-share"></i> 退回合約
-            <i class="far fa-file-export"></i> 送出合約
-            </button>
-            </div>*@
             </form>
             <script>
               function commitSignature(preview) {
@@ -269,7 +263,7 @@
                 showLoading();
                 $.ajax({
                   type: 'POST',
-                  url: '@(Url.Action(party==null || party.IsInitiator==true ? "CommitContract" : "AcceptContract", "ContractConsole"))',
+                  url: '@(Url.Action(party == null || party.IsInitiator == true ? "CommitContract" : "AcceptContract", "ContractConsole"))',
                   data: JSON.stringify($global.viewModel),
                   type: "POST",
                   //dataType: "json",
@@ -278,7 +272,7 @@
                     hideLoading();
                     if ($.isPlainObject(data)) {
                       if (data.result) {
-                        alertModal(`@(Html.Raw(party==null || party.IsInitiator==true ? "已建立新合約" : "合約已用印"))(${data.dataItem.contractNo})。`);
+                        alertModal(`@(Html.Raw(party == null || party.IsInitiator == true ? "已建立新合約" : "合約已用印"))(${data.dataItem.contractNo})。`);
                         setTimeout(() => {
                           window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
                         }, 3000);
@@ -299,50 +293,6 @@
             </script>
           </div>
         }
-        <!-- 印章 Modal -->
-        @* <div class="modal fade" id="sealModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-        aria-labelledby="sealModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
-        <div class="modal-header border-bottom-0">
-        <h5 class="modal-title fw-bolder" id="staticBackdropLabel">選擇印章</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-        <form method="post" enctype="multipart/form-data" class="pt-3 pb-5 text-center">
-        <div class="row g-3">
-        @for (int i = 0; i < 5; i++)
-        {
-        <div class="d-flex align-items-stretch col-md-3 col-sm-12" style="height: 150px;">
-        <div class="card p-3 w-100 h-100 block--hover block--border" onclick="useSealHandler(@(i))">
-        <div class="d-inline-flex h-100 w-100 justify-content-center align-items-center">
-        <img id="frame" src="http://fakeimg.pl/300x250/?text=Seal" class="mh-100" />
-        </div>
-        <div
-        class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded operation__card block--show">
-        <i class="fas fa-check"></i>
-        </div>
-        </div>
-        </div>
-        }
-        <!-- 新增印鑑檔 -->
-        <div class="d-flex align-items-stretch col-md-3 col-sm-12" style="height: 150px;">
-        <label for="formFile" class="form-label w-100 h-100 mb-0">
-        <div class="card justify-content-center align-items-center h-100 w-100 block--hover">
-        <a class="btn btn-lg btn-success rounded-pill opacity-75">
-        <i class="fal fa-file-plus"></i>
-        </a>
-        <span class="h6 fw-bolder p-2">新增印鑑檔</span>
-        <input id="formFile" class="form-control" type="file" onchange="addSealHandler()">
-        </div>
-        </label>
-        </div>
-        </div>
-        </form>
-        </div>
-        </div>
-        </div>
-        </div> *@
       </div>
     </div>
   </section>
@@ -395,11 +345,11 @@
 <script>
   // 簽約人審閱後退回合約
   @*const isReject = document.querySelector('#isReject');
-  var isReturnContract = false;
-  isReject.addEventListener('change', (e) => {
+    var isReturnContract = false;
+    isReject.addEventListener('change', (e) => {
     isReturnContract = e.target.checked;
     console.log({ isReturnContract });
-  });*@
+    });*@
 
   @{
     var userOrgItems = models.GetTable<OrganizationUser>().Where(u => u.UID == profile.UID);
@@ -531,7 +481,7 @@
     }
   }
 
-  // 選擇印鑑
+  // 選擇印鑑 ----------------------------------------
   function useSealHandler(sealID, id) {
     $('#sealModal').modal('hide');
   @*console.log('印鑑 index:', index);
@@ -562,9 +512,15 @@
     const delBox = document.createElement("button");
     const textNode = document.createTextNode("x");
     delBox.id = `del-${uuid}`;
-    delBox.setAttribute('class', 'btn btn-sm text-white rounded-pill icon__rounded vmDelete');
+    delBox.setAttribute('class', 'btn btn-sm text-white vmDelete');
     delBox.appendChild(textNode);
     document.querySelector(`#${uuid}`).appendChild(delBox);
+    // 套用 模組
+    const useBox = document.createElement("button");
+    useBox.id = `useSeal-${uuid}`;
+    useBox.innerHTML = '套用';
+    useBox.setAttribute('class', 'btn btn-success opacity-75 btn-sm vmUse');
+    document.querySelector(`#${uuid}`).appendChild(useBox);
 
     // 跟著滑鼠移動
     const contractArea = document.querySelector("#contractImg");
@@ -671,6 +627,25 @@
         contractArea.onmouseup = null;
       }
     }
+
+    // 套用印鑑檔
+    const useSeal = document.querySelector(`#useSeal-${uuid}`);
+    useSeal.onmousedown = function (e) {
+      // 阻止冒泡,避免縮放時觸發移動事件
+      e.stopPropagation();
+      e.preventDefault();
+      // 套用文字區塊
+      commitSignature(true);
+
+      contractArea.onmouseleave = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+      contractArea.onmouseup = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+    }
   }
 
   // 新增印鑑檔
@@ -707,7 +682,7 @@
     }
   }
 
-  // 置入日期
+  // 置入日期 ---------------------------------
   function dateHandler() {
   };
 
@@ -715,11 +690,11 @@
   function textHandler() {
     $('#textModal').modal('show');
   };
-  // 置入文字-顯示使用按鈕
+  // 置入文字-顯示使用按鈕 ---------------------------------
   const noteItem = document.querySelector('#noteItem');
   const noteItemBtn = document.querySelector('#noteItemBtn');
   noteItem.addEventListener('keyup', function () {
-    console.log(noteItem.value.length)
+    // 有輸入文字才會顯示使用按鈕
     if (noteItem.value.length > 0) {
       noteItemBtn.classList.remove('invisible');
     } else {
@@ -856,13 +831,14 @@
       }
     }
 
-    // 套用文字區塊
-    const deleteNote = document.querySelector(`#useNote-${uuid}`);
-    deleteNote.onmousedown = function (e) {
+    // 套用文字區塊 
+    const useNote = document.querySelector(`#useNote-${uuid}`);
+    useNote.onmousedown = function (e) {
       // 阻止冒泡,避免縮放時觸發移動事件
       e.stopPropagation();
       e.preventDefault();
-      note.remove();
+      // 套用文字區塊
+      console.log({ note });
 
       contractArea.onmouseleave = function () {
         contractArea.onmousemove = null;
