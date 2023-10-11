@@ -757,12 +757,13 @@
     }
 
     // 套用文字區塊
-    const deleteNote = document.querySelector(`#useNote-${uuid}`);
-    deleteNote.onmousedown = function (e) {
+    const useNote = document.querySelector(`#useNote-${uuid}`);
+    useNote.onmousedown = function (e) {
       // 阻止冒泡,避免縮放時觸發移動事件
       e.stopPropagation();
       e.preventDefault();
-      note.remove();
+      // 套用文字區塊
+      console.log({ note });
 
       contractArea.onmouseleave = function () {
         contractArea.onmousemove = null;
