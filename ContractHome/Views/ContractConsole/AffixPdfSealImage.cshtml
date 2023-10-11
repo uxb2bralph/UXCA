@@ -161,12 +161,6 @@
                   </button>
                 </div>
               </div>
-              @*<div class="col-12 py-1">
-            <button type="button" onclick="commitSignature();" class="btn btn-primary opacity-75 w-100">
-            <i class="far fa-share"></i> 退回合約
-            <i class="far fa-file-export"></i> 送出合約
-            </button>
-            </div>*@
             </form>
             <script>
               function commitSignature(preview) {
@@ -299,50 +293,6 @@
             </script>
           </div>
         }
-        <!-- 印章 Modal -->
-        @* <div class="modal fade" id="sealModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-        aria-labelledby="sealModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
-        <div class="modal-header border-bottom-0">
-        <h5 class="modal-title fw-bolder" id="staticBackdropLabel">選擇印章</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-        <form method="post" enctype="multipart/form-data" class="pt-3 pb-5 text-center">
-        <div class="row g-3">
-        @for (int i = 0; i < 5; i++)
-        {
-        <div class="d-flex align-items-stretch col-md-3 col-sm-12" style="height: 150px;">
-        <div class="card p-3 w-100 h-100 block--hover block--border" onclick="useSealHandler(@(i))">
-        <div class="d-inline-flex h-100 w-100 justify-content-center align-items-center">
-        <img id="frame" src="http://fakeimg.pl/300x250/?text=Seal" class="mh-100" />
-        </div>
-        <div
-        class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded operation__card block--show">
-        <i class="fas fa-check"></i>
-        </div>
-        </div>
-        </div>
-        }
-        <!-- 新增印鑑檔 -->
-        <div class="d-flex align-items-stretch col-md-3 col-sm-12" style="height: 150px;">
-        <label for="formFile" class="form-label w-100 h-100 mb-0">
-        <div class="card justify-content-center align-items-center h-100 w-100 block--hover">
-        <a class="btn btn-lg btn-success rounded-pill opacity-75">
-        <i class="fal fa-file-plus"></i>
-        </a>
-        <span class="h6 fw-bolder p-2">新增印鑑檔</span>
-        <input id="formFile" class="form-control" type="file" onchange="addSealHandler()">
-        </div>
-        </label>
-        </div>
-        </div>
-        </form>
-        </div>
-        </div>
-        </div>
-        </div> *@
       </div>
     </div>
   </section>
@@ -531,7 +481,7 @@
     }
   }
 
-  // 選擇印鑑
+  // 選擇印鑑 ----------------------------------------
   function useSealHandler(sealID, id) {
     $('#sealModal').modal('hide');
   @*console.log('印鑑 index:', index);
@@ -732,7 +682,7 @@
     }
   }
 
-  // 置入日期
+  // 置入日期 ---------------------------------
   function dateHandler() {
   };
 
@@ -740,11 +690,11 @@
   function textHandler() {
     $('#textModal').modal('show');
   };
-  // 置入文字-顯示使用按鈕
+  // 置入文字-顯示使用按鈕 ---------------------------------
   const noteItem = document.querySelector('#noteItem');
   const noteItemBtn = document.querySelector('#noteItemBtn');
   noteItem.addEventListener('keyup', function () {
-    console.log(noteItem.value.length)
+    // 有輸入文字才會顯示使用按鈕
     if (noteItem.value.length > 0) {
       noteItemBtn.classList.remove('invisible');
     } else {
@@ -881,7 +831,7 @@
       }
     }
 
-    // 套用文字區塊
+    // 套用文字區塊 
     const useNote = document.querySelector(`#useNote-${uuid}`);
     useNote.onmousedown = function (e) {
       // 阻止冒泡,避免縮放時觸發移動事件
