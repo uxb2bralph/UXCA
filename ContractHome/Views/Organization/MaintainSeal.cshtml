@@ -9,7 +9,27 @@
 @using CommonLib.Utility
 @using Newtonsoft.Json
 @{
-  Layout = "~/Views/Shared/MasterPage.cshtml";
+    Layout = "~/Views/Shared/MasterPage.cshtml";
+
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+    var profile = await Context.GetUserAsync();
+
+    var items = models!.GetTable<SealTemplate>()
+                    .Where(s => !s.Disabled.HasValue || s.Disabled == false)
+                    .Where(s => s.UID == profile.UID)
+                    .Where(s => s.SealImage != null);
+    var sealItems = items.Select(s => new
+    {
+        KeyID = s.SealID.EncryptKey(),
+        Src = $"data:application/octet-stream;base64,{Convert.ToBase64String(s.SealImage.ToArray())}",
+    });
+
 }
 <div id="maintainSeal" class="container-lg py-5">
   <section class="queryform">
@@ -29,7 +49,7 @@
               <i class="fal fa-file-plus"></i>
             </a>
           </label>
-          <input id="formFile" class="form-control" type="file" v-on:change="addHandler">
+          <input id="formFile" class="form-control" name="sealImage" type="file" v-on:change="addHandler" />
         </div>
       </form>
       <div class="row g-3">
@@ -37,7 +57,7 @@
           style="height: 150px;">
           <div class="card p-3 w-100 h-100">
             <div class="d-inline-flex h-100 w-100 justify-content-center align-items-center">
-              <img id="frame" :src="seal" class="mh-100" />
+              <img id="frame" :src="seal.Src" class="mh-100" />
             </div>
             <button type="button" data-bs-toggle="tooltip" data-bs-placement="right" title="刪除印鑑檔"
               class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded operation__card"
@@ -93,9 +113,8 @@
     data: {
       isValidate: false,
       infoMsg: null,
-      sealList: [],
+      sealList: @Html.Raw(sealItems.ToArray().JsonStringify()),
       currentSaleData: null
-
     },
     mounted() {
       // 初始化 Bootstrap Tooltip
@@ -108,8 +127,41 @@
     },
     methods: {
       addHandler(event) {
-        sealImg = URL.createObjectURL(event.target.files[0]);
-        this.sealList.push(sealImg);
+        @*(sealImg = URL.createObjectURL(event.target.files[0]);
+        this.sealList.push(sealImg);*@
+        console.log(event.target.files[0]);
+        var viewModel = {
+            ...$global.viewModel
+        };
+        viewModel.ResultMode = @((int)DataResultMode.DataContent);
+    var event = event || window.event;
+    if (event.target.form != undefined) {
+      $(event.target.form).ajaxForm({
+        url: '@Html.Raw(Url.Action("CommitSealTemplate", "UserProfile"))',
+        data: viewModel,
+        beforeSubmit: function () {
+          showLoading();
+        },
+        success: function (data) {
+          hideLoading();
+          if ($.isPlainObject(data)) {
+            if (data.result) {
+                app.sealList.push(data.dataItem);
+            } else {
+              alertModal(data.message);
+            }
+          }
+          else {
+            $(data).insertBefore($('#addSeal'));
+          }
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+          hideLoading();
+          console.log(xhr.status);
+          alertModal(thrownError);
+        }
+      }).submit();
+    }
       },
       delSaleHandler(seal, index) {
         this.currentSaleData = { seal, index }
@@ -126,7 +178,7 @@
 
         $("#deleteModal").modal('hide');
 
-        showLoading();
+        @*showLoading();
         setTimeout(() => {
           // 模擬假資料被刪除
           this.sealList.splice(this.currentSaleData.index, 1);
@@ -137,8 +189,32 @@
           // 開啟訊息視窗
           this.infoMsg = '印鑑已刪除';
           $('#infoModal').modal('show');
-        }, 2000);
+        }, 2000);*@
+        commitToDeletSeal(this.currentSaleData.seal.KeyID, function() {
+          app.sealList.splice(app.currentSaleData.index, 1);
+          app.currentSaleData = null;
+          app.infoMsg = '印鑑已刪除';
+          $('#infoModal').modal('show');
+        });
       },
     }
   });
+
+  function commitToDeletSeal(keyID,onDone) {
+    showLoading();
+    $.post('@Html.Raw(Url.Action("CommitToDeleteSeal", "UserProfile"))', { 'KeyID': keyID }, function (data) {
+      hideLoading();
+      if ($.isPlainObject(data)) {
+                      if (data.result) {
+                          if(onDone) {
+                              onDone();
+                          }
+                      } else {
+                        alertModal(data.message);
+                      }      
+      } else {
+        $(data).appendTo($('body'));
+      }
+    });
+  }
 </script>

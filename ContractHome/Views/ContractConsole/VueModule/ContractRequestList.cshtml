@@ -70,18 +70,23 @@
 {
     object BuildData(Contract item)
     {
-        var initiator = item.ContractingParty.Where(p => p.IsInitiator == true).First();
-        var contractor = item.ContractingParty.Where(p => !p.IsInitiator.HasValue || p.IsInitiator == false).First();
+        var initiator = item.ContractingParty.Where(p => p.IsInitiator == true).FirstOrDefault();
+        var contractor = item.ContractingParty.Where(p => !p.IsInitiator.HasValue || p.IsInitiator == false).FirstOrDefault();
 
-        var initatorRequest = item.ContractSignatureRequest.Where(s => s.CompanyID == initiator.CompanyID).FirstOrDefault();
-        var contractorRequest = item.ContractSignatureRequest.Where(s => s.CompanyID == contractor.CompanyID).FirstOrDefault();
+        var initatorRequest = initiator != null
+                ? item.ContractSignatureRequest.Where(s => s.CompanyID == initiator.CompanyID).FirstOrDefault()
+                : null;
+        var contractorRequest = contractor != null
+                ? item.ContractSignatureRequest.Where(s => s.CompanyID == contractor.CompanyID).FirstOrDefault()
+                : null;
 
         return new
         {
             uuid = "",
             No = item.ContractNo,
             Title = item.Title,
-            ContractDateFrom = "",
+            ContractDateFrom = $"{item.CDS_Document.DocDate:yyyy/MM/dd HH:mm:ss}",
+            CurrentEditDate = $"{item.CDS_Document.CurrentLog?.LogDate:yyyy/MM/dd HH:mm:ss}",
             Initiator = initiator?.Organization.CompanyName,
             Contractor = contractor?.Organization.CompanyName,
             InitiatorStampDate = initatorRequest?.StampDate?.ToString("yyyy/MM/dd HH:mm"),
@@ -91,8 +96,16 @@
             InitiatorSignerID = initatorRequest?.UserProfile?.PID,
             ContractorSignerID = contractorRequest?.UserProfile?.PID,
             KeyID = item.ContractID.EncryptKey(),
-            isInitiator = initiator?.CompanyID == profile?.OrganizationUser?.CompanyID, // 是否為甲方
-            isContractor = contractor?.CompanyID == profile?.OrganizationUser?.CompanyID, // 是否為乙方
+            isInitiator = initiator != null && initiator.CompanyID == profile?.OrganizationUser?.CompanyID, // 是否為甲方
+            isContractor = contractor != null && contractor.CompanyID == profile?.OrganizationUser?.CompanyID, // 是否為乙方
+            LogList = item.CDS_Document.DocumentProcessLog.Select(l =>
+                new
+                {
+                    time = $"{l.LogDate:yyyy/MM/dd HH:mm:ss}",
+                    action = CDS_Document.StepNaming[l.StepID],
+                    role = l.UserProfile?.UserName,
+                }).ToArray(),
+            CurrentStep = item.CDS_Document.CurrentStep,
         };
     }
 }

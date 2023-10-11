@@ -55,9 +55,6 @@ namespace ContractHome.Models.DataEntity
     partial void InsertUserRoleDefinition(UserRoleDefinition instance);
     partial void UpdateUserRoleDefinition(UserRoleDefinition instance);
     partial void DeleteUserRoleDefinition(UserRoleDefinition instance);
-    partial void InsertContractSealRequest(ContractSealRequest instance);
-    partial void UpdateContractSealRequest(ContractSealRequest instance);
-    partial void DeleteContractSealRequest(ContractSealRequest instance);
     partial void InsertOrganization(Organization instance);
     partial void UpdateOrganization(Organization instance);
     partial void DeleteOrganization(Organization instance);
@@ -73,6 +70,12 @@ namespace ContractHome.Models.DataEntity
     partial void InsertOrganizationToken(OrganizationToken instance);
     partial void UpdateOrganizationToken(OrganizationToken instance);
     partial void DeleteOrganizationToken(OrganizationToken instance);
+    partial void InsertContractSealRequest(ContractSealRequest instance);
+    partial void UpdateContractSealRequest(ContractSealRequest instance);
+    partial void DeleteContractSealRequest(ContractSealRequest instance);
+    partial void InsertDocumentProcessLog(DocumentProcessLog instance);
+    partial void UpdateDocumentProcessLog(DocumentProcessLog instance);
+    partial void DeleteDocumentProcessLog(DocumentProcessLog instance);
     partial void InsertSealTemplate(SealTemplate instance);
     partial void UpdateSealTemplate(SealTemplate instance);
     partial void DeleteSealTemplate(SealTemplate instance);
@@ -166,14 +169,6 @@ namespace ContractHome.Models.DataEntity
 			}
 		}
 		
-		public System.Data.Linq.Table<ContractSealRequest> ContractSealRequest
-		{
-			get
-			{
-				return this.GetTable<ContractSealRequest>();
-			}
-		}
-		
 		public System.Data.Linq.Table<Organization> Organization
 		{
 			get
@@ -214,6 +209,22 @@ namespace ContractHome.Models.DataEntity
 			}
 		}
 		
+		public System.Data.Linq.Table<ContractSealRequest> ContractSealRequest
+		{
+			get
+			{
+				return this.GetTable<ContractSealRequest>();
+			}
+		}
+		
+		public System.Data.Linq.Table<DocumentProcessLog> DocumentProcessLog
+		{
+			get
+			{
+				return this.GetTable<DocumentProcessLog>();
+			}
+		}
+		
 		public System.Data.Linq.Table<SealTemplate> SealTemplate
 		{
 			get
@@ -243,6 +254,8 @@ namespace ContractHome.Models.DataEntity
 		private System.Nullable<int> _ProcessType;
 		
 		private EntityRef<Contract> _Contract;
+		
+		private EntitySet<DocumentProcessLog> _DocumentProcessLog;
 		
 		private bool serializing;
 		
@@ -430,6 +443,25 @@ namespace ContractHome.Models.DataEntity
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="CDS_Document_DocumentProcessLog", Storage="_DocumentProcessLog", ThisKey="DocID", OtherKey="DocID")]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=8, EmitDefaultValue=false)]
+		public EntitySet<DocumentProcessLog> DocumentProcessLog
+		{
+			get
+			{
+				if ((this.serializing 
+							&& (this._DocumentProcessLog.HasLoadedOrAssignedValues == false)))
+				{
+					return null;
+				}
+				return this._DocumentProcessLog;
+			}
+			set
+			{
+				this._DocumentProcessLog.Assign(value);
+			}
+		}
+		
 		public event PropertyChangingEventHandler PropertyChanging;
 		
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -450,9 +482,22 @@ namespace ContractHome.Models.DataEntity
 			}
 		}
 		
+		private void attach_DocumentProcessLog(DocumentProcessLog entity)
+		{
+			this.SendPropertyChanging();
+			entity.CDS_Document = this;
+		}
+		
+		private void detach_DocumentProcessLog(DocumentProcessLog entity)
+		{
+			this.SendPropertyChanging();
+			entity.CDS_Document = null;
+		}
+		
 		private void Initialize()
 		{
 			this._Contract = default(EntityRef<Contract>);
+			this._DocumentProcessLog = new EntitySet<DocumentProcessLog>(new Action<DocumentProcessLog>(this.attach_DocumentProcessLog), new Action<DocumentProcessLog>(this.detach_DocumentProcessLog));
 			OnCreated();
 		}
 		
@@ -497,11 +542,11 @@ namespace ContractHome.Models.DataEntity
 		
 		private EntitySet<ContractingParty> _ContractingParty;
 		
-		private EntitySet<ContractSealRequest> _ContractSealRequest;
-		
 		private EntityRef<ContractSignature> _ContractSignature;
 		
 		private EntitySet<ContractSignatureRequest> _ContractSignatureRequest;
+		
+		private EntitySet<ContractSealRequest> _ContractSealRequest;
 		
 		private EntityRef<CDS_Document> _CDS_Document;
 		
@@ -656,27 +701,8 @@ namespace ContractHome.Models.DataEntity
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Contract_ContractSealRequest", Storage="_ContractSealRequest", ThisKey="ContractID", OtherKey="ContractID")]
-		[global::System.Runtime.Serialization.DataMemberAttribute(Order=7, EmitDefaultValue=false)]
-		public EntitySet<ContractSealRequest> ContractSealRequest
-		{
-			get
-			{
-				if ((this.serializing 
-							&& (this._ContractSealRequest.HasLoadedOrAssignedValues == false)))
-				{
-					return null;
-				}
-				return this._ContractSealRequest;
-			}
-			set
-			{
-				this._ContractSealRequest.Assign(value);
-			}
-		}
-		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Contract_ContractSignature", Storage="_ContractSignature", ThisKey="ContractID", OtherKey="ContractID", IsUnique=true, IsForeignKey=false)]
-		[global::System.Runtime.Serialization.DataMemberAttribute(Order=8, EmitDefaultValue=false)]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=7, EmitDefaultValue=false)]
 		public ContractSignature ContractSignature
 		{
 			get
@@ -711,7 +737,7 @@ namespace ContractHome.Models.DataEntity
 		}
 		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Contract_ContractSignatureRequest", Storage="_ContractSignatureRequest", ThisKey="ContractID", OtherKey="ContractID")]
-		[global::System.Runtime.Serialization.DataMemberAttribute(Order=9, EmitDefaultValue=false)]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=8, EmitDefaultValue=false)]
 		public EntitySet<ContractSignatureRequest> ContractSignatureRequest
 		{
 			get
@@ -726,6 +752,25 @@ namespace ContractHome.Models.DataEntity
 			set
 			{
 				this._ContractSignatureRequest.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Contract_ContractSealRequest", Storage="_ContractSealRequest", ThisKey="ContractID", OtherKey="ContractID")]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=9, EmitDefaultValue=false)]
+		public EntitySet<ContractSealRequest> ContractSealRequest
+		{
+			get
+			{
+				if ((this.serializing 
+							&& (this._ContractSealRequest.HasLoadedOrAssignedValues == false)))
+				{
+					return null;
+				}
+				return this._ContractSealRequest;
+			}
+			set
+			{
+				this._ContractSealRequest.Assign(value);
 			}
 		}
 		
@@ -795,18 +840,6 @@ namespace ContractHome.Models.DataEntity
 			entity.Contract = null;
 		}
 		
-		private void attach_ContractSealRequest(ContractSealRequest entity)
-		{
-			this.SendPropertyChanging();
-			entity.Contract = this;
-		}
-		
-		private void detach_ContractSealRequest(ContractSealRequest entity)
-		{
-			this.SendPropertyChanging();
-			entity.Contract = null;
-		}
-		
 		private void attach_ContractSignatureRequest(ContractSignatureRequest entity)
 		{
 			this.SendPropertyChanging();
@@ -819,12 +852,24 @@ namespace ContractHome.Models.DataEntity
 			entity.Contract = null;
 		}
 		
+		private void attach_ContractSealRequest(ContractSealRequest entity)
+		{
+			this.SendPropertyChanging();
+			entity.Contract = this;
+		}
+		
+		private void detach_ContractSealRequest(ContractSealRequest entity)
+		{
+			this.SendPropertyChanging();
+			entity.Contract = null;
+		}
+		
 		private void Initialize()
 		{
 			this._ContractingParty = new EntitySet<ContractingParty>(new Action<ContractingParty>(this.attach_ContractingParty), new Action<ContractingParty>(this.detach_ContractingParty));
-			this._ContractSealRequest = new EntitySet<ContractSealRequest>(new Action<ContractSealRequest>(this.attach_ContractSealRequest), new Action<ContractSealRequest>(this.detach_ContractSealRequest));
 			this._ContractSignature = default(EntityRef<ContractSignature>);
 			this._ContractSignatureRequest = new EntitySet<ContractSignatureRequest>(new Action<ContractSignatureRequest>(this.attach_ContractSignatureRequest), new Action<ContractSignatureRequest>(this.detach_ContractSignatureRequest));
+			this._ContractSealRequest = new EntitySet<ContractSealRequest>(new Action<ContractSealRequest>(this.attach_ContractSealRequest), new Action<ContractSealRequest>(this.detach_ContractSealRequest));
 			this._CDS_Document = default(EntityRef<CDS_Document>);
 			OnCreated();
 		}
@@ -1552,9 +1597,11 @@ namespace ContractHome.Models.DataEntity
 		
 		private EntitySet<UserRole> _UserRole;
 		
+		private EntitySet<ContractSignatureRequest> _ContractSignatureRequest;
+		
 		private EntitySet<ContractSealRequest> _ContractSealRequest;
 		
-		private EntitySet<ContractSignatureRequest> _ContractSignatureRequest;
+		private EntitySet<DocumentProcessLog> _DocumentProcessLog;
 		
 		private EntitySet<SealTemplate> _SealTemplate;
 		
@@ -2181,27 +2228,8 @@ namespace ContractHome.Models.DataEntity
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="UserProfile_ContractSealRequest", Storage="_ContractSealRequest", ThisKey="UID", OtherKey="StampUID")]
-		[global::System.Runtime.Serialization.DataMemberAttribute(Order=27, EmitDefaultValue=false)]
-		public EntitySet<ContractSealRequest> ContractSealRequest
-		{
-			get
-			{
-				if ((this.serializing 
-							&& (this._ContractSealRequest.HasLoadedOrAssignedValues == false)))
-				{
-					return null;
-				}
-				return this._ContractSealRequest;
-			}
-			set
-			{
-				this._ContractSealRequest.Assign(value);
-			}
-		}
-		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="UserProfile_ContractSignatureRequest", Storage="_ContractSignatureRequest", ThisKey="UID", OtherKey="SignerID")]
-		[global::System.Runtime.Serialization.DataMemberAttribute(Order=28, EmitDefaultValue=false)]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=27, EmitDefaultValue=false)]
 		public EntitySet<ContractSignatureRequest> ContractSignatureRequest
 		{
 			get
@@ -2219,8 +2247,46 @@ namespace ContractHome.Models.DataEntity
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="UserProfile_SealTemplate", Storage="_SealTemplate", ThisKey="UID", OtherKey="UID")]
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="UserProfile_ContractSealRequest", Storage="_ContractSealRequest", ThisKey="UID", OtherKey="StampUID")]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=28, EmitDefaultValue=false)]
+		public EntitySet<ContractSealRequest> ContractSealRequest
+		{
+			get
+			{
+				if ((this.serializing 
+							&& (this._ContractSealRequest.HasLoadedOrAssignedValues == false)))
+				{
+					return null;
+				}
+				return this._ContractSealRequest;
+			}
+			set
+			{
+				this._ContractSealRequest.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="UserProfile_DocumentProcessLog", Storage="_DocumentProcessLog", ThisKey="UID", OtherKey="ActorID")]
 		[global::System.Runtime.Serialization.DataMemberAttribute(Order=29, EmitDefaultValue=false)]
+		public EntitySet<DocumentProcessLog> DocumentProcessLog
+		{
+			get
+			{
+				if ((this.serializing 
+							&& (this._DocumentProcessLog.HasLoadedOrAssignedValues == false)))
+				{
+					return null;
+				}
+				return this._DocumentProcessLog;
+			}
+			set
+			{
+				this._DocumentProcessLog.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="UserProfile_SealTemplate", Storage="_SealTemplate", ThisKey="UID", OtherKey="UID")]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=30, EmitDefaultValue=false)]
 		public EntitySet<SealTemplate> SealTemplate
 		{
 			get
@@ -2362,6 +2428,18 @@ namespace ContractHome.Models.DataEntity
 			entity.UserProfile = null;
 		}
 		
+		private void attach_ContractSignatureRequest(ContractSignatureRequest entity)
+		{
+			this.SendPropertyChanging();
+			entity.UserProfile = this;
+		}
+		
+		private void detach_ContractSignatureRequest(ContractSignatureRequest entity)
+		{
+			this.SendPropertyChanging();
+			entity.UserProfile = null;
+		}
+		
 		private void attach_ContractSealRequest(ContractSealRequest entity)
 		{
 			this.SendPropertyChanging();
@@ -2374,13 +2452,13 @@ namespace ContractHome.Models.DataEntity
 			entity.UserProfile = null;
 		}
 		
-		private void attach_ContractSignatureRequest(ContractSignatureRequest entity)
+		private void attach_DocumentProcessLog(DocumentProcessLog entity)
 		{
 			this.SendPropertyChanging();
 			entity.UserProfile = this;
 		}
 		
-		private void detach_ContractSignatureRequest(ContractSignatureRequest entity)
+		private void detach_DocumentProcessLog(DocumentProcessLog entity)
 		{
 			this.SendPropertyChanging();
 			entity.UserProfile = null;
@@ -2404,8 +2482,9 @@ namespace ContractHome.Models.DataEntity
 			this._UserProfile2 = new EntitySet<UserProfile>(new Action<UserProfile>(this.attach_UserProfile2), new Action<UserProfile>(this.detach_UserProfile2));
 			this._UserProfile4 = new EntitySet<UserProfile>(new Action<UserProfile>(this.attach_UserProfile4), new Action<UserProfile>(this.detach_UserProfile4));
 			this._UserRole = new EntitySet<UserRole>(new Action<UserRole>(this.attach_UserRole), new Action<UserRole>(this.detach_UserRole));
-			this._ContractSealRequest = new EntitySet<ContractSealRequest>(new Action<ContractSealRequest>(this.attach_ContractSealRequest), new Action<ContractSealRequest>(this.detach_ContractSealRequest));
 			this._ContractSignatureRequest = new EntitySet<ContractSignatureRequest>(new Action<ContractSignatureRequest>(this.attach_ContractSignatureRequest), new Action<ContractSignatureRequest>(this.detach_ContractSignatureRequest));
+			this._ContractSealRequest = new EntitySet<ContractSealRequest>(new Action<ContractSealRequest>(this.attach_ContractSealRequest), new Action<ContractSealRequest>(this.detach_ContractSealRequest));
+			this._DocumentProcessLog = new EntitySet<DocumentProcessLog>(new Action<DocumentProcessLog>(this.attach_DocumentProcessLog), new Action<DocumentProcessLog>(this.detach_DocumentProcessLog));
 			this._SealTemplate = new EntitySet<SealTemplate>(new Action<SealTemplate>(this.attach_SealTemplate), new Action<SealTemplate>(this.detach_SealTemplate));
 			this._UserProfile1 = default(EntityRef<UserProfile>);
 			this._UserProfile3 = default(EntityRef<UserProfile>);
@@ -2765,330 +2844,6 @@ namespace ContractHome.Models.DataEntity
 		public void OnSerialized(StreamingContext context)
 		{
 			this.serializing = false;
-		}
-	}
-	
-	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.ContractSealRequest")]
-	[global::System.Runtime.Serialization.DataContractAttribute()]
-	public partial class ContractSealRequest : INotifyPropertyChanging, INotifyPropertyChanged
-	{
-		
-		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
-		
-		private int _ContractID;
-		
-		private int _SealID;
-		
-		private System.Nullable<System.DateTime> _StampDate;
-		
-		private System.Data.Linq.Binary _SealImage;
-		
-		private System.Nullable<int> _StampUID;
-		
-		private System.Nullable<double> _SealScale;
-		
-		private EntityRef<Contract> _Contract;
-		
-		private EntityRef<UserProfile> _UserProfile;
-		
-		private EntityRef<SealTemplate> _SealTemplate;
-		
-    #region 擴充性方法定義
-    partial void OnLoaded();
-    partial void OnValidate(System.Data.Linq.ChangeAction action);
-    partial void OnCreated();
-    partial void OnContractIDChanging(int value);
-    partial void OnContractIDChanged();
-    partial void OnSealIDChanging(int value);
-    partial void OnSealIDChanged();
-    partial void OnStampDateChanging(System.Nullable<System.DateTime> value);
-    partial void OnStampDateChanged();
-    partial void OnSealImageChanging(System.Data.Linq.Binary value);
-    partial void OnSealImageChanged();
-    partial void OnStampUIDChanging(System.Nullable<int> value);
-    partial void OnStampUIDChanged();
-    partial void OnSealScaleChanging(System.Nullable<double> value);
-    partial void OnSealScaleChanged();
-    #endregion
-		
-		public ContractSealRequest()
-		{
-			this.Initialize();
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ContractID", DbType="Int NOT NULL", IsPrimaryKey=true)]
-		[global::System.Runtime.Serialization.DataMemberAttribute(Order=1)]
-		public int ContractID
-		{
-			get
-			{
-				return this._ContractID;
-			}
-			set
-			{
-				if ((this._ContractID != value))
-				{
-					if (this._Contract.HasLoadedOrAssignedValue)
-					{
-						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
-					}
-					this.OnContractIDChanging(value);
-					this.SendPropertyChanging();
-					this._ContractID = value;
-					this.SendPropertyChanged("ContractID");
-					this.OnContractIDChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_SealID", DbType="Int NOT NULL", IsPrimaryKey=true)]
-		[global::System.Runtime.Serialization.DataMemberAttribute(Order=2)]
-		public int SealID
-		{
-			get
-			{
-				return this._SealID;
-			}
-			set
-			{
-				if ((this._SealID != value))
-				{
-					if (this._SealTemplate.HasLoadedOrAssignedValue)
-					{
-						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
-					}
-					this.OnSealIDChanging(value);
-					this.SendPropertyChanging();
-					this._SealID = value;
-					this.SendPropertyChanged("SealID");
-					this.OnSealIDChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_StampDate", DbType="DateTime")]
-		[global::System.Runtime.Serialization.DataMemberAttribute(Order=3)]
-		public System.Nullable<System.DateTime> StampDate
-		{
-			get
-			{
-				return this._StampDate;
-			}
-			set
-			{
-				if ((this._StampDate != value))
-				{
-					this.OnStampDateChanging(value);
-					this.SendPropertyChanging();
-					this._StampDate = value;
-					this.SendPropertyChanged("StampDate");
-					this.OnStampDateChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_SealImage", DbType="VarBinary(MAX)", CanBeNull=true, UpdateCheck=UpdateCheck.Never)]
-		[global::System.Runtime.Serialization.DataMemberAttribute(Order=4)]
-		public System.Data.Linq.Binary SealImage
-		{
-			get
-			{
-				return this._SealImage;
-			}
-			set
-			{
-				if ((this._SealImage != value))
-				{
-					this.OnSealImageChanging(value);
-					this.SendPropertyChanging();
-					this._SealImage = value;
-					this.SendPropertyChanged("SealImage");
-					this.OnSealImageChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_StampUID", DbType="Int")]
-		[global::System.Runtime.Serialization.DataMemberAttribute(Order=5)]
-		public System.Nullable<int> StampUID
-		{
-			get
-			{
-				return this._StampUID;
-			}
-			set
-			{
-				if ((this._StampUID != value))
-				{
-					if (this._UserProfile.HasLoadedOrAssignedValue)
-					{
-						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
-					}
-					this.OnStampUIDChanging(value);
-					this.SendPropertyChanging();
-					this._StampUID = value;
-					this.SendPropertyChanged("StampUID");
-					this.OnStampUIDChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_SealScale", DbType="Float")]
-		[global::System.Runtime.Serialization.DataMemberAttribute(Order=6)]
-		public System.Nullable<double> SealScale
-		{
-			get
-			{
-				return this._SealScale;
-			}
-			set
-			{
-				if ((this._SealScale != value))
-				{
-					this.OnSealScaleChanging(value);
-					this.SendPropertyChanging();
-					this._SealScale = value;
-					this.SendPropertyChanged("SealScale");
-					this.OnSealScaleChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Contract_ContractSealRequest", Storage="_Contract", ThisKey="ContractID", OtherKey="ContractID", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
-		public Contract Contract
-		{
-			get
-			{
-				return this._Contract.Entity;
-			}
-			set
-			{
-				Contract previousValue = this._Contract.Entity;
-				if (((previousValue != value) 
-							|| (this._Contract.HasLoadedOrAssignedValue == false)))
-				{
-					this.SendPropertyChanging();
-					if ((previousValue != null))
-					{
-						this._Contract.Entity = null;
-						previousValue.ContractSealRequest.Remove(this);
-					}
-					this._Contract.Entity = value;
-					if ((value != null))
-					{
-						value.ContractSealRequest.Add(this);
-						this._ContractID = value.ContractID;
-					}
-					else
-					{
-						this._ContractID = default(int);
-					}
-					this.SendPropertyChanged("Contract");
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="UserProfile_ContractSealRequest", Storage="_UserProfile", ThisKey="StampUID", OtherKey="UID", IsForeignKey=true)]
-		public UserProfile UserProfile
-		{
-			get
-			{
-				return this._UserProfile.Entity;
-			}
-			set
-			{
-				UserProfile previousValue = this._UserProfile.Entity;
-				if (((previousValue != value) 
-							|| (this._UserProfile.HasLoadedOrAssignedValue == false)))
-				{
-					this.SendPropertyChanging();
-					if ((previousValue != null))
-					{
-						this._UserProfile.Entity = null;
-						previousValue.ContractSealRequest.Remove(this);
-					}
-					this._UserProfile.Entity = value;
-					if ((value != null))
-					{
-						value.ContractSealRequest.Add(this);
-						this._StampUID = value.UID;
-					}
-					else
-					{
-						this._StampUID = default(Nullable<int>);
-					}
-					this.SendPropertyChanged("UserProfile");
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="SealTemplate_ContractSealRequest", Storage="_SealTemplate", ThisKey="SealID", OtherKey="SealID", IsForeignKey=true)]
-		public SealTemplate SealTemplate
-		{
-			get
-			{
-				return this._SealTemplate.Entity;
-			}
-			set
-			{
-				SealTemplate previousValue = this._SealTemplate.Entity;
-				if (((previousValue != value) 
-							|| (this._SealTemplate.HasLoadedOrAssignedValue == false)))
-				{
-					this.SendPropertyChanging();
-					if ((previousValue != null))
-					{
-						this._SealTemplate.Entity = null;
-						previousValue.ContractSealRequest.Remove(this);
-					}
-					this._SealTemplate.Entity = value;
-					if ((value != null))
-					{
-						value.ContractSealRequest.Add(this);
-						this._SealID = value.SealID;
-					}
-					else
-					{
-						this._SealID = default(int);
-					}
-					this.SendPropertyChanged("SealTemplate");
-				}
-			}
-		}
-		
-		public event PropertyChangingEventHandler PropertyChanging;
-		
-		public event PropertyChangedEventHandler PropertyChanged;
-		
-		protected virtual void SendPropertyChanging()
-		{
-			if ((this.PropertyChanging != null))
-			{
-				this.PropertyChanging(this, emptyChangingEventArgs);
-			}
-		}
-		
-		protected virtual void SendPropertyChanged(String propertyName)
-		{
-			if ((this.PropertyChanged != null))
-			{
-				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			}
-		}
-		
-		private void Initialize()
-		{
-			this._Contract = default(EntityRef<Contract>);
-			this._UserProfile = default(EntityRef<UserProfile>);
-			this._SealTemplate = default(EntityRef<SealTemplate>);
-			OnCreated();
-		}
-		
-		[global::System.Runtime.Serialization.OnDeserializingAttribute()]
-		[global::System.ComponentModel.EditorBrowsableAttribute(EditorBrowsableState.Never)]
-		public void OnDeserializing(StreamingContext context)
-		{
-			this.Initialize();
 		}
 	}
 	
@@ -5130,6 +4885,713 @@ namespace ContractHome.Models.DataEntity
 		}
 	}
 	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.ContractSealRequest")]
+	[global::System.Runtime.Serialization.DataContractAttribute()]
+	public partial class ContractSealRequest : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _RequestID;
+		
+		private int _ContractID;
+		
+		private int _SealID;
+		
+		private System.Nullable<System.DateTime> _StampDate;
+		
+		private System.Data.Linq.Binary _SealImage;
+		
+		private System.Nullable<int> _StampUID;
+		
+		private System.Nullable<double> _SealScale;
+		
+		private System.Nullable<double> _MarginTop;
+		
+		private System.Nullable<double> _MarginLeft;
+		
+		private System.Nullable<int> _PageIndex;
+		
+		private EntityRef<Contract> _Contract;
+		
+		private EntityRef<UserProfile> _UserProfile;
+		
+		private EntityRef<SealTemplate> _SealTemplate;
+		
+    #region 擴充性方法定義
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnRequestIDChanging(int value);
+    partial void OnRequestIDChanged();
+    partial void OnContractIDChanging(int value);
+    partial void OnContractIDChanged();
+    partial void OnSealIDChanging(int value);
+    partial void OnSealIDChanged();
+    partial void OnStampDateChanging(System.Nullable<System.DateTime> value);
+    partial void OnStampDateChanged();
+    partial void OnSealImageChanging(System.Data.Linq.Binary value);
+    partial void OnSealImageChanged();
+    partial void OnStampUIDChanging(System.Nullable<int> value);
+    partial void OnStampUIDChanged();
+    partial void OnSealScaleChanging(System.Nullable<double> value);
+    partial void OnSealScaleChanged();
+    partial void OnMarginTopChanging(System.Nullable<double> value);
+    partial void OnMarginTopChanged();
+    partial void OnMarginLeftChanging(System.Nullable<double> value);
+    partial void OnMarginLeftChanged();
+    partial void OnPageIndexChanging(System.Nullable<int> value);
+    partial void OnPageIndexChanged();
+    #endregion
+		
+		public ContractSealRequest()
+		{
+			this.Initialize();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_RequestID", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=1)]
+		public int RequestID
+		{
+			get
+			{
+				return this._RequestID;
+			}
+			set
+			{
+				if ((this._RequestID != value))
+				{
+					this.OnRequestIDChanging(value);
+					this.SendPropertyChanging();
+					this._RequestID = value;
+					this.SendPropertyChanged("RequestID");
+					this.OnRequestIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ContractID", DbType="Int NOT NULL")]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=2)]
+		public int ContractID
+		{
+			get
+			{
+				return this._ContractID;
+			}
+			set
+			{
+				if ((this._ContractID != value))
+				{
+					if (this._Contract.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnContractIDChanging(value);
+					this.SendPropertyChanging();
+					this._ContractID = value;
+					this.SendPropertyChanged("ContractID");
+					this.OnContractIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_SealID", DbType="Int NOT NULL")]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=3)]
+		public int SealID
+		{
+			get
+			{
+				return this._SealID;
+			}
+			set
+			{
+				if ((this._SealID != value))
+				{
+					if (this._SealTemplate.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnSealIDChanging(value);
+					this.SendPropertyChanging();
+					this._SealID = value;
+					this.SendPropertyChanged("SealID");
+					this.OnSealIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_StampDate", DbType="DateTime")]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=4)]
+		public System.Nullable<System.DateTime> StampDate
+		{
+			get
+			{
+				return this._StampDate;
+			}
+			set
+			{
+				if ((this._StampDate != value))
+				{
+					this.OnStampDateChanging(value);
+					this.SendPropertyChanging();
+					this._StampDate = value;
+					this.SendPropertyChanged("StampDate");
+					this.OnStampDateChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_SealImage", DbType="VarBinary(MAX)", CanBeNull=true, UpdateCheck=UpdateCheck.Never)]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=5)]
+		public System.Data.Linq.Binary SealImage
+		{
+			get
+			{
+				return this._SealImage;
+			}
+			set
+			{
+				if ((this._SealImage != value))
+				{
+					this.OnSealImageChanging(value);
+					this.SendPropertyChanging();
+					this._SealImage = value;
+					this.SendPropertyChanged("SealImage");
+					this.OnSealImageChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_StampUID", DbType="Int")]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=6)]
+		public System.Nullable<int> StampUID
+		{
+			get
+			{
+				return this._StampUID;
+			}
+			set
+			{
+				if ((this._StampUID != value))
+				{
+					if (this._UserProfile.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnStampUIDChanging(value);
+					this.SendPropertyChanging();
+					this._StampUID = value;
+					this.SendPropertyChanged("StampUID");
+					this.OnStampUIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_SealScale", DbType="Float")]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=7)]
+		public System.Nullable<double> SealScale
+		{
+			get
+			{
+				return this._SealScale;
+			}
+			set
+			{
+				if ((this._SealScale != value))
+				{
+					this.OnSealScaleChanging(value);
+					this.SendPropertyChanging();
+					this._SealScale = value;
+					this.SendPropertyChanged("SealScale");
+					this.OnSealScaleChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_MarginTop", DbType="Float")]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=8)]
+		public System.Nullable<double> MarginTop
+		{
+			get
+			{
+				return this._MarginTop;
+			}
+			set
+			{
+				if ((this._MarginTop != value))
+				{
+					this.OnMarginTopChanging(value);
+					this.SendPropertyChanging();
+					this._MarginTop = value;
+					this.SendPropertyChanged("MarginTop");
+					this.OnMarginTopChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_MarginLeft", DbType="Float")]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=9)]
+		public System.Nullable<double> MarginLeft
+		{
+			get
+			{
+				return this._MarginLeft;
+			}
+			set
+			{
+				if ((this._MarginLeft != value))
+				{
+					this.OnMarginLeftChanging(value);
+					this.SendPropertyChanging();
+					this._MarginLeft = value;
+					this.SendPropertyChanged("MarginLeft");
+					this.OnMarginLeftChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PageIndex", DbType="Int")]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=10)]
+		public System.Nullable<int> PageIndex
+		{
+			get
+			{
+				return this._PageIndex;
+			}
+			set
+			{
+				if ((this._PageIndex != value))
+				{
+					this.OnPageIndexChanging(value);
+					this.SendPropertyChanging();
+					this._PageIndex = value;
+					this.SendPropertyChanged("PageIndex");
+					this.OnPageIndexChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Contract_ContractSealRequest", Storage="_Contract", ThisKey="ContractID", OtherKey="ContractID", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
+		public Contract Contract
+		{
+			get
+			{
+				return this._Contract.Entity;
+			}
+			set
+			{
+				Contract previousValue = this._Contract.Entity;
+				if (((previousValue != value) 
+							|| (this._Contract.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Contract.Entity = null;
+						previousValue.ContractSealRequest.Remove(this);
+					}
+					this._Contract.Entity = value;
+					if ((value != null))
+					{
+						value.ContractSealRequest.Add(this);
+						this._ContractID = value.ContractID;
+					}
+					else
+					{
+						this._ContractID = default(int);
+					}
+					this.SendPropertyChanged("Contract");
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="UserProfile_ContractSealRequest", Storage="_UserProfile", ThisKey="StampUID", OtherKey="UID", IsForeignKey=true)]
+		public UserProfile UserProfile
+		{
+			get
+			{
+				return this._UserProfile.Entity;
+			}
+			set
+			{
+				UserProfile previousValue = this._UserProfile.Entity;
+				if (((previousValue != value) 
+							|| (this._UserProfile.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._UserProfile.Entity = null;
+						previousValue.ContractSealRequest.Remove(this);
+					}
+					this._UserProfile.Entity = value;
+					if ((value != null))
+					{
+						value.ContractSealRequest.Add(this);
+						this._StampUID = value.UID;
+					}
+					else
+					{
+						this._StampUID = default(Nullable<int>);
+					}
+					this.SendPropertyChanged("UserProfile");
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="SealTemplate_ContractSealRequest", Storage="_SealTemplate", ThisKey="SealID", OtherKey="SealID", IsForeignKey=true)]
+		public SealTemplate SealTemplate
+		{
+			get
+			{
+				return this._SealTemplate.Entity;
+			}
+			set
+			{
+				SealTemplate previousValue = this._SealTemplate.Entity;
+				if (((previousValue != value) 
+							|| (this._SealTemplate.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._SealTemplate.Entity = null;
+						previousValue.ContractSealRequest.Remove(this);
+					}
+					this._SealTemplate.Entity = value;
+					if ((value != null))
+					{
+						value.ContractSealRequest.Add(this);
+						this._SealID = value.SealID;
+					}
+					else
+					{
+						this._SealID = default(int);
+					}
+					this.SendPropertyChanged("SealTemplate");
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+		
+		private void Initialize()
+		{
+			this._Contract = default(EntityRef<Contract>);
+			this._UserProfile = default(EntityRef<UserProfile>);
+			this._SealTemplate = default(EntityRef<SealTemplate>);
+			OnCreated();
+		}
+		
+		[global::System.Runtime.Serialization.OnDeserializingAttribute()]
+		[global::System.ComponentModel.EditorBrowsableAttribute(EditorBrowsableState.Never)]
+		public void OnDeserializing(StreamingContext context)
+		{
+			this.Initialize();
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.DocumentProcessLog")]
+	[global::System.Runtime.Serialization.DataContractAttribute()]
+	public partial class DocumentProcessLog : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _LogID;
+		
+		private int _DocID;
+		
+		private System.DateTime _LogDate;
+		
+		private System.Nullable<int> _Status;
+		
+		private int _StepID;
+		
+		private System.Nullable<int> _ActorID;
+		
+		private EntityRef<CDS_Document> _CDS_Document;
+		
+		private EntityRef<UserProfile> _UserProfile;
+		
+    #region 擴充性方法定義
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnLogIDChanging(int value);
+    partial void OnLogIDChanged();
+    partial void OnDocIDChanging(int value);
+    partial void OnDocIDChanged();
+    partial void OnLogDateChanging(System.DateTime value);
+    partial void OnLogDateChanged();
+    partial void OnStatusChanging(System.Nullable<int> value);
+    partial void OnStatusChanged();
+    partial void OnStepIDChanging(int value);
+    partial void OnStepIDChanged();
+    partial void OnActorIDChanging(System.Nullable<int> value);
+    partial void OnActorIDChanged();
+    #endregion
+		
+		public DocumentProcessLog()
+		{
+			this.Initialize();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_LogID", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=1)]
+		public int LogID
+		{
+			get
+			{
+				return this._LogID;
+			}
+			set
+			{
+				if ((this._LogID != value))
+				{
+					this.OnLogIDChanging(value);
+					this.SendPropertyChanging();
+					this._LogID = value;
+					this.SendPropertyChanged("LogID");
+					this.OnLogIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_DocID", DbType="Int NOT NULL")]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=2)]
+		public int DocID
+		{
+			get
+			{
+				return this._DocID;
+			}
+			set
+			{
+				if ((this._DocID != value))
+				{
+					if (this._CDS_Document.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnDocIDChanging(value);
+					this.SendPropertyChanging();
+					this._DocID = value;
+					this.SendPropertyChanged("DocID");
+					this.OnDocIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_LogDate", DbType="DateTime NOT NULL")]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=3)]
+		public System.DateTime LogDate
+		{
+			get
+			{
+				return this._LogDate;
+			}
+			set
+			{
+				if ((this._LogDate != value))
+				{
+					this.OnLogDateChanging(value);
+					this.SendPropertyChanging();
+					this._LogDate = value;
+					this.SendPropertyChanged("LogDate");
+					this.OnLogDateChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Status", DbType="Int")]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=4)]
+		public System.Nullable<int> Status
+		{
+			get
+			{
+				return this._Status;
+			}
+			set
+			{
+				if ((this._Status != value))
+				{
+					this.OnStatusChanging(value);
+					this.SendPropertyChanging();
+					this._Status = value;
+					this.SendPropertyChanged("Status");
+					this.OnStatusChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_StepID", DbType="Int NOT NULL")]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=5)]
+		public int StepID
+		{
+			get
+			{
+				return this._StepID;
+			}
+			set
+			{
+				if ((this._StepID != value))
+				{
+					this.OnStepIDChanging(value);
+					this.SendPropertyChanging();
+					this._StepID = value;
+					this.SendPropertyChanged("StepID");
+					this.OnStepIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ActorID", DbType="Int")]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=6)]
+		public System.Nullable<int> ActorID
+		{
+			get
+			{
+				return this._ActorID;
+			}
+			set
+			{
+				if ((this._ActorID != value))
+				{
+					if (this._UserProfile.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnActorIDChanging(value);
+					this.SendPropertyChanging();
+					this._ActorID = value;
+					this.SendPropertyChanged("ActorID");
+					this.OnActorIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="CDS_Document_DocumentProcessLog", Storage="_CDS_Document", ThisKey="DocID", OtherKey="DocID", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
+		public CDS_Document CDS_Document
+		{
+			get
+			{
+				return this._CDS_Document.Entity;
+			}
+			set
+			{
+				CDS_Document previousValue = this._CDS_Document.Entity;
+				if (((previousValue != value) 
+							|| (this._CDS_Document.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._CDS_Document.Entity = null;
+						previousValue.DocumentProcessLog.Remove(this);
+					}
+					this._CDS_Document.Entity = value;
+					if ((value != null))
+					{
+						value.DocumentProcessLog.Add(this);
+						this._DocID = value.DocID;
+					}
+					else
+					{
+						this._DocID = default(int);
+					}
+					this.SendPropertyChanged("CDS_Document");
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="UserProfile_DocumentProcessLog", Storage="_UserProfile", ThisKey="ActorID", OtherKey="UID", IsForeignKey=true)]
+		public UserProfile UserProfile
+		{
+			get
+			{
+				return this._UserProfile.Entity;
+			}
+			set
+			{
+				UserProfile previousValue = this._UserProfile.Entity;
+				if (((previousValue != value) 
+							|| (this._UserProfile.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._UserProfile.Entity = null;
+						previousValue.DocumentProcessLog.Remove(this);
+					}
+					this._UserProfile.Entity = value;
+					if ((value != null))
+					{
+						value.DocumentProcessLog.Add(this);
+						this._ActorID = value.UID;
+					}
+					else
+					{
+						this._ActorID = default(Nullable<int>);
+					}
+					this.SendPropertyChanged("UserProfile");
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+		
+		private void Initialize()
+		{
+			this._CDS_Document = default(EntityRef<CDS_Document>);
+			this._UserProfile = default(EntityRef<UserProfile>);
+			OnCreated();
+		}
+		
+		[global::System.Runtime.Serialization.OnDeserializingAttribute()]
+		[global::System.ComponentModel.EditorBrowsableAttribute(EditorBrowsableState.Never)]
+		public void OnDeserializing(StreamingContext context)
+		{
+			this.Initialize();
+		}
+	}
+	
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.SealTemplate")]
 	[global::System.Runtime.Serialization.DataContractAttribute()]
 	public partial class SealTemplate : INotifyPropertyChanging, INotifyPropertyChanged
@@ -5152,6 +5614,8 @@ namespace ContractHome.Models.DataEntity
 		private System.Nullable<int> _UID;
 		
 		private System.Data.Linq.Binary _SealImage;
+		
+		private System.Nullable<bool> _Disabled;
 		
 		private EntitySet<ContractSealRequest> _ContractSealRequest;
 		
@@ -5181,6 +5645,8 @@ namespace ContractHome.Models.DataEntity
     partial void OnUIDChanged();
     partial void OnSealImageChanging(System.Data.Linq.Binary value);
     partial void OnSealImageChanged();
+    partial void OnDisabledChanging(System.Nullable<bool> value);
+    partial void OnDisabledChanged();
     #endregion
 		
 		public SealTemplate()
@@ -5364,8 +5830,29 @@ namespace ContractHome.Models.DataEntity
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Disabled", DbType="Bit")]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=9)]
+		public System.Nullable<bool> Disabled
+		{
+			get
+			{
+				return this._Disabled;
+			}
+			set
+			{
+				if ((this._Disabled != value))
+				{
+					this.OnDisabledChanging(value);
+					this.SendPropertyChanging();
+					this._Disabled = value;
+					this.SendPropertyChanged("Disabled");
+					this.OnDisabledChanged();
+				}
+			}
+		}
+		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="SealTemplate_ContractSealRequest", Storage="_ContractSealRequest", ThisKey="SealID", OtherKey="SealID")]
-		[global::System.Runtime.Serialization.DataMemberAttribute(Order=9, EmitDefaultValue=false)]
+		[global::System.Runtime.Serialization.DataMemberAttribute(Order=10, EmitDefaultValue=false)]
 		public EntitySet<ContractSealRequest> ContractSealRequest
 		{
 			get

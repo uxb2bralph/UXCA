@@ -40,9 +40,9 @@
           <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3 m-3 mb-lg-0 data-item">
             <div class="col input__height">
               <div class="row">
-                <label for="No" class="col-sm-12 col-md-3 col-form-label fw-bolder">合約號碼</label>
+                <label for="ContractNo" class="col-sm-12 col-md-3 col-form-label fw-bolder">合約號碼</label>
                 <div class="col-sm-12 col-md-9">
-                  <input v-model="formData.No" type=" text" class="form-control" name="No" id="No" />
+                  <input v-model="formData.ContractNo" type=" text" class="form-control" name="ContractNo" id="ContractNo" />
                 </div>
               </div>
             </div>
@@ -71,13 +71,13 @@
                   // await Html.RenderPartialAsync("~/Views/Home/Module/CompanyQuickSearch.cshtml", "Initiator");
                 }
                 <div id="initiatorField" class="col-sm-12 col-md-9">
-                  <input v-model="formData.Initiator" type="text" class="form-control" name="Initiator" id="Initiator"
-                    placeholder="可輸入鍵字查詢公司名稱" autocomplete="off" />
+                  <input v-model="formData.Initiator" type="text" class="form-control" name="Initiator"
+                    id="Initiator" placeholder="可輸入鍵字查詢公司名稱" autocomplete="off" />
                   <ul v-show="isInitiatorOptionsOpen" class="list-group mb-3 shadow__card">
                     <li v-for="(result, index) in searchResults" :key="index"
                       class="list-group-item list-group-item-action" v-on:click="setResult(result, 'initiator')"
                       :class="{'active': index === currentlyCounter}">
-                      {{ result }}
+                      {{ result.CompanyName }}
                     </li>
                   </ul>
                 </div>
@@ -85,18 +85,18 @@
             </div>
             <div class="col input__height">
               <div class="row">
-                <label for="Contractor" class="col-sm-12 col-md-3 col-form-label fw-bolder">簽約人</label>
+                <label for="ContractorName" class="col-sm-12 col-md-3 col-form-label fw-bolder">簽約人</label>
                 @{
       // await Html.RenderPartialAsync("~/Views/Home/Module/CompanyQuickSearch.cshtml", "Contractor");
                 }
                 <div id="contractorField" class="col-sm-12 col-md-9">
-                  <input v-model="formData.Contractor" type="text" class="form-control" name="Contractor"
-                    id="Contractor" placeholder="可輸入鍵字查詢公司名稱" autocomplete="off" />
+                  <input v-model="formData.ContractorName" type="text" class="form-control" name="ContractorName"
+                    id="ContractorName" placeholder="可輸入鍵字查詢公司名稱" autocomplete="off" />
                   <ul v-show="isContractorOptionsOpen" class="list-group mb-3 shadow__card">
                     <li v-for="(result, index) in searchResults" :key="index"
                       class="list-group-item list-group-item-action" v-on:click="setResult(result, 'contractor')"
                       :class="{'active': index === currentlyCounter}">
-                      {{ result }}
+                      {{ result.CompanyName }}
                     </li>
                   </ul>
                 </div>
@@ -134,23 +134,23 @@
                 建檔日期
                 <!-- DESC -->
                 <a v-if="isSortDateFrom" href="javascript:void(0);"
-                  v-on:click="sortHandler('ContractDateFrom', 'isSortDateFrom', true)">
+                  v-on:click="sortHandler('ContractID', 'isSortDateFrom', true)">
                   <i class="fas fa-sort-amount-down"></i>
                 </a>
                 <!-- ASC -->
                 <a v-else href="javascript:void(0);"
-                  v-on:click="sortHandler('ContractDateFrom', 'isSortDateFrom', false)">
+                  v-on:click="sortHandler('ContractID', 'isSortDateFrom', false)">
                   <i class="fas fa-sort-amount-down-alt"></i>
                 </a>
               </th>
               <th scope="col">
                 合約編號
                 <!-- DESC -->
-                <a v-if="isSortNo" href="javascript:void(0);" v-on:click="sortHandler('No', 'isSortNo', true)">
+                <a v-if="isSortNo" href="javascript:void(0);" v-on:click="sortHandler('ContractNo', 'isSortNo', true)">
                   <i class="fas fa-sort-amount-down"></i>
                 </a>
                 <!-- ASC -->
-                <a v-else href="javascript:void(0);" v-on:click="sortHandler('No', 'isSortNo', false)">
+                <a v-else href="javascript:void(0);" v-on:click="sortHandler('ContractNo', 'isSortNo', false)">
                   <i class="fas fa-sort-amount-down-alt"></i>
                 </a>
               </th>
@@ -588,7 +588,7 @@
     */
   // 合約列表
   const contractList = [
-    {
+    @*{
       uuid: '111',
       No: 'CS-000100000',
       Title: '測試很重要的一份合約-1',
@@ -652,7 +652,7 @@
       InitiatorSignerID: 's-1234',
       ContractorSignerID: 's-5678',
       KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D'
-    },
+    },*@
   ];
   var app = new Vue({
     el: '#queryIndex',
@@ -670,7 +670,7 @@
        * @@param {boolean} desc 排序
        */
       formData: {
-        No: null,
+          ContractNo: null,
         ContractDateFrom: null,
         ContractDateTo: null,
         Initiator: null,
@@ -682,11 +682,13 @@
        * totalPages: 總頁數
        * page: 目前頁面
        */
-      totalRecordCount: 105,
+      totalRecordCount: 0,
       pageSize: 10,
       page: 1,
       sort: null,
       desc: true,
+      SortName: [],
+      SortType: [],
       contractList,
       isSortDateFrom: true,
       isSortNo: true,
@@ -705,10 +707,10 @@
     },
     watch: {
       // 檢查公司名稱輸入框的值，並執行Autocomplate
-      'formData.Initiator'() {
+      'formData.InitiatorName'() {
         this.filterResults('initiator');
       },
-      'formData.Contractor'() {
+      'formData.ContractorName'() {
         this.filterResults('contractor');
       }
     },
@@ -777,6 +779,38 @@
           desc: this.desc
         }
         console.log('payload:', payload);
+        var viewModel = {
+            ...this.formData,
+            PageIndex: this.page,
+            PageSize: this.pageSize,
+            SortType: this.SortType,
+            SortName: this.SortName,
+        };
+        showLoading();
+                $.ajax({
+                    type: 'POST',
+                    url: '@(Url.Action("InquireData", "ContractConsole"))',
+                    data: JSON.stringify(viewModel),
+                    type: "POST",
+                    //dataType: "json",
+                    contentType: "application/json;charset=utf-8",
+                    success: function (data) {
+                        hideLoading();
+                        if ($.isPlainObject(data)) {
+                            if (data.result) {
+                            } else {
+                                alertModal(data.message);
+                            }
+                        } else {
+                            $(data).appendTo($('body')).remove();
+                        }
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        hideLoading();
+                        console.log(xhr.status);
+                        console.log(thrownError);
+                    }
+                });
       },
       // 重設查詢
       resetHandler() {
@@ -793,6 +827,14 @@
         this.sort = dataField;
         this.desc = sortStatus;
         this[status] = !this[status];
+                var sortType = 1;
+                var idx = this.SortName.indexOf(dataField);
+                if (idx >= 0) {
+                    this.SortType[idx] = -this.SortType[idx];
+                } else {
+                    this.SortName.push(dataField);
+                    this.SortType.push(sortType);
+                }
         this.fetchAPI();
       },
       // 開啟簽署者狀態 Modal
@@ -931,25 +973,39 @@
        */
       filterResults(type) {
         // 搜尋和輸入資料來源不同
-        const inputValue = type === 'initiator' ? this.formData.Initiator : this.formData.Contractor;
+        const inputValue = type === 'initiator' ? this.formData.InitiatorName : this.formData.ContractorName;
         this.searchResults = !inputValue ? [] : this.companyOptions.filter((item) => {
           return item.toLowerCase().indexOf(inputValue.toLowerCase()) > -1;
         });
+
+          var viewModel = {
+            Term: inputValue
+          };
+
         if (type === 'initiator') {
-          this.isInitiatorOptionsOpen = this.searchResults.length > 0;
+          fetchDataList(viewModel, '@(Url.Action("VueSearchCompany", "Home"))',
+            function (dataItems) {
+              app.searchResults = dataItems;
+              app.isInitiatorOptionsOpen = $.isArray(dataItems) && dataItems.length > 0;
+            });
         }
-        if (type === 'contractor') {
-          this.isContractorOptionsOpen = this.searchResults.length > 0;
+        else if (type === 'contractor') {
+          fetchDataList(viewModel, '@(Url.Action("VueSearchCompany", "Home"))',
+            function (dataItems) {
+              app.searchResults = dataItems;
+              app.isContractorOptionsOpen = $.isArray(dataItems) && dataItems.length > 0;
+            });
         }
       },
       // 選取值後代入欄位
       setResult(result, type) {
         if (this.searchResults.length !== 0) {
           if (type === 'initiator') {
-            this.formData.Initiator = result;
-          }
-          if (type === 'contractor') {
-            this.formData.Contractor = result;
+            this.formData.Initiator = result.KeyID;
+            this.formData.InitiatorName = result.CompanyName;
+          } else if (type === 'contractor') {
+            this.formData.Contractor = result.KeyID;
+            this.formData.ContractorName = result.CompanyName;
           }
           this.clearAll(type);
         }
@@ -975,7 +1031,7 @@
       $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
       $inquiryAgent.inquire();
     },
-    /**
+    @*
       'commitData': function (addNew) {
         if (addNew) {
           delete $inquiryAgent.viewModel.EncKeyItem;
@@ -1045,9 +1101,14 @@
           }
         });
       },
-    */
+    *@
 
+  };
+
+function showContract(keyID, mode) {
+    $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "ContractConsole"))', { 'KeyID': keyID, 'ResultMode': mode });
   }
+
   /**
   $inquiryAgent.showQueryResult = function (data) {
     $inquiryAgent.$queryResult = $(data);

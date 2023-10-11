@@ -81,7 +81,7 @@
                       {{ contract.Title }}
                     </div>
                     <div>
-                      <a :href="`/ContractConsole/ShowCurrentContract?KeyID=${contract.KeyID}`">
+                      <a :href="`javascript:showContract('${contract.KeyID}');`">
                         {{ contract.No }}
                       </a>
                     </div>
@@ -106,8 +106,8 @@
                       </span>
                       <div v-else>
                         <button type="button" class="btn btn-sm boxShadow"
-                          :class="[contract.isContractor ? 'btn-secondary' : 'btn-stamp']"
-                          :disabled="contract.isContractor" v-on:click="stampHandler(contract, 'Initiator')">
+                          :class="[!contract.isInitiator ? 'btn-secondary' : 'btn-stamp']"
+                          :disabled="!contract.isInitiator" v-on:click="stampHandler(contract, 'Initiator')">
                           <i class="fas fa-stamp"></i> 待用印
                         </button>
                       </div>
@@ -130,8 +130,8 @@
                       </div>
                       <div v-else>
                         <button type="button" class="btn btn-sm boxShadow"
-                          :class="[contract.isInitiator || !contract.InitiatorStampDate ? 'btn-secondary' : 'btn-stamp']"
-                          :disabled="contract.isInitiator || !contract.InitiatorStampDate"
+                          :class="[!contract.isContractor || !contract.InitiatorStampDate ? 'btn-secondary' : 'btn-stamp']"
+                          :disabled="!contract.isContractor || !contract.InitiatorStampDate"
                           v-on:click="stampHandler(contract, 'Contractor')">
                           <i class="fas fa-stamp"></i> 待用印
                         </button>
@@ -158,8 +158,8 @@
                       </div>
                       <div v-else>
                         <button type="button" class="btn btn-sm boxShadow"
-                          :class="[contract.isContractor || !contract.ContractorStampDate ? 'btn-secondary' : 'btn-sign']"
-                          :disabled="contract.isContractor || !contract.ContractorStampDate"
+                          :class="[!contract.isInitiator || !contract.ContractorStampDate ? 'btn-secondary' : 'btn-sign']"
+                          :disabled="!contract.isInitiator || !contract.ContractorStampDate"
                           v-on:click="signerHandler(contract, 'Initiator')">
                           <i class="fas fa-signature"></i> 待簽署
                         </button>
@@ -184,8 +184,8 @@
                       </div>
                       <div v-else>
                         <button type="button" class="btn btn-sm boxShadow"
-                          :class="[contract.isInitiator || !contract.InitiatorSignerDate ? 'btn-secondary' : 'btn-sign']"
-                          :disabled="contract.isInitiator || !contract.InitiatorSignerDate"
+                                                        :class="[!contract.isContractor || !contract.InitiatorSignerDate ? 'btn-secondary' : 'btn-sign']"
+                          :disabled="!contract.isContractor || !contract.ContractorStampDate"
                           v-on:click="signerHandler(contract, 'Contractor')">
                           <i class="fas fa-signature"></i> 待簽署
                         </button>
@@ -221,10 +221,10 @@
                     data-bs-toggle="tooltip" data-bs-placement="top" title="下載檔案" v-on:click="downloadPdf(contract)">
                     <i class="far fa-download"></i>
                   </button>
-                  <!-- 中止合約 -->
+                  <!-- 終止合約 -->
                   <button type="button" id="deleteCompany"
                     class="btn btn-sm btn-danger rounded-pill icon__rounded opacity-75 m-1" data-bs-toggle="tooltip"
-                    data-bs-placement="top" title="中止合約" v-on:click="openStopContractModal(contract)">
+                    data-bs-placement="top" title="終止合約" v-on:click="openStopContractModal(contract)">
                     <i class="far fa-times"></i>
                   </button>
                 </div>
@@ -565,16 +565,17 @@
                 <tr>
                   <th scope="col">時間</th>
                   <th scope="col">動作</th>
-                  <th scope="col">簽署者</th>
+                  <th scope="col">使用者</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(item, index) in historyData.dataList" :key="index">
+                <tr v-for="(item, index) in historyData.LogList" :key="index">
                   <td>{{ item.time }}</td>
                   <td>{{ item.action }}</td>
                   <td>
-                    <span v-if="item.role === 'isInitiator'" class="badge bg-primary opacity-75">起約人</span>
-                    <span v-else class="badge bg-warning text-dark opacity-75">簽約人</span>
+                      {{ item.role }}
+                    @* <span v-if="item.role === 'isInitiator'" class="badge bg-primary opacity-75">起約人</span>
+                    <span v-else class="badge bg-warning text-dark opacity-75">簽約人</span> *@
                   </td>
                 </tr>
               </tbody>
@@ -585,18 +586,18 @@
     </div>
   </div>
 
-  <!-- 開啟中止合約 Dialog -->
+  <!-- 開啟終止合約 Dialog -->
   <div class="modal fade" id="stopContractModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
     aria-labelledby="stopContractModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title fw-bolder" id="staticBackdropLabel">中止合約</h5>
+          <h5 class="modal-title fw-bolder" id="staticBackdropLabel">終止合約</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div class="modal-body text-center h5 fw-bolder">
-            確定中止
+            確定終止
             <span class="text-primary opacity-75">" {{ stopContractData.Title }} "</span>
             這份合約？
           </div>
@@ -977,7 +978,7 @@
       // 用印
       stampHandler(contract, rule) {
         console.log({ contract, rule });
-        affixPdfSeal('6mrCvfuqYJmGWTbMD8gzOjuBHVVF7TWFV0u7I1D8WZOgFGT1WNG3FliJd7cJTiWMv9W9CSVhvBAjVymJYDGKvfJusTMUYGiyWqrqti2LDlc=');
+        affixPdfSeal(contract.KeyID);
       },
       // 開啟簽署 Modal
       signerHandler(contract, rule) {
@@ -991,14 +992,15 @@
       confirmSign(currentCompanyData) {
         const payload = currentCompanyData;
         $('#signModal').modal('hide');
-        showLoading();
+        @*showLoading();
         setTimeout(() => {
           console.log(payload);
           hideLoading();
           this.infoMsg = '數位簽章已完成';
           this.signerMessage = null;
           $('#infoModal').modal('show');
-        }, 2000);
+        }, 2000);*@
+        commitDigitalSignature(currentCompanyData.KeyID);
       },
       // 排序功能
       sortHandler(dataField, status, sortStatus) {
@@ -1024,7 +1026,8 @@
         $('#signerStatusModal').modal('show');
         console.log({contract})
         // contract 帶入 signerStatusData 中
-        this.signerStatusData = {
+        this.signerStatusData = contract;
+        @*{
           uuid: '555',
           No: 'CS-000100004',
           Title: '測試很重要的一份合約-5',
@@ -1041,7 +1044,7 @@
           KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D',
           isInitiator: true, // 是否為甲方
           isContractor: false, // 是否為乙方
-        }
+        };*@
 
       },
 
@@ -1051,7 +1054,8 @@
         console.log({contract});
 
         // contract 帶入 historyData 中
-        this.historyData = {
+        this.historyData = contract;
+        @*{
           uuid: '555',
           No: 'CS-000100004',
           Title: '測試很重要的一份合約-5',
@@ -1062,7 +1066,7 @@
 
           isInitiator: true, // 是否為甲方
           isContractor: false, // 是否為乙方
-          dataList: [
+          LogList: [
             {
               time: '2023/08/25 10:58:20',
               action: '瀏覽',
@@ -1074,38 +1078,41 @@
               role: 'isContractor'
             }
           ]
-        }
+        }*@
       },
 
-      // 開啟中止合約 Modal
+      // 開啟終止合約 Modal
       openStopContractModal(contract) {
         $('#stopContractModal').modal('show');
         console.log({contract});
 
         this.stopContractData = contract;
-        this.stopContractData.Title = "測試很重要的一份合約";
+        @*this.stopContractData.Title = "測試很重要的一份合約";*@
       },
 
-      // 中止合約料串API
+      // 終止合約料串API
       confirmStop(contractData) {
         console.log('contractData:', contractData);
 
         $("#stopContractModal").modal('hide');
 
-        showLoading();
+        @*showLoading();
         setTimeout(() => {
-          // 模擬假資料被中止
+          // 模擬假資料被終止
 
           hideLoading();
           // 開啟訊息視窗
-          this.infoMsg = `<span class='text-primary opacity-75'>" ${this.stopContractData.Title} "</span> 合約已中止`;
+          this.infoMsg = `<span class='text-primary opacity-75'>" ${this.stopContractData.Title} "</span> 合約已終止`;
           $('#infoModal').modal('show');
-        }, 2000);        
+        }, 2000);  *@
+        terminateContract(contractData.KeyID);
+        
       },
 
       // 下載檔案
       downloadPdf(contract) {
         console.log({contract});
+        showContract(contract.KeyID, @((int)DataResultMode.Download));
       },
 
       // Reset 欄位檢核
@@ -1160,17 +1167,48 @@
     $('').launchDownload('@Html.Raw(Url.Action("AffixSeal", "ContractConsole"))', { 'KeyID': keyID });
   }
 
+  function showContract(keyID, mode) {
+    $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "ContractConsole"))', { 'KeyID': keyID, 'ResultMode': mode });
+  }
+
+
   function affixPdfSeal(keyID) {
     $('').launchDownload('@Html.Raw(Url.Action("AffixPdfSeal", "ContractConsole"))', { 'KeyID': keyID });
   }
 
 
-  function startSigning(keyID) {
+  function commitDigitalSignature(keyID) {
     showLoading();
-    $.post('@Html.Raw(Url.Action("StartSigning", "ContractConsole"))', { 'KeyID': keyID }, function (data) {
+    $.post('@Html.Raw(Url.Action("CommitDigitalSignature", "ContractConsole"))', { 'KeyID': keyID }, function (data) {
       hideLoading();
       if ($.isPlainObject(data)) {
-        alertModal(data.message);
+                      if (data.result) {
+                        alertModal('簽章完成!!');
+                        setTimeout(() => {
+                          window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+                        }, 3000);
+                      } else {
+                        alertModal(data.message);
+                      }      
+      } else {
+        $(data).appendTo($('body'));
+      }
+    });
+  }
+
+  function terminateContract(keyID) {
+    showLoading();
+    $.post('@Html.Raw(Url.Action("TerminateContract", "ContractConsole"))', { 'KeyID': keyID }, function (data) {
+      hideLoading();
+      if ($.isPlainObject(data)) {
+                      if (data.result) {
+                        alertModal('合約已終止!!');
+                        setTimeout(() => {
+                          window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+                        }, 3000);
+                      } else {
+                        alertModal(data.message);
+                      }      
       } else {
         $(data).appendTo($('body'));
       }

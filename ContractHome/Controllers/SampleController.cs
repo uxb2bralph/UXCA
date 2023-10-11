@@ -102,7 +102,7 @@ namespace ContractHome.Controllers
             if (Request.ContentType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) == true)
             {
                 var data = await Request.GetRequestBodyAsync();
-                viewModel = JsonConvert.DeserializeObject<T>(data);
+                viewModel = JsonConvert.DeserializeObject<T>(data)!;
             }
 
             ViewBag.ViewModel = viewModel;

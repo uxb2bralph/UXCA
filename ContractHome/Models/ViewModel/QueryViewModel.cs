@@ -45,6 +45,16 @@ namespace ContractHome.Models.ViewModel
         public String? EncKeyItem { get; set; }
         public DataTableColumn[]? DataItem { get; set; }
         public String? Term { get; set; }
+        public DataResultMode? ResultMode { get; set; }
+    }
+
+    public enum DataResultMode
+    {
+        Display = 0,
+        Print = 1,
+        Download = 2,
+        DataContent = 3,
+        ForExcel = 4,
     }
 
     public partial class SignContractViewModel : QueryViewModel
@@ -66,10 +76,12 @@ namespace ContractHome.Models.ViewModel
         public String? Initiator { get; set; }
         public int? InitiatorIntent { get; set; }
         public int? ContractorID { get; set; }
+        public String[]? MultiContractor { get; set; }
         public String? Contractor { get; set; }
         public int? ContractorIntent { get; set; }
         public bool? Preview { get; set; }
         public String? Title { get; set; }
+        public bool? IgnoreSeal { get; set; }
 
     }
 
