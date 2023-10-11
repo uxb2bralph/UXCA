@@ -635,6 +635,12 @@ namespace ContractHome.Controllers
             return new EmptyResult { };
         }
 
+        public ActionResult PreviewCurrentContract(SignContractViewModel viewModel)
+        {
+            ViewBag.ViewModel = viewModel;
+            return View("~/Views/ContractConsole/Module/PreviewCurrentContract.cshtml");
+        }
+
         public ActionResult LoadContractPage(SignContractViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
