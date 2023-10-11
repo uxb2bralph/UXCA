@@ -167,7 +167,7 @@
                   {{ contract.Title }}
                 </div>
                 <div>
-                  <a :href="`/ContractConsole/ShowCurrentContract?KeyID=${contract.KeyID}`">{{
+                  <a :href="`javascript:showContract('${contract.KeyID}',@((int)DataResultMode.Display));`">{{
                     contract.No
                     }}</a>
                 </div>
@@ -463,7 +463,7 @@
         </div>
         <div class="modal-body">
           <div class="d-flex justify-content-between">
-            <div class="d-flex">
+            <div  class="d-flex">
               <div class="fs-1 px-2 mediumSlateBlue">
                 <i class="fad fa-file-contract fa-lg"></i>
               </div>
@@ -497,16 +497,17 @@
                 <tr>
                   <th scope="col">時間</th>
                   <th scope="col">動作</th>
-                  <th scope="col">簽署者</th>
+                  <th scope="col">使用者</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(item, index) in historyData.dataList" :key="index">
+                <tr v-for="(item, index) in historyData.LogList" :key="index">
                   <td>{{ item.time }}</td>
                   <td>{{ item.action }}</td>
                   <td>
-                    <span v-if="item.role === 'isInitiator'" class="badge bg-primary opacity-75">起約人</span>
-                    <span v-else class="badge bg-warning text-dark opacity-75">簽約人</span>
+                      {{ item.role }}
+                    @* <span v-if="item.role === 'isInitiator'" class="badge bg-primary opacity-75">起約人</span>
+                    <span v-else class="badge bg-warning text-dark opacity-75">簽約人</span> *@
                   </td>
                 </tr>
               </tbody>
@@ -842,7 +843,8 @@
         $('#signerStatusModal').modal('show');
         console.log({ contract })
         // contract 帶入 signerStatusData 中
-        this.signerStatusData = {
+        this.signerStatusData = contract;
+        @*{
           uuid: '555',
           No: 'CS-000100004',
           Title: '測試很重要的一份合約-5',
@@ -859,7 +861,7 @@
           KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D',
           isInitiator: true, // 是否為甲方
           isContractor: false, // 是否為乙方
-        }
+        }*@
 
       },
 
@@ -869,7 +871,8 @@
         console.log({ contract });
 
         // contract 帶入 historyData 中
-        this.historyData = {
+        this.historyData = contract;
+        @*{
           uuid: '555',
           No: 'CS-000100004',
           Title: '測試很重要的一份合約-5',
@@ -892,7 +895,7 @@
               role: 'isContractor'
             }
           ]
-        }
+        }*@
       },
 
       // 開啟中止合約 Modal
@@ -901,7 +904,7 @@
         console.log({ contract });
 
         this.stopContractData = contract;
-        this.stopContractData.Title = "測試很重要的一份合約";
+        // this.stopContractData.Title = "測試很重要的一份合約";
       },
 
       // 中止合約料串API
@@ -910,20 +913,22 @@
 
         $("#stopContractModal").modal('hide');
 
-        showLoading();
+        @*showLoading();
         setTimeout(() => {
-          // 模擬假資料被中止
+          // 模擬假資料被終止
 
           hideLoading();
           // 開啟訊息視窗
-          this.infoMsg = `<span class='text-primary opacity-75'>" ${this.stopContractData.Title} "</span> 合約已中止`;
+          this.infoMsg = `<span class='text-primary opacity-75'>" ${this.stopContractData.Title} "</span> 合約已終止`;
           $('#infoModal').modal('show');
-        }, 2000);
+        }, 2000);  *@
+        terminateContract(contractData.KeyID);
       },
 
       // 下載檔案
       downloadPdf(contract) {
-        console.log({ contract });
+        console.log({contract});
+        showContract(contract.KeyID, @((int)DataResultMode.Download));
       },
       // Reset 欄位檢核
       resetValidate(status) {
@@ -1106,14 +1111,43 @@
   };
 
 function showContract(keyID, mode) {
-    $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "ContractConsole"))', { 'KeyID': keyID, 'ResultMode': mode });
+    if(mode == @((int)DataResultMode.Download)) {
+        $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "ContractConsole"))', { 'KeyID': keyID, 'ResultMode': mode });
+    } else {
+        if($('#pdfModal').length>0) {
+            $('#pdfModal').modal('show');
+            $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "ContractConsole"))', { 'KeyID': keyID, 'ResultMode': mode }, 'pdfFrame');
+        } else {
+            showLoading();
+            $.post('@Html.Raw(Url.Action("PreviewCurrentContract", "ContractConsole"))', { 'KeyID': keyID }, function (data) {
+              hideLoading();
+              if ($.isPlainObject(data)) {
+                alertModal(data.message);
+              } else {
+                $(data).appendTo($('body'));
+                $('#pdfModal').modal('show');
+              }
+            });
+        }
+    }
   }
 
-  /**
-  $inquiryAgent.showQueryResult = function (data) {
-    $inquiryAgent.$queryResult = $(data);
-    var $tr = $('#queryArea');
-    $tr.after($inquiryAgent.$queryResult);
-  }
-  */
+      function terminateContract(keyID) {
+        showLoading();
+        $.post('@Html.Raw(Url.Action("TerminateContract", "ContractConsole"))', { 'KeyID': keyID }, function (data) {
+          hideLoading();
+          if ($.isPlainObject(data)) {
+                          if (data.result) {
+                            alertModal('合約已終止!!');
+                            setTimeout(() => {
+                              window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+                            }, 3000);
+                          } else {
+                            alertModal(data.message);
+                          }
+          } else {
+            $(data).appendTo($('body'));
+          }
+        });
+      }
 </script>
