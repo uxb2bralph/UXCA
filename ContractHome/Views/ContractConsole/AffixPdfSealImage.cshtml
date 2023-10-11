@@ -28,6 +28,8 @@
   .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
   .FirstOrDefault();
 
+  DateTime today = DateTime.Now;
+  int rocYear = today.Year - 1911; // 民國年
 }
 <div id="AffixPdfSealImage" class="container-fluid py-4 pb-3">
   <section>
@@ -296,6 +298,47 @@
       </div>
     </div>
   </section>
+
+  <!-- 日期輸入 Dialog -->
+
+  <div class="modal fade" id="dateModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="dateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bolder" id="staticBackdropLabel">日期格式</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form method="post" enctype="multipart/form-data" class="pt-3 pb-3 text-center">
+            <div class="row g-3">
+              <div class="col-md-6 col-sm-12"
+                onclick="useDateHandler('中華民國 @rocYear.ToString() 年 @today.ToString("MM 月 dd 日")');">
+                <div class="card block--hover">
+                  <span class="h6 fw-bolder mb-0 py-4">中華民國 @rocYear.ToString() 年 @today.ToString("MM 月 dd 日")</span>
+                </div>
+              </div>
+              <div class="col-md-6 col-sm-12" onclick="useDateHandler('@today.ToString("yyyy / MM / dd ")');">
+                <div class="card block--hover">
+                  <span class="h6 fw-bolder mb-0 py-4">@today.ToString("yyyy / MM / dd")</span>
+                </div>
+              </div>
+              <div class="col-md-6 col-sm-12" onclick="useDateHandler('@today.ToString("MM / dd / yyyy")');">
+                <div class="card block--hover">
+                  <span class="h6 fw-bolder mb-0 py-4">@today.ToString("MM / dd / yyyy")</span>
+                </div>
+              </div>
+              <div class="col-md-6 col-sm-12" onclick="useDateHandler('@today.ToString("dd / MM / yyyy")');">
+                <div class="card block--hover">
+                  <span class="h6 fw-bolder mb-0 py-4">@today.ToString("dd / MM / yyyy")</span>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- 文字輸入 Dialog -->
   <div class="modal fade" id="textModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
@@ -684,11 +727,20 @@
 
   // 置入日期 ---------------------------------
   function dateHandler() {
+    $('#dateModal').modal('show');
+  };
+
+  function useDateHandler(dateString) {
+    $('#dateModal').modal('hide');
+    console.log('date:', dateString);
+    createVirtualText(dateString);
   };
 
   // 開啟 文字輸入Modal
   function textHandler() {
     $('#textModal').modal('show');
+    const noteItem = document.querySelector('#noteItem');
+    noteItem.value = '';
   };
   // 置入文字-顯示使用按鈕 ---------------------------------
   const noteItem = document.querySelector('#noteItem');
@@ -704,7 +756,10 @@
 
   noteItemBtn.addEventListener('click', function () {
     $('#textModal').modal('hide');
+    createVirtualText(noteItem.value);
+  });
 
+  function createVirtualText(string) {
     // 產生一個虛擬 textBox
     const textBox = document.createElement("div");
     // id 動態產生
@@ -717,11 +772,11 @@
     const textInput = document.createElement("div");
     textInput.id = `scale-${uuid}-text`;
     textInput.setAttribute('class', 'note');
-    textInput.textContent = 'qaazxswedcf'; // 動態置入輸入文字
+    textInput.textContent = string; // 動態置入輸入文字
     document.querySelector(`#${uuid}`).appendChild(textInput);
     // scale 模組
     const scaleBox = document.createElement("div");
-    scaleBox.id = `scale-${uuid}`;
+    scaleBox.id = `scaleText-${uuid}`;
     scaleBox.setAttribute('class', 'vmScale');
     document.querySelector(`#${uuid}`).appendChild(scaleBox);
     // 刪除 模組
@@ -777,8 +832,7 @@
       }
     }
     // 文字區塊縮放效果
-    const scale = document.querySelector(`#scale-${uuid}`);
-    const noteHeight = textInput.offsetHeight;
+    const scale = document.querySelector(`#scaleText-${uuid}`);
     scale.onmousedown = function (e) {
       // 阻止冒泡,避免縮放時觸發移動事件
       e.stopPropagation();
@@ -791,13 +845,14 @@
       };
       contractArea.onmousemove = function (ev) {
         ev.preventDefault();
-        // 設置文字區塊的最小縮放為30*30
-        var w = Math.max(30, ev.clientX - pos.x + pos.w)
+        // 設置文字區塊的最小縮放為100*30
+        var w = Math.max(150, ev.clientX - pos.x + pos.w)
         var h = Math.max(30, ev.clientY - pos.y + pos.h)
         //console.log(w,h)
+        const noteHeight = textInput.offsetHeight;
 
         // 設置文字區塊的最大寬高
-        w = w >= contractArea.offsetWidth - note.offsetLeft ? contractArea.offsetWidth - note.offsetLeft : w < 85 ? 85 : w;
+        w = w >= contractArea.offsetWidth - note.offsetLeft ? contractArea.offsetWidth - note.offsetLeft : w < 150 ? 150 : w;
         h = h >= contractArea.offsetHeight - note.offsetTop ? contractArea.offsetHeight - note.offsetTop : h < noteHeight + 5 ? noteHeight + 15 : h;
         note.style.width = w + 'px';
         note.style.height = h + 'px';
@@ -849,7 +904,7 @@
         contractArea.onmouseup = null;
       }
     }
-  });
+  };
 
   // 開啟預覽
   function openPdfModal() {
