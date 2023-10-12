@@ -602,6 +602,12 @@
     delBox.setAttribute('class', 'btn btn-sm text-white vmDelete');
     delBox.appendChild(textNode);
     document.querySelector(`#${uuid}`).appendChild(delBox);
+    // 套用全部 模組
+    const useAllBox = document.createElement("button");
+    useAllBox.id = `useAllSeal-${uuid}`;
+    useAllBox.innerHTML = '套用全部';
+    useAllBox.setAttribute('class', 'btn btn-success opacity-75 btn-sm vmUseAll');
+    document.querySelector(`#${uuid}`).appendChild(useAllBox);
     // 套用 模組
     const useBox = document.createElement("button");
     useBox.id = `useSeal-${uuid}`;
@@ -704,6 +710,25 @@
       e.preventDefault();
       seal.remove();
       delete $global.viewModel.SealID;
+
+      contractArea.onmouseleave = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+      contractArea.onmouseup = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+    }
+
+    // 套用整份文件印鑑檔
+    const useAllSeal = document.querySelector(`#useAllSeal-${uuid}`);
+    useAllSeal.onmousedown = function (e) {
+      // 阻止冒泡,避免縮放時觸發移動事件
+      e.stopPropagation();
+      e.preventDefault();
+      // 套用整份文件
+
 
       contractArea.onmouseleave = function () {
         contractArea.onmousemove = null;
@@ -829,6 +854,12 @@
     delBox.innerHTML = '<i class="far fa-times"></i>';
     delBox.setAttribute('class', 'btn btn-sm text-white vmDelete');
     document.querySelector(`#${uuid}`).appendChild(delBox);
+    // 套用全部 模組
+    const useAllBox = document.createElement("button");
+    useAllBox.id = `useAllNote-${uuid}`;
+    useAllBox.innerHTML = '套用全部';
+    useAllBox.setAttribute('class', 'btn btn-success opacity-75 btn-sm vmUseAll');
+    document.querySelector(`#${uuid}`).appendChild(useAllBox);
     // 套用 模組
     const useBox = document.createElement("button");
     useBox.id = `useNote-${uuid}`;
@@ -896,7 +927,7 @@
         const noteHeight = textInput.offsetHeight;
 
         // 設置文字區塊的最大寬高
-        w = w >= contractArea.offsetWidth - note.offsetLeft ? contractArea.offsetWidth - note.offsetLeft : w < 150 ? 150 : w;
+        w = w >= contractArea.offsetWidth - note.offsetLeft ? contractArea.offsetWidth - note.offsetLeft : w < 170 ? 170 : w;
         h = h >= contractArea.offsetHeight - note.offsetTop ? contractArea.offsetHeight - note.offsetTop : h < noteHeight + 5 ? noteHeight + 15 : h;
         note.style.width = w + 'px';
         note.style.height = h + 'px';
@@ -933,6 +964,25 @@
     // 套用文字區塊 
     const useNote = document.querySelector(`#useNote-${uuid}`);
     useNote.onmousedown = function (e) {
+      // 阻止冒泡,避免縮放時觸發移動事件
+      e.stopPropagation();
+      e.preventDefault();
+      // 套用文字區塊
+      console.log({ note });
+
+      contractArea.onmouseleave = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+      contractArea.onmouseup = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+    }
+
+    // 套用整份文件文字區塊 
+    const useAllNote = document.querySelector(`#useAllNote-${uuid}`);
+    useAllNote.onmousedown = function (e) {
       // 阻止冒泡,避免縮放時觸發移動事件
       e.stopPropagation();
       e.preventDefault();
