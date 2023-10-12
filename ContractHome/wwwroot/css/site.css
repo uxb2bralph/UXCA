@@ -55,24 +55,32 @@
     max-width: 90%;
   }
 }
+.login__signin .card {
+  border-radius: 0.5rem;
+}
 .login__intro {
   min-height: 450px;
   background-image: url("../images/login-banner.png");
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
-  border-bottom-left-radius: 3px;
-  border-top-left-radius: 3px;
+  border-bottom-left-radius: 0.5rem;
+  border-top-left-radius: 0.5rem;
 }
 @media (max-width: 1200px) {
   .login__intro {
     min-height: 300px;
-    border-top-right-radius: 3px;
+    border-top-right-radius: 0.5rem;
     border-bottom-left-radius: 0;
   }
 }
 .login__intro img {
   height: 75px;
+}
+.login__footer {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #FFFFFF;
 }
 
 .input__loginHeight {

@@ -95,6 +95,9 @@
     @include sm {
       max-width: 90%;
     }
+    .card {
+      border-radius: 0.5rem;
+    }
   }
 
   &__intro {
@@ -103,17 +106,23 @@
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
-    border-bottom-left-radius: 3px;
-    border-top-left-radius: 3px;
+    border-bottom-left-radius: 0.5rem;
+    border-top-left-radius: 0.5rem;
 
     @include xl {
       min-height: 300px;
-      border-top-right-radius: 3px;
+      border-top-right-radius: 0.5rem;
       border-bottom-left-radius: 0;
     }
     img {
       height: 75px;
     }
+  }
+
+  &__footer {
+    text-align: center;
+    font-size: 0.875rem;
+    color: #FFFFFF;
   }
 }
 
