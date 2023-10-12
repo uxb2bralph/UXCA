@@ -142,24 +142,25 @@
               <div class="row g-2 mt-2">
                 <div class="col py-1">
                   <button type="button" onclick="resetSignature();" class="btn btn-secondary opacity-50 w-100">
-                    <i class="far fa-times"></i> 清除用印
+                    <i class="fas fa-eraser"></i> 清除用印
                   </button>
                 </div>
                 <div class="col py-1">
-                  <button type="button" onclick="commitSignature(true)" class="btn btn-success opacity-75 w-100">
-                    <i class="fas fa-file-pdf"></i> 預覽
+                  <button type="button" onclick="cancelHandler();" class="btn btn-success opacity-75 w-100">
+                    <i class="far fa-times"></i> 取消
+                  </button>
+                </div>
+                <div class="col py-1">
+                  <button type="button" onclick="abortContract();" class="btn btn-danger opacity-75 w-100">
+                    <i class="fas fa-share"></i> 退回合約
                   </button>
                 </div>
               </div>
               <div class="row g-2">
                 <div class="col py-1">
-                  <button type="button" onclick="abortContract();" class="btn btn-primary opacity-75 w-100">
-                    <i class="far fa-share"></i> 退回合約
-                  </button>
-                </div>
-                <div class="col py-1">
-                  <button type="button" onclick="commitContract();" class="btn btn-primary opacity-75 w-100">
-                    <i class="far fa-file-export"></i> 送出合約
+                  <button type="button" onclick="commitContract();"
+                    class="btn btn-lg btn-primary opacity-75 w-100 fw-bolder">
+                    送出合約
                   </button>
                 </div>
               </div>
@@ -355,6 +356,23 @@
         <div class="modal-footer border-top-0 justify-content-center">
           <button type="button" id="noteItemBtn" class="btn btn-primary opacity-75 invisible" tabindex="-1"
             role="button">使用</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 取消 Dialog -->
+  <div class="modal fade" id="cancelModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="cancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered ">
+      <div class="modal-content">
+        <div class="modal-header border-bottom-0">
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center h5 fw-bolder">確定取消本次新增？</div>
+        <div class="modal-footer border-top-0 justify-content-center">
+          <button type="button" class="btn btn-secondary opacity-50" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" onclick="confirmCancel()">確定</button>
         </div>
       </div>
     </div>
@@ -906,7 +924,20 @@
     }
   };
 
-  // 開啟預覽
+  // 開啟取消合約 Modal
+  function cancelHandler(msg) {
+    $('#cancelModal').modal('show');
+  };
+
+  // 取消新增合約
+  function confirmCancel() {
+    console.log('cancel');
+    $('#cancelModal').modal('hide');
+    alertModal('合約已取消');
+    // 轉跳頁面回清單
+  };
+
+  // 開啟預覽 Modal
   function openPdfModal() {
     $('#pdfModal').modal('show');
   };
