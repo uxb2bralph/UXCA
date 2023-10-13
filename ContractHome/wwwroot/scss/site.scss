@@ -99,6 +99,11 @@
       border-radius: 0.5rem;
     }
   }
+  &__forgetPassword {
+    width: 100%;
+    max-width: 520px;
+    margin: auto;
+  }
 
   &__intro {
     min-height: 450px;
@@ -124,6 +129,9 @@
     font-size: 0.875rem;
     color: #FFFFFF;
   }
+}
+.forgetPwd {
+  height: 72px;
 }
 
 // 輸入框高度
