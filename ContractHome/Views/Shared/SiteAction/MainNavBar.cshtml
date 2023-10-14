@@ -16,7 +16,6 @@
   models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
   _modelState = (ModelStateDictionary)ViewBag.ModelState;
   QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
-
   var profile = await Context.GetUserAsync();
 }
 <div id="mainNavBar">
@@ -24,7 +23,7 @@
     <nav class="navbar navbar-expand-lg navbar-light navbar-uxb2b py-0">
       <div class="container-fluid">
         <a class=" navbar-brand" href="#">
-          <img src="~/images/uxSign-logo.png" alt="安心簽" style="height: 40px;">
+          <img src="~/images/uxSign-logo.png" alt="安心簽" style="height: 35px;">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
           aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,6 +52,9 @@
             </li>
           </ul>
 
+          <ul class="navbar-nav mb-2 mb-lg-0">
+            <li class="fw-bolder">網際優勢甲方公司 @Html.Raw(profile.UserName) 您好！</li>
+          </ul>
           <ul class="navbar-nav mb-2 mb-lg-0">
             <li class="nav-item dropdown">
               <a class="d-flex align-items-center nav-link dropdown-toggle" href="#" id="navbarDropdown"

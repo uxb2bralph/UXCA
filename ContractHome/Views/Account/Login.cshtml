@@ -16,12 +16,13 @@
   models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
   _modelState = (ModelStateDictionary)ViewBag.ModelState;
   QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+  DateTime today = DateTime.Now;
 }
 <main id="login" class="login__wrapper bg-secondary">
   <div class="login__signin">
     <form ref="form" v-on:submit.prevent id="loginForm" class="needs-validation" :class="{'was-validated': isValidate}"
       novalidate accept-charset="UTF-8" role="form" method="post" autocomplete="off">
-      <div class="card mb-3 shadow">
+      <div class="card border-0 mb-3 shadow">
         <div class="row g-0">
           <div class="col-xl-8 p-5 login__intro bg-secondary bg-opacity-10">
             <img src="~/images/uxSign-logo.png" class="py-3">
@@ -77,6 +78,11 @@
             </div>
           </div>
         </div>
+      </div>
+      <div class="login__footer">
+        © @(today.Year) UXB2B All Rights Reserved. 網際優勢 版權所有
+        <br>
+        榮獲 財團法人全國認證基金會 (TAF) 國際ISO/IEC 27001: 2013 (CNS 27001: 2014) 資訊安全管理系統驗證
       </div>
     </form>
   </div>

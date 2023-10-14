@@ -95,6 +95,14 @@
     @include sm {
       max-width: 90%;
     }
+    .card {
+      border-radius: 0.5rem;
+    }
+  }
+  &__forgetPassword {
+    width: 100%;
+    max-width: 520px;
+    margin: auto;
   }
 
   &__intro {
@@ -103,18 +111,27 @@
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
-    border-bottom-left-radius: 3px;
-    border-top-left-radius: 3px;
+    border-bottom-left-radius: 0.5rem;
+    border-top-left-radius: 0.5rem;
 
     @include xl {
       min-height: 300px;
-      border-top-right-radius: 3px;
+      border-top-right-radius: 0.5rem;
       border-bottom-left-radius: 0;
     }
     img {
-      height: 75px;
+      height: 72px;
     }
   }
+
+  &__footer {
+    text-align: center;
+    font-size: 0.875rem;
+    color: #FFFFFF;
+  }
+}
+.forgetPwd {
+  height: 72px;
 }
 
 // 輸入框高度
@@ -466,8 +483,8 @@
   padding: 5px;
   border-radius: 5px;
   border-bottom-right-radius: 0;
-  height: 100px;
-  width: 150px;
+  height: 120px;
+  width: 170px;
   display: block;
   background: rgba(74, 146, 253, 0.3);
   position: absolute;
@@ -480,7 +497,7 @@
   border-radius: 5px;
   border-bottom-right-radius: 0;
   height: 100px;
-  width: 150px;
+  width: 170px;
   display: block;
   background: rgba(74, 146, 253, 0.3);
   position: absolute;
@@ -530,6 +547,17 @@
   position: absolute;
   top: -28px;
   right: 1px;
+  box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.35);
+}
+
+// 虛擬套用區塊
+.vmUseAll {
+  padding: 0 5px;
+  height: 25px;
+  display: block;
+  position: absolute;
+  top: -28px;
+  right: 55px;
   box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.35);
 }
 

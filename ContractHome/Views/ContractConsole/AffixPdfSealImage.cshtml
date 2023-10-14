@@ -143,24 +143,25 @@
               <div class="row g-2 mt-2">
                 <div class="col py-1">
                   <button type="button" onclick="resetSignature();" class="btn btn-secondary opacity-50 w-100">
-                    <i class="far fa-times"></i> 清除用印
+                    <i class="fas fa-eraser"></i> 清除用印
                   </button>
                 </div>
                 <div class="col py-1">
-                  <button type="button" onclick="commitSignature(true)" class="btn btn-success opacity-75 w-100">
-                    <i class="fas fa-file-pdf"></i> 預覽
+                  <button type="button" onclick="cancelHandler();" class="btn btn-success opacity-75 w-100">
+                    <i class="far fa-times"></i> 取消
+                  </button>
+                </div>
+                <div class="col py-1">
+                  <button type="button" onclick="abortHandler();" class="btn btn-danger opacity-75 w-100">
+                    <i class="fas fa-share"></i> 退回合約
                   </button>
                 </div>
               </div>
               <div class="row g-2">
                 <div class="col py-1">
-                  <button type="button" onclick="abortContract();" class="btn btn-primary opacity-75 w-100">
-                    <i class="far fa-share"></i> 退回合約
-                  </button>
-                </div>
-                <div class="col py-1">
-                  <button type="button" onclick="commitContract();" class="btn btn-primary opacity-75 w-100">
-                    <i class="far fa-file-export"></i> 送出合約
+                  <button type="button" onclick="commitContract();"
+                    class="btn btn-lg btn-primary opacity-75 w-100 fw-bolder">
+                    送出合約
                   </button>
                 </div>
               </div>
@@ -256,10 +257,17 @@
                 });
               }
 
+              // 開啟會回合約 Model
+              function abortHandler() {
+                $('#abortModal').modal('show');
+              }
+
               function abortContract() {
-                if (!confirm('合約退回後，資料將被清除，確定退回？')) {
-                  return;
-                }
+              @* if (!confirm('合約退回後，資料將被清除，確定退回？')) {
+                return;
+                } *@
+
+                  $('#abortModal').modal('hide');
                 showLoading();
                 $.post('@Html.Raw(Url.Action("AbortContract", "ContractConsole"))', { 'KeyID': '@Html.Raw(_model!.ContractID.EncryptKey())' }, function (data) {
                   hideLoading();
@@ -374,6 +382,42 @@
             role="button">
             使用
           </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 取消 Dialog -->
+  <div class="modal fade" id="cancelModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="cancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered ">
+      <div class="modal-content">
+        <div class="modal-header border-bottom-0">
+          <h5 class="modal-title" id="staticBackdropLabel"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center h5 fw-bolder">確定取消本次新增？</div>
+        <div class="modal-footer border-top-0 justify-content-center">
+          <button type="button" class="btn btn-secondary opacity-50" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" onclick="confirmCancel()">確定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 退回 Dialog -->
+  <div class="modal fade" id="abortModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="abortModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered ">
+      <div class="modal-content">
+        <div class="modal-header border-bottom-0">
+          <h5 class="modal-title" id="staticBackdropLabel"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center h5 fw-bolder">合約退回後，資料將被清除，確定退回？</div>
+        <div class="modal-footer border-top-0 justify-content-center">
+          <button type="button" class="btn btn-secondary opacity-50" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" onclick="abortContract()">確定</button>
         </div>
       </div>
     </div>
@@ -577,6 +621,12 @@
     delBox.setAttribute('class', 'btn btn-sm text-white vmDelete');
     delBox.appendChild(textNode);
     document.querySelector(`#${uuid}`).appendChild(delBox);
+    // 套用全部 模組
+    const useAllBox = document.createElement("button");
+    useAllBox.id = `useAllSeal-${uuid}`;
+    useAllBox.innerHTML = '套用全部';
+    useAllBox.setAttribute('class', 'btn btn-success opacity-75 btn-sm vmUseAll');
+    document.querySelector(`#${uuid}`).appendChild(useAllBox);
     // 套用 模組
     const useBox = document.createElement("button");
     useBox.id = `useSeal-${uuid}`;
@@ -679,6 +729,25 @@
       e.preventDefault();
       seal.remove();
       delete $global.viewModel.SealID;
+
+      contractArea.onmouseleave = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+      contractArea.onmouseup = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+    }
+
+    // 套用整份文件印鑑檔
+    const useAllSeal = document.querySelector(`#useAllSeal-${uuid}`);
+    useAllSeal.onmousedown = function (e) {
+      // 阻止冒泡,避免縮放時觸發移動事件
+      e.stopPropagation();
+      e.preventDefault();
+      // 套用整份文件
+
 
       contractArea.onmouseleave = function () {
         contractArea.onmousemove = null;
@@ -804,6 +873,12 @@
     delBox.innerHTML = '<i class="far fa-times"></i>';
     delBox.setAttribute('class', 'btn btn-sm text-white vmDelete');
     document.querySelector(`#${uuid}`).appendChild(delBox);
+    // 套用全部 模組
+    const useAllBox = document.createElement("button");
+    useAllBox.id = `useAllNote-${uuid}`;
+    useAllBox.innerHTML = '套用全部';
+    useAllBox.setAttribute('class', 'btn btn-success opacity-75 btn-sm vmUseAll');
+    document.querySelector(`#${uuid}`).appendChild(useAllBox);
     // 套用 模組
     const useBox = document.createElement("button");
     useBox.id = `useNote-${uuid}`;
@@ -871,7 +946,7 @@
         const noteHeight = textInput.offsetHeight;
 
         // 設置文字區塊的最大寬高
-        w = w >= contractArea.offsetWidth - note.offsetLeft ? contractArea.offsetWidth - note.offsetLeft : w < 150 ? 150 : w;
+        w = w >= contractArea.offsetWidth - note.offsetLeft ? contractArea.offsetWidth - note.offsetLeft : w < 170 ? 170 : w;
         h = h >= contractArea.offsetHeight - note.offsetTop ? contractArea.offsetHeight - note.offsetTop : h < noteHeight + 5 ? noteHeight + 15 : h;
         note.style.width = w + 'px';
         note.style.height = h + 'px';
@@ -923,9 +998,42 @@
         contractArea.onmouseup = null;
       }
     }
+
+    // 套用整份文件文字區塊 
+    const useAllNote = document.querySelector(`#useAllNote-${uuid}`);
+    useAllNote.onmousedown = function (e) {
+      // 阻止冒泡,避免縮放時觸發移動事件
+      e.stopPropagation();
+      e.preventDefault();
+      // 套用文字區塊
+      console.log({ note });
+
+      contractArea.onmouseleave = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+      contractArea.onmouseup = function () {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      }
+    }
   };
 
-  // 開啟預覽
+  // 開啟取消合約 Modal
+  function cancelHandler(msg) {
+    $('#cancelModal').modal('show');
+  };
+
+  // 取消新增合約
+  function confirmCancel() {
+    console.log('cancel');
+    $('#cancelModal').modal('hide');
+    alertModal('合約已取消');
+    // 轉跳頁面回清單
+    window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+  };
+
+  // 開啟預覽 Modal
   function openPdfModal() {
     $('#pdfModal').modal('show');
   };

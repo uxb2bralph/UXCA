@@ -349,7 +349,7 @@
                   <div class="row">
                     <label for="ContractNo" class="col-sm-12 col-md-3 col-form-label fw-bolder">合約編號</label>
                     <div class="col-sm-12 col-md-9">
-                      <input v-model="formData.ContractNo" type="text" class="form-control" id="ContractNo"
+                      <input v-model="formData.ContractNo" type="text" class="form-control" id="ContractNo" v-on:keyup="checkContractNo"
                         required />
                       <div class="invalid-feedback">
                         請輸入合約編號
@@ -373,7 +373,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary opacity-75" data-bs-dismiss="modal">取消</button>
-          <button type="button" class="btn btn-primary" v-on:click="editContract">下一步</button>
+          <button type="button" class="btn btn-primary" :class="{'disabled': !isContractNo}" v-on:click="editContract">下一步</button>
         </div>
       </div>
     </div>
@@ -784,7 +784,8 @@
       uploadFileMsg: null,
       signerStatusData: {},
       historyData: {},
-      stopContractData: {}
+      stopContractData: {},
+      isContractNo: false
     },
     computed: {
       // 計算總頁數
@@ -992,7 +993,7 @@
       confirmSign(currentCompanyData) {
         const payload = currentCompanyData;
         $('#signModal').modal('hide');
-        @*showLoading();
+  @*showLoading();
         setTimeout(() => {
           console.log(payload);
           hideLoading();
@@ -1027,7 +1028,7 @@
         console.log({contract})
         // contract 帶入 signerStatusData 中
         this.signerStatusData = contract;
-        @*{
+  @*{
           uuid: '555',
           No: 'CS-000100004',
           Title: '測試很重要的一份合約-5',
@@ -1055,7 +1056,7 @@
 
         // contract 帶入 historyData 中
         this.historyData = contract;
-        @*{
+  @*{
           uuid: '555',
           No: 'CS-000100004',
           Title: '測試很重要的一份合約-5',
@@ -1087,7 +1088,7 @@
         console.log({contract});
 
         this.stopContractData = contract;
-        @*this.stopContractData.Title = "測試很重要的一份合約";*@
+  @*this.stopContractData.Title = "測試很重要的一份合約";*@
       },
 
       // 終止合約料串API
@@ -1096,7 +1097,7 @@
 
         $("#stopContractModal").modal('hide');
 
-        @*showLoading();
+  @*showLoading();
         setTimeout(() => {
           // 模擬假資料被終止
 
@@ -1106,7 +1107,11 @@
           $('#infoModal').modal('show');
         }, 2000);  *@
         terminateContract(contractData.KeyID);
-        
+      },
+
+      // 檢查新增合約編號有沒有填寫
+      checkContractNo() {
+        this.isContractNo = this.formData.ContractNo.length > 0;
       },
 
       // 下載檔案
