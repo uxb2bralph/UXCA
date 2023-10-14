@@ -118,7 +118,7 @@ namespace ContractHome.Models.Helper
             {
                 using (Bitmap bmp = new Bitmap(stream))
                 {
-                    var backgroundStamp = new HtmlStamper($"<img style='width:{bmp.Width * ((sealScale ?? 100) / 100 * 2.54 / bmp.HorizontalResolution)}cm;' src='data:application/octet-stream;base64,{Convert.ToBase64String(buf)}'/>")
+                    var backgroundStamp = new HtmlStamper($"<img style='mix-blend-mode:multiply;width:{bmp.Width * ((sealScale ?? 100) / 100 * 2.54 / bmp.HorizontalResolution)}cm;' src='data:application/octet-stream;base64,{Convert.ToBase64String(buf)}'/>")
                     {
                         Opacity = 60,
                         HorizontalOffset = new Length(unit: MeasurementUnit.Centimeter) { Value = marginLeft ?? 0, },

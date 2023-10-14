@@ -30,6 +30,7 @@
 
   DateTime today = DateTime.Now;
   int rocYear = today.Year - 1911; // 民國年
+  var pageCount = GetPdfPageCount(_model);
 }
 <div id="AffixPdfSealImage" class="container-fluid py-4 pb-3">
   <section>
@@ -38,9 +39,9 @@
       await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
       await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml",
       party == null
-      ? "建立新合約"
-      : party.IsInitiator == true
-      ? "起約人用印" : "簽約人用印");
+          ? "建立新合約"
+          : party.IsInitiator == true
+            ? "起約人用印" : "簽約人用印");
     }
     <div class="row" style="height: calc(100vh - 160px);">
       <!-- 合約影像檔 -->
@@ -114,7 +115,7 @@
                   <label class="form-label fw-bolder" for="PageIndex">選擇用印所在頁碼</label>
                   <select name="PageIndex" class="form-select form-select-sm">
                     <option value="0" selected="0">第 1 頁</option>
-                    @for (int i = 0; i < GetPdfPageCount(_model); i++)
+                    @for (int i = 0; i < pageCount; i++)
                     {
                       <option value="@(i)">第@(i + 1)頁</option>
                     }
@@ -165,6 +166,22 @@
               </div>
             </form>
             <script>
+              var pageCount = @(pageCount);
+              function commitData(step) {
+                var currentPage = Number($('select[name="PageIndex"]').val());
+                if (isNaN(currentPage)) {
+                  return;
+                }
+                if (step == 'next') {
+                  currentPage++;
+                } else {
+                  currentPage--;
+                }
+                if (currentPage >= 0 && currentPage < pageCount) {
+                  $('select[name="PageIndex"]').val(currentPage);
+                  loadContractPage(currentPage);
+                }
+              }
               function commitSignature(preview) {
                 clearErrors();
                 $global.viewModel.Preview = preview;
@@ -354,7 +371,9 @@
         </div>
         <div class="modal-footer border-top-0 justify-content-center">
           <button type="button" id="noteItemBtn" class="btn btn-primary opacity-75 invisible" tabindex="-1"
-            role="button">使用</button>
+            role="button">
+            使用
+          </button>
         </div>
       </div>
     </div>
@@ -397,8 +416,8 @@
   @{
     var userOrgItems = models.GetTable<OrganizationUser>().Where(u => u.UID == profile.UID);
   }
-  // 起約人資料清單
-  const dataInitiator = @Html.Raw(userOrgItems.Select(u => new { id = u.CompanyID.EncryptKey(), text = u.Organization.CompanyName }).ToArray().JsonStringify());
+    // 起約人資料清單
+    const dataInitiator = @Html.Raw(userOrgItems.Select(u => new { id = u.CompanyID.EncryptKey(), text = u.Organization.CompanyName }).ToArray().JsonStringify());
   @*[
     { id: 0, text: '網際優勢甲方公司' },
     { id: 1, text: '網際優勢甲1方公司' },
@@ -696,7 +715,7 @@
   function addSealHandler() {
   @*const sealImg = URL.createObjectURL(event.target.files[0]);
       sealList.push(sealImg);*@
-    var event = event || window.event;
+      var event = event || window.event;
     if (event.target.form != undefined) {
       $(event.target.form).ajaxForm({
         url: '@Html.Raw(Url.Action("CommitSealTemplate", "UserProfile"))',
@@ -886,7 +905,7 @@
       }
     }
 
-    // 套用文字區塊 
+    // 套用文字區塊
     const useNote = document.querySelector(`#useNote-${uuid}`);
     useNote.onmousedown = function (e) {
       // 阻止冒泡,避免縮放時觸發移動事件
