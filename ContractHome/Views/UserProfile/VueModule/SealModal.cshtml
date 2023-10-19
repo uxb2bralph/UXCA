@@ -51,7 +51,7 @@
               <div class="row g-3">
                 @if (_model != null)
                 {
-                  foreach (var item in _model)
+                  foreach (var item in _model.Where(s=>s.FilePath!=null))
                   {
                     await Html.RenderPartialAsync("~/Views/UserProfile/VueModule/SealModalItem.cshtml", item);
                   }
@@ -79,7 +79,7 @@
               </div>
               <div class="d-inline-flex justify-content-between pt-3" style="min-width: 600px;">
                 <div>
-                  <button type=" button" id="clearSignature" class="btn btn-sm btn-secondary opacity-75 me-3">
+                  <button type="button" id="clearSignature" class="btn btn-sm btn-secondary opacity-75 me-3">
                     清除
                   </button>
                   <button type="button" id="btn-block"
@@ -93,16 +93,15 @@
                 </button>
               </div>
             </form>
-            <div class="row g-3">
+            <div class="row g-3" id="addSignature">
               @if (_model != null)
               {
-                foreach (var item in _model)
+                foreach (var item in _model.Where(s=>s.FilePath==null))
                 {
                   await Html.RenderPartialAsync("~/Views/UserProfile/VueModule/SealModalItem.cshtml", item);
                 }
               }
             </div>
-
           </div>
         </div>
       </div>
@@ -114,8 +113,12 @@
     $('#sealModal').modal('show');
   });
 
+  var signaturePanelReady;
   // 使用簽名
   function signatureHandler() {
+      if(signaturePanelReady) {
+          return;
+      }
     setTimeout(() => {
       const signatureCanvas = document.querySelector("#signatureCanvas");
       var signatureWidth = signatureCanvas.offsetWidth;
@@ -150,6 +153,7 @@
         }
         const pngUrl = signature.getPNG();
         console.log(pngUrl);
+        addSignature(pngUrl);
       });
 
       const block = document.querySelector("#btn-block");
@@ -180,7 +184,7 @@
         signature.color = '#dc3545';
       });
 
-
+      signaturePanelReady = true;
     }, 300);
   };
 

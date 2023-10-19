@@ -479,6 +479,60 @@ namespace ContractHome.Controllers
         }
 
         [UserAuthorize]
+        public async Task<ActionResult> CommitSignatureTemplateAsync([FromBody]UserProfileViewModel viewModel)
+        {
+            ViewBag.ViewModel = viewModel;
+            if (viewModel.SealData == null)
+            {
+                return Json(new { result = false, message = "請簽名!!" });
+            }
+
+            var profile = await HttpContext.GetUserAsync();
+
+            if (profile == null)
+            {
+                return Json(new { result = false, message = "請重新登入!!" });
+            }
+
+            using (MemoryStream ms = new MemoryStream(Convert.FromBase64String(viewModel.SealData)))
+            {
+                using (Bitmap bmp = new Bitmap(ms))
+                {
+                    SealTemplate item = new SealTemplate
+                    {
+                        UID = profile.UID,
+                        SealImage = new System.Data.Linq.Binary(ms.ToArray()),
+                        Width = bmp.Width,
+                        Height = bmp.Height,
+                    };
+
+                    models.GetTable<SealTemplate>().InsertOnSubmit(item);
+                    models.SubmitChanges();
+
+                    if (viewModel.ResultMode == DataResultMode.DataContent)
+                    {
+                        return Content((new
+                        {
+                            result = true,
+                            dataItem =
+                            new
+                            {
+                                KeyID = item.SealID.EncryptKey(),
+                                Src = $"data:application/octet-stream;base64,{Convert.ToBase64String(item.SealImage.ToArray())}",
+                            }
+                        }).JsonStringify(), "application/json");
+                    }
+                    else
+                    {
+                        return View("~/Views/UserProfile/VueModule/SealModalItem.cshtml", item);
+                    }
+
+                }
+            }
+        }
+
+
+        [UserAuthorize]
         public async Task<ActionResult> CommitToDeleteSealAsync(SealRequestViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;

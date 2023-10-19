@@ -36,7 +36,7 @@ namespace ContractHome.Models.Helper
 
         public static MemoryStream BuildContractWithSeal(this Contract contract)
         {
-            PdfDocument? pdf = BuildContractDocument(contract);
+            using PdfDocument? pdf = BuildContractDocument(contract);
             if (pdf != null)
                 return pdf.Stream;
 
@@ -64,7 +64,7 @@ namespace ContractHome.Models.Helper
             {
                 pdf = PdfDocument.FromFile(contract.FilePath/*, TrackChanges: true*/);
             }
-            else if(contract.ContractContent!=null)
+            else if (contract.ContractContent != null)
             {
                 pdf = new PdfDocument(contract.ContractContent.ToArray());
             }
@@ -105,14 +105,19 @@ namespace ContractHome.Models.Helper
                     }
                 }
 
-                pdf.SaveAs(Path.Combine(FileLogger.Logger.LogDailyPath, $"DBG-{contract.ContractID:00000000}.pdf"));
+                foreach (var note in contract.ContractNoteRequest)
+                {
+                    ApplyStamp(pdf, note.Note, note.MarginLeft, note.MarginTop, note.PageIndex);
+                }
+
+                //pdf.SaveAs(Path.Combine(FileLogger.Logger.LogDailyPath, $"DBG-{contract.ContractID:00000000}.pdf"));
                 return pdf;
             }
 
             return null;
         }
 
-        private static void ApplyStamp(PdfDocument pdf, byte[] buf,double? marginLeft,double? marginTop,double? sealScale,int? pageIndex)
+        private static void ApplyStamp(PdfDocument pdf, byte[] buf, double? marginLeft, double? marginTop, double? sealScale, int? pageIndex)
         {
             using (MemoryStream stream = new MemoryStream(buf))
             {
@@ -132,9 +137,23 @@ namespace ContractHome.Models.Helper
             }
         }
 
+        private static void ApplyStamp(PdfDocument pdf, String text, double? marginLeft, double? marginTop, int? pageIndex)
+        {
+            var backgroundStamp = new HtmlStamper($"<div>{text}</div>")
+            {
+                //Opacity = 60,
+                HorizontalOffset = new Length(unit: MeasurementUnit.Centimeter) { Value = marginLeft ?? 0, },
+                VerticalOffset = new Length(unit: MeasurementUnit.Centimeter) { Value = marginTop ?? 0 },
+                VerticalAlignment = IronPdf.Editing.VerticalAlignment.Top,
+                HorizontalAlignment = IronPdf.Editing.HorizontalAlignment.Left,
+                IsStampBehindContent = true,
+            };
+            pdf.ApplyStamp(backgroundStamp, pageIndex ?? 0);
+        }
+
         public static bool SignPdfByLocalUser(this GenericManager<DCDataContext> models, ContractSignatureRequest request, UserProfile signer)
         {
-            if(request.SealImage == null)
+            if (request.SealImage == null)
             {
                 return false;
             }
@@ -157,9 +176,9 @@ namespace ContractHome.Models.Helper
             IronPdf.License.LicenseKey = Settings.Default.IronPdfKey;
             PdfDocument pdf = PdfDocument.FromFile(contract.FilePath/*, TrackChanges: true*/);
 
-            using(MemoryStream stream = new MemoryStream(request.SealImage.ToArray()))
+            using (MemoryStream stream = new MemoryStream(request.SealImage.ToArray()))
             {
-                using(Bitmap seal = new Bitmap(stream))
+                using (Bitmap seal = new Bitmap(stream))
                 {
                     // Create PdfSignature object
                     var sig = new PdfSignature("C:\\Project\\Github\\UXCA\\Doc\\70762419.pfx", "70762419")

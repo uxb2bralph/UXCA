@@ -55,7 +55,7 @@
               <div>
                 <label class="form-label" for="PageIndex" style="white-space: nowrap;">請選擇：</label>
                 <select name="PageIndex" class="form-control-small col-8">
-                  @for (int i = 0; i < GetPdfPageCount(_model.Contract); i++)
+                  @for (int i = 0; i < _model.Contract.GetPdfPageCount(); i++)
                   {
                     <option value="@(i)" selected="@(i==_model.PageIndex)">第@(i + 1)頁</option>
                   }
@@ -128,19 +128,19 @@
 
 @functions
 {
-  public int GetPdfPageCount(Contract attachment)
-  {
-    if (attachment == null || !File.Exists(attachment.FilePath))
-    {
-      return 0;
-    }
+  // public int GetPdfPageCount(Contract attachment)
+  // {
+  //   if (attachment == null || !File.Exists(attachment.FilePath))
+  //   {
+  //     return 0;
+  //   }
 
-    var content = File.ReadAllText(attachment.FilePath);
-    var match = Regex.Match(content, "/Count(?([^\\r\\n])\\s)\\d+");
-    if (match.Value != String.Empty)
-    {
-      return int.Parse(match.Value.Substring(7));
-    }
-    return 0;
-  }
+  //   var content = File.ReadAllText(attachment.FilePath);
+  //   var match = Regex.Match(content, "/Count(?([^\\r\\n])\\s)\\d+");
+  //   if (match.Value != String.Empty)
+  //   {
+  //     return int.Parse(match.Value.Substring(7));
+  //   }
+  //   return 0;
+  // }
 }

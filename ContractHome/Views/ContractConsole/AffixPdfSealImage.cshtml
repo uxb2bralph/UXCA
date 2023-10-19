@@ -23,14 +23,14 @@
 
   var profile = await Context.GetUserAsync();
   var party = models!.GetTable<ContractingParty>()
-  .Where(p => p.ContractID == _model.ContractID)
-  .Where(p => models.GetTable<OrganizationUser>()
-  .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
-  .FirstOrDefault();
+      .Where(p => p.ContractID == _model.ContractID)
+      .Where(p => models.GetTable<OrganizationUser>()
+      .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
+      .FirstOrDefault();
 
   DateTime today = DateTime.Now;
   int rocYear = today.Year - 1911; // 民國年
-  var pageCount = GetPdfPageCount(_model);
+  var pageCount = _model.GetPdfPageCount();
 }
 <div id="AffixPdfSealImage" class="container-fluid py-4 pb-3">
   <section>
@@ -67,258 +67,307 @@
       <!-- 操作介面 -->
       <div class="col col-xl-2 col-md-4">
         @{
-          <div id="toAffix" class="row ps-2 pe-4">
-            <form method="post" enctype="multipart/form-data">
-              @if (party == null || party.IsInitiator == true)
+                          <div id="toAffix" class="row ps-2 pe-4">
+                            <form method="post" enctype="multipart/form-data">
+                              @if (party == null || party.IsInitiator == true)
               {
-                <div class="card p-3 mb-3">
-                  <h5 class="h5 fw-bolder text-primary">Step 1：指定合約雙方</h5>
-                  <div class="mb-2">
-                    <label for="Initiator" class="form-label h6 text-secondary fw-bolder mb-1">起約方</label>
-                    <select id="Initiator" name="Initiator" class="form-select form-select-sm" data-placeholder="請選擇">
-                      <option></option>
-                    </select>
-                  </div>
-                  <div>
-                    <label for="Contractor" class="form-label h6 text-secondary fw-bolder mb-1">簽約方 (可複選)</label>
-                    <select id="Contractor" name="Contractor" class="form-select form-select-sm" multiple
-                      data-placeholder="請選擇">
-                      <option></option>
-                    </select>
-                  </div>
-                </div>
-                <div class="card p-3 mb-3">
-                  <h5 class="h5 fw-bolder text-primary">Step 2：文件審閱</h5>
-                  <div class="pb-3">
-                    <input class="form-check-input" type="checkbox" id="isInitiatorStamp" name="IgnoreSeal" value="True" />
-                    <label class="form-check-label" for="isInitiatorStamp">
-                      起約人：上傳合約已用印
-                    </label>
-                  </div>
-                  @* <div>
-              <input class="form-check-input" type="checkbox" id="isReject" disabled>
-              <label class="form-check-label" for="isReject">
-              簽約人：審閱後退回合約
-              </label>
-              </div> *@
-                </div>
-              }
-              <div class="card p-3 mb-3">
-                <h5 class="h5 fw-bolder text-primary">
-                  @if (party == null || party.IsInitiator == true)
+                                <div class="card p-3 mb-3">
+                                  <h5 class="h5 fw-bolder text-primary">Step 1：指定合約雙方</h5>
+                                  <div class="mb-2">
+                                    <label for="Initiator" class="form-label h6 text-secondary fw-bolder mb-1">起約方</label>
+                                    <select id="Initiator" name="Initiator" class="form-select form-select-sm" data-placeholder="請選擇">
+                                      <option></option>
+                                    </select>
+                                  </div>
+                                  <div>
+                                    <label for="Contractor" class="form-label h6 text-secondary fw-bolder mb-1">簽約方 (可複選)</label>
+                                    <select id="Contractor" name="Contractor" class="form-select form-select-sm" multiple
+                                      data-placeholder="請選擇">
+                                      <option></option>
+                                    </select>
+                                  </div>
+                                </div>
+            }
+                                <div class="card p-3 mb-3">
+                                  <h5 class="h5 fw-bolder text-primary">
+                                  @if (party == null || party.IsInitiator == true)
                   {
-                    <text>Step 3：</text>
+                                    <text>Step 2：</text>
                   }
-                  創建欄位
-                </h5>
-                <div class="pb-3">
-                  <label class="form-label fw-bolder" for="PageIndex">選擇用印所在頁碼</label>
-                  <select name="PageIndex" class="form-select form-select-sm">
-                    <option value="0" selected="0">第 1 頁</option>
-                    @for (int i = 0; i < pageCount; i++)
+                                  文件審閱</h5>
+                                  <div class="pb-3">
+                                    <input class="form-check-input" type="checkbox" id="isInitiatorStamp" name="IgnoreSeal" value="True" />
+                                    <label class="form-check-label" for="isInitiatorStamp">
+                                    @if (party == null || party.IsInitiator == true)
+                  {
+                                                            <text>起約人：</text>
+                                        }
+                                        else
+                                        {
+                                                            <text>簽約人：</text>
+                                        }
+                                                        上傳合約已用印
+                                    </label>
+                                  </div>
+                                </div>
+                              
+                              <div class="card p-3 mb-3">
+                                <h5 class="h5 fw-bolder text-primary">
+                                  @if (party == null || party.IsInitiator == true)
+                  {
+                                    <text>Step 3：</text>
+                  }
+                                  創建欄位
+                                </h5>
+                                <div class="pb-3">
+                                  <label class="form-label fw-bolder" for="PageIndex">選擇用印所在頁碼</label>
+                                  <select name="PageIndex" class="form-select form-select-sm">
+                                    <option value="0" selected="0">第 1 頁</option>
+                                    @for (int i = 0; i < pageCount; i++)
                     {
-                      <option value="@(i)">第@(i + 1)頁</option>
+                                      <option value="@(i)">第@(i + 1)頁</option>
                     }
-                  </select>
-                  <script>
-                    $('select[name="PageIndex"]').on('change', function () {
-                      loadContractPage($('select[name="PageIndex"]').val());
-                    });
-                  </script>
-                </div>
-                <div>
-                  <button type="button" onclick="sealHandler()" class="btn btn-brown w-100">
-                    <i class="fas fa-stamp"></i> 簽名 或 蓋章
-                  </button>
-
-                  <button type="button" onclick="dateHandler()" class="btn btn-brown w-100 mt-2">
-                    <i class="fas fa-calendar-alt"></i> 日期
-                  </button>
-
-                  <button type="button" onclick="textHandler()" class="btn btn-brown w-100 mt-2">
-                    <i class="fas fa-text"></i> 文字
-                  </button>
-                </div>
-              </div>
-              <div class="row g-2 mt-2">
-                <div class="col py-1">
-                  <button type="button" onclick="resetSignature();" class="btn btn-secondary opacity-50 w-100">
-                    <i class="fas fa-eraser"></i> 清除用印
-                  </button>
-                </div>
-                <div class="col py-1">
-                  <button type="button" onclick="cancelHandler();" class="btn btn-success opacity-75 w-100">
-                    <i class="far fa-times"></i> 取消
-                  </button>
-                </div>
-                <div class="col py-1">
-                  <button type="button" onclick="abortHandler();" class="btn btn-danger opacity-75 w-100">
-                    <i class="fas fa-share"></i> 退回合約
-                  </button>
-                </div>
-              </div>
-              <div class="row g-2">
-                <div class="col py-1">
-                  <button type="button" onclick="commitContract();"
-                    class="btn btn-lg btn-primary opacity-75 w-100 fw-bolder">
-                    送出合約
-                  </button>
-                </div>
-              </div>
-            </form>
-            <script>
-              var pageCount = @(pageCount);
-              function commitData(step) {
-                var currentPage = Number($('select[name="PageIndex"]').val());
-                if (isNaN(currentPage)) {
-                  return;
+                                  </select>
+                                  <script>
+                                    $('select[name="PageIndex"]').on('change', function () {
+                                      loadContractPage($('select[name="PageIndex"]').val());
+                                    });
+                                  </script>
+                                </div>
+                                <div>
+                                  <button type="button" onclick="sealHandler()" class="btn btn-brown w-100">
+                                    <i class="fas fa-stamp"></i> 簽名 或 蓋章
+                                  </button>
+                                  <button type="button" onclick="dateHandler()" class="btn btn-brown w-100 mt-2">
+                                    <i class="fas fa-calendar-alt"></i> 日期
+                                  </button>
+                                  <button type="button" onclick="textHandler()" class="btn btn-brown w-100 mt-2">
+                                    <i class="fas fa-text"></i> 文字
+                                  </button>
+                                </div>
+                              </div>
+                              <div class="row g-2 mt-2">
+                                <div class="col py-1">
+                                  <button type="button" onclick="resetSignature();" class="btn btn-secondary opacity-50 w-100">
+                                    <i class="fas fa-eraser"></i> 清除用印
+                                  </button>
+                                </div>
+                                @if (party == null || party.IsInitiator == true)
+                {
+                                    <div class="col py-1">
+                                        <button type="button" onclick="cancelHandler();" class="btn btn-success opacity-75 w-100">
+                                            <i class="far fa-times"></i> 取消
+                                        </button>
+                                    </div>
                 }
-                if (step == 'next') {
-                  currentPage++;
-                } else {
-                  currentPage--;
+                else
+                {
+                                    <div class="col py-1">
+                                        <button type="button" onclick="abortHandler();" class="btn btn-danger opacity-75 w-100">
+                                            <i class="fas fa-share"></i> 退回合約
+                                        </button>
+                                    </div>
                 }
-                if (currentPage >= 0 && currentPage < pageCount) {
-                  $('select[name="PageIndex"]').val(currentPage);
-                  loadContractPage(currentPage);
-                }
-              }
-              function commitSignature(preview) {
-                clearErrors();
-                $global.viewModel.Preview = preview;
-                $global.viewModel.PageIndex = Number($('select[name="PageIndex"]').val());
-                showLoading();
-                $.post('@Html.Raw(Url.Action("CommitPdfSignature", "ContractConsole"))', $global.viewModel, function (data) {
-                  hideLoading();
-                  if ($.isPlainObject(data)) {
-                    if (data.result) {
-                      if (preview) {
-                      } else {
-                        alertModal('已用印完成!!');
-                      }
-                      loadContractPage($('select[name="PageIndex"]').val());
-                      if ($global.currentSeal) {
-                        $global.currentSeal.remove();
-                      }
-                      delete $global.viewModel.SealID;
-                    } else {
-                      alertModal(data.message);
-                    }
-                  } else {
-                    $(data).appendTo($('body'));
-                  }
-                });
-              }
+                              </div>
+                              <div class="row g-2">
+                                <div class="col py-1">
+                                  <button type="button" onclick="commitContract();"
+                                    class="btn btn-lg btn-primary opacity-75 w-100 fw-bolder">
+                                    送出合約
+                                  </button>
+                                </div>
+                              </div>
+                            </form>
+                            <script>
+                              var pageCount = @(pageCount);
+                              function commitData(step) {
+                                var currentPage = Number($('select[name="PageIndex"]').val());
+                                if (isNaN(currentPage)) {
+                                  return;
+                                }
+                                if (step == 'next') {
+                                  currentPage++;
+                                } else {
+                                  currentPage--;
+                                }
+                                if (currentPage >= 0 && currentPage < pageCount) {
+                                  $('select[name="PageIndex"]').val(currentPage);
+                                  loadContractPage(currentPage);
+                                }
+                              }
+                              function commitSignature(doAllPages) {
+                                clearErrors();
+                                  $global.viewModel.DoAllPages = doAllPages;
+                                $global.viewModel.PageIndex = Number($('select[name="PageIndex"]').val());
+                                showLoading();
+                                $.post('@Html.Raw(Url.Action("CommitPdfSignature", "ContractConsole"))', $global.viewModel, function (data) {
+                                  hideLoading();
+                                  if ($.isPlainObject(data)) {
+                                    if (data.result) {
+                                      loadContractPage($('select[name="PageIndex"]').val());
+                                      if ($global.currentSeal) {
+                                        $global.currentSeal.remove();
+                                      }
+                                      delete $global.viewModel.SealID;
+                                    } else {
+                                      alertModal(data.message);
+                                    }
+                                  } else {
+                                    $(data).appendTo($('body'));
+                                  }
+                                });
+                              }
 
-              function resetSignature() {
-                clearErrors();
-                $global.viewModel.PageIndex = Number($('select[name="PageIndex"]').val());
-                $('form').ajaxForm({
-                  url: '@Html.Raw(Url.Action("ResetPdfSignature", "ContractConsole"))',
-                  data: $global.viewModel,
-                  beforeSubmit: function () {
-                    showLoading();
-                  },
-                  success: function (data) {
-                    hideLoading();
-                    if ($.isPlainObject(data)) {
-                      if (data.result) {
-                        alertModal('已清除用印!!');
-                        loadContractPage($('select[name="PageIndex"]').val());
-                        if ($global.currentSeal) {
-                          $global.currentSeal.remove();
-                        }
-                        delete $global.viewModel.SealID;
-                      } else {
-                        alertModal(data.message);
-                      }
-                    }
-                    else {
-                      $(data).appendTo($('body'));
-                    }
-                  },
-                  error: function (xhr, ajaxOptions, thrownError) {
-                    hideLoading();
-                    console.log(xhr.status);
-                    alertModal(thrownError);
-                  }
-                }).submit();
-              }
+                                function commitNote(note, doAllPages) {
+                                    clearErrors();
+                                    $global.viewModel.Note = note;
+                                    $global.viewModel.DoAllPages = doAllPages;
+                                    $global.viewModel.PageIndex = Number($('select[name="PageIndex"]').val());
+                                    showLoading();
+                                    $.post('@Html.Raw(Url.Action("CommitPdfNote", "ContractConsole"))', $global.viewModel, function (data) {
+                                        hideLoading();
+                                        if ($.isPlainObject(data)) {
+                                            if (data.result) {
+                                                loadContractPage($('select[name="PageIndex"]').val());
+                                                if ($global.currentSeal) {
+                                                    $global.currentSeal.remove();
+                                                }
+                                                delete $global.viewModel.SealID;
+                                            } else {
+                                                alertModal(data.message);
+                                            }
+                                        } else {
+                                            $(data).appendTo($('body'));
+                                        }
+                                    });
+                                }
 
-              function loadContractPage(pageIndex) {
-                showLoading();
-                $.post('@Html.Raw(Url.Action("LoadContractPage", "ContractConsole"))', { 'KeyID': '@Html.Raw(_model!.ContractID.EncryptKey())', 'PageIndex': pageIndex }, function (data) {
-                  hideLoading();
-                  if ($.isPlainObject(data)) {
-                    $('#contractImg').css(data);
-                  } else {
-                    $(data).appendTo($('body'));
-                  }
-                });
-              }
+                              function resetSignature() {
+                                clearErrors();
+                                $global.viewModel.PageIndex = Number($('select[name="PageIndex"]').val());
+                                $('form').ajaxForm({
+                                  url: '@Html.Raw(Url.Action("ResetPdfSignature", "ContractConsole"))',
+                                  data: $global.viewModel,
+                                  beforeSubmit: function () {
+                                    showLoading();
+                                  },
+                                  success: function (data) {
+                                    hideLoading();
+                                    if ($.isPlainObject(data)) {
+                                      if (data.result) {
+                                        alertModal('已清除用印!!');
+                                        loadContractPage($('select[name="PageIndex"]').val());
+                                        if ($global.currentSeal) {
+                                          $global.currentSeal.remove();
+                                        }
+                                        delete $global.viewModel.SealID;
+                                      } else {
+                                        alertModal(data.message);
+                                      }
+                                    }
+                                    else {
+                                      $(data).appendTo($('body'));
+                                    }
+                                  },
+                                  error: function (xhr, ajaxOptions, thrownError) {
+                                    hideLoading();
+                                    console.log(xhr.status);
+                                    alertModal(thrownError);
+                                  }
+                                }).submit();
+                              }
 
-              // 開啟會回合約 Model
-              function abortHandler() {
-                $('#abortModal').modal('show');
-              }
+                              function loadContractPage(pageIndex) {
+                                showLoading();
+                                $.post('@Html.Raw(Url.Action("LoadContractPage", "ContractConsole"))', { 'KeyID': '@Html.Raw(_model!.ContractID.EncryptKey())', 'PageIndex': pageIndex }, function (data) {
+                                  hideLoading();
+                                  if ($.isPlainObject(data)) {
+                                    $('#contractImg').css(data);
+                                  } else {
+                                    $(data).appendTo($('body'));
+                                  }
+                                });
+                              }
 
-              function abortContract() {
-              @* if (!confirm('合約退回後，資料將被清除，確定退回？')) {
+                              // 開啟會回合約 Model
+                              function abortHandler() {
+                                $('#abortModal').modal('show');
+                              }
+
+                              function abortContract() {
+                              @* if (!confirm('合約退回後，資料將被清除，確定退回？')) {
                 return;
                 } *@
 
-                  $('#abortModal').modal('hide');
-                showLoading();
-                $.post('@Html.Raw(Url.Action("AbortContract", "ContractConsole"))', { 'KeyID': '@Html.Raw(_model!.ContractID.EncryptKey())' }, function (data) {
-                  hideLoading();
-                  if ($.isPlainObject(data)) {
-                    if (data.result) {
-                      alertModal('合約已退回!!');
-                      window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
-                    } else {
-                      alertModal(data.message);
-                    }
-                    $('#contractImg').css(data);
-                  } else {
-                    $(data).appendTo($('body'));
-                  }
-                });
-              }
+                                  $('#abortModal').modal('hide');
+                                showLoading();
+                                $.post('@Html.Raw(Url.Action("AbortContract", "ContractConsole"))', { 'KeyID': '@Html.Raw(_model!.ContractID.EncryptKey())' }, function (data) {
+                                  hideLoading();
+                                  if ($.isPlainObject(data)) {
+                                    if (data.result) {
+                                      alertModal('合約已退回!!');
+                                      window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+                                    } else {
+                                      alertModal(data.message);
+                                    }
+                                    $('#contractImg').css(data);
+                                  } else {
+                                    $(data).appendTo($('body'));
+                                  }
+                                });
+                              }
 
-              function commitContract() {
-                $global.viewModel.IgnoreSeal = $('#isInitiatorStamp').is(':checked');
-                showLoading();
-                $.ajax({
-                  type: 'POST',
-                  url: '@(Url.Action(party == null || party.IsInitiator == true ? "CommitContract" : "AcceptContract", "ContractConsole"))',
-                  data: JSON.stringify($global.viewModel),
-                  type: "POST",
-                  //dataType: "json",
-                  contentType: "application/json;charset=utf-8",
-                  success: function (data) {
-                    hideLoading();
-                    if ($.isPlainObject(data)) {
-                      if (data.result) {
-                        alertModal(`@(Html.Raw(party == null || party.IsInitiator == true ? "已建立新合約" : "合約已用印"))(${data.dataItem.contractNo})。`);
-                        setTimeout(() => {
-                          window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
-                        }, 3000);
-                      } else {
-                        alertModal(data.message);
-                      }
-                    } else {
-                      $(data).appendTo($('body'));
-                    }
-                  },
-                  error: function (xhr, ajaxOptions, thrownError) {
-                    hideLoading();
-                    console.log(xhr.status);
-                    console.log(thrownError);
-                  }
-                });
-              }
-            </script>
-          </div>
+                              function cancelContract() {
+                                showLoading();
+                                $.post('@Html.Raw(Url.Action("DeleteContract", "ContractConsole"))', { 'KeyID': '@Html.Raw(_model!.ContractID.EncryptKey())' }, function (data) {
+                                  hideLoading();
+                                  if ($.isPlainObject(data)) {
+                                    if (data.result) {
+                                      alertModal('合約已取消!!');
+                                      window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+                                    } else {
+                                      alertModal(data.message);
+                                    }
+                                  } else {
+                                    $(data).appendTo($('body'));
+                                  }
+                                });
+                              }
+
+                              function commitContract() {
+                                $global.viewModel.IgnoreSeal = $('#isInitiatorStamp').is(':checked');
+                                showLoading();
+                                $.ajax({
+                                  type: 'POST',
+                                  url: '@(Url.Action(party == null || party.IsInitiator == true ? "CommitContract" : "AcceptContract", "ContractConsole"))',
+                                  data: JSON.stringify($global.viewModel),
+                                  type: "POST",
+                                  //dataType: "json",
+                                  contentType: "application/json;charset=utf-8",
+                                  success: function (data) {
+                                    hideLoading();
+                                    if ($.isPlainObject(data)) {
+                                      if (data.result) {
+                                        alertModal(`@(Html.Raw(party == null || party.IsInitiator == true ? "已建立新合約" : "合約已用印"))(${data.dataItem.contractNo})。`);
+                                        setTimeout(() => {
+                                          window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+                                        }, 3000);
+                                      } else {
+                                        alertModal(data.message);
+                                      }
+                                    } else {
+                                      $(data).appendTo($('body'));
+                                    }
+                                  },
+                                  error: function (xhr, ajaxOptions, thrownError) {
+                                    hideLoading();
+                                    console.log(xhr.status);
+                                    console.log(thrownError);
+                                  }
+                                });
+                              }
+                            </script>
+                          </div>
         }
       </div>
     </div>
@@ -747,6 +796,7 @@
       e.stopPropagation();
       e.preventDefault();
       // 套用整份文件
+        commitSignature(true);
 
 
       contractArea.onmouseleave = function () {
@@ -766,7 +816,7 @@
       e.stopPropagation();
       e.preventDefault();
       // 套用文字區塊
-      commitSignature(true);
+      commitSignature();
 
       contractArea.onmouseleave = function () {
         contractArea.onmousemove = null;
@@ -813,6 +863,44 @@
     }
   }
 
+function addSignature(sealUrl) {
+    if(sealUrl == null || sealUrl=='') {
+        return;
+    }
+    var index = sealUrl.indexOf(',');
+    var viewModel = {
+        'SealData': sealUrl.substring(index+1)
+    };
+
+    showLoading();
+        $.ajax({
+          type: 'POST',
+          url: '@(Url.Action("CommitSignatureTemplate", "UserProfile"))',
+          data: JSON.stringify(viewModel),
+          type: "POST",
+          //dataType: "json",
+          contentType: "application/json;charset=utf-8",
+          success: function (data) {
+            hideLoading();
+              if ($.isPlainObject(data)) {
+                if (data.result) {
+                } else {
+                  alertModal(data.message);
+                }
+              }
+              else {
+                  $('#addSignature').append(data);
+              }
+          },
+          error: function (xhr, ajaxOptions, thrownError) {
+            hideLoading();
+            console.log(xhr.status);
+            console.log(thrownError);
+          }
+        });
+    
+  }
+
   // 置入日期 ---------------------------------
   function dateHandler() {
     $('#dateModal').modal('show');
@@ -848,6 +936,9 @@
   });
 
   function createVirtualText(string) {
+
+    $global.viewModel.SealScale = 100;
+
     // 產生一個虛擬 textBox
     const textBox = document.createElement("div");
     // id 動態產生
@@ -889,6 +980,11 @@
     // 跟著滑鼠移動
     const contractArea = document.querySelector("#contractImg");
     const note = document.querySelector(`#${uuid}`);
+        if ($global.currentSeal) {
+            $global.currentSeal.remove();
+        }
+        $global.currentSeal = note;
+
     note.onmousedown = function (ev) {
       var oEvent = ev;
       // 阻擋瀏覽器的預設行為
@@ -913,6 +1009,8 @@
         const MarginTop = (y / 37.7).toFixed(2);
         // console.log('mx-左邊界(cm):', MarginLeft);
         // console.log('my-上邊界(cm):', MarginTop);
+        $global.viewModel.MarginLeft = MarginLeft;
+        $global.viewModel.MarginTop = MarginTop;
       }
       // 文字區塊移出文件範圍取消移動是,防止移動過快觸發滑鼠移出事件，導致滑鼠彈起事件失效
       contractArea.onmouseleave = function () {
@@ -988,6 +1086,7 @@
       e.preventDefault();
       // 套用文字區塊
       console.log({ note });
+        commitNote(note.querySelector('.note').innerText);
 
       contractArea.onmouseleave = function () {
         contractArea.onmousemove = null;
@@ -1007,6 +1106,7 @@
       e.preventDefault();
       // 套用文字區塊
       console.log({ note });
+        commitNote(note.querySelector('.note').innerText, true);
 
       contractArea.onmouseleave = function () {
         contractArea.onmousemove = null;
@@ -1028,9 +1128,7 @@
   function confirmCancel() {
     console.log('cancel');
     $('#cancelModal').modal('hide');
-    alertModal('合約已取消');
-    // 轉跳頁面回清單
-    window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+    cancelContract();
   };
 
   // 開啟預覽 Modal
@@ -1040,19 +1138,19 @@
 </script>
 @functions
 {
-  public int GetPdfPageCount(Contract attachment)
-  {
-    if (attachment == null || !File.Exists(attachment.FilePath))
-    {
-      return 0;
-    }
+  // public int GetPdfPageCount(Contract attachment)
+  // {
+  //   if (attachment == null || !File.Exists(attachment.FilePath))
+  //   {
+  //     return 0;
+  //   }
 
-    var content = File.ReadAllText(attachment.FilePath);
-    var match = Regex.Match(content, "/Count(?([^\\r\\n])\\s)\\d+");
-    if (match.Value != String.Empty)
-    {
-      return int.Parse(match.Value.Substring(7));
-    }
-    return 0;
-  }
+  //   var content = File.ReadAllText(attachment.FilePath);
+  //   var match = Regex.Match(content, "/Count(?([^\\r\\n])\\s)\\d+");
+  //   if (match.Value != String.Empty)
+  //   {
+  //     return int.Parse(match.Value.Substring(7));
+  //   }
+  //   return 0;
+  // }
 }

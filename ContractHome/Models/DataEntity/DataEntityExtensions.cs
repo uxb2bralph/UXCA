@@ -52,7 +52,7 @@ namespace ContractHome.Models.DataEntity
             }
         }
 
-        protected internal Dictionary<Object,Object>? _values;
+        protected internal Dictionary<Object, Object>? _values;
         public object? this[object index]
         {
             get
@@ -96,16 +96,17 @@ namespace ContractHome.Models.DataEntity
         public enum StepEnum
         {
             Initial = 0,
-            Removed = 1,
+            Revoked = 1,
             InitiatorSealed = 2,
             ContractorSealed = 3,
             InitiatorDigitalSigned = 4,
             ContractorDigitalSigned = 5,
             Browsed = 6,
             Terminated = 7,
+            Committed = 8,
         }
 
-        public static readonly String[] StepNaming = 
+        public static readonly String[] StepNaming =
             {
                 "合約文件上傳",
                 "已退回",
@@ -116,6 +117,15 @@ namespace ContractHome.Models.DataEntity
                 "瀏覽",
                 "已終止",
             };
+
+        public static StepEnum[] PendingState =
+        {
+            StepEnum.Initial,
+            StepEnum.InitiatorDigitalSigned,
+            StepEnum.ContractorDigitalSigned,
+            StepEnum.InitiatorSealed,
+            StepEnum.ContractorSealed
+        };
 
         public bool IsPDF => ProcessType == (int)ProcessTypeEnum.PDF;
 

@@ -6,6 +6,7 @@
 @using ContractHome.Controllers
 @using ContractHome.Models.DataEntity
 @using ContractHome.Models.ViewModel
+@using ContractHome.Helper.DataQuery
 @using CommonLib.Utility
 @using Newtonsoft.Json
 @{
@@ -16,7 +17,7 @@
   models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
   _modelState = (ModelStateDictionary)ViewBag.ModelState;
   QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
-  var profile = await Context.GetUserAsync();
+  var profile = (await Context.GetUserAsync()).LoadInstance(models!);
 }
 <div id="mainNavBar">
   <header class="border__uxb2b--bottom shadow__card">
@@ -53,7 +54,7 @@
           </ul>
 
           <ul class="navbar-nav mb-2 mb-lg-0">
-            <li class="fw-bolder">網際優勢甲方公司 @Html.Raw(profile.UserName) 您好！</li>
+            <li class="fw-bolder">@Html.Raw(profile.OrganizationUser?.Organization.CompanyName) @Html.Raw(profile.UserName) 您好！</li>
           </ul>
           <ul class="navbar-nav mb-2 mb-lg-0">
             <li class="nav-item dropdown">

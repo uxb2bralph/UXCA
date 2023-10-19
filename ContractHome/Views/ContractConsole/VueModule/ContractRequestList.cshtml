@@ -31,6 +31,12 @@
         profile = profile.LoadInstance(models!);
     }
 
+    if (_viewModel.SortName == null || _viewModel.SortName.Length == 0)
+    {
+        _viewModel.SortName = new string[] { "ContractID" };
+        _viewModel.SortType = new int?[] { -1 };
+    }
+
     await Html.RenderPartialAsync("~/Views/DataExchange/Module/ItemListSorting.cshtml");
 
     IQueryable<dynamic> items;

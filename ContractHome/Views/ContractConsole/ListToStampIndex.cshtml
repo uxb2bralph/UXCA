@@ -1221,5 +1221,12 @@
   }
 </script>
 @{
-  await Html.RenderPartialAsync("~/Views/ContractConsole/VueModule/ContractRequestList.cshtml");
+    // IQueryable<Contract> _model = (IQueryable<Contract>)this.Model;
+    // var items = _model;
+    // if (_viewModel.SortName == null || _viewModel.SortName.Length == 0)
+    // {
+    //     items = items.OrderByDescending(c => c.ContractID);
+    // }
+
+    // await Html.RenderPartialAsync("~/Views/ContractConsole/VueModule/ContractRequestList.cshtml", items);
 }

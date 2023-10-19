@@ -60,12 +60,12 @@ namespace ContractHome.Models.ViewModel
     public partial class SignContractViewModel : QueryViewModel
     {
         public String? SignDate { get; set; }
-        public String? BuyerIdNo { get; set;}
+        public String? BuyerIdNo { get; set; }
         public String? BuyerAddress { get; set; }
         public String? BuyerName { get; set; }
         public String? PayWeekDate { get; set; }
-        public String? EndDate { get; set;}
-        public String? CreditDate { get; set;}
+        public String? EndDate { get; set; }
+        public String? CreditDate { get; set; }
         public String? Amount { get; set; }
         public String? ContractNo { get; set; }
         public String? BuyerSeal { get; set; }
@@ -89,6 +89,7 @@ namespace ContractHome.Models.ViewModel
     {
         public DateTime? ContractDateFrom { get; set; }
         public DateTime? ContractDateTo { get; set; }
+        public CDS_Document.StepEnum[]? QueryStep { get; set; }
     }
 
     public class SealRequestViewModel : SignContractViewModel
@@ -102,6 +103,8 @@ namespace ContractHome.Models.ViewModel
     public class SignatureRequestViewModel : SealRequestViewModel
     {
         public int? CompanyID { get; set; }
+        public String? Note { get; set; }
+        public bool? DoAllPages { get; set; }
     }
 
     public class TemplateResourceViewModel : QueryViewModel
@@ -197,6 +200,7 @@ namespace ContractHome.Models.ViewModel
         public String? EncCompanyID { get; set; }
         public UserRoleDefinition.RoleEnum? RoleID { get; set; }
         public int? UID { get; set; }
+        public String? SealData { get; set; }
     }
 
 }
