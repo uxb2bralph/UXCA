@@ -55,5 +55,5 @@ https://github.com/linjc/smooth-signature
 ### 取得專案
 
 ```bash
-git clone git@github.com:hsiangfeng/README-Example-Template.git
+git clone https://github.com/uxb2bralph/UXCA.git
 ```
