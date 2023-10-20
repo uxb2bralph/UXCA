@@ -24,6 +24,7 @@ using CommonLib.Utility;
 using IronPdf.Signing;
 using IronSoftware.Drawing;
 using System.Drawing.Imaging;
+using System.Text.RegularExpressions;
 
 namespace ContractHome.Models.Helper
 {
@@ -221,6 +222,36 @@ namespace ContractHome.Models.Helper
 
             return true;
         }
+
+        public static int GetPdfPageCount(this Contract contract)
+        {
+            if (contract == null)
+            {
+                return 0;
+            }
+
+            PdfDocument? pdf = null;
+
+            if (File.Exists(contract.FilePath))
+            {
+                pdf = PdfDocument.FromFile(contract.FilePath);
+            }
+            else if (contract.ContractContent != null)
+            {
+                pdf = new PdfDocument(contract.ContractContent.ToArray());
+            }
+
+            if (pdf == null)
+            {
+                return 0;
+            }
+
+            var pageCount = pdf.Pages.Count;
+            pdf.Dispose();
+
+            return pageCount;
+        }
+
 
     }
 }

@@ -135,36 +135,36 @@ namespace ContractHome.Helper
             models.SubmitChanges();
         }
 
-        public static int GetPdfPageCount(this Contract contract)
-        {
-            String? content = null;
-            if (contract == null)
-            {
-                return 0;
-            }
+        //public static int GetPdfPageCount(this Contract contract)
+        //{
+        //    String? content = null;
+        //    if (contract == null)
+        //    {
+        //        return 0;
+        //    }
 
-            if (File.Exists(contract.FilePath))
-            {
-                content = File.ReadAllText(contract.FilePath);
-            }
-            else if (contract.ContractContent != null)
-            {
-                content = Encoding.ASCII.GetString(contract.ContractContent.ToArray());
-            }
+        //    if (File.Exists(contract.FilePath))
+        //    {
+        //        content = File.ReadAllText(contract.FilePath);
+        //    }
+        //    else if (contract.ContractContent != null)
+        //    {
+        //        content = Encoding.ASCII.GetString(contract.ContractContent.ToArray());
+        //    }
 
-            if (content == null)
-            {
-                return 0;
-            }
+        //    if (content == null)
+        //    {
+        //        return 0;
+        //    }
 
-            var match = Regex.Match(content, "/Count(?([^\\r\\n])\\s)\\d+");
-            if (match.Value != String.Empty)
-            {
-                return int.Parse(match.Value.Substring(7));
-            }
+        //    var match = Regex.Match(content, "/Count(?([^\\r\\n])\\s)\\d+");
+        //    if (match.Value != String.Empty)
+        //    {
+        //        return int.Parse(match.Value.Substring(7));
+        //    }
 
-            return 0;
-        }
+        //    return 0;
+        //}
 
     }
 }
