@@ -493,4 +493,12 @@
 
 .fs-14 {
   font-size: 14px;
+}
+
+#tourbutton {
+  padding: 10px 5px;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 40px;
 }/*# sourceMappingURL=site.css.map */
