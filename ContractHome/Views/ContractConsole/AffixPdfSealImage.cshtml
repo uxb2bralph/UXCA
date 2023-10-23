@@ -24,10 +24,10 @@
 
   var profile = await Context.GetUserAsync();
   var party = models!.GetTable<ContractingParty>()
-      .Where(p => p.ContractID == _model.ContractID)
-      .Where(p => models.GetTable<OrganizationUser>()
-      .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
-      .FirstOrDefault();
+  .Where(p => p.ContractID == _model.ContractID)
+  .Where(p => models.GetTable<OrganizationUser>()
+  .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
+  .FirstOrDefault();
 
   DateTime today = DateTime.Now;
   int rocYear = today.Year - 1911; // 民國年
@@ -41,11 +41,12 @@
         await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
         await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml",
         party == null
-            ? "建立新合約"
-            : party.IsInitiator == true
-              ? "起約人用印" : "簽約人用印");
+        ? "建立新合約"
+        : party.IsInitiator == true
+        ? "起約人用印" : "簽約人用印");
       }
-      @if (party == null || party.IsInitiator == true) {
+      @if (party == null || party.IsInitiator == true)
+      {
         <div>
           <button class="btn btn-warning bg-gradient me-4" id="editTourbutton">
             <i class="far fa-street-view"></i>
@@ -100,26 +101,27 @@
               }
               <div id="step2" class="card p-3 mb-3">
                 <h5 class="h5 fw-bolder text-primary">
-                @if (party == null || party.IsInitiator == true)
+                  @if (party == null || party.IsInitiator == true)
                   {
                     <text>Step 2：</text>
                   }
-                文件審閱</h5>
+                  文件審閱
+                </h5>
                 <div class="pb-3">
                   <input class="form-check-input" type="checkbox" id="isInitiatorStamp" name="IgnoreSeal" value="True" />
                   <label class="form-check-label" for="isInitiatorStamp">
-                  @if (party == null || party.IsInitiator == true)
-                  {
-                    <text>起約人：</text>
-                  }
-                  else
-                  {
-                    <text>簽約人：</text>
-                  }
-                  上傳合約已用印
+                    @if (party == null || party.IsInitiator == true)
+                    {
+                      <text>起約人：</text>
+                    }
+                    else
+                    {
+                      <text>簽約人：</text>
+                    }
+                    上傳合約已用印
                   </label>
                 </div>
-              </div>                              
+              </div>
               <div id="step3" class="card p-3 mb-3">
                 <h5 class="h5 fw-bolder text-primary">
                   @if (party == null || party.IsInitiator == true)
@@ -131,7 +133,7 @@
                 <div class="pb-3">
                   <label class="form-label fw-bolder" for="PageIndex">選擇用印所在頁碼</label>
                   <select name="PageIndex" class="form-select form-select-sm">
-                  <option value="0" selected="0">第 1 頁</option>
+                    <option value="0" selected="0">第 1 頁</option>
                     @for (int i = 0; i < pageCount; i++)
                     {
                       <option value="@(i)">第@(i + 1)頁</option>
@@ -164,17 +166,17 @@
                 @if (party == null || party.IsInitiator == true)
                 {
                   <div class="col py-1">
-                      <button type="button" onclick="cancelHandler();" class="btn btn-success opacity-75 w-100">
-                          <i class="far fa-times"></i> 取消
-                      </button>
+                    <button type="button" onclick="cancelHandler();" class="btn btn-success opacity-75 w-100">
+                      <i class="far fa-times"></i> 取消
+                    </button>
                   </div>
                 }
                 else
                 {
                   <div class="col py-1">
-                      <button type="button" onclick="abortHandler();" class="btn btn-danger opacity-75 w-100">
-                          <i class="fas fa-share"></i> 退回合約
-                      </button>
+                    <button type="button" onclick="abortHandler();" class="btn btn-danger opacity-75 w-100">
+                      <i class="fas fa-share"></i> 退回合約
+                    </button>
                   </div>
                 }
               </div>
@@ -206,7 +208,7 @@
               }
               function commitSignature(doAllPages) {
                 clearErrors();
-                  $global.viewModel.DoAllPages = doAllPages;
+                $global.viewModel.DoAllPages = doAllPages;
                 $global.viewModel.PageIndex = Number($('select[name="PageIndex"]').val());
                 showLoading();
                 $.post('@Html.Raw(Url.Action("CommitPdfSignature", "ContractConsole"))', $global.viewModel, function (data) {
@@ -228,27 +230,27 @@
               }
 
               function commitNote(note, doAllPages) {
-                  clearErrors();
-                  $global.viewModel.Note = note;
-                  $global.viewModel.DoAllPages = doAllPages;
-                  $global.viewModel.PageIndex = Number($('select[name="PageIndex"]').val());
-                  showLoading();
-                  $.post('@Html.Raw(Url.Action("CommitPdfNote", "ContractConsole"))', $global.viewModel, function (data) {
-                      hideLoading();
-                      if ($.isPlainObject(data)) {
-                          if (data.result) {
-                              loadContractPage($('select[name="PageIndex"]').val());
-                              if ($global.currentSeal) {
-                                  $global.currentSeal.remove();
-                              }
-                              delete $global.viewModel.SealID;
-                          } else {
-                              alertModal(data.message);
-                          }
-                      } else {
-                          $(data).appendTo($('body'));
+                clearErrors();
+                $global.viewModel.Note = note;
+                $global.viewModel.DoAllPages = doAllPages;
+                $global.viewModel.PageIndex = Number($('select[name="PageIndex"]').val());
+                showLoading();
+                $.post('@Html.Raw(Url.Action("CommitPdfNote", "ContractConsole"))', $global.viewModel, function (data) {
+                  hideLoading();
+                  if ($.isPlainObject(data)) {
+                    if (data.result) {
+                      loadContractPage($('select[name="PageIndex"]').val());
+                      if ($global.currentSeal) {
+                        $global.currentSeal.remove();
                       }
-                  });
+                      delete $global.viewModel.SealID;
+                    } else {
+                      alertModal(data.message);
+                    }
+                  } else {
+                    $(data).appendTo($('body'));
+                  }
+                });
               }
 
               function resetSignature() {
@@ -308,7 +310,7 @@
                 return;
                 } *@
 
-                $('#abortModal').modal('hide');
+                  $('#abortModal').modal('hide');
                 showLoading();
                 $.post('@Html.Raw(Url.Action("AbortContract", "ContractConsole"))', { 'KeyID': '@Html.Raw(_model!.ContractID.EncryptKey())' }, function (data) {
                   hideLoading();
@@ -805,7 +807,7 @@
       e.stopPropagation();
       e.preventDefault();
       // 套用整份文件
-        commitSignature(true);
+      commitSignature(true);
 
 
       contractArea.onmouseleave = function () {
@@ -872,42 +874,42 @@
     }
   }
 
-function addSignature(sealUrl) {
-    if(sealUrl == null || sealUrl=='') {
-        return;
+  function addSignature(sealUrl) {
+    if (sealUrl == null || sealUrl == '') {
+      return;
     }
     var index = sealUrl.indexOf(',');
     var viewModel = {
-        'SealData': sealUrl.substring(index+1)
+      'SealData': sealUrl.substring(index + 1)
     };
 
     showLoading();
-        $.ajax({
-          type: 'POST',
-          url: '@(Url.Action("CommitSignatureTemplate", "UserProfile"))',
-          data: JSON.stringify(viewModel),
-          type: "POST",
-          //dataType: "json",
-          contentType: "application/json;charset=utf-8",
-          success: function (data) {
-            hideLoading();
-              if ($.isPlainObject(data)) {
-                if (data.result) {
-                } else {
-                  alertModal(data.message);
-                }
-              }
-              else {
-                  $('#addSignature').append(data);
-              }
-          },
-          error: function (xhr, ajaxOptions, thrownError) {
-            hideLoading();
-            console.log(xhr.status);
-            console.log(thrownError);
+    $.ajax({
+      type: 'POST',
+      url: '@(Url.Action("CommitSignatureTemplate", "UserProfile"))',
+      data: JSON.stringify(viewModel),
+      type: "POST",
+      //dataType: "json",
+      contentType: "application/json;charset=utf-8",
+      success: function (data) {
+        hideLoading();
+        if ($.isPlainObject(data)) {
+          if (data.result) {
+          } else {
+            alertModal(data.message);
           }
-        });
-    
+        }
+        else {
+          $('#addSignature').append(data);
+        }
+      },
+      error: function (xhr, ajaxOptions, thrownError) {
+        hideLoading();
+        console.log(xhr.status);
+        console.log(thrownError);
+      }
+    });
+
   }
 
   // 置入日期 ---------------------------------
@@ -989,10 +991,10 @@ function addSignature(sealUrl) {
     // 跟著滑鼠移動
     const contractArea = document.querySelector("#contractImg");
     const note = document.querySelector(`#${uuid}`);
-        if ($global.currentSeal) {
-            $global.currentSeal.remove();
-        }
-        $global.currentSeal = note;
+    if ($global.currentSeal) {
+      $global.currentSeal.remove();
+    }
+    $global.currentSeal = note;
 
     note.onmousedown = function (ev) {
       var oEvent = ev;
@@ -1095,7 +1097,7 @@ function addSignature(sealUrl) {
       e.preventDefault();
       // 套用文字區塊
       console.log({ note });
-        commitNote(note.querySelector('.note').innerText);
+      commitNote(note.querySelector('.note').innerText);
 
       contractArea.onmouseleave = function () {
         contractArea.onmousemove = null;
@@ -1115,7 +1117,7 @@ function addSignature(sealUrl) {
       e.preventDefault();
       // 套用文字區塊
       console.log({ note });
-        commitNote(note.querySelector('.note').innerText, true);
+      commitNote(note.querySelector('.note').innerText, true);
 
       contractArea.onmouseleave = function () {
         contractArea.onmousemove = null;
@@ -1146,44 +1148,54 @@ function addSignature(sealUrl) {
   };
 
   // 導覽小幫手
+  const steps = [
+    {
+      selector: '#step1',
+      step: 1,
+      title: 'Step 1：指定合約雙方',
+      content: '選擇合約雙方：<ul><li>指定起約人：選擇甲方。</li><li>指定簽約人：選擇乙方 (可複選)。</li></ul>'
+    },
+    {
+      selector: '#step2',
+      step: 2,
+      title: 'Step 2：文件審閱',
+      content: '若上傳的合約已經用完印，<br>請起約方或簽約方在文件審閱的地方打勾，就可以省略用印的步驟。<br>直接送出文件。'
+    },
+    {
+      selector: '#step3',
+      step: 3,
+      title: 'Step 3：創建欄位',
+      content: '<ul><li>先選擇要編輯的頁面。</li><li>如果需要用印、簽名或填寫註記、壓日期，請使用下方按鈕新增：<ul></li><li>簽名或蓋章：可以新增簽名檔或印章並置入文件內。</li><li>日期：可以新增日期在文件上。</li><li>文字：可以新增文字備註在文件上。</li></ul></li></ul>'
+    },
+    {
+      selector: '#step4',
+      step: 4,
+      title: '相關操作',
+      content: '<ul><li>清除用印：若要重新編輯合約，可點選清除用印。</li><li>取消：取消這份合約。</li><li>退回合約：若覺得這份合約尚有疑慮，可選擇退回合約。</li></ul>'
+    },
+    {
+      selector: '#step5',
+      step: 5,
+      title: '編輯畫面',
+      content: '合約編輯畫面，可以拖曳、縮放邊及區域，<br>確認好位置後按「套用」可將編輯區塊套用在該頁面。<br>按「套用全部」可將編輯區塊套用在全部頁面。'
+    }
+  ];
   var editTourbutton = document.querySelector('#editTourbutton');
   editTourbutton.addEventListener('click', function () {
     // 初始化 網頁導覽
-    const steps = [
-      {
-        selector: '#step1',
-        step: 1,
-        title: 'Step 1：指定合約雙方',
-        content: '選擇合約雙方：<ul><li>指定起約人：選擇甲方。</li><li>指定簽約人：選擇乙方 (可複選)。</li></ul>'
-      },
-      {
-        selector: '#step2',
-        step: 2,
-        title: 'Step 2：文件審閱',
-        content: '若上傳的合約已經用完印，<br>請起約方或簽約方在文件審閱的地方打勾，就可以省略用印的步驟。<br>直接送出文件。'
-      },
-      {
-        selector: '#step3',
-        step: 3,
-        title: 'Step 3：創建欄位',
-        content: '<ul><li>先選擇要編輯的頁面。</li><li>如果需要用印、簽名或填寫註記、壓日期，請使用下方按鈕新增：<ul></li><li>簽名或蓋章：可以新增簽名檔或印章並置入文件內。</li><li>日期：可以新增日期在文件上。</li><li>文字：可以新增文字備註在文件上。</li></ul></li></ul>'
-      },
-      {
-        selector: '#step4',
-        step: 4,
-        title: '相關操作',
-        content: '<ul><li>清除用印：若要重新編輯合約，可點選清除用印。</li><li>取消：取消這份合約。</li><li>退回合約：若覺得這份合約尚有疑慮，可選擇退回合約。</li></ul>'
-      },
-      {
-        selector: '#step5',
-        step: 5,
-        title: '編輯畫面',
-        content: '合約編輯畫面，可以拖曳、縮放邊及區域，<br>確認好位置後按「套用」可將編輯區塊套用在該頁面。<br>按「套用全部」可將編輯區塊套用在全部頁面。'
-      }
-    ];
     const tourguide = new Tourguide({ steps });
     tourguide.start();
   });
+
+  // 若為第一次登入，顯示歡迎視窗並進入導覽流程
+  window.addEventListener('load', (event) => {
+    if (!sessionStorage.getItem("isEditTour")) {
+      // 初始化 網頁導覽
+      const tourguide = new Tourguide({ steps });
+      tourguide.start();
+      sessionStorage.setItem("isEditTour", true);
+    }
+  })
 
 
 </script>
@@ -1191,17 +1203,17 @@ function addSignature(sealUrl) {
 {
   // public int GetPdfPageCount(Contract attachment)
   // {
-  //   if (attachment == null || !File.Exists(attachment.FilePath))
-  //   {
-  //     return 0;
-  //   }
+  // if (attachment == null || !File.Exists(attachment.FilePath))
+  // {
+  // return 0;
+  // }
 
-  //   var content = File.ReadAllText(attachment.FilePath);
-  //   var match = Regex.Match(content, "/Count(?([^\\r\\n])\\s)\\d+");
-  //   if (match.Value != String.Empty)
-  //   {
-  //     return int.Parse(match.Value.Substring(7));
-  //   }
-  //   return 0;
+  // var content = File.ReadAllText(attachment.FilePath);
+  // var match = Regex.Match(content, "/Count(?([^\\r\\n])\\s)\\d+");
+  // if (match.Value != String.Empty)
+  // {
+  // return int.Parse(match.Value.Substring(7));
+  // }
+  // return 0;
   // }
 }

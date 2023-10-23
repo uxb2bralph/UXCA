@@ -32,7 +32,7 @@
   @{
     // await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "合約清單");
   }
-  
+
   <button class="btn btn-warning bg-gradient" id="tourbutton" v-on:click="tourHandler">
     <i class="far fa-street-view"></i>
     導覽小幫手
@@ -640,6 +640,32 @@
       </div>
     </div>
   </div>
+
+  <!-- 歡迎使用 Dialog -->
+  <div class="modal fade" id="welcomModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="welcomModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-body">
+          <div class="text-center fs-1 cornflowerBlue py-4">
+            <i class="fad fa-map-marked-alt fa-lg"></i>
+          </div>
+          <div class="text-center h5 fw-bolder pb-3">
+            歡迎您使用安心簽 數位簽章管理系統。
+          </div>
+          <div class="text-center h6 lh-lg">
+            我們會藉由導覽的方式，逐步帶您了解安心簽的基本操作。<br>
+            請按<span class="text-primary">「確定」</span>繼續進行導覽的流程<br>
+            或按<span class="text-secondary">「取消」</span>結束導覽，謝謝。
+          </div>
+        </div>
+        <div class="modal-footer border-top-0 justify-content-center">
+          <button type="button" class="btn btn-secondary opacity-50" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" v-on:click="welcomeHandler">確定</button>
+        </div>
+      </div>
+    </div>
+  </div>
   @{
     // await Html.RenderPartialAsync("~/Views/ContractConsole/Module/ContractRequestQueryResult.cshtml");
   }
@@ -811,6 +837,14 @@
       }
     },
     mounted() {
+      // 若為第一次登入，顯示歡迎視窗並進入導覽流程
+      if (!sessionStorage.getItem("isContractTour")) {
+        setTimeout(() => {
+          $("#welcomModal").modal('show');
+          sessionStorage.setItem("isContractTour", true);
+        }, 100);
+      }
+
       // 初始化新增合約表單
       this.formData = JSON.parse(JSON.stringify(this.initialFormData));
       this.inquireData();
@@ -1227,6 +1261,12 @@
         // 重新查詢列表並回傳資料
         this.fetchAPI();
       },
+
+      // 歡迎視窗
+      welcomeHandler() {
+        $("#welcomModal").modal('hide');
+        this.tourHandler();
+      }
     }
   });
 
@@ -1284,12 +1324,12 @@
   }
 </script>
 @{
-    // IQueryable<Contract> _model = (IQueryable<Contract>)this.Model;
-    // var items = _model;
-    // if (_viewModel.SortName == null || _viewModel.SortName.Length == 0)
-    // {
-    //     items = items.OrderByDescending(c => c.ContractID);
-    // }
+  // IQueryable<Contract> _model = (IQueryable<Contract>)this.Model;
+  // var items = _model;
+  // if (_viewModel.SortName == null || _viewModel.SortName.Length == 0)
+  // {
+  //     items = items.OrderByDescending(c => c.ContractID);
+  // }
 
-    // await Html.RenderPartialAsync("~/Views/ContractConsole/VueModule/ContractRequestList.cshtml", items);
+  // await Html.RenderPartialAsync("~/Views/ContractConsole/VueModule/ContractRequestList.cshtml", items);
 }
