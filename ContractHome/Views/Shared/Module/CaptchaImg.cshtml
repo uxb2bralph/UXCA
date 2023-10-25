@@ -1,0 +1,30 @@
+﻿@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+
+  ModelStateDictionary _modelState;
+  ModelSource? models;
+
+  models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+  _modelState = (ModelStateDictionary)ViewBag.ModelState;
+  QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+    String _validCode;
+    String _encryptedCode;
+
+    _validCode = 6.CreateRandomStringCode();
+    _encryptedCode = _validCode.EncryptData();
+
+}
+
+<img id="imgNum" src="@Html.Raw(Url.Action("CaptchaImg", "Account", new { code = _encryptedCode }))" />
+<input name="ValidCode" type="text" value="" placeholder="請輸入圖片中的文字或數字" />
+<input name="EncryptedCode" type="hidden" value="@(_encryptedCode)" />

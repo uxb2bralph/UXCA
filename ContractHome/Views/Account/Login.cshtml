@@ -17,6 +17,12 @@
   _modelState = (ModelStateDictionary)ViewBag.ModelState;
   QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
   DateTime today = DateTime.Now;
+
+    String _validCode;
+    String _encryptedCode;
+
+    _validCode = 6.CreateRandomStringCode();
+    _encryptedCode = _validCode.EncryptData();
 }
 <main id="login" class="login__wrapper bg-secondary">
   <div class="login__signin">
@@ -50,6 +56,15 @@
                   <div class="invalid-feedback">
                     請輸入密碼
                   </div>
+                </div>
+                <div class="col-xl-12 col-lg-6 col-md-12 input__loginHeight">
+                    <label for="ValidCode" class="fw-bolder">請輸入驗證碼</label>
+                    <img id="imgNum" src="@Html.Raw(Url.Action("CaptchaImg", "Account", new { code = _encryptedCode }))" />
+                    <input v-model="formData.validCode" type="text" id="ValidCode" class="form-control form-control-sm"
+                            placeholder="" name="ValidCode" required>
+                    <div class="invalid-feedback">
+                        請輸入驗證碼
+                    </div>
                 </div>
                 <div class="col-12 hstack gap-3 py-3">
                   <div>
@@ -95,7 +110,9 @@
       formData: {
         pid: null,
         password: null,
-        rememberAccount: false
+        rememberAccount: false,
+        validCode: null,
+        encryptedCode: '@Html.Raw(_encryptedCode)',
       }
     },
     methods: {

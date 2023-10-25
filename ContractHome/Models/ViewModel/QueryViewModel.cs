@@ -1,4 +1,5 @@
-﻿using ContractHome.Models.DataEntity;
+﻿using ContractHome.Helper.Validation;
+using ContractHome.Models.DataEntity;
 using DocumentFormat.OpenXml.Presentation;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Newtonsoft.Json;
@@ -148,6 +149,13 @@ namespace ContractHome.Models.ViewModel
         public bool? RememberMe { get; set; }
 
         public String? ReturnUrl { get; set; }
+
+        [Display(Name = "ValidCode")]
+        [CaptchaValidation("EncryptedCode", ErrorMessage = "驗證碼錯誤!!")]
+        public string? ValidCode { get; set; }
+
+        [Display(Name = "EncryptedCode")]
+        public string? EncryptedCode { get; set; }
     }
 
     public class OrganizationViewModel : QueryViewModel
