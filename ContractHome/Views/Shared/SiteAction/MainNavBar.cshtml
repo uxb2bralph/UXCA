@@ -23,7 +23,7 @@
   <header class="border__uxb2b--bottom shadow__card">
     <nav class="navbar navbar-expand-lg navbar-light navbar-uxb2b py-0">
       <div class="container-fluid">
-        <a class=" navbar-brand" href="#">
+        <a class=" navbar-brand" href="/ContractConsole/ListToStampIndex">
           <img src="~/images/uxSign-logo.png" alt="安心簽" style="height: 35px;">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
@@ -54,7 +54,8 @@
           </ul>
 
           <ul class="navbar-nav mb-2 mb-lg-0">
-            <li class="fw-bolder">@Html.Raw(profile.OrganizationUser?.Organization.CompanyName) @Html.Raw(profile.UserName) 您好！</li>
+            <li class="fw-bolder">@Html.Raw(profile.OrganizationUser?.Organization.CompanyName)
+              @Html.Raw(profile.UserName) 您好！</li>
           </ul>
           <ul class="navbar-nav mb-2 mb-lg-0">
             <li class="nav-item dropdown">
