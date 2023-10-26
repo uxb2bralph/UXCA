@@ -33,6 +33,9 @@
 * {
   font-family: -apple-system, Roboto, BlinkMacSystemFont, Microsoft JhengHei, 新微軟正黑體, 微軟正黑體, Segoe UI, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
 }
+html, body {
+  height: 100%;
+}
 
 #mainNavBar {
   .v-application {
@@ -46,6 +49,10 @@
   &.menuLink {
     color: #FFFFFF;
   }
+}
+
+#listToStampIndex {
+  height: calc(100% - 65px);
 }
 
 // header 底色
