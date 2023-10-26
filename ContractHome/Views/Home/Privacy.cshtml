@@ -1,6 +1,243 @@
 ﻿@{
-    ViewData["Title"] = "Privacy Policy";
+  Layout = null;
 }
-<h1>@ViewData["Title"]</h1>
+<!DOCTYPE html>
+<html lang="zh-tw">
 
-<p>Use this page to detail your site's privacy policy.</p>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge" />
+  <title>安心簽 UX SIGN 數位簽章管理系統 - 隱私權及安全宣告</title>
+  <!-- MDB icon -->
+  <link rel="icon" href="~/images/uxSign.ico" type="image/x-icon" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="~/css/fontawesome/all.css" />
+  <!-- Google Fonts Roboto -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" />
+  <!-- Boostrap -->
+  <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+  <!-- 網站設定樣式 -->
+  <link rel="stylesheet" href="~/css/site.css" />
+  <script src="~/lib/jquery/dist/jquery.min.js"></script>
+  <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body class="bg-secondary bg-opacity-10">
+  <div class="container">
+    <div class="pt-5 pb-2 d-flex justify-content-between align-items-center">
+      <div>
+        <a class=" navbar-brand" href="/ContractConsole/ListToStampIndex">
+          <img src="~/images/uxSign-logo.png" alt="安心簽" style="height: 35px;">
+        </a>
+      </div>
+      <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link btn-sm opacity-75 active" id="pills-tw-tab" data-bs-toggle="pill" data-bs-target="#tw"
+            type="button" role="tab" aria-controls="tw" aria-selected="true">中文</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link btn-sm opacity-75" id="pills-eng-tab" data-bs-toggle="pill" data-bs-target="#eng"
+            type="button" role="tab" aria-controls="eng" aria-selected="false">English</button>
+        </li>
+      </ul>
+    </div>
+    <!-- Tab panes -->
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="tw" role="tabpanel" aria-labelledby="tw-tab">
+        <h1 class="mt-4 mb-3 ps-3 border-start border-primary border-5 fs-3 fw-bolder text-primary">隱私權及安全宣告</h1>
+        <div class="bg-white rounded-2 p-5 mb-4 shadow">
+          <p class="fw-bolder">感謝您蒞臨網際優勢( 以下簡稱本網站 )！ </p>
+          <p>我們遵守《個人資料保護法》及其相關法規命令，並理解、重視本網站的訪問者和使用者之隱私，以及所提供資訊的保密及安全問題。
+            為了讓您能夠安心的使用本網站的各項服務與資訊，特此向您說明本網站的隱私權保護政策，以保障您的權益，請您詳閱下列內容：</p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">一、隱私權保護政策的適用範圍</h5>
+          <p>隱私權保護政策內容，包括本．網站如何處理在您使用網站服務時收集到的個人識別資料。
+            本隱私權保護政策不適用於本網站以外的相關連結網站，也不適用於非本網站所委託或參與管理的人員。</p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">二、個人資料蒐集之目的及類別</h5>
+          <p>若您是本網站的訪客，則您毋須提供任何個人資料即得以瀏覽本網站；
+            若您需要使用本網站之服務時，為了確保得以持續提供服務，並為您規劃所需之服務，則將會向您蒐集個人資料。</p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">三、個人資料的蒐集、處理及利用方式</h5>
+          <ul>
+            <li class="pb-1">當您造訪本網站或使用本網站所提供之功能服務時，我們將視該服務功能性質，
+              請您提供必要的個人資料，並在該特定目的範圍內處理及利用您的個人資料；
+              非經您同意，本網站不會將個人資料用於其他用途。</li>
+            <li class="pb-1">本網站在您使用服務信箱、問卷調查等互動性功能時，會保留您所提供的姓名、電子郵件地址、聯絡方式及使用時間等。</li>
+            <li class="pb-1">於一般瀏覽時，伺服器會自行記錄相關行徑，
+              包括您使用連線設備的IP位址、使用時間、使用的瀏覽器、瀏覽及點選資料紀錄等，
+              做為我們增進網站服務的參考依據，此紀錄僅供作內部應用流量分析，絕不對外公布，
+              不會和特定個人相聯繫，亦不會針對特定紀錄進行個別分析。</li>
+            <li class="pb-1">為提供精確的服務，我們會將收集的問卷調查、內容進行全體性之統計與分析，分析結果之統計數據或說明文字呈現，
+              除供內部研究外，我們會視需要公布統計數據及說明文字，但不涉及特定個人之資料。</li>
+          </ul>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">四、資料之保護</h5>
+          <ul>
+            <li class="pb-1">
+              我們盡力以合理之技術、程序、相關的各項資訊安全設備及必要的安全防護措施，加以保護網站及您的個人資料，只由經過授權的人員才能接觸您的個人資料，相關處理人員皆簽有保密合約，如有違反保密義務者，將會受到相關的法律處分。
+            </li>
+            <li class="pb-1">如因業務需要有必要委託其他單位提供服務時，本網站亦會嚴格要求其具有適當安全維護措施、遵守保密義務，我們會採取必要檢查程序以確定其將確實遵守。</li>
+          </ul>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">五、網站對外的相關連結</h5>
+          <p>
+            本網站之隱私權聲明及其所包含之告知事項，僅適用於本網站。本網站的網頁提供其他網站的網路連結，您也可經由本網站所提供的連結，點選進入其他網站。但該等連結網站不一定適用本網站的隱私權保護政策，您必須參閱該等連結網站中的隱私權保護政策。
+          </p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">六、與第三人共用個人資料之政策 </h5>
+          <p>本網站絕不會提供、交換、出租或出售任何您的個人資料給其他個人、團體、私人企業或公務機關，但有法律依據或合約義務者，不在此限。</p>
+          <p>前項但書之情形包括但不限於：</p>
+          <ul>
+            <li class="pb-1">經由您同意。</li>
+            <li class="pb-1">法律明文規定。</li>
+            <li class="pb-1">為免除您生命、身體、自由或財產上之危險。</li>
+            <li class="pb-1">與公務機關或學術研究機構合作，基於公共利益為統計或學術研究而有必要，</li>
+            <li class="pb-1"> 且資料經過提供者處理或蒐集者依其揭露方式無從識別特定之當事人。</li>
+            <li class="pb-1">當您在網站的行為，違反服務條款或可能損害或妨礙網站與其他使用者權益或導致任何人遭受損害時，經網站管理單位研析揭露您的個人資料是為了辨識、聯絡或採取法律行動所必要者。</li>
+            <li class="pb-1">有利於您的權益。</li>
+            <li class="pb-1">本網站委託廠商協助蒐集、處理或利用您的個人資料時，將對委外廠商或個人善盡監督管理之責。</li>
+          </ul>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">七、當事人之權利</h5>
+          <p>本網站所蒐集個人資料之當事人，您可依個人資料保護法得行使以下權利：</p>
+          <ul>
+            <li class="pb-1">查詢或請求閱覽。</li>
+            <li class="pb-1">請求製給複製本。</li>
+            <li class="pb-1">請求補充或更正。</li>
+            <li class="pb-1">請求停止蒐集、處理及利用。</li>
+            <li class="pb-1">請求刪除。</li>
+          </ul>
+          <p>但因本網站所執行職務或業務者所必須填寫者，則不在此限。</p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">八、Cookie之使用</h5>
+          <p>
+            為了提供您最佳的服務，本網站會在您的電腦中放置並取用我們的Cookie，您不願接受Cookie的寫入，您可在您使用的瀏覽器功能項中設定隱私權等級為高，或經由瀏覽器的取消、限制此項功能，即可拒絕Cookie的寫入，但可能會導至網站某些功能無法正常執行。
+          </p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">九、隱私權保護政策之修正</h5>
+          <p>本網站隱私權保護政策將因應需求隨時進行修正，修正後的條款將刊登於網站上，不另行個別通知，
+            您可以隨時在本網站上詳閱修訂後的隱私權聲明及相關告知事項。您如果對於本網站之隱私權聲明，
+            或於個人資料有關之相關事項有任何疑問，可以利用電子郵件 ifs_service@uxb2b.com 與我們聯絡。</p>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="eng" role="tabpanel" aria-labelledby="eng-tab">
+        <h1 class="mt-4 mb-3 ps-3 border-start border-primary border-5 fs-3 fw-bolder text-primary">Privacy and
+          Security</h1>
+        <div class="bg-white rounded-2 p-5 mb-4 shadow">
+          <p class="fw-bolder">You are welcome to visit Universal eXchange Inc. (UXB2B) website！</p>
+          <p>
+            We comply with the "Personal Information Protection Act" and related regulations in Taiwan, and
+            understand/value privacy policy, information secrecy and confidential issues for visitors and users to the
+            website. For your using of the website’s service and information without any uneasiness, UXB2B hereby
+            explain the website’s privacy policy in detail to protect your rights and interests. Please read the
+            following contents carefully.</p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">1. The Ambit of Privacy Policy</h5>
+          <p>
+            While you are using website’s service, the website collects identifiable personal information. The privacy
+            policy includes how the website processes these identifiable personal information, and does not apply to
+            related linked websites outside the website, nor to those who are not entrusted or involved in the
+            management of the website.
+          </p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">2. The Purpose and Classification of Collecting Personal
+            Data</h5>
+          <p>
+            If you are a visitor to the website, you are allowed to access the website without providing any personal
+            information. For your necessities to get the website’s services and ensuring the website to provide
+            necessary services continuously, the website will collect your personal information.</p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">3. The Collection, Process and Use of Personal Data</h5>
+          <ul>
+            <li class="pb-1">When you visit the website or use the services provided by the website, we will ask you
+              to
+              provide
+              necessary personal information with regards to the service essence, and only process and use your
+              personal
+              information within specific purpose and ambit; the website will not use your personal data for other
+              purposes without your agreement.</li>
+
+            <li class="pb-1">The website will keep your name, email address, contact information and usage time while
+              you use
+              interactive functions such as service mailbox or questionnaires.</li>
+
+            <li class="pb-1">During browsing, the website will automatically keep records of equipment’s IP address,
+              usage time,
+              browser type and browsing history, etc. All those records are for internal application traffic analysis
+              only, will not be published, not be associated with specific individual, and will not be analyzed for
+              specific record.</li>
+
+            <li class="pb-1">In order to provide accurate services, we will analyze collected questionnaires and data.
+              Except for
+              internal research, the analysis result of statistical data or explanatory will be published without
+              involving any specific individual information if necessary.</li>
+          </ul>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">4. The Protection of Data</h5>
+          <ul>
+            <li class="pb-1">We endeavor to protect the website and your personal information with reasonable
+              technology, procedures
+              and related information security equipment and necessary measures. Only authorized personnel can access
+              your personal data. All of related personnel will sign confidentiality contract, and will be subject to
+              related legal actions if violating the confidentiality obligations.</li>
+            <li class="pb-1">When it is necessary to entrust other organizations to provide services due to business
+              needs, the
+              website will request those organizations to take appropriate security maintenance measures and comply
+              the
+              confidentiality obligations. We will take every necessary inspection procedures to ensure those measures
+              and obligations will be complied.</li>
+          </ul>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">5. Link to Other Sites</h5>
+          <p>This privacy policy and other notices of the website are only applicable to the website.The website
+            provide links to other websites, and you can access other websites by clicking links from the website.
+            However, the linked websites may not be subject to this privacy policy of the website, you must refer to
+            the privacy policy of those linked websites.</p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">6. Transfer of Data </h5>
+          <p>This website will never provide, exchange, rent or sell any of your personal data to other individuals,
+            groups, private companies or public authorities, except where there is a legal basis or contractual
+            obligations.</p>
+          <p>The circumstances of the preceding paragraph include but are not limited to:</p>
+          <ul>
+            <li class="pb-1">By your consent.</li>
+            <li class="pb-1">By law obligations.</li>
+            <li class="pb-1">To avoid the danger of your life, body, freedom or property.</li>
+            <li class="pb-1">To collaborate with public agencies or academic research institutions, due to the
+              necessary
+              of
+              statistical or academic research based on public interest, and the data which is processed by the
+              provider
+              or the collector cannot identify the particular party in the manner in which it is disclosed.</li>
+            <li class="pb-1">To identify, contact or take legal actions through the website administrator’s analysis,
+              due to your
+              activities on the website violate the Terms of Service or may harm or hinder the website other user
+              rights
+              or cause harm to anyone.</li>
+            <li class="pb-1">To conducive to your rights and interests.</li>
+            <li class="pb-1">When the commissioned vendor of the website is asked to assist in the collection,
+              processing or use of
+              your personal data, it will be responsible for the supervision and management of the subcontractor or
+              individual.</li>
+          </ul>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">7. Right of the parties</h5>
+          <p>The parties to the collection of personal data on the website may exercise the following rights in
+            accordance with the Personal Data Protection Act:</p>
+          <p>
+            <li class="pb-1">Query or request a review.</li>
+            <li class="pb-1">Request a copy to the copy.</li>
+            <li class="pb-1">Request supplements or corrections.</li>
+            <li class="pb-1">Request to stop collecting, processing, and utilizing.</li>
+            <li class="pb-1">Request to delete.</li>
+          </p>
+          <p>However, this is not the case for those who are required to perform duties or business on the website.
+          </p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">8. Use of Cookies</h5>
+          <p>
+            In order to provide you with the best service, the website will place and access our cookies on your
+            computer. If you do not accept cookies, you can set the privacy level in your browser privacy settings
+            such as high, or through the browser's cancellation or limitation of this feature. You can refuse cookies,
+            but may lead to some features of the website cannot be executed normally.</p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">9. Changes to This Privacy Policy</h5>
+          <p>
+            The privacy policy of the website will be amended at any time according to the needs. The revised terms
+            will be posted on the website without any separate notice. You can read the revised privacy statement and
+            related notices on this website at any time. If you have any questions about the privacy statement of the
+            website or related matters related to your personal information, please contact ifs_service@uxb2b.com.</p>
+        </div>
+      </div>
+      <div class="text-center mb-5">
+        <button type="button" class="btn btn-primary opacity-75 px-5" onclick="history.go(-1)">回上頁</button>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
