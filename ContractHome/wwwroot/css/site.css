@@ -110,6 +110,7 @@ html, body {
 }
 
 .infoAlert {
+  display: none;
   margin: 0 10px;
   padding: 30px;
   width: calc(100% - 20px);
@@ -121,6 +122,9 @@ html, body {
   margin-left: 0;
   margin-right: 0;
   font-size: 1rem;
+}
+.infoAlert.show {
+  display: flex;
 }
 
 .input__loginHeight {
