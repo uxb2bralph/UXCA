@@ -493,6 +493,10 @@ html, body {
   bottom: 5px;
 }
 
+.frame {
+  width: 100%;
+}
+
 .stamp__wrapper {
   display: block;
   max-width: 170px;
