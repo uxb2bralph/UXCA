@@ -58,13 +58,18 @@
                   </div>
                 </div>
                 <div class="col-xl-12 col-lg-6 col-md-12 input__loginHeight">
-                    <label for="ValidCode" class="fw-bolder">請輸入驗證碼</label>
-                    <img id="imgNum" src="@Html.Raw(Url.Action("CaptchaImg", "Account", new { code = _encryptedCode }))" />
-                    <input v-model="formData.validCode" type="text" id="ValidCode" class="form-control form-control-sm"
-                            placeholder="" name="ValidCode" required>
-                    <div class="invalid-feedback">
-                        請輸入驗證碼
+                  <label for="ValidCode" class="fw-bolder">請輸入驗證碼</label>
+                  <div class="d-flex">                  
+                    <div class="col-7">
+                      <input v-model="formData.validCode" type="text" id="ValidCode" class="form-control form-control-sm" placeholder="" name="ValidCode" required>
+                      <div class="invalid-feedback">
+                          請輸入驗證碼
+                      </div>
                     </div>
+                    <div class="col-5 text-end">
+                      <img id="imgNum" src="@Html.Raw(Url.Action("CaptchaImg", "Account", new { code = _encryptedCode }))" />
+                    </div>
+                  </div>
                 </div>
                 <div class="col-12 hstack gap-3 py-3">
                   <div>
