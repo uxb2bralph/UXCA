@@ -53,6 +53,44 @@
   }
   <!-- Container -->
   @RenderBody()
+
+  <div id="infoAlert"
+    class="d-flex justify-content-between align-items-center alert alert-warning infoAlert alert-dismissible fade shadow">
+    @* <button type="button" class="btn-close" data-bs-dismiss="alert"></button> *@
+    <div>
+      <div class="pb-2 fs-5 fw-bolder">安心簽 網站更新條款</div>
+      <p class="mb-1">為了使用安心簽，我們要求您先閱讀我們的 <a class=" navbar-brand" href="/Home/Privacy">隱私政策</a> ( <a
+          class=" navbar-brand" href="/Home/Gdpr">GDPR 聲明</a> )、<a class=" navbar-brand" href="/Home/Security">安全宣告</a>
+        和
+        安心簽 <a class=" navbar-brand" href="/Home/Personal">個資保護</a>。
+        為了獲得最佳的瀏覽體驗，安心簽將從您的瀏覽器收集並儲存 cookie，如果您繼續使用本網站，我們將假定您同意這些條款。</p>
+      <p>如有任何疑問，請聯絡我們的服務中心以獲取更多資訊。</p>
+    </div>
+    <div>
+      <button type="button" id="agreement" class="btn btn-primary opacity-75 px-5" data-bs-dismiss="alert">同意</button>
+    </div>
+  </div>
 </body>
 
 </html>
+<script>
+  // 初始化 網頁導覽
+  const infoAlert = document.querySelector('#infoAlert');
+  const agreement = document.querySelector('#agreement');
+  window.addEventListener('load', () => {
+    if (!sessionStorage.getItem("isAgreement")) {
+      infoAlert.classList.add('show');
+    } else {
+      infoAlert.classList.remove('show');
+    }
+  });
+
+  agreement.addEventListener('click', () => {
+    if (!sessionStorage.getItem("isAgreement")) {
+      infoAlert.classList.add('show');
+      sessionStorage.setItem("isAgreement", true);
+    } else {
+      infoAlert.classList.remove('show');
+    }
+  })
+</script>

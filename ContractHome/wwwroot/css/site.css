@@ -87,9 +87,32 @@
   font-size: 0.875rem;
   color: #FFFFFF;
 }
+.login__footer a {
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+  font-size: 0.875rem;
+  color: #FFF;
+}
+.login__footer a:hover {
+  color: #333;
+}
 
 .forgetPwd {
   height: 72px;
+}
+
+.infoAlert {
+  margin: 0 10px;
+  padding: 30px;
+  width: calc(100% - 20px);
+  position: fixed;
+  bottom: 10px;
+  z-index: 2;
+}
+.infoAlert a {
+  margin-left: 0;
+  margin-right: 0;
+  font-size: 1rem;
 }
 
 .input__loginHeight {
