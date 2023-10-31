@@ -42,7 +42,8 @@
               <div class="row">
                 <label for="ContractNo" class="col-sm-12 col-md-3 col-form-label fw-bolder">合約號碼</label>
                 <div class="col-sm-12 col-md-9">
-                  <input v-model="formData.ContractNo" type=" text" class="form-control" name="ContractNo" id="ContractNo" />
+                  <input v-model="formData.ContractNo" type=" text" class="form-control" name="ContractNo"
+                    id="ContractNo" />
                 </div>
               </div>
             </div>
@@ -71,8 +72,8 @@
                   // await Html.RenderPartialAsync("~/Views/Home/Module/CompanyQuickSearch.cshtml", "Initiator");
                 }
                 <div id="initiatorField" class="col-sm-12 col-md-9">
-                  <input v-model="formData.Initiator" type="text" class="form-control" name="Initiator"
-                    id="Initiator" placeholder="可輸入鍵字查詢公司名稱" autocomplete="off" />
+                  <input v-model="formData.Initiator" type="text" class="form-control" name="Initiator" id="Initiator"
+                    placeholder="可輸入鍵字查詢公司名稱" autocomplete="off" />
                   <ul v-show="isInitiatorOptionsOpen" class="list-group mb-3 shadow__card">
                     <li v-for="(result, index) in searchResults" :key="index"
                       class="list-group-item list-group-item-action" v-on:click="setResult(result, 'initiator')"
@@ -138,8 +139,7 @@
                   <i class="fas fa-sort-amount-down"></i>
                 </a>
                 <!-- ASC -->
-                <a v-else href="javascript:void(0);"
-                  v-on:click="sortHandler('ContractID', 'isSortDateFrom', false)">
+                <a v-else href="javascript:void(0);" v-on:click="sortHandler('ContractID', 'isSortDateFrom', false)">
                   <i class="fas fa-sort-amount-down-alt"></i>
                 </a>
               </th>
@@ -332,10 +332,10 @@
       </div>
     </div>
     <div v-else class="card p-3 text-center">
-      <span class="text-danger opacity-50" style="font-size: 50px;">
-        <i class="fal fa-box-full"></i>
+      <span class="text-primary opacity-75" style="font-size: 50px;">
+        <i class="fad fa-folder-open"></i>
       </span>
-      <span class="text-primary">目前尚無合約資料</span>
+      <span class="text-primary opacity-75 fw-bolder">目前尚無合約資料</span>
     </div>
   </section>
   <!-- 簽署者狀態 Dialog -->
@@ -463,7 +463,7 @@
         </div>
         <div class="modal-body">
           <div class="d-flex justify-content-between">
-            <div  class="d-flex">
+            <div class="d-flex">
               <div class="fs-1 px-2 mediumSlateBlue">
                 <i class="fad fa-file-contract fa-lg"></i>
               </div>
@@ -505,7 +505,7 @@
                   <td>{{ item.time }}</td>
                   <td>{{ item.action }}</td>
                   <td>
-                      {{ item.role }}
+                    {{ item.role }}
                     @* <span v-if="item.role === 'isInitiator'" class="badge bg-primary opacity-75">起約人</span>
                     <span v-else class="badge bg-warning text-dark opacity-75">簽約人</span> *@
                   </td>
@@ -589,70 +589,70 @@
     */
   // 合約列表
   const contractList = [
-    @*{
-      uuid: '111',
-      No: 'CS-000100000',
-      Title: '測試很重要的一份合約-1',
-      ContractDateFrom: '2023/08/22 14:58',
-      Initiator: '網際優勢甲方公司',
-      Contractor: '網際優勢乙方公司',
-      InitiatorStampDate: null,
-      ContractorStampDate: null,
-      InitiatorSignerID: null,
-      ContractorSignerID: null,
-      KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D'
+  @*{
+    uuid: '111',
+    No: 'CS-000100000',
+    Title: '測試很重要的一份合約-1',
+    ContractDateFrom: '2023/08/22 14:58',
+    Initiator: '網際優勢甲方公司',
+    Contractor: '網際優勢乙方公司',
+    InitiatorStampDate: null,
+    ContractorStampDate: null,
+    InitiatorSignerID: null,
+    ContractorSignerID: null,
+    KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D'
     },
     {
-      uuid: '222',
-      No: 'CS-000100001',
-      Title: '測試很重要的一份合約-2',
-      ContractDateFrom: '2023/08/22 14:58',
-      Initiator: '網際優勢甲方公司',
-      Contractor: '網際優勢乙方公司',
-      InitiatorStampDate: '2023/08/22 14:58',
-      ContractorStampDate: null,
-      InitiatorSignerID: null,
-      ContractorSignerID: null,
-      KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D'
+    uuid: '222',
+    No: 'CS-000100001',
+    Title: '測試很重要的一份合約-2',
+    ContractDateFrom: '2023/08/22 14:58',
+    Initiator: '網際優勢甲方公司',
+    Contractor: '網際優勢乙方公司',
+    InitiatorStampDate: '2023/08/22 14:58',
+    ContractorStampDate: null,
+    InitiatorSignerID: null,
+    ContractorSignerID: null,
+    KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D'
     },
     {
-      uuid: '333',
-      No: 'CS-000100002',
-      Title: '測試很重要的一份合約-3',
-      ContractDateFrom: '2023/08/23 14:20',
-      Initiator: '網際優勢甲方公司',
-      Contractor: '網際優勢乙方公司',
-      InitiatorStampDate: '2023/08/23 14:20',
-      ContractorStampDate: '2023/08/23 14:20',
-      InitiatorSignerID: null,
-      ContractorSignerID: null,
-      KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D'
+    uuid: '333',
+    No: 'CS-000100002',
+    Title: '測試很重要的一份合約-3',
+    ContractDateFrom: '2023/08/23 14:20',
+    Initiator: '網際優勢甲方公司',
+    Contractor: '網際優勢乙方公司',
+    InitiatorStampDate: '2023/08/23 14:20',
+    ContractorStampDate: '2023/08/23 14:20',
+    InitiatorSignerID: null,
+    ContractorSignerID: null,
+    KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D'
     },
     {
-      uuid: '444',
-      No: 'CS-000100003',
-      Title: '測試很重要的一份合約-4',
-      ContractDateFrom: '2023/08/24 13:58',
-      Initiator: '網際優勢甲方公司',
-      Contractor: '網際優勢乙方公司',
-      InitiatorStampDate: '2023/08/24 13:58',
-      ContractorStampDate: '2023/08/24 13:58',
-      InitiatorSignerID: 's-1234',
-      ContractorSignerID: null,
-      KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D'
+    uuid: '444',
+    No: 'CS-000100003',
+    Title: '測試很重要的一份合約-4',
+    ContractDateFrom: '2023/08/24 13:58',
+    Initiator: '網際優勢甲方公司',
+    Contractor: '網際優勢乙方公司',
+    InitiatorStampDate: '2023/08/24 13:58',
+    ContractorStampDate: '2023/08/24 13:58',
+    InitiatorSignerID: 's-1234',
+    ContractorSignerID: null,
+    KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D'
     },
     {
-      uuid: '555',
-      No: 'CS-000100004',
-      Title: '測試很重要的一份合約-5',
-      ContractDateFrom: '2023/08/25 10:58',
-      Initiator: '網際優勢甲方公司',
-      Contractor: '網際優勢乙方公司',
-      InitiatorStampDate: '2023/08/25 10:58',
-      ContractorStampDate: '2023/08/25 10:58',
-      InitiatorSignerID: 's-1234',
-      ContractorSignerID: 's-5678',
-      KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D'
+    uuid: '555',
+    No: 'CS-000100004',
+    Title: '測試很重要的一份合約-5',
+    ContractDateFrom: '2023/08/25 10:58',
+    Initiator: '網際優勢甲方公司',
+    Contractor: '網際優勢乙方公司',
+    InitiatorStampDate: '2023/08/25 10:58',
+    ContractorStampDate: '2023/08/25 10:58',
+    InitiatorSignerID: 's-1234',
+    ContractorSignerID: 's-5678',
+    KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D'
     },*@
   ];
   var app = new Vue({
@@ -671,7 +671,7 @@
        * @@param {boolean} desc 排序
        */
       formData: {
-          ContractNo: null,
+        ContractNo: null,
         ContractDateFrom: null,
         ContractDateTo: null,
         Initiator: null,
@@ -781,37 +781,37 @@
         }
         console.log('payload:', payload);
         var viewModel = {
-            ...this.formData,
-            PageIndex: this.page,
-            PageSize: this.pageSize,
-            SortType: this.SortType,
-            SortName: this.SortName,
+          ...this.formData,
+          PageIndex: this.page,
+          PageSize: this.pageSize,
+          SortType: this.SortType,
+          SortName: this.SortName,
         };
         showLoading();
-                $.ajax({
-                    type: 'POST',
-                    url: '@(Url.Action("InquireData", "ContractConsole"))',
-                    data: JSON.stringify(viewModel),
-                    type: "POST",
-                    //dataType: "json",
-                    contentType: "application/json;charset=utf-8",
-                    success: function (data) {
-                        hideLoading();
-                        if ($.isPlainObject(data)) {
-                            if (data.result) {
-                            } else {
-                                alertModal(data.message);
-                            }
-                        } else {
-                            $(data).appendTo($('body')).remove();
-                        }
-                    },
-                    error: function (xhr, ajaxOptions, thrownError) {
-                        hideLoading();
-                        console.log(xhr.status);
-                        console.log(thrownError);
-                    }
-                });
+        $.ajax({
+          type: 'POST',
+          url: '@(Url.Action("InquireData", "ContractConsole"))',
+          data: JSON.stringify(viewModel),
+          type: "POST",
+          //dataType: "json",
+          contentType: "application/json;charset=utf-8",
+          success: function (data) {
+            hideLoading();
+            if ($.isPlainObject(data)) {
+              if (data.result) {
+              } else {
+                alertModal(data.message);
+              }
+            } else {
+              $(data).appendTo($('body')).remove();
+            }
+          },
+          error: function (xhr, ajaxOptions, thrownError) {
+            hideLoading();
+            console.log(xhr.status);
+            console.log(thrownError);
+          }
+        });
       },
       // 重設查詢
       resetHandler() {
@@ -828,14 +828,14 @@
         this.sort = dataField;
         this.desc = sortStatus;
         this[status] = !this[status];
-                var sortType = 1;
-                var idx = this.SortName.indexOf(dataField);
-                if (idx >= 0) {
-                    this.SortType[idx] = -this.SortType[idx];
-                } else {
-                    this.SortName.push(dataField);
-                    this.SortType.push(sortType);
-                }
+        var sortType = 1;
+        var idx = this.SortName.indexOf(dataField);
+        if (idx >= 0) {
+          this.SortType[idx] = -this.SortType[idx];
+        } else {
+          this.SortName.push(dataField);
+          this.SortType.push(sortType);
+        }
         this.fetchAPI();
       },
       // 開啟簽署者狀態 Modal
@@ -844,7 +844,7 @@
         console.log({ contract })
         // contract 帶入 signerStatusData 中
         this.signerStatusData = contract;
-        @*{
+  @*{
           uuid: '555',
           No: 'CS-000100004',
           Title: '測試很重要的一份合約-5',
@@ -861,7 +861,7 @@
           KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D',
           isInitiator: true, // 是否為甲方
           isContractor: false, // 是否為乙方
-        }*@
+          }*@
 
       },
 
@@ -872,7 +872,7 @@
 
         // contract 帶入 historyData 中
         this.historyData = contract;
-        @*{
+  @*{
           uuid: '555',
           No: 'CS-000100004',
           Title: '測試很重要的一份合約-5',
@@ -884,18 +884,18 @@
           isInitiator: true, // 是否為甲方
           isContractor: false, // 是否為乙方
           dataList: [
-            {
-              time: '2023/08/25 10:58:20',
-              action: '瀏覽',
-              role: 'isInitiator'
-            },
-            {
-              time: '2023/08/25 12:58:20',
-              action: '用印',
-              role: 'isContractor'
-            }
+          {
+          time: '2023/08/25 10:58:20',
+          action: '瀏覽',
+          role: 'isInitiator'
+          },
+          {
+          time: '2023/08/25 12:58:20',
+          action: '用印',
+          role: 'isContractor'
+          }
           ]
-        }*@
+          }*@
       },
 
       // 開啟中止合約 Modal
@@ -913,21 +913,21 @@
 
         $("#stopContractModal").modal('hide');
 
-        @*showLoading();
-        setTimeout(() => {
+  @*showLoading();
+          setTimeout(() => {
           // 模擬假資料被終止
 
           hideLoading();
           // 開啟訊息視窗
           this.infoMsg = `<span class='text-primary opacity-75'>" ${this.stopContractData.Title} "</span> 合約已終止`;
           $('#infoModal').modal('show');
-        }, 2000);  *@
-        terminateContract(contractData.KeyID);
+          }, 2000);  *@
+          terminateContract(contractData.KeyID);
       },
 
       // 下載檔案
       downloadPdf(contract) {
-        console.log({contract});
+        console.log({ contract });
         showContract(contract.KeyID, @((int)DataResultMode.Download));
       },
       // Reset 欄位檢核
@@ -983,9 +983,9 @@
           return item.toLowerCase().indexOf(inputValue.toLowerCase()) > -1;
         });
 
-          var viewModel = {
-            Term: inputValue
-          };
+        var viewModel = {
+          Term: inputValue
+        };
 
         if (type === 'initiator') {
           fetchDataList(viewModel, '@(Url.Action("VueSearchCompany", "Home"))',
@@ -1036,118 +1036,118 @@
       $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
       $inquiryAgent.inquire();
     },
-    @*
-      'commitData': function (addNew) {
-        if (addNew) {
-          delete $inquiryAgent.viewModel.EncKeyItem;
-          delete $inquiryAgent.viewModel.KeyItem;
-        }
-        var $tr = $(window.event.target).closest('form').find('div.data-item');
-        $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
-        showLoading();
-        $.ajax({
-          url: '@(Url.Action("CommitItem", "Organization"))',
-          data: JSON.stringify($inquiryAgent.viewModel),
-          type: "POST",
-          //dataType: "json",
-          contentType: "application/json;charset=utf-8",
-          success: function (data) {
-            hideLoading();
-            if ($.isPlainObject(data)) {
-              if (data.result) {
-                alertModal('存檔完成!!');
-              } else {
-                alertModal('存檔失敗，原因：' + data.message);
-              }
-            } else {
-              $('body').append($(data));
-            }
-          },
-          error: function (xhr, ajaxOptions, thrownError) {
-            hideLoading();
-            alertModal(thrownError);
-            console.log(xhr.status);
-            console.log(thrownError);
-          }
-        });
-      },
-      'deleteData': function () {
-        if (!confirm('請確認刪除資料？刪除後無法復原！')) {
-          return;
-        }
-        var $tr = $(window.event.target).closest('form').find('div.data-item');
-        showLoading();
-        $.ajax({
-          url: '@(Url.Action("DeleteItem", "Organization"))',
-          data: JSON.stringify({ 'EncKeyItem': $inquiryAgent.viewModel.EncKeyItem }),
-          type: "POST",
-          //dataType: "json",
-          contentType: "application/json;charset=utf-8",
-          success: function (data) {
-            hideLoading();
-            if ($.isPlainObject(data)) {
-              if (data.result) {
-                alertModal('資料已刪除!!');
-                delete $inquiryAgent.viewModel.EncKeyItem;
-                delete $inquiryAgent.viewModel.KeyItem;
-                $global.dataTable.inquireData($tr);
-              } else {
-                alertModal('刪除未完成，原因：' + data.message);
-              }
-            } else {
-              $(data).appendTo($('body')).remove();
-            }
-          },
-          error: function (xhr, ajaxOptions, thrownError) {
-            hideLoading();
-            alertModal(thrownError);
-            console.log(xhr.status);
-            console.log(thrownError);
-          }
-        });
-      },
+  @*
+    'commitData': function (addNew) {
+    if (addNew) {
+    delete $inquiryAgent.viewModel.EncKeyItem;
+    delete $inquiryAgent.viewModel.KeyItem;
+    }
+    var $tr = $(window.event.target).closest('form').find('div.data-item');
+    $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
+    showLoading();
+    $.ajax({
+    url: '@(Url.Action("CommitItem", "Organization"))',
+    data: JSON.stringify($inquiryAgent.viewModel),
+    type: "POST",
+    //dataType: "json",
+    contentType: "application/json;charset=utf-8",
+    success: function (data) {
+    hideLoading();
+    if ($.isPlainObject(data)) {
+    if (data.result) {
+    alertModal('存檔完成!!');
+    } else {
+    alertModal('存檔失敗，原因：' + data.message);
+    }
+    } else {
+    $('body').append($(data));
+    }
+    },
+    error: function (xhr, ajaxOptions, thrownError) {
+    hideLoading();
+    alertModal(thrownError);
+    console.log(xhr.status);
+    console.log(thrownError);
+    }
+    });
+    },
+    'deleteData': function () {
+    if (!confirm('請確認刪除資料？刪除後無法復原！')) {
+    return;
+    }
+    var $tr = $(window.event.target).closest('form').find('div.data-item');
+    showLoading();
+    $.ajax({
+    url: '@(Url.Action("DeleteItem", "Organization"))',
+    data: JSON.stringify({ 'EncKeyItem': $inquiryAgent.viewModel.EncKeyItem }),
+    type: "POST",
+    //dataType: "json",
+    contentType: "application/json;charset=utf-8",
+    success: function (data) {
+    hideLoading();
+    if ($.isPlainObject(data)) {
+    if (data.result) {
+    alertModal('資料已刪除!!');
+    delete $inquiryAgent.viewModel.EncKeyItem;
+    delete $inquiryAgent.viewModel.KeyItem;
+    $global.dataTable.inquireData($tr);
+    } else {
+    alertModal('刪除未完成，原因：' + data.message);
+    }
+    } else {
+    $(data).appendTo($('body')).remove();
+    }
+    },
+    error: function (xhr, ajaxOptions, thrownError) {
+    hideLoading();
+    alertModal(thrownError);
+    console.log(xhr.status);
+    console.log(thrownError);
+    }
+    });
+    },
     *@
 
   };
 
-function showContract(keyID, mode) {
-    if(mode == @((int)DataResultMode.Download)) {
-        $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "ContractConsole"))', { 'KeyID': keyID, 'ResultMode': mode });
+  function showContract(keyID, mode) {
+    if (mode == @((int)DataResultMode.Download)) {
+      $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "ContractConsole"))', { 'KeyID': keyID, 'ResultMode': mode });
     } else {
-        if($('#pdfModal').length>0) {
-            $('#pdfModal').modal('show');
-            $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "ContractConsole"))', { 'KeyID': keyID, 'ResultMode': mode }, 'pdfFrame');
-        } else {
-            showLoading();
-            $.post('@Html.Raw(Url.Action("PreviewCurrentContract", "ContractConsole"))', { 'KeyID': keyID }, function (data) {
-              hideLoading();
-              if ($.isPlainObject(data)) {
-                alertModal(data.message);
-              } else {
-                $(data).appendTo($('body'));
-                $('#pdfModal').modal('show');
-              }
-            });
-        }
-    }
-  }
-
-      function terminateContract(keyID) {
+      if ($('#pdfModal').length > 0) {
+        $('#pdfModal').modal('show');
+        $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "ContractConsole"))', { 'KeyID': keyID, 'ResultMode': mode }, 'pdfFrame');
+      } else {
         showLoading();
-        $.post('@Html.Raw(Url.Action("TerminateContract", "ContractConsole"))', { 'KeyID': keyID }, function (data) {
+        $.post('@Html.Raw(Url.Action("PreviewCurrentContract", "ContractConsole"))', { 'KeyID': keyID }, function (data) {
           hideLoading();
           if ($.isPlainObject(data)) {
-                          if (data.result) {
-                            alertModal('合約已終止!!');
-                            setTimeout(() => {
-                              window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
-                            }, 3000);
-                          } else {
-                            alertModal(data.message);
-                          }
+            alertModal(data.message);
           } else {
             $(data).appendTo($('body'));
+            $('#pdfModal').modal('show');
           }
         });
       }
+    }
+  }
+
+  function terminateContract(keyID) {
+    showLoading();
+    $.post('@Html.Raw(Url.Action("TerminateContract", "ContractConsole"))', { 'KeyID': keyID }, function (data) {
+      hideLoading();
+      if ($.isPlainObject(data)) {
+        if (data.result) {
+          alertModal('合約已終止!!');
+          setTimeout(() => {
+            window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+          }, 3000);
+        } else {
+          alertModal(data.message);
+        }
+      } else {
+        $(data).appendTo($('body'));
+      }
+    });
+  }
 </script>
