@@ -207,7 +207,7 @@
                   </div>
                 </div>
               </td>
-              <td :id="`operation-${index}`" class="text-center align-middle">
+              <td :id="`operation-${index}`" class="align-middle">
                 <div>
                   <!-- 簽署者狀態 -->
                   <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded m-1"
@@ -229,7 +229,7 @@
                     <i class="far fa-download"></i>
                   </button>
                   <!-- 終止合約 -->
-                  <button type="button" id="deleteCompany"
+                  <button v-if="!contract.isContractor" type="button" id="deleteCompany"
                     class="btn btn-sm btn-danger rounded-pill icon__rounded opacity-75 m-1" data-bs-toggle="tooltip"
                     data-bs-placement="top" title="終止合約" v-on:click="openStopContractModal(contract)">
                     <i class="far fa-times"></i>
