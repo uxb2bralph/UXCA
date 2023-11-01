@@ -57,7 +57,7 @@
 
           <ul class="navbar-nav mb-2 mb-lg-0">
             <li class="fw-bolder">@Html.Raw(profile.OrganizationUser?.Organization.CompanyName)
-              @Html.Raw(profile.UserName) 您好！</li>
+              @Html.Raw(profile.UserName) / @Html.Raw(profile.UserRole.Count) 您好！</li>
           </ul>
           <ul class="navbar-nav mb-2 mb-lg-0">
             <li class="nav-item dropdown">
@@ -66,19 +66,21 @@
                 <span style="font-size: 2rem;"><i class="fas fa-user-circle"></i></span>
               </a>
               <ul class="dropdown-menu dropdown-menu-end shadow__card" aria-labelledby="navbarDropdown">
+                @* @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.SystemAdmin,
+                (int)UserRoleDefinition.RoleEnum.MemberAdmin))
+                { *@
+                <li>
+                  <a class="dropdown-item" href="@Html.Raw(Url.Action("MaintainData","UserProfile"))">
+                    使用者管理
+                  </a>
+                </li>
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
+                @* } *@
+                @* @if (profile.IsSysAdmin()) *@
                 @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.SystemAdmin,
                 (int)UserRoleDefinition.RoleEnum.MemberAdmin))
-                {
-                  <li>
-                    <a class="dropdown-item" href="@Html.Raw(Url.Action("MaintainData","UserProfile"))">
-                      使用者管理
-                    </a>
-                  </li>
-                  <li>
-                    <hr class="dropdown-divider">
-                  </li>
-                }
-                @if (profile.IsSysAdmin())
                 {
                   <li>
                     <a class="dropdown-item" href="@Html.Raw(Url.Action("MaintainData","Organization"))">公司資料維護</a>
