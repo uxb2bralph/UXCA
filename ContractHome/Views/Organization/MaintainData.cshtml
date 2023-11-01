@@ -128,11 +128,11 @@
     </div>
   </section>
 
-  <!-- 廠商資料查詢列表 -->
+  <!-- 公司資料查詢列表 -->
   <section>
     <!-- 標題 -->
     @{
-      await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "查詢列表");
+      await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "公司列表");
     }
     <div v-if="companyList.length > 0">
       <div class="card p-2 mb-3 table-responsive">
@@ -141,11 +141,11 @@
             <tr>
               <th scope="col">公司名稱</th>
               <th scope="col">統一編號</th>
+              <th scope="col">負責人</th>
               <th scope="col">電話</th>
               <th scope="col">傳真</th>
               <th scope="col">地址</th>
               <th scope="col">電子郵件</th>
-              <th scope="col">負責人</th>
               <th scope="col"></th>
             </tr>
           </thead>
@@ -153,11 +153,11 @@
             <tr v-for="(company, index) in companyList" :key="`c_${index}`">
               <td class="text-nowrap">{{ company.CompanyName }}</td>
               <td class="text-nowrap">{{ company.ReceiptNo }}</td>
+              <td class="text-nowrap">{{ company.UndertakerName }}</td>
               <td>{{ company.Phone }}</td>
               <td>{{ company.Fax }}</td>
               <td>{{ company.Addr }}</td>
               <td>{{ company.ContactEmail }}</td>
-              <td class="text-nowrap">{{ company.UndertakerName }}</td>
               <td class="text-nowrap text-center">
                 <!-- 編輯 -->
                 <span data-bs-toggle="tooltip" data-bs-placement="top" title="修改" class="d-inline-block mx-1">
