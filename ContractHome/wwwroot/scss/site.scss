@@ -37,6 +37,76 @@ html, body {
   height: 100%;
 }
 
+/* Tooltip container */
+.tooltip {
+  &__wrapper {
+    position: relative;
+    display: inline-block;
+
+    &:hover {
+      .tooltip__text {
+        display: inline-block;
+        opacity: .9;
+        transition: opacity .15s linear;
+      }
+    }
+  }
+
+  &__text {
+    padding: 5px 10px;
+    display: none;
+    position: absolute;
+    top: -38px;
+    left: 50%;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    background-color: #000000;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity .15s linear;
+    z-index: 1;
+
+    &::after {
+      display: block;
+      width: 10px;
+      height: 5px;
+      position: absolute;
+      top: 31px;
+      left: 50%;
+      content: "";
+      border-width: 5px;
+      border-style: solid;
+      border-color: #000000 transparent transparent transparent;
+      transform: translateX(-50%);
+    }
+
+    &--bottom {
+      top: 55px;
+
+      &::before {
+        display: block;
+        width: 10px;
+        height: 5px;
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        content: "";
+        border-width: 5px;
+        border-style: solid;
+        border-color: transparent transparent #000000 transparent;
+        transform: translateX(-50%);
+      }
+
+      &::after {
+        display: none;
+      }
+    }
+  }
+}
+
 #mainNavBar {
   .v-application {
     &--wrap {
@@ -679,4 +749,4 @@ html, body {
   bottom: 20px;
   right: 20px;
   width: 40px;
-}
+}        

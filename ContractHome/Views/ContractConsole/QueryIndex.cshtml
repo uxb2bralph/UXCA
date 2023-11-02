@@ -240,33 +240,42 @@
                   </div>
                 </div>
               </td>
-              <td class="text-center align-middle">
+              <td class="align-middle">
                 <div>
                   <!-- 簽署者狀態 -->
-                  <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded m-1"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="簽署者狀態"
-                    v-on:click="openSignerStatusModal(contract)">
-                    <i class="fas fa-info"></i>
-                  </button>
+                  <span class="tooltip__wrapper m-1">
+                    <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded"
+                      v-on:click="openSignerStatusModal(contract)">
+                      <i class="fas fa-info"></i>
+                    </button>
+                    <div class="tooltip__text">簽署者狀態</div>
+                  </span>
                   <!-- 稽核軌跡 -->
-                  <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded m-1"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="稽核軌跡"
-                    v-on:click="openHistoryModal(contract)">
-                    <i class="fas fa-shoe-prints fa-rotate-270"></i>
-                  </button>
+                  <span class="tooltip__wrapper m-1">
+                    <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded"
+                      v-on:click="openHistoryModal(contract)">
+                      <i class="fas fa-shoe-prints fa-rotate-270"></i>
+                    </button>
+                    <div class="tooltip__text">稽核軌跡</div>
+                  </span>
                 </div>
                 <div>
                   <!-- 下載檔案 -->
-                  <button type="button" class="btn btn-sm btn-secondary opacity-75 rounded-pill icon__rounded m-1"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="下載檔案" v-on:click="downloadPdf(contract)">
-                    <i class="far fa-download"></i>
-                  </button>
+                  <span class="tooltip__wrapper m-1">
+                    <button type="button" class="btn btn-sm btn-secondary opacity-75 rounded-pill icon__rounded"
+                      v-on:click="downloadPdf(contract)">
+                      <i class="far fa-download"></i>
+                    </button>
+                    <div class="tooltip__text">下載檔案</div>
+                  </span>
                   <!-- 中止合約 -->
-                  <button type="button" id="deleteCompany"
-                    class="btn btn-sm btn-danger rounded-pill icon__rounded opacity-75 m-1" data-bs-toggle="tooltip"
-                    data-bs-placement="top" title="中止合約" v-on:click="openStopContractModal(contract)">
-                    <i class="far fa-times"></i>
-                  </button>
+                  <span v-if="!contract.isContractor" class="tooltip__wrapper m-1">
+                    <a class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded" role="button" aria-disabled="true"
+                      v-on:click="openStopContractModal(contract)">
+                      <i class="far fa-times"></i>
+                    </a>
+                    <div class="tooltip__text">中止合約</div>
+                  </span>
                 </div>
               </td>
             </tr>

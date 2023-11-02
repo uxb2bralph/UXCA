@@ -39,16 +39,6 @@
 <script src="~/lib/tourguide/js/tourguide_3.js"></script>
 
 <script>
-  // 初始化 Bootstrap Tooltip
-  document.addEventListener("DOMContentLoaded", function () {
-    setTimeout(() => {
-      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-      var tooltipList = tooltipTriggerList.map(function (element) {
-        return new bootstrap.Tooltip(element);
-      }, 3500);
-    })
-  });
-
   var $global = (function () {
 
     return {

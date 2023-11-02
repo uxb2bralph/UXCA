@@ -40,11 +40,11 @@
   <div class="row">
     <div class="col-12 hstack gap-3 py-3">
       <h3 class="mb-3 fw-bolder">合約清單</h3>
-      <div id="addContract" class="ms-auto">
-        <button type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="新增合約"
-          class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="addHandler">
+      <div id="addContract" class="tooltip__wrapper ms-auto">
+        <button type="button" class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="addHandler">
           <i class="fal fa-file-plus"></i>
         </button>
+        <div class="tooltip__text">新增合約</div>
       </div>
     </div>
   </div>
@@ -125,7 +125,7 @@
                       <span class="badge bg-primary opacity-75">起約人</span>
                     </div>
                   </div>
-                  <span class="progresses__line progresses__line--w200"
+                  <span class="progresses__line"
                     :class="{'progresses__line--done': contract.ContractorStampDate }"></span>
                   <div class="progresses__stepGroup">
                     <div class="progresses__company">
@@ -179,7 +179,7 @@
                       <span class="badge bg-primary opacity-75">起約人</span>
                     </div>
                   </div>
-                  <span class="progresses__line progresses__line--w200 progresses__signature"
+                  <span class="progresses__line progresses__signature"
                     :class="{'progresses__line--done': contract.ContractorSignerDate }"></span>
                   <div class="progresses__stepGroup">
                     <div class="progresses__company">
@@ -210,30 +210,36 @@
               <td :id="`operation-${index}`" class="align-middle">
                 <div>
                   <!-- 簽署者狀態 -->
-                  <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded m-1"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="簽署者狀態"
-                    v-on:click="openSignerStatusModal(contract)">
-                    <i class="fas fa-info"></i>
-                  </button>
+                  <span class="tooltip__wrapper m-1">
+                    <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded" v-on:click="openSignerStatusModal(contract)">
+                      <i class="fas fa-info"></i>
+                    </button>
+                    <div class="tooltip__text">簽署者狀態</div>
+                  </span>
                   <!-- 稽核軌跡 -->
-                  <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded m-1"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="稽核軌跡"
-                    v-on:click="openHistoryModal(contract)">
-                    <i class="fas fa-shoe-prints fa-rotate-270"></i>
-                  </button>
+                  <span class="tooltip__wrapper m-1">
+                    <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded" v-on:click="openHistoryModal(contract)">
+                      <i class="fas fa-shoe-prints fa-rotate-270"></i>
+                    </button>
+                    <div class="tooltip__text">稽核軌跡</div>
+                </span>
                 </div>
                 <div>
                   <!-- 下載檔案 -->
-                  <button type="button" class="btn btn-sm btn-secondary opacity-75 rounded-pill icon__rounded m-1"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="下載檔案" v-on:click="downloadPdf(contract)">
-                    <i class="far fa-download"></i>
-                  </button>
+                  <span class="tooltip__wrapper m-1">
+                    <button type="button" class="btn btn-sm btn-secondary opacity-75 rounded-pill icon__rounded" v-on:click="downloadPdf(contract)">
+                      <i class="far fa-download"></i>
+                    </button>
+                    <div class="tooltip__text">下載檔案</div>
+                  </span>
                   <!-- 終止合約 -->
-                  <button v-if="!contract.isContractor" type="button" id="deleteCompany"
-                    class="btn btn-sm btn-danger rounded-pill icon__rounded opacity-75 m-1" data-bs-toggle="tooltip"
-                    data-bs-placement="top" title="終止合約" v-on:click="openStopContractModal(contract)">
-                    <i class="far fa-times"></i>
-                  </button>
+                  <span class="tooltip__wrapper m-1">
+                    <button v-if="!contract.isContractor" type="button" id="deleteCompany"
+                      class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded" v-on:click="openStopContractModal(contract)">
+                      <i class="far fa-times"></i>
+                    </button>
+                    <div class="tooltip__text">終止合約</div>
+                  </span>
                 </div>
               </td>
             </tr>

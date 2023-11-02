@@ -25,12 +25,12 @@
     <!-- 標題 -->
     @{
       // await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
-      await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "公司資料維護");
+      await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "公司資料管理");
       // await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgent.cshtml");
       // await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
     }
 
-    <!-- 廠商資料維護搜尋-->
+    <!-- 公司資料維護搜尋-->
     <div class="card">
       <form v-on:submit.prevent method="post" enctype="multipart/form-data">
         <div class="container">
@@ -111,11 +111,11 @@
     </div>
     <div class="row">
       <div class="col-12 hstack gap-3 py-3">
-        <div>
-          <button type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="新增廠商資料"
-            class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="editData('addNew')">
+        <div class="tooltip__wrapper">
+          <button type="button" class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="editData('addNew')">
             <i class="fal fa-file-plus"></i>
           </button>
+          <div class="tooltip__text">新增公司</div>
         </div>
         <div class="ms-auto">
           <button type="button" class="btn btn-secondary opacity-75" v-on:click="resetHandler">重設</button>
@@ -160,19 +160,21 @@
               <td>{{ company.ContactEmail }}</td>
               <td class="text-nowrap text-center">
                 <!-- 編輯 -->
-                <span data-bs-toggle="tooltip" data-bs-placement="top" title="修改" class="d-inline-block mx-1">
+                <span class="tooltip__wrapper mx-1">
                   <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded"
                     v-on:click="editData('edit', company)">
                     <i class="fal fa-edit"></i>
                   </button>
+                  <div class="tooltip__text">修改</div>
                 </span>
                 <!-- 刪除 -->
-                <span data-bs-toggle="tooltip" data-bs-placement="top" title="刪除" class="d-inline-block mx-1">
+                <span class="tooltip__wrapper mx-1">
                   <button type="button" id="deleteCompany"
                     class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded"
                     v-on:click="openDeleteDialog(company)">
                     <i class="fal fa-trash-alt"></i>
                   </button>
+                  <div class="tooltip__text">刪除</div>
                 </span>
               </td>
             </tr>
@@ -271,7 +273,7 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title fw-bolder" id="staticBackdropLabel">{{ editTitle }}廠商資料</h5>
+          <h5 class="modal-title fw-bolder" id="staticBackdropLabel">{{ editTitle }}公司資料</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -354,6 +356,19 @@
                 </div>
                 <div class="col input__height">
                   <div class="row">
+                    <label for="Addr" class="col-sm-12 col-md-3 col-form-label fw-bolder">地址</label>
+                    <div class="col-sm-12 col-md-9">
+                      <input v-model="formData.Addr" type="text" class="form-control form-control-sm"
+                        :class="{'is-invalid': isAddr}" name="Addr" id="Addr" v-on:focus="resetValidate('isAddr')"
+                        v-on:blur="validateField('isAddr', formData.Addr)" />
+                      <div class="invalid-feedback">
+                        請輸入地址
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col input__height">
+                  <div class="row">
                     <label for="ContactEmail" class="col-sm-12 col-md-3 col-form-label fw-bolder">電子郵件</label>
                     <div class="col-sm-12 col-md-9">
                       <input v-model="formData.ContactEmail" type="text" class="form-control form-control-sm"
@@ -362,19 +377,6 @@
                         v-on:blur="validateField('isContactEmail', formData.ContactEmail);checkMail('isContactEmail', formData.ContactEmail)" />
                       <div class="invalid-feedback">
                         請輸入有效的電子郵件地址
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col input__height">
-                  <div class="row">
-                    <label for="Addr" class="col-sm-12 col-md-3 col-form-label fw-bolder">地址</label>
-                    <div class="col-sm-12 col-md-9">
-                      <input v-model="formData.Addr" type="text" class="form-control form-control-sm"
-                        :class="{'is-invalid': isAddr}" name="Addr" id="Addr" v-on:focus="resetValidate('isAddr')"
-                        v-on:blur="validateField('isAddr', formData.Addr)" />
-                      <div class="invalid-feedback">
-                        請輸入地址
                       </div>
                     </div>
                   </div>

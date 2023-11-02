@@ -121,11 +121,11 @@
     </div>
     <div class="row">
       <div class="col-12 hstack gap-3 py-3">
-        <div>
-          <button type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="新增使用者資料"
-            class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="editData('addNew')">
+        <div class="tooltip__wrapper">
+          <button type="button" class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="editData('addNew')">
             <i class="fal fa-file-plus"></i>
           </button>
+          <div class="tooltip__text">新增使用者</div>
         </div>
         <div class="ms-auto">
           <button type="button" class="btn btn-secondary opacity-75" v-on:click="resetHandler">重設</button>
@@ -170,19 +170,21 @@
               <td>{{ formatData(user.Region, 'regionList') }}</td>
               <td class="text-nowrap text-center">
                 <!-- 編輯 -->
-                <span data-bs-toggle="tooltip" data-bs-placement="top" title="修改" class="d-inline-block mx-1">
+                <span class="tooltip__wrapper mx-1">
                   <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded"
                     v-on:click="editData('edit', user)">
                     <i class="fal fa-edit"></i>
                   </button>
+                  <div class="tooltip__text">修改</div>
                 </span>
                 <!-- 刪除 -->
-                <span data-bs-toggle="tooltip" data-bs-placement="top" title="刪除" class="d-inline-block mx-1">
+                <span class="tooltip__wrapper mx-1">
                   <button type="button" id="deleteCompany"
                     class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded"
                     v-on:click="openDeleteDialog(user)">
                     <i class="fal fa-trash-alt"></i>
                   </button>
+                  <div class="tooltip__text">刪除</div>
                 </span>
               </td>
             </tr>
@@ -604,14 +606,6 @@
       }
     },
     mounted() {
-      // 初始化 Bootstrap Tooltip
-      document.addEventListener("DOMContentLoaded", function () {
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function (element) {
-          return new bootstrap.Tooltip(element);
-        });
-      });
-
       const self = this;
       // 輸入框 click outside 時 AutoComplete 收起
       window.addEventListener('click', function (e) {
