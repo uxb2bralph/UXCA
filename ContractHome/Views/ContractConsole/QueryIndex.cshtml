@@ -733,6 +733,9 @@
       }
     },
     mounted() {
+      // 進入本頁先查詢清單
+      this.inquireData();
+
       const self = this;
       $('#ContractDateFrom').datepicker({
         locale: 'zh-tw',
