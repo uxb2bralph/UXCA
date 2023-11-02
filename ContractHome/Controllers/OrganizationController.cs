@@ -37,25 +37,42 @@ namespace ContractHome.Controllers
       _logger = logger;
     }
 
-    [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
+    //[RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
     public ActionResult MaintainData(QueryViewModel viewModel)
     {
       ViewBag.ViewModel = viewModel;
       return View("~/Views/Organization/MaintainData.cshtml");
     }
 
-    public ActionResult VueInquireJson([FromBody] OrganizationViewModel viewModel)
+    public async Task<ActionResult> VueInquireJson([FromBody] OrganizationViewModel viewModel)
     {
-      ViewResult result = (ViewResult)VueInquireData(viewModel);
+      ViewResult result = (ViewResult) await VueInquireData(viewModel);
       result.ViewName = "~/Views/Organization/VueModule/OrganizationItems.cshtml";
       return result;
     }
 
-    public ActionResult VueInquireData([FromBody] OrganizationViewModel viewModel)
+    public async Task<ActionResult> VueInquireData([FromBody] OrganizationViewModel viewModel)
     {
       ViewBag.ViewModel = viewModel;
 
+      var profile = await HttpContext.GetUserAsync();
+
       IQueryable<Organization> items = models.GetTable<Organization>();
+
+      if (profile?.IsSysAdmin() == false)
+      {
+        var orgUsers = models.GetTable<OrganizationUser>()
+                        .Where(o => o.UID == profile.UID);
+        if (orgUsers != null)
+        {
+            items = items.Where(o => orgUsers.Any(ou => ou.CompanyID == o.CompanyID));
+        }
+        else
+        {
+            items = items.Where(p => false);
+        }
+      }
+
       viewModel.ReceiptNo = viewModel.ReceiptNo.GetEfficientString();
       if (viewModel.ReceiptNo != null)
       {

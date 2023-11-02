@@ -70,7 +70,7 @@ namespace ContractHome.Controllers
       }
       else
       {
-        items = items.Where(p => false);
+         items = items.Where(u => u.PID == profile.PID);
       }
 
       int? companyID = viewModel.GetCompanyID();
