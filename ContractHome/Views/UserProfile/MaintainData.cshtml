@@ -606,6 +606,9 @@
       }
     },
     mounted() {
+      // 進入本頁先查詢清單
+      this.inquireData();
+
       const self = this;
       // 輸入框 click outside 時 AutoComplete 收起
       window.addEventListener('click', function (e) {
