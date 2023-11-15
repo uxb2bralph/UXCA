@@ -9,55 +9,163 @@
 @using CommonLib.Utility
 @using Newtonsoft.Json
 @{
-    Layout = "~/Views/Shared/MasterPage.cshtml";
+  Layout = "~/Views/Shared/MasterPage.cshtml";
+  ModelStateDictionary _modelState;
+  ModelSource? models;
+  ContractSealRequest _model = (ContractSealRequest)this.Model;
+  models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+  _modelState = (ModelStateDictionary)ViewBag.ModelState;
+  QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+  DateTime today = DateTime.Now;
 
-    ModelStateDictionary _modelState;
-    ModelSource? models;
-    ContractSealRequest _model = (ContractSealRequest)this.Model;
+    String _validCode;
+    String _encryptedCode;
 
-    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
-    _modelState = (ModelStateDictionary)ViewBag.ModelState;
-    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
-
+    _validCode = 6.CreateRandomStringCode();
+    _encryptedCode = _validCode.EncryptData();
 }
-
-<div class="container">
-    <div class="row">
-        <div class="col-md-4 offset-md-4">
-            <div class="panel-default">
-                <div class="panel-body">
-                    <form id="form1" accept-charset="UTF-8" role="form" method="post" autocomplete="off">
-                        <fieldset>
-                            <div class="text-center">
-                                <h1 class="h4 text-gray-900 mb-4">Welcome Digital Contracting !</h1>
-                            </div>
-                            <div class="form-group prompt">
-                                <label for="user_login">ID</label>
-                                <input class="form-control" name="PID" type="text" required autofocus>
-                            </div>
-                            <div class="form-group prompt">
-                                <label>Password</label>
-                                <a class="form-sublink" href="@(Url.Action("ForgetPassword","Account"))">Forgot password</a>
-                                <input class="form-control" name="Password" type="password" value="" required>
-                            </div>
-                            <button id="btn" type="button" class="btn btn-inverted btn-block mb-4">Sign In</button>
-                            <div class="form-group">
-                            </div>
-                        </fieldset>
-                    </form>
+<main id="login" class="login__wrapper bg-secondary">
+  <div class="login__signin">
+    <form ref="form" v-on:submit.prevent id="loginForm" class="needs-validation" :class="{'was-validated': isValidate}"
+      novalidate accept-charset="UTF-8" role="form" method="post" autocomplete="off">
+      <div class="card border-0 mb-3 shadow">
+        <div class="row g-0">
+          <div class="col-xl-8 p-5 login__intro bg-secondary bg-opacity-10">
+            <img src="~/images/uxSign-logo.png" class="py-3">
+            <h1 class="h2 fw-bolder pt-2">雲端文件簽署，簡化簽署步驟</h1>
+            <p class="text-white">高效率完成線上文件簽署，並獲取具有法律約束力的電子簽名。</p>
+          </div>
+          <div class="col-xl-4 align-self-center p-5">
+            <div class="container">
+              <div class="row">
+                <div class="col-12">
+                  <h4 class="text-center fw-bolder">登入</h4>
                 </div>
+                <div class="col-xl-12 col-lg-6 col-md-12 input__loginHeight">
+                  <label for="userAccount" class="fw-bolder">帳號</label>
+                  <input v-model="formData.pid" type="text" id="userAccount" class="form-control form-control-sm"
+                    placeholder="" name="PID" required autofocus>
+                  <div class="invalid-feedback">
+                    請輸入帳號
+                  </div>
+                </div>
+                <div class="col-xl-12 col-lg-6 col-md-12 input__loginHeight">
+                  <label for="userPwd" class="fw-bolder">密碼</label>
+                  <input v-model="formData.password" type="password" id="userPwd" class="form-control form-control-sm"
+                    placeholder="" name="Password" required>
+                  <div class="invalid-feedback">
+                    請輸入密碼
+                  </div>
+                </div>
+                <div class="col-xl-12 col-lg-6 col-md-12 input__loginHeight">
+                  <label for="ValidCode" class="fw-bolder">請輸入驗證碼</label>
+                  <div class="d-flex">                  
+                    <div class="col-7">
+                      <input v-model="formData.validCode" type="text" id="ValidCode" class="form-control form-control-sm" placeholder="" name="ValidCode" required>
+                      <div class="invalid-feedback">
+                          請輸入驗證碼
+                      </div>
+                    </div>
+                    <div class="col-5 text-end">
+                      <img id="imgNum" src="@Html.Raw(Url.Action("CaptchaImg", "Account", new { code = _encryptedCode }))" />
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12 hstack gap-3 py-3">
+                  <div>
+                    <input v-model="formData.rememberAccount" class="form-check-input" type="checkbox"
+                      id="rememberAccount">
+                    <label class="form-check-label" for="rememberAccount">
+                      記住帳號
+                    </label>
+                  </div>
+                  <!--
+                  <div class="ms-auto">
+                    <a class="fs-6" href="@(Url.Action("ForgetPassword", "Account"))">註冊</a>
+                  </div>
+                  <div class="vr"></div>
+                  -->
+                  <div class="ms-auto">
+                    <a class="fs-6" href="@(Url.Action("ForgetPassword","Account"))">忘記密碼</a>
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <button type="button" class="w-100 btn btn-primary" v-on:click="loginHandler" elevation="2">
+                    登入</button>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
-    </div>
-</div>
-@{
-    await Html.RenderPartialAsync("~/Views/Shared/ReportInputError.cshtml");
-}
+      </div>
+      <div class="login__footer">
+        © @(today.Year) UXB2B All Rights Reserved. 網際優勢 版權所有
+        <br>
+        榮獲 財團法人全國認證基金會 (TAF) 國際ISO/IEC 27001: 2013 (CNS 27001: 2014) 資訊安全管理系統驗證
+        <br>
+        <a class=" navbar-brand" href="@Url.Action("Personal", "Home")">個資保護</a>
+        |
+        <a class=" navbar-brand" href="@Url.Action("Privacy", "Home")">隱私政策</a>
+        |
+        <a class=" navbar-brand" href="@Url.Action("Security", "Home")">安全宣告</a>
+        |
+        <a class=" navbar-brand" href="@Url.Action("Gdpr", "Home")">GDPR 聲明</a>
+      </div>
+    </form>
+  </div>
+</main>
 <script>
+  var app = new Vue({
+    el: '#login',
+    data: {
+      isValidate: false,
+      formData: {
+        pid: null,
+        password: null,
+        rememberAccount: false,
+        validCode: null,
+        encryptedCode: '@Html.Raw(_encryptedCode)',
+      }
+    },
+    methods: {
+      loginHandler() {
+        const isPid = !!this.formData.pid;
+        const isPassword = !!this.formData.password;
+        // 帳號及密碼輸入檢核
+        if (!isPid || !isPassword) {
+          return this.isValidate = true;
+        }
 
-    $('#btn').click(function () {
-        var event = event || window.event;
-        $('form').prop('action', '@(Url.Action("Login", "Account"))').submit();
-    });
-
+        // ajax 送出表單
+        showLoading();
+        $.ajax({
+          type: 'POST',
+          url: '@(Url.Action("CheckLogin", "Account"))',
+          data: JSON.stringify(this.formData),
+          type: "POST",
+          //dataType: "json",
+          contentType: "application/json;charset=utf-8",
+          success: function (data) {
+            hideLoading();
+            if ($.isPlainObject(data)) {
+              if (data.result) {
+                showLoading();
+                window.location.href = data.message;
+              } else {
+                alertModal(data.message);
+              }
+            } else {
+              $(data).appendTo($('body')).remove();
+            }
+          },
+          error: function (xhr, ajaxOptions, thrownError) {
+            hideLoading();
+            console.log(xhr.status);
+            console.log(thrownError);
+          }
+        });
+      }
+    }
+  });
 </script>

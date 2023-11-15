@@ -1,27 +1,26 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using System.Diagnostics;
 using System.IO;
+using System.Xml;
+using System.Net;
+using System.Text;
+using System.Linq.Dynamic.Core;
+using System.Drawing;
+using System.Drawing.Imaging;
 using ContractHome.Models;
 using ContractHome.Models.DataEntity;
 using ContractHome.Models.ViewModel;
-using CommonLib.Utility;
-using Newtonsoft.Json;
+using ContractHome.Models.Helper;
 using ContractHome.Helper;
 using ContractHome.Properties;
 using CommonLib.Core.Utility;
-using System.Xml;
-using GemBox.Document;
-using System.Net;
-using Microsoft.Extensions.Primitives;
-using System.Drawing;
-using System.Drawing.Imaging;
-using Microsoft.AspNetCore.WebUtilities;
-using System.Linq.Dynamic.Core;
-using ContractHome.Models.Helper;
+using CommonLib.Utility;
+//using Microsoft.Extensions.Primitives;
 using CommonLib.Core.AspNetMvc;
-using DocumentFormat.OpenXml.Presentation;
-using System.Text;
+using Newtonsoft.Json;
+using Color = System.Drawing.Color;
 
 namespace ContractHome.Controllers
 {
@@ -32,6 +31,24 @@ namespace ContractHome.Controllers
         public AccountController(ILogger<HomeController> logger, IServiceProvider serviceProvider) : base(serviceProvider)
         {
             _logger = logger;
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        public ActionResult CheckLogin([FromBody] LoginViewModel viewModel)
+        {
+            LoginHandler login = new LoginHandler(this);
+            if (!login.ProcessLogin(viewModel.PID, viewModel.Password, out string msg))
+            {
+                ModelState.AddModelError("PID", msg);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return Json(new { result = false, message = ModelState.ErrorMessage() });
+            }
+
+            return Json(new { result = true, message = Url.Action("ListToStampIndex", "ContractConsole") });
         }
 
         // GET: Account
@@ -88,6 +105,78 @@ namespace ContractHome.Controllers
             return View("~/Views/Shared/Error.cshtml");
         }
 
+        [AllowAnonymous]
+        public async Task<ActionResult> CaptchaImgAsync(String code)
+        {
+
+            string captcha = code.DecryptData();
+
+            Response.Clear();
+            Response.ContentType = "image/Png";
+            using (Bitmap bmp = new Bitmap(120, 30))
+            {
+                int x1 = 0;
+                int y1 = 0;
+                int x2 = 0;
+                int y2 = 0;
+                int x3 = 0;
+                int y3 = 0;
+                int intNoiseWidth = 25;
+                int intNoiseHeight = 15;
+                Random rdn = new Random();
+                using (Graphics g = Graphics.FromImage(bmp))
+                {
+
+                    //設定字型
+                    using (Font font = new Font("Courier New", 16, FontStyle.Bold))
+                    {
+
+                        //設定圖片背景
+                        g.Clear(Color.CadetBlue);
+
+                        //產生雜點
+                        for (int i = 0; i < 100; i++)
+                        {
+                            x1 = rdn.Next(0, bmp.Width);
+                            y1 = rdn.Next(0, bmp.Height);
+                            bmp.SetPixel(x1, y1, Color.DarkGreen);
+                        }
+
+                        using (Pen pen = new Pen(Brushes.Gray))
+                        {
+                            //產生擾亂弧線
+                            for (int i = 0; i < 15; i++)
+                            {
+                                x1 = rdn.Next(bmp.Width - intNoiseWidth);
+                                y1 = rdn.Next(bmp.Height - intNoiseHeight);
+                                x2 = rdn.Next(1, intNoiseWidth);
+                                y2 = rdn.Next(1, intNoiseHeight);
+                                x3 = rdn.Next(0, 45);
+                                y3 = rdn.Next(-270, 270);
+                                g.DrawArc(pen, x1, y1, x2, y2, x3, y3);
+                            }
+                        }
+
+                        //把GenPassword()方法換成你自己的密碼產生器，記得把產生出來的密碼存起來日後才能與user的輸入做比較。
+
+                        g.DrawString(captcha, font, Brushes.Black, 3, 3);
+
+                        using (MemoryStream ms = new MemoryStream())
+                        {
+                            bmp.Save(ms, ImageFormat.Png);
+                            byte[] bmpBytes = ms.GetBuffer();
+                            //bmp.Dispose();
+                            //ms.Close();
+                            await Response.Body.WriteAsync(bmpBytes);
+                        }
+
+                        //context.Response.End();
+                    }
+                }
+            }
+
+            return new EmptyResult();
+        }
 
     }
 

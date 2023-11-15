@@ -1,0 +1,48 @@
+@using System.IO
+@using System.Linq.Expressions
+
+
+@using CommonLib.DataAccess
+@using ContractHome.Helper
+@using ContractHome.Models
+@using ContractHome.Controllers
+@using CommonLib.Utility
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using Newtonsoft.Json
+
+<script>
+function fetchDataList(viewModel,url,onFetchDone) {
+        showLoading();
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    data: JSON.stringify(viewModel),
+                    type: "POST",
+                    //dataType: "json",
+                    contentType: "application/json;charset=utf-8",
+                    success: function (data) {
+                        hideLoading();
+                        if ($.isPlainObject(data)) {
+                            if (data.result) {
+                                if(onFetchDone) {
+                                    onFetchDone(data.dataItems);
+                                }
+                            } else {
+                                alertModal(data.message);
+                            }
+                        } else {
+                            $(data).appendTo($('body')).remove();
+                            if(onFetchDone) {
+                                onFetchDone();
+                            }
+                        }
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        hideLoading();
+                        console.log(xhr.status);
+                        console.log(thrownError);
+                    }
+                });
+}
+</script>

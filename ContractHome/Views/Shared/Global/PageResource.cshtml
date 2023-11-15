@@ -9,32 +9,29 @@
 @using CommonLib.Utility
 @using Newtonsoft.Json
 @{
-    ModelSource? models;
-    ModelStateDictionary _modelState;
+  ModelSource? models;
+  ModelStateDictionary _modelState;
 
-    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
-    _modelState = (ModelStateDictionary)ViewBag.ModelState;
-    QueryViewModel _viewModel = ViewBag.ViewModel as QueryViewModel;
+  models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+  _modelState = (ModelStateDictionary)ViewBag.ModelState;
+  QueryViewModel _viewModel = ViewBag.ViewModel as QueryViewModel;
 
-    var hasResource = ViewContext.HttpContext.Items["PageResource"] as bool?;
-    ViewContext.HttpContext.Items["PageResource"] = true;
+  var hasResource = ViewContext.HttpContext.Items["PageResource"] as bool?;
+  ViewContext.HttpContext.Items["PageResource"] = true;
 }
 
 @if (hasResource != true)
 {
-    <script>
+  <script>
 
-        $(function () {
-            debugger;
-            $global.viewModel = @Html.Raw(_viewModel.JsonStringify());
+    $(function () {
+      // debugger;
+      $global.viewModel = @Html.Raw(_viewModel.JsonStringify());
 
-            for (var i = 0; i < $global.onReady.length; i++) {
-                $global.onReady[i]();
-            }
-        });
+      for (var i = 0; i < $global.onReady.length; i++) {
+        $global.onReady[i]();
+      }
+    });
 
-    </script>
+  </script>
 }
-
-
-

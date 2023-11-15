@@ -9,46 +9,1332 @@
 @using CommonLib.Utility
 @using Newtonsoft.Json
 @{
-    Layout = "~/Views/Shared/MasterPage.cshtml";
+  Layout = "~/Views/Shared/MasterPage.cshtml";
 
-    ModelStateDictionary _modelState;
-    ModelSource? models;
+  ModelStateDictionary _modelState;
+  ModelSource? models;
 
-    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
-    _modelState = (ModelStateDictionary)ViewBag.ModelState;
-    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+  models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+  _modelState = (ModelStateDictionary)ViewBag.ModelState;
+  QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
 
-    _viewModel.UrlAction = Url.Action("ListToStamp", "ContractConsole");
+  _viewModel.UrlAction = Url.Action("ListToStamp", "ContractConsole");
 
 }
-<div class="container">
-    @{
-        await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
-        await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgent.cshtml");
-        await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
-        await Html.RenderPartialAsync("~/Views/ContractConsole/Module/ContractRequestQueryResult.cshtml");
-    }
+@{
+  // await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
+  await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgent.cshtml");
+  await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
+}
+<div id="listToStampIndex" class="container-lg py-5">
+  <!-- 合約資料列表 -->
+  <!-- 標題 -->
+  @{
+    // await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "合約清單");
+  }
+
+  <button class="btn btn-warning bg-gradient" id="tourbutton" v-on:click="tourHandler">
+    <i class="far fa-street-view"></i>
+    導覽小幫手
+  </button>
+  <div class="row">
+    <div class="col-12 hstack gap-3 py-3">
+      <h3 class="mb-3 fw-bolder">合約清單</h3>
+      <div id="addContract" class="tooltip__wrapper ms-auto">
+        <button type="button" class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="addHandler">
+          <i class="fal fa-file-plus"></i>
+        </button>
+        <div class="tooltip__text">新增合約</div>
+      </div>
+    </div>
+  </div>
+  <section id="queryArea">
+    <div v-if="contractList.length > 0">
+      <div class="card p-2 mb-3 table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th scope="col"
+                data-tour="step: 3; title: Customer name; content: Example cart customer name text displays customer name description">
+                合約編號
+                <!-- DESC -->
+                <a v-if="isSortNo" href="javascript:void(0);" v-on:click="sortHandler('ContractNo', 'isSortNo', true)">
+                  <i class="fas fa-sort-amount-down"></i>
+                </a>
+                <!-- ASC -->
+                <a v-else href="javascript:void(0);" v-on:click="sortHandler('ContractNo', 'isSortNo', false)">
+                  <i class="fas fa-sort-amount-down-alt"></i>
+                </a>
+              </th>
+              <th scope="col">合約用印</th>
+              <th scope="col">合約數位簽章</th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(contract, index) in contractList" :key="`c_${index}`">
+              <td :id="`contractNo-${index}`" class="align-middle text-nowrap">
+                <div class="d-flex align-items-start">
+                  <div class="fs-1 px-2 mediumSlateBlue">
+                    <i class="fad fa-file-contract fa-lg"></i>
+                  </div>
+                  <div>
+                    <div class="fs-12 text-black-50">
+                      {{ contract.ContractDateFrom }}
+                    </div>
+                    <div class="fw-bolder">
+                      {{ contract.Title }}
+                    </div>
+                    <div>
+                      <a :href="`javascript:showContract('${contract.KeyID}');`">
+                        {{ contract.No }}
+                      </a>
+                    </div>
+                    <div class="pt-1">
+                      <span class="badge bg-primary opacity-75">起約人</span>：
+                      <span class="fs-14">{{ contract.Initiator }}</span>
+                    </div>
+                    <div>
+                      <span class="badge bg-warning text-dark opacity-75">簽約人</span>：
+                      <span class="fs-14">{{ contract.Contractor }}</span>
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td :id="`stamp-${index}`">
+                <!-- 用印流程 -->
+                <div class="progresses__wrapper">
+                  <div class="progresses__stepGroup">
+                    <div class="progresses__company">
+                      <span v-if="contract.InitiatorStampDate" class="fw-bolder text-primary opacity-75">
+                        已用印
+                      </span>
+                      <div v-else>
+                        <button type="button" class="btn btn-sm boxShadow"
+                          :class="[!contract.isInitiator ? 'btn-secondary' : 'btn-stamp']"
+                          :disabled="!contract.isInitiator" v-on:click="stampHandler(contract, 'Initiator')">
+                          <i class="fas fa-stamp"></i> 待用印
+                        </button>
+                      </div>
+                    </div>
+                    <div class="progresses__steps" :class="{'progresses__steps--done': contract.InitiatorStampDate }">
+                      <span><i class="fas"
+                          :class="[!!contract.InitiatorStampDate ? 'fa-stamp': 'fa-circle']"></i></span>
+                    </div>
+                    <div class="progresses__company">
+                      <span class="badge bg-primary opacity-75">起約人</span>
+                    </div>
+                  </div>
+                  <span class="progresses__line"
+                    :class="{'progresses__line--done': contract.ContractorStampDate }"></span>
+                  <div class="progresses__stepGroup">
+                    <div class="progresses__company">
+                      <div v-if="contract.ContractorStampDate"
+                        class="fw-bolder text-primary opacity-75 w-60 text-center">
+                        已用印
+                      </div>
+                      <div v-else>
+                        <button type="button" class="btn btn-sm boxShadow"
+                          :class="[!contract.isContractor || !contract.InitiatorStampDate ? 'btn-secondary' : 'btn-stamp']"
+                          :disabled="!contract.isContractor || !contract.InitiatorStampDate"
+                          v-on:click="stampHandler(contract, 'Contractor')">
+                          <i class="fas fa-stamp"></i> 待用印
+                        </button>
+                      </div>
+                    </div>
+                    <div class="progresses__steps" :class="{'progresses__steps--done': contract.ContractorStampDate }">
+                      <span><i class="fas"
+                          :class="[!!contract.ContractorStampDate ? 'fa-stamp' : 'fa-circle']"></i></span>
+                    </div>
+                    <div class="progresses__company">
+                      <span class="badge bg-warning text-dark opacity-75">簽約人</span>
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td :id="`sign-${index}`">
+                <!-- 簽署流程 -->
+                <div class="progresses__wrapper">
+                  <div class="progresses__stepGroup">
+                    <div class="progresses__company">
+                      <div v-if="contract.InitiatorSignerDate"
+                        class="fw-bolder text-primary opacity-75 w-60 text-center">
+                        已簽署
+                      </div>
+                      <div v-else>
+                        <button type="button" class="btn btn-sm boxShadow"
+                          :class="[!contract.isInitiator || !contract.ContractorStampDate ? 'btn-secondary' : 'btn-sign']"
+                          :disabled="!contract.isInitiator || !contract.ContractorStampDate"
+                          v-on:click="signerHandler(contract, 'Initiator')">
+                          <i class="fas fa-signature"></i> 待簽署
+                        </button>
+                      </div>
+                    </div>
+                    <div class="progresses__steps progresses__signature"
+                      :class="{'progresses__steps--done': contract.InitiatorSignerDate }">
+                      <span><i class="fas"
+                          :class="[!!contract.InitiatorSignerDate ? 'fa-signature' : 'fa-circle']"></i></span>
+                    </div>
+                    <div class="progresses__company">
+                      <span class="badge bg-primary opacity-75">起約人</span>
+                    </div>
+                  </div>
+                  <span class="progresses__line progresses__signature"
+                    :class="{'progresses__line--done': contract.ContractorSignerDate }"></span>
+                  <div class="progresses__stepGroup">
+                    <div class="progresses__company">
+                      <div v-if="contract.ContractorSignerDate"
+                        class="fw-bolder text-primary opacity-75 w-60 h-31 text-center">
+                        已簽署
+                      </div>
+                      <div v-else>
+                        <button type="button" class="btn btn-sm boxShadow"
+                          :class="[!contract.isContractor || !contract.InitiatorSignerDate ? 'btn-secondary' : 'btn-sign']"
+                          :disabled="!contract.isContractor || !contract.ContractorStampDate"
+                          v-on:click="signerHandler(contract, 'Contractor')">
+                          <i class="fas fa-signature"></i> 待簽署
+                        </button>
+                      </div>
+                    </div>
+                    <div class="progresses__steps progresses__signature"
+                      :class="{'progresses__steps--done': contract.ContractorSignerDate }">
+                      <span><i class="fas"
+                          :class="[!!contract.ContractorSignerDate ? 'fa-signature' : 'fa-circle']"></i></span>
+                    </div>
+                    <div class="progresses__company">
+                      <span class="badge bg-warning text-dark opacity-75">簽約人</span>
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td :id="`operation-${index}`" class="align-middle">
+                <div>
+                  <!-- 簽署者狀態 -->
+                  <span class="tooltip__wrapper m-1">
+                    <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded" v-on:click="openSignerStatusModal(contract)">
+                      <i class="fas fa-info"></i>
+                    </button>
+                    <div class="tooltip__text">簽署者狀態</div>
+                  </span>
+                  <!-- 稽核軌跡 -->
+                  <span class="tooltip__wrapper m-1">
+                    <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded" v-on:click="openHistoryModal(contract)">
+                      <i class="fas fa-shoe-prints fa-rotate-270"></i>
+                    </button>
+                    <div class="tooltip__text">稽核軌跡</div>
+                </span>
+                </div>
+                <div>
+                  <!-- 下載檔案 -->
+                  <span class="tooltip__wrapper m-1">
+                    <button type="button" class="btn btn-sm btn-secondary opacity-75 rounded-pill icon__rounded" v-on:click="downloadPdf(contract)">
+                      <i class="far fa-download"></i>
+                    </button>
+                    <div class="tooltip__text">下載檔案</div>
+                  </span>
+                  <!-- 終止合約 -->
+                  <span class="tooltip__wrapper m-1">
+                    <button v-if="!contract.isContractor" type="button" id="deleteCompany"
+                      class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded" v-on:click="openStopContractModal(contract)">
+                      <i class="far fa-times"></i>
+                    </button>
+                    <div class="tooltip__text">終止合約</div>
+                  </span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- 分頁模組 -->
+      <div class="row g-3 align-items-center justify-content-between">
+        <div class="col-auto">
+          <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mb-0">
+              <!-- 第一頁 -->
+              <li class=" page-item" :class="{'disabled' : page === 1}">
+                <a class="page-link" v-on:click="firstPage">
+                  <i class="far fa-step-backward"></i>
+                </a>
+              </li>
+              <!-- 前一頁 -->
+              <li class=" page-item" :class="{'disabled' : page === 1}">
+                <a class="page-link" v-on:click="previousPage">
+                  <i class="fal fa-chevron-left"></i>
+                </a>
+              </li>
+              <!-- 頁面列表 -->
+              <li v-for="n in totalPages" :key="n" :v-model="page" class="page-item" :class="{'active' : page === n}">
+                <a class="page-link" v-on:click="changePage(n)">{{ n }}</a>
+              </li>
+              <!-- 下一頁 -->
+              <li class="page-item" :class="{'disabled' : page === totalPages}">
+                <a class="page-link" v-on:click="nextPage">
+                  <i class="fal fa-chevron-right"></i>
+                </a>
+              </li>
+              <!-- 最後一頁 -->
+              <li class="page-item" :class="{'disabled' : page === totalPages}">
+                <a class="page-link" v-on:click="lastPage">
+                  <i class="far fa-step-forward"></i>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        <div class="col-auto">
+          <div class="row g-3 align-items-center">
+            <div class="col-auto">
+              <label for="PageSize">每頁筆數：</label>
+            </div>
+            <div class="col-auto">
+              <select v-model="pageSize" class="form-select form-control-sm" name="PageSize" id="PageSize"
+                v-on:change="resetPageSize">
+                <option>10</option>
+                <option>30</option>
+                <option>50</option>
+                <option>100</option>
+                <option>200</option>
+              </select>
+            </div>
+            <div class="col-auto">
+              共 {{ totalPages }} 頁，{{ totalRecordCount }} 筆
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div v-else class="card p-3 text-center">
+      <span class="text-primary opacity-75" style="font-size: 50px;">
+        <i class="fad fa-folder-open"></i>
+      </span>
+      <span class="text-primary opacity-75 fw-bolder">目前尚無合約資料</span>
+    </div>
+  </section>
+
+  <!-- 新增 Dialog -->
+  <div class="modal fade" id="addNewModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="addNewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bolder" id="staticBackdropLabel">上傳合約文件</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- 拖曳上傳元件-->
+          <div v-if="isUploadFile" class="px-5 alert alert-danger d-flex align-items-center uploadFile__message"
+            role="alert">
+            <span class="pe-2"><i class="fas fa-exclamation-triangle"></i></span>
+            <div>{{ uploadFileMsg }}</div>
+          </div>
+          <form id="contractForm" class="dropzone"></form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 新增 Project Dialog -->
+  <div class="modal fade" id="addProjectModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="addNewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bolder" id="staticBackdropLabel">新增合約</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form v-on:submit.prevent>
+            <div class="container">
+              <div class="row row-cols-1 m-3 mb-lg-0 data-item">
+                <div class="col input__height">
+                  <div class="row">
+                    <label for="Title" class="col-sm-12 col-md-3 col-form-label fw-bolder">合約名稱</label>
+                    <div class="col-sm-12 col-md-9">
+                      <input v-model="formData.Title" type="text" class="form-control" id="Title" required />
+                      <div class="invalid-feedback">
+                        請輸入合約名稱
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col input__height">
+                  <div class="row">
+                    <label for="ContractNo" class="col-sm-12 col-md-3 col-form-label fw-bolder">合約編號</label>
+                    <div class="col-sm-12 col-md-9">
+                      <input v-model="formData.ContractNo" type="text" class="form-control" id="ContractNo"
+                        v-on:keyup="checkContractNo" required />
+                      <div class="invalid-feedback">
+                        請輸入合約編號
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col input__height">
+                  <div class="row align-items-center">
+                    <label for="FileTitle" class="col-sm-12 col-md-3 col-form-label fw-bolder">合約內容</label>
+                    <div class="col-sm-12 col-md-9">
+                      <span class="pe-3 fw-bolder">{{ formData.FileTitle }}</span>
+                      <br>
+                      <span class="text-muted">( {{ (formData.Size / 1024000).toFixed(2) }} M )</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary opacity-75" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" :class="{'disabled': !isContractNo}"
+            v-on:click="editContract">下一步</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 簽署 Dialog -->
+  <div class="modal fade" id="signModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="signModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header border-bottom-0">
+          <h5 class="modal-title" id="staticBackdropLabel">合約數位簽章</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="card d-flex flex-row align-items-center justify-content-center p-3 mb-4">
+            <div class="text-center fs-1 cornflowerBlue pe-3">
+              <i class="fad fa-file-signature fa-lg"></i>
+            </div>
+            <div>
+              <div class="h6 fw-bolder">
+                合約編號： {{ currentCompanyData.No }}
+              </div>
+              <div class="h6 fw-bolder">
+                專案名稱： {{ currentCompanyData.Title }}
+              </div>
+            </div>
+          </div>
+          <div class="text-center h5 fw-bolder">
+            您將代表 <span class="text-primary opacity-75">" {{ signerMessage }} "</span> 對此合約進行數位簽章
+          </div>
+        </div>
+        <div class="modal-footer border-top-0 justify-content-center">
+          <button type="button" class="btn btn-secondary opacity-50" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" v-on:click="confirmSign(currentCompanyData)">確定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 簽署者狀態 Dialog -->
+  <div class="modal fade" id="signerStatusModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="signerStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bolder" id="staticBackdropLabel">簽署者狀態</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="d-flex justify-content-between">
+            <div class="d-flex">
+              <div class="fs-1 px-2 mediumSlateBlue">
+                <i class="fad fa-file-contract fa-lg"></i>
+              </div>
+              <div>
+                <div class="fw-bolder">
+                  {{ signerStatusData.Title }}
+                </div>
+                <div class="fs-12 text-black-50">
+                  建立：{{ signerStatusData.ContractDateFrom }}
+                </div>
+                <div class="fs-12 text-black-50">
+                  最近修改：{{ signerStatusData.CurrentEditDate }}
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="pt-1">
+                <span class="badge bg-primary opacity-75">起約人</span>：
+                <span class="fs-14">{{ signerStatusData.Initiator }}</span>
+              </div>
+              <div>
+                <span class="badge bg-warning text-dark opacity-75">簽約人</span>：
+                <span class="fs-14">{{ signerStatusData.Contractor }}</span>
+              </div>
+            </div>
+          </div>
+          <!-- 用印流程 -->
+          <p class="mb-0 mt-4 fw-bolder text-secondary">用印狀態</p>
+          <div class="card p-2 my-2">
+            <div class="d-flex align-items-center">
+              <div class="col d-flex align-items-center">
+                <div class="progresses__steps"
+                  :class="{'progresses__steps--done': signerStatusData.InitiatorStampDate }">
+                  <span><i class="fas"
+                      :class="[!!signerStatusData.InitiatorStampDate ? 'fa-stamp': 'fa-circle']"></i></span>
+                </div>
+                <div class="ps-2">
+                  <span class="badge bg-primary opacity-75">起約人</span>
+                </div>
+              </div>
+              <div class="col fw-bolder text-center"
+                :class="{'text-primary opacity-75' : signerStatusData.InitiatorStampDate}">
+                {{ signerStatusData.InitiatorStampDate ? '已用印' : '待用印' }}</div>
+            </div>
+            <div class="d-flex align-items-center">
+              <div class="col d-flex align-items-center">
+                <div class="progresses__steps"
+                  :class="{'progresses__steps--done': signerStatusData.ContractorStampDate }">
+                  <span><i class="fas"
+                      :class="[!!signerStatusData.ContractorStampDate ? 'fa-stamp': 'fa-circle']"></i></span>
+                </div>
+                <div class="ps-2">
+                  <span class="badge bg-warning text-dark opacity-75">簽約人</span>
+                </div>
+              </div>
+              <div class="col fw-bolder text-center"
+                :class="{'text-primary opacity-75' : signerStatusData.ContractorStampDate}">
+                {{ signerStatusData.ContractorStampDate ? '已用印' : '待用印' }}
+              </div>
+            </div>
+          </div>
+          <!-- 簽署流程 -->
+          <p class="mb-0 mt-4 fw-bolder text-secondary">簽署狀態</p>
+          <div class="card p-2 my-2">
+            <div class="d-flex align-items-center">
+              <div class="col d-flex align-items-center">
+                <div class="progresses__steps progresses__signature"
+                  :class="{'progresses__steps--done': signerStatusData.InitiatorSignerDate }">
+                  <span><i class="fas"
+                      :class="[!!signerStatusData.InitiatorSignerDate ? 'fa-signature': 'fa-circle']"></i></span>
+                </div>
+                <div class="ps-2">
+                  <span class="badge bg-primary opacity-75">起約人</span>
+                </div>
+              </div>
+              <div class="col fw-bolder text-center"
+                :class="{'text-primary opacity-75' : signerStatusData.InitiatorSignerDate}">
+                {{ signerStatusData.InitiatorSignerDate ? '已簽署' : '待簽署' }}
+              </div>
+            </div>
+            <div class="d-flex align-items-center">
+              <div class="col d-flex align-items-center">
+                <div class="progresses__steps progresses__signature"
+                  :class="{'progresses__steps--done': signerStatusData.ContractorSignerDate }">
+                  <span><i class="fas"
+                      :class="[!!signerStatusData.ContractorSignerDate ? 'fa-signature': 'fa-circle']"></i></span>
+                </div>
+                <div class="ps-2">
+                  <span class="badge bg-warning text-dark opacity-75">簽約人</span>
+                </div>
+              </div>
+              <div class="col fw-bolder text-center"
+                :class="{'text-primary opacity-75' : signerStatusData.ContractorSignerDate}">
+                {{ signerStatusData.ContractorSignerDate ? '已簽署' : '待簽署' }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 開啟稽核軌跡 Dialog -->
+  <div class="modal fade" id="historyModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="historyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bolder" id="staticBackdropLabel">稽核軌跡</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="d-flex justify-content-between">
+            <div class="d-flex">
+              <div class="fs-1 px-2 mediumSlateBlue">
+                <i class="fad fa-file-contract fa-lg"></i>
+              </div>
+              <div>
+                <div class="fw-bolder">
+                  {{ historyData.Title }}
+                </div>
+                <div class="fs-12 text-black-50">
+                  建立：{{ historyData.ContractDateFrom }}
+                </div>
+                <div class="fs-12 text-black-50">
+                  最近修改：{{ historyData.CurrentEditDate }}
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="pt-1">
+                <span class="badge bg-primary opacity-75">起約人</span>：
+                <span class="fs-14">{{ historyData.Initiator }}</span>
+              </div>
+              <div>
+                <span class="badge bg-warning text-dark opacity-75">簽約人</span>：
+                <span class="fs-14">{{ historyData.Contractor }}</span>
+              </div>
+            </div>
+          </div>
+          <!-- 稽核軌跡 -->
+          <div class="card p-2 mb-2 mt-4">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">時間</th>
+                  <th scope="col">動作</th>
+                  <th scope="col">使用者</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, index) in historyData.LogList" :key="index">
+                  <td>{{ item.time }}</td>
+                  <td>{{ item.action }}</td>
+                  <td>
+                    {{ item.role }}
+                    @* <span v-if="item.role === 'isInitiator'" class="badge bg-primary opacity-75">起約人</span>
+                    <span v-else class="badge bg-warning text-dark opacity-75">簽約人</span> *@
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 開啟終止合約 Dialog -->
+  <div class="modal fade" id="stopContractModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="stopContractModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bolder" id="staticBackdropLabel">終止合約</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-body text-center h5 fw-bolder">
+            確定終止
+            <span class="text-primary opacity-75">" {{ stopContractData.Title }} "</span>
+            這份合約？
+          </div>
+        </div>
+        <div class="modal-footer border-top-0 justify-content-center">
+          <button type="button" class="btn btn-secondary opacity-50" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" v-on:click="confirmStop(stopContractData)">確定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 訊息 Dialog -->
+  <div class="modal fade" id="infoModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="infoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body text-center h5 fw-bolder pt-5">
+          <div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div>
+          <div v-html="infoMsg"></div>
+        </div>
+        <div class="modal-footer border-top-0 justify-content-center">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 歡迎使用 Dialog -->
+  <div class="modal fade" id="welcomModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="welcomModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-body">
+          <div class="text-center fs-1 cornflowerBlue py-4">
+            <i class="fad fa-map-marked-alt fa-lg"></i>
+          </div>
+          <div class="text-center h5 fw-bolder pb-3">
+            歡迎您使用安心簽 數位簽章管理系統。
+          </div>
+          <div class="text-center h6 lh-lg">
+            我們會藉由導覽的方式，逐步帶您了解安心簽的基本操作。<br>
+            請按<span class="text-primary">「確定」</span>繼續進行導覽的流程<br>
+            或按<span class="text-secondary">「取消」</span>結束導覽，謝謝。
+          </div>
+        </div>
+        <div class="modal-footer border-top-0 justify-content-center">
+          <button type="button" class="btn btn-secondary opacity-50" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" v-on:click="welcomeHandler">確定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  @{
+    // await Html.RenderPartialAsync("~/Views/ContractConsole/Module/ContractRequestQueryResult.cshtml");
+  }
 </div>
 <script>
-    function affixSeal(keyID) {
-        $('').launchDownload('@Html.Raw(Url.Action("AffixSeal", "ContractConsole"))', { 'KeyID': keyID });
-    }
+  /**
+    * 合約列表
+    * @@param {string} uuid 
+    * @@param {string} No 合約號碼
+    * @@param {string} Title 文件標題
+    * @@param {string} ContractDateFrom 建檔起日
+    * @@param {string} Initiator 起約人
+    * @@param {string} Contractor 簽約人
+    * @@param {string} InitiatorStampDate 起約人用印日期
+    * @@param {string} ContractorStampDate 簽約人用印日期
+    * @@param {string} InitiatorSignerDate 起約人簽署日期
+    * @@param {string} ContractorSignerDate 簽約人簽署日期
+    * @@param {string} InitiatorSignerID 起約人簽署數位ID
+    * @@param {string} ContractorSignerID 簽約人簽署數位ID
+    * @@param {string} KeyID 文件檔案ID
+    * @@param {string} isInitiator 是否為起約人(甲方)
+    * @@param {string} isContractor 是否為簽約人(乙方)
+    */
+  @*const contractList = [
+    {
+    uuid: '111',
+    No: 'CS-000100000',
+    Title: '測試很重要的一份合約-1',
+    ContractDateFrom: '2023/08/22 14:58',
+    Initiator: '網際優勢甲方公司',
+    Contractor: '網際優勢乙方公司',
+    InitiatorStampDate: null,
+    ContractorStampDate: null,
+    InitiatorSignerDate: null,
+    ContractorSignerDate: null,
+    InitiatorSignerID: null,
+    ContractorSignerID: null,
+    KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D',
+    isInitiator: true, // 是否為甲方
+    isContractor: false, // 是否為乙方
+    },
+    {
+    uuid: '222',
+    No: 'CS-000100001',
+    Title: '測試非常重要的一份合約-2',
+    ContractDateFrom: '2023/08/22 14:58',
+    Initiator: '網際優勢甲方公司',
+    Contractor: '網際優勢乙方公司',
+    InitiatorStampDate: '2023/08/22 14:58',
+    ContractorStampDate: null,
+    InitiatorSignerDate: null,
+    ContractorSignerDate: null,
+    InitiatorSignerID: null,
+    ContractorSignerID: null,
+    KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D',
+    isInitiator: false, // 是否為甲方
+    isContractor: true, // 是否為乙方
+    },
+    {
+    uuid: '333',
+    No: 'CS-000100002',
+    Title: '測試很重要的一份合約-3',
+    ContractDateFrom: '2023/08/23 14:20',
+    Initiator: '網際優勢甲方公司',
+    Contractor: '網際優勢乙方公司',
+    InitiatorStampDate: '2023/08/23 14:20',
+    ContractorStampDate: '2023/08/23 14:20',
+    InitiatorSignerDate: null,
+    ContractorSignerDate: null,
+    InitiatorSignerID: null,
+    ContractorSignerID: null,
+    KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D',
+    isInitiator: true, // 是否為甲方
+    isContractor: false, // 是否為乙方
+    },
+    {
+    uuid: '444',
+    No: 'CS-000100003',
+    Title: '測試很重要的一份合約-4',
+    ContractDateFrom: '2023/08/24 13:58',
+    Initiator: '網際優勢甲方公司',
+    Contractor: '網際優勢乙方公司',
+    InitiatorStampDate: '2023/08/24 13:58',
+    ContractorStampDate: '2023/08/24 13:58',
+    InitiatorSignerDate: '2023/08/24 13:58',
+    ContractorSignerDate: null,
+    InitiatorSignerID: 's-1234',
+    ContractorSignerID: null,
+    KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D',
+    isInitiator: true, // 是否為甲方
+    isContractor: false, // 是否為乙方
+    },
+    {
+    uuid: '555',
+    No: 'CS-000100004',
+    Title: '測試很重要的一份合約-5',
+    ContractDateFrom: '2023/08/25 10:58',
+    Initiator: '網際優勢甲方公司',
+    Contractor: '網際優勢乙方股份有限公司',
+    InitiatorStampDate: '2023/08/25 10:58',
+    ContractorStampDate: '2023/08/25 10:58',
+    InitiatorSignerDate: '2023/08/25 10:58',
+    ContractorSignerDate: '2023/08/25 10:58',
+    InitiatorSignerID: 's-1234',
+    ContractorSignerID: 's-5678',
+    KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D',
+    isInitiator: true, // 是否為甲方
+    isContractor: false, // 是否為乙方
+    },
+    ];*@
+  const contractList = [];
+  var app = new Vue({
+    el: '#listToStampIndex',
+    data: {
+      /**
+       * 合約表單
+       * @@param {string} No 合約號碼
+       * @@param {string} ContractDateFrom 建檔起日
+       * @@param {string} ContractDateTo 建檔迄日
+       * @@param {string} Initiator 起約人
+       * @@param {string} Contractor 簽約人
+       * @@param {string} pageSize 每頁筆數
+       * @@param {string} page 目前頁面
+       * @@param {string} sort 排序欄位
+       * @@param {boolean} desc 排序
+       */
+      initialFormData: {
+        uuid: null,
+        No: null,
+        ContractDateFrom: null,
+        ContractDateTo: null,
+        Initiator: null,
+        Contractor: null
+      },
+      formData: {},
+      /** 分頁 options
+       * totalRecordCount: 總筆數
+       * pageSize: 每頁筆數
+       * totalPages: 總頁數
+       * page: 目前頁面
+       */
+      totalRecordCount: 0,
+      pageSize: 10,
+      page: 1,
+      sort: null,
+      desc: true,
+      SortName: [],
+      SortType: [],
+      contractList,
+      isSortDateFrom: true,
+      isSortNo: true,
+      isUpload: true,
+      currentCompanyData: {},
+      signerMessage: null,
+      infoMsg: null,
+      isUploadFile: false,
+      uploadFileMsg: null,
+      signerStatusData: {},
+      historyData: {},
+      stopContractData: {},
+      isContractNo: false
+    },
+    computed: {
+      // 計算總頁數
+      totalPages() {
+        const totalCount = Number.parseInt(this.totalRecordCount, 10);
+        const pageSize = Number.parseInt(this.pageSize, 10);
+        return Math.ceil(totalCount / pageSize);
+      }
+    },
+    mounted() {
+      // 若為第一次登入，顯示歡迎視窗並進入導覽流程
+      if (!sessionStorage.getItem("isContractTour")) {
+        setTimeout(() => {
+          $("#welcomModal").modal('show');
+          sessionStorage.setItem("isContractTour", true);
+        }, 100);
+      }
 
-    function affixPdfSeal(keyID) {
-        $('').launchDownload('@Html.Raw(Url.Action("AffixPdfSeal", "ContractConsole"))', { 'KeyID': keyID });
-    }
+      // 初始化新增合約表單
+      this.formData = JSON.parse(JSON.stringify(this.initialFormData));
+      this.inquireData();
 
+      if (this.isUpload) {
+        const self = this;
+        // 拖曳上傳檔案模組
+        Dropzone.options.contractForm = {
+          /** 
+           * url: 存放檔案路徑
+           * autoProcessQueue: 自動上傳佇列
+           * uploadMultiple: 是否在一個上傳中發送多個文件
+           * parallelUploads: 要併行處理多少個文件上傳
+           * maxFiles: 最大文件數量
+           * maxFilesize: 允許上傳的最大文件（bytes單位）
+           * acceptedFiles: 檔案格式
+           * dictDefaultMessage: 畫面顯示內容
+           */
+          url: '@Url.Action("InitialContract", "ContractConsole")',
+          autoProcessQueue: true,
+          uploadMultiple: false,
+          parallelUploads: 1,
+          maxFiles: 1,
+          maxFilesize: 100000,
+          addRemoveLinks: true,
+          acceptedFiles: 'application/pdf',
+          dictDefaultMessage: "<div class='text-center h2 text-primary opacity-75'><i class='fas fa-cloud-upload-alt fa-lg'></i></div><div class='fs-5 fw-bolder text-secondary'>請將檔案拖曳到這裡，或是點一下，就可以上傳檔案</div>",
+          init: function () {
+            var myDropzone = this;
+            this.on("success", function (file, data) {
+              // 文件上傳成功後的處理
+              delete self.formData.KeyID;
+              if ($.isPlainObject(data)) {
+                if (data.result) {
+                  self.formData.KeyID = data.message;
+                }
+              }
+            });
+            this.on("addedfile", function (file) {
+              console.log(file.status);
+            });
+            this.on("complete", function (file) {
+              console.log("complete", file.status);
+              if (file.status === 'error') {
+                // 顯示錯誤訊息，2 秒後自動消失
+                self.isUploadFile = true;
+                self.uploadFileMsg = '檔案上傳失敗，請重新上傳';
+                setTimeout(() => {
+                  self.isUploadFile = false;
+                  self.uploadFileMsg = null;
+                }, 2000);
 
-    function startSigning(keyID) {
+                // 測試用
+                const projectName = file.name.split('.');
+                self.isUpload = false;
+                self.formData = {
+                  ...self.formData,
+                  Size: file.size,
+                  Type: file.type,
+                  FileTitle: file.name,
+                  Title: projectName[0]
+                };
+                $('#addNewModal').modal('hide');
+                $('#addProjectModal').modal('show');
+                // 測試用
+              } else {
+                // 伺服器處理檔案儲存
+
+                // 前端畫面切換，資料傳遞
+                const projectName = file.name.split('.');
+                self.isUpload = false;
+                self.formData = {
+                  ...self.formData,
+                  Size: file.size,
+                  Type: file.type,
+                  FileTitle: file.name,
+                  Title: projectName[0]
+                };
+                $('#addNewModal').modal('hide');
+                $('#addProjectModal').modal('show');
+              }
+              // 上傳後自動刪除檔案
+              this.removeFile(file);
+            });
+          },
+        };
+      }
+    },
+    methods: {
+      // 導覽小幫手
+      tourHandler() {
+        // 初始化 網頁導覽
+        const stepOnly = [
+          {
+            selector: '#addContract',
+            step: 1,
+            title: '新增合約',
+            content: '請點選按鈕並上傳合約並建立一個新的合約簽署流程，<br>再回來繼續導覽。'
+          }
+        ];
+
+        const steps = [
+          {
+            selector: '#addContract',
+            step: 1,
+            title: '新增合約',
+            content: '點選按鈕並上傳合約以建立一個新的合約簽署流程'
+          },
+          {
+            selector: '#contractNo-0',
+            step: 2,
+            title: '合約資訊',
+            content: '包含：<ul><li>合約建立日期</li><li>合約編號</li><li>合約標題</li><li>起約人 (甲方)</li><li>簽約人 (乙方)</li></ul>點選「合約編號」可以檢視該合約的 PDF 檔'
+          },
+          {
+            selector: '#stamp-0',
+            step: 3,
+            title: '合約用印流程',
+            content: '合約上傳後，起約人和簽約人依順序進行用印或簽名的流程，<br>雙方用印的狀態會即時顯示在列表中。<ul><li>顯示綠色：代表可以點選按鈕進行用印的流程。</li><li>顯示灰色：代表目前流程尚未開始。</li><li>顯示藍色文字：代表流程已完成。</li></ul>'
+          },
+          {
+            selector: '#sign-0',
+            step: 4,
+            title: '合約簽署流程',
+            content: '用印後，起約人和簽約人可繼續進行數位簽章的流程，<br>雙方簽署的狀態會即時顯示在列表中。<ul><li>顯示橘色：代表可以點選按鈕進行簽署的流程。</li><li>顯示灰色：代表目前流程尚未開始。</li><li>顯示藍色文字：代表流程已完成。</li></ul>'
+          },
+          {
+            selector: '#operation-0',
+            step: 5,
+            title: '相關操作介面',
+            content: '顯示合約相關的操作介面，包含：<ul><li>簽署者狀態：顯示當前起約人和簽約人的用印和簽章流程狀態。</li><li>稽核軌跡：顯示合約關係人所有的網頁操作軌跡紀錄。</li><li>下載檔案：下載合約。</li><li>終止合約：合約效力的中止。</li></ul>'
+          },
+        ];
+        const tourguide = new Tourguide({ steps: this.contractList.length > 0 ? steps : stepOnly });
+        tourguide.start();
+      },
+
+      // 查詢合約列表
+      inquireData() {
+        // 執行查詢合約列表
+        this.page = 1;
+        this.fetchAPI();
+        // var $tr = $tr || $(window.event.target).closest('form').find('div.data-item');
+        // $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
+        // $inquiryAgent.inquire();
+      },
+      fetchAPI() {
+        // 執行查詢合約列表
+        const payload = {
+          data: this.contractList,
+          pageSize: this.pageSize,
+          page: this.page,
+          sort: this.sort,
+          desc: this.desc
+        };
+        console.log('payload:', payload);
+        var viewModel = {
+          PageIndex: this.page,
+          SortType: this.SortType,
+          PageSize: this.pageSize,
+          SortName: this.SortName,
+        };
         showLoading();
-        $.post('@Html.Raw(Url.Action("StartSigning", "ContractConsole"))', { 'KeyID': keyID }, function (data) {
+        $.ajax({
+          type: 'POST',
+          url: '@(Url.Action("VueListToStamp", "ContractConsole"))',
+          data: JSON.stringify(viewModel),
+          type: "POST",
+          //dataType: "json",
+          contentType: "application/json;charset=utf-8",
+          success: function (data) {
             hideLoading();
             if ($.isPlainObject(data)) {
-                    alertModal(data.message);
+              if (data.result) {
+              } else {
+                alertModal(data.message);
+              }
             } else {
-                $(data).appendTo($('body'));
+              $(data).appendTo($('body')).remove();
             }
+          },
+          error: function (xhr, ajaxOptions, thrownError) {
+            hideLoading();
+            console.log(xhr.status);
+            console.log(thrownError);
+          }
         });
-    }
-</script>
 
+      },
+      // 新增合約 Modal
+      addHandler() {
+        $('#addNewModal').modal('show');
+        // 新增時加入一筆uuid
+        this.formData.uuid = ui_uuid();
+      },
+      // 編輯合約
+      editContract() {
+        console.log(this.formData);
+        var viewModel = { ...this.formData };
+
+        showLoading();
+        $.ajax({
+          type: 'POST',
+          url: '@(Url.Action("VueApplyContract", "ContractConsole"))',
+          data: JSON.stringify(viewModel),
+          type: "POST",
+          //dataType: "json",
+          contentType: "application/json;charset=utf-8",
+          success: function (data) {
+            hideLoading();
+            if ($.isPlainObject(data)) {
+              if (data.result) {
+                affixPdfSeal(viewModel.KeyID);
+              } else {
+                alertModal(data.message);
+              }
+            } else {
+              $(data).appendTo($('body')).remove();
+            }
+          },
+          error: function (xhr, ajaxOptions, thrownError) {
+            hideLoading();
+            console.log(xhr.status);
+            console.log(thrownError);
+          }
+        });
+      },
+      // 用印
+      stampHandler(contract, rule) {
+        console.log({ contract, rule });
+        affixPdfSeal(contract.KeyID);
+      },
+      // 開啟簽署 Modal
+      signerHandler(contract, rule) {
+        console.log({ contract, rule });
+        this.signerMessage = contract[rule];
+        this.currentCompanyData = contract;
+
+        $('#signModal').modal('show');
+      },
+      // 簽署
+      confirmSign(currentCompanyData) {
+        const payload = currentCompanyData;
+        $('#signModal').modal('hide');
+  @*showLoading();
+          setTimeout(() => {
+          console.log(payload);
+          hideLoading();
+          this.infoMsg = '數位簽章已完成';
+          this.signerMessage = null;
+          $('#infoModal').modal('show');
+          }, 2000);*@
+          commitDigitalSignature(currentCompanyData.KeyID);
+      },
+      // 排序功能
+      sortHandler(dataField, status, sortStatus) {
+        console.log(dataField, status, sortStatus);
+        this.sort = dataField;
+        this.desc = sortStatus;
+        this[status] = !this[status];
+
+        var sortType = 1;
+        var idx = this.SortName.indexOf(dataField);
+        if (idx >= 0) {
+          this.SortType[idx] = -this.SortType[idx];
+        } else {
+          this.SortName.push(dataField);
+          this.SortType.push(sortType);
+        }
+
+        this.fetchAPI();
+      },
+
+      // 開啟簽署者狀態 Modal
+      openSignerStatusModal(contract) {
+        $('#signerStatusModal').modal('show');
+        console.log({ contract })
+        // contract 帶入 signerStatusData 中
+        this.signerStatusData = contract;
+  @*{
+          uuid: '555',
+          No: 'CS-000100004',
+          Title: '測試很重要的一份合約-5',
+          ContractDateFrom: '2023/08/25 10:58:20',
+          CurrentEditDate: '2023/08/25 12:58:20',
+          Initiator: '網際優勢甲方公司',
+          Contractor: '網際優勢乙方股份有限公司',
+          InitiatorStampDate: '2023/08/25 10:58',
+          ContractorStampDate: '2023/08/25 10:58',
+          InitiatorSignerDate: '2023/08/25 10:58',
+          ContractorSignerDate: null,
+          InitiatorSignerID: 's-1234',
+          ContractorSignerID: 's-5678',
+          KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D',
+          isInitiator: true, // 是否為甲方
+          isContractor: false, // 是否為乙方
+          };*@
+
+      },
+
+      // 開啟稽核軌跡 Modal
+      openHistoryModal(contract) {
+        $('#historyModal').modal('show');
+        console.log({ contract });
+
+        // contract 帶入 historyData 中
+        this.historyData = contract;
+  @*{
+          uuid: '555',
+          No: 'CS-000100004',
+          Title: '測試很重要的一份合約-5',
+          ContractDateFrom: '2023/08/25 10:58:20',
+          CurrentEditDate: '2023/08/25 12:58:20',
+          Initiator: '網際優勢甲方公司',
+          Contractor: '網際優勢乙方股份有限公司',
+
+          isInitiator: true, // 是否為甲方
+          isContractor: false, // 是否為乙方
+          LogList: [
+          {
+          time: '2023/08/25 10:58:20',
+          action: '瀏覽',
+          role: 'isInitiator'
+          },
+          {
+          time: '2023/08/25 12:58:20',
+          action: '用印',
+          role: 'isContractor'
+          }
+          ]
+          }*@
+      },
+
+      // 開啟終止合約 Modal
+      openStopContractModal(contract) {
+        $('#stopContractModal').modal('show');
+        console.log({ contract });
+
+        this.stopContractData = contract;
+  @*this.stopContractData.Title = "測試很重要的一份合約";*@
+      },
+
+      // 終止合約料串API
+      confirmStop(contractData) {
+        console.log('contractData:', contractData);
+
+        $("#stopContractModal").modal('hide');
+
+  @*showLoading();
+          setTimeout(() => {
+          // 模擬假資料被終止
+
+          hideLoading();
+          // 開啟訊息視窗
+          this.infoMsg = `<span class='text-primary opacity-75'>" ${this.stopContractData.Title} "</span> 合約已終止`;
+          $('#infoModal').modal('show');
+          }, 2000);  *@
+          terminateContract(contractData.KeyID);
+      },
+
+      // 檢查新增合約編號有沒有填寫
+      checkContractNo() {
+        this.isContractNo = this.formData.ContractNo.length > 0;
+      },
+
+      // 下載檔案
+      downloadPdf(contract) {
+        console.log({ contract });
+        showContract(contract.KeyID, @((int)DataResultMode.Download));
+      },
+
+      // Reset 欄位檢核
+      resetValidate(status) {
+        this[status] = false;
+        this.uploadFile();
+      },
+      // 設定每頁筆數
+      resetPageSize() {
+        // 重新查詢列表並回傳資料
+        // 每次切換時，都要回到第1頁
+        this.page = 1;
+        this.fetchAPI();
+      },
+      // 換頁
+      changePage(page) {
+        this.page = page;
+        // 重新查詢列表並回傳資料
+        this.fetchAPI();
+      },
+      // 第一頁
+      firstPage() {
+        this.page = 1;
+        // 重新查詢列表並回傳資料
+        this.fetchAPI();
+      },
+      // 前一頁
+      previousPage() {
+        const currentPage = Number.parseInt(this.page, 10);
+        this.page = currentPage > 1 ? this.page - 1 : currentPage;
+        // 重新查詢列表並回傳資料
+        this.fetchAPI();
+      },
+      // 下一頁
+      nextPage() {
+        const currentPage = Number.parseInt(this.page, 10);
+        this.page = currentPage < this.totalPages ? this.page + 1 : currentPage;
+        // 重新查詢列表並回傳資料
+        this.fetchAPI();
+      },
+      // 最後一頁
+      lastPage() {
+        this.page = this.totalPages;
+        // 重新查詢列表並回傳資料
+        this.fetchAPI();
+      },
+
+      // 歡迎視窗
+      welcomeHandler() {
+        $("#welcomModal").modal('hide');
+        this.tourHandler();
+      }
+    }
+  });
+
+
+  function affixSeal(keyID) {
+    $('').launchDownload('@Html.Raw(Url.Action("AffixSeal", "ContractConsole"))', { 'KeyID': keyID });
+  }
+
+  function showContract(keyID, mode) {
+    $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "ContractConsole"))', { 'KeyID': keyID, 'ResultMode': mode });
+  }
+
+
+  function affixPdfSeal(keyID) {
+    $('').launchDownload('@Html.Raw(Url.Action("AffixPdfSeal", "ContractConsole"))', { 'KeyID': keyID });
+  }
+
+
+  function commitDigitalSignature(keyID) {
+    showLoading();
+    $.post('@Html.Raw(Url.Action("CommitDigitalSignature", "ContractConsole"))', { 'KeyID': keyID }, function (data) {
+      hideLoading();
+      if ($.isPlainObject(data)) {
+        if (data.result) {
+          alertModal('簽章完成!!');
+          setTimeout(() => {
+            window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+          }, 3000);
+        } else {
+          alertModal(data.message);
+        }
+      } else {
+        $(data).appendTo($('body'));
+      }
+    });
+  }
+
+  function terminateContract(keyID) {
+    showLoading();
+    $.post('@Html.Raw(Url.Action("TerminateContract", "ContractConsole"))', { 'KeyID': keyID }, function (data) {
+      hideLoading();
+      if ($.isPlainObject(data)) {
+        if (data.result) {
+          alertModal('合約已終止!!');
+          setTimeout(() => {
+            window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+          }, 3000);
+        } else {
+          alertModal(data.message);
+        }
+      } else {
+        $(data).appendTo($('body'));
+      }
+    });
+  }
+</script>
+@{
+  // IQueryable<Contract> _model = (IQueryable<Contract>)this.Model;
+  // var items = _model;
+  // if (_viewModel.SortName == null || _viewModel.SortName.Length == 0)
+  // {
+  // items = items.OrderByDescending(c => c.ContractID);
+  // }
+
+  // await Html.RenderPartialAsync("~/Views/ContractConsole/VueModule/ContractRequestList.cshtml", items);
+}

@@ -1,4 +1,5 @@
-﻿using ContractHome.Models.DataEntity;
+﻿using ContractHome.Helper.Validation;
+using ContractHome.Models.DataEntity;
 using DocumentFormat.OpenXml.Presentation;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Newtonsoft.Json;
@@ -44,20 +45,30 @@ namespace ContractHome.Models.ViewModel
         public DataTableColumn[]? KeyItem { get; set; }
         public String? EncKeyItem { get; set; }
         public DataTableColumn[]? DataItem { get; set; }
+        public String? Term { get; set; }
+        public DataResultMode? ResultMode { get; set; }
+    }
 
+    public enum DataResultMode
+    {
+        Display = 0,
+        Print = 1,
+        Download = 2,
+        DataContent = 3,
+        ForExcel = 4,
     }
 
     public partial class SignContractViewModel : QueryViewModel
     {
         public String? SignDate { get; set; }
-        public String? BuyerIdNo { get; set;}
+        public String? BuyerIdNo { get; set; }
         public String? BuyerAddress { get; set; }
         public String? BuyerName { get; set; }
         public String? PayWeekDate { get; set; }
-        public String? EndDate { get; set;}
-        public String? CreditDate { get; set;}
+        public String? EndDate { get; set; }
+        public String? CreditDate { get; set; }
         public String? Amount { get; set; }
-        public String? No { get; set; }
+        public String? ContractNo { get; set; }
         public String? BuyerSeal { get; set; }
         public String? SellerSeal { get; set; }
         public bool? UseTemplate { get; set; }
@@ -66,9 +77,12 @@ namespace ContractHome.Models.ViewModel
         public String? Initiator { get; set; }
         public int? InitiatorIntent { get; set; }
         public int? ContractorID { get; set; }
+        public String[]? MultiContractor { get; set; }
         public String? Contractor { get; set; }
         public int? ContractorIntent { get; set; }
         public bool? Preview { get; set; }
+        public String? Title { get; set; }
+        public bool? IgnoreSeal { get; set; }
 
     }
 
@@ -76,6 +90,7 @@ namespace ContractHome.Models.ViewModel
     {
         public DateTime? ContractDateFrom { get; set; }
         public DateTime? ContractDateTo { get; set; }
+        public CDS_Document.StepEnum[]? QueryStep { get; set; }
     }
 
     public class SealRequestViewModel : SignContractViewModel
@@ -89,6 +104,8 @@ namespace ContractHome.Models.ViewModel
     public class SignatureRequestViewModel : SealRequestViewModel
     {
         public int? CompanyID { get; set; }
+        public String? Note { get; set; }
+        public bool? DoAllPages { get; set; }
     }
 
     public class TemplateResourceViewModel : QueryViewModel
@@ -132,6 +149,13 @@ namespace ContractHome.Models.ViewModel
         public bool? RememberMe { get; set; }
 
         public String? ReturnUrl { get; set; }
+
+        [Display(Name = "ValidCode")]
+        [CaptchaValidation("EncryptedCode", ErrorMessage = "驗證碼錯誤!!")]
+        public string? ValidCode { get; set; }
+
+        [Display(Name = "EncryptedCode")]
+        public string? EncryptedCode { get; set; }
     }
 
     public class OrganizationViewModel : QueryViewModel
@@ -175,12 +199,16 @@ namespace ContractHome.Models.ViewModel
         public String? EMail { get; set; }
         public String? Address { get; set; }
         public String? Phone { get; set; }
+        public String? Region { get; set; }
+
         public String? MobilePhone { get; set; }
         public bool? WaitForCheck { get; set; }
         public Guid? ResetID { get; set; }
         public bool? ResetPass { get; set; }
         public String? EncCompanyID { get; set; }
         public UserRoleDefinition.RoleEnum? RoleID { get; set; }
+        public int? UID { get; set; }
+        public String? SealData { get; set; }
     }
 
 }

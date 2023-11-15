@@ -1,0 +1,59 @@
+
+@using System.Linq
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using ContractHome.Helper.DataQuery
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@functions
+{
+    ModelSource? models;
+    IQueryable<dynamic>? _model;
+    QueryViewModel? _viewModel;
+}
+@{
+    Layout = "~/Views/Shared/VueModule/DataItemList.cshtml";
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _model = (IQueryable<dynamic>)this.Model;
+    _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+    var Response = ViewContext.HttpContext.Response;
+}
+
+@functions
+{
+    object BuildData(Organization item)
+    {
+        return new
+        {
+            CompanyName = $"{item.CompanyName}({item.ReceiptNo})",
+            item.ReceiptNo,
+            item.Phone,
+            item.Addr,
+            item.Fax,
+            item.UndertakerName,
+            item.ContactEmail,
+            KeyID = item.CompanyID.EncryptKey(),
+        };
+    }
+}
+@section DataResult
+{
+    @{
+        Response.ContentType = "application/json";
+        IQueryable<dynamic> items = (IQueryable<dynamic>)ViewContext.HttpContext.Items["ResultItems"];
+        var resultItem = new
+        {
+            result = true,
+            dataItems= items!.ToArray().Select(c=>BuildData((Organization)c))
+        };
+        <text>@Html.Raw(resultItem.JsonStringify())</text>
+    }
+}

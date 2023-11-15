@@ -1,0 +1,192 @@
+﻿@using System.Linq
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using ContractHome.Helper.DataQuery
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@functions
+{
+  ModelSource? models;
+  IQueryable<SealTemplate> _model;
+  QueryViewModel _viewModel;
+}
+@{
+
+  models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+  _model = (IQueryable<SealTemplate>)this.Model;
+  _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+}
+
+<div class="modal fade" id="sealModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+  aria-labelledby="sealModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header border-bottom">
+        <div class="mx-auto w-100">
+          <ul class="nav nav-pills nav-pill" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link fw-bolder px-5 active" id="seal-tab" data-bs-toggle="tab" data-bs-target="#seal"
+                type="button" role="tab" aria-controls="seal" aria-selected="true">印鑑圖檔</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link fw-bolder px-5" id="signature-tab" data-bs-toggle="tab"
+                data-bs-target="#signature" type="button" role="tab" aria-controls="signature" aria-selected="false"
+                onclick="signatureHandler();">使用簽名</button>
+            </li>
+          </ul>
+        </div>
+        <button type="button" class="btn-close mx-0 ms-3" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="tab-content" id="myTabContent">
+          <div class="tab-pane fade show active" id="seal" role="tabpanel" aria-labelledby="seal-tab">
+            <form method="post" enctype="multipart/form-data" class="pt-3 pb-5 text-center">
+              <div class="row g-3">
+                @if (_model != null)
+                {
+                  foreach (var item in _model.Where(s=>s.FilePath!=null))
+                  {
+                    await Html.RenderPartialAsync("~/Views/UserProfile/VueModule/SealModalItem.cshtml", item);
+                  }
+                }
+                <!-- 新增印鑑檔 -->
+                <div id="addSeal" class="d-flex align-items-stretch col-md-3 col-sm-12" style="height: 150px;">
+                  <label for="formFile" class="form-label w-100 h-100 mb-0">
+                    <div class="card justify-content-center align-items-center h-100 w-100 block--hover">
+                      <a class="btn btn-lg btn-success rounded-pill opacity-75">
+                        <i class="fal fa-file-plus"></i>
+                      </a>
+                      <span class="h6 fw-bolder p-2">新增印鑑檔</span>
+                      <input id="sealImage" name="sealImage" class="form-control" type="file"
+                        onchange="addSealHandler();">
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="tab-pane fade" id="signature" role="tabpanel" aria-labelledby="signature-tab">
+            <form method="post" enctype="multipart/form-data" class="pt-3 pb-5 text-center">
+              <div id="signatureCanvas" class="card d-inline-flex" style="min-width: 600px;">
+                <canvas></canvas>
+              </div>
+              <div class="d-inline-flex justify-content-between pt-3" style="min-width: 600px;">
+                <div>
+                  <button type="button" id="clearSignature" class="btn btn-sm btn-secondary opacity-75 me-3">
+                    清除
+                  </button>
+                  <button type="button" id="btn-block"
+                    class="btn btn-sm btn-block active btn--size-20 rounded-pill m-2"></button>
+                  <button type="button" id="btn-blue"
+                    class="btn btn-sm btn-blue btn--size-20 rounded-pill m-2"></button>
+                  <button type="button" id="btn-red" class="btn btn-sm btn-red btn--size-20 rounded-pill m-2"></button>
+                </div>
+                <button type="button" id="saveSignature" class="btn btn-primary opacity-75">
+                  儲存
+                </button>
+              </div>
+            </form>
+            <div class="row g-3" id="addSignature">
+              @if (_model != null)
+              {
+                foreach (var item in _model.Where(s=>s.FilePath==null))
+                {
+                  await Html.RenderPartialAsync("~/Views/UserProfile/VueModule/SealModalItem.cshtml", item);
+                }
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  $(function () {
+    $('#sealModal').modal('show');
+  });
+
+  var signaturePanelReady;
+  // 使用簽名
+  function signatureHandler() {
+      if(signaturePanelReady) {
+          return;
+      }
+    setTimeout(() => {
+      const signatureCanvas = document.querySelector("#signatureCanvas");
+      var signatureWidth = signatureCanvas.offsetWidth;
+
+      // SmoothSignature 設定檔
+      const canvas = document.querySelector("#signatureCanvas canvas");
+      const options = {
+        width: signatureWidth,
+        height: 200,
+        scale: 2,
+        minWidth: 4,
+        maxWidth: 10,
+        color: '#000000',
+        bgColor: '#efefef'
+      }
+      // SmoothSignature Canvas 畫面生成
+      var signature = new SmoothSignature(canvas, options);
+
+      // 清除簽名
+      const clearSignature = document.querySelector("#clearSignature");
+      clearSignature.addEventListener('click', function (event) {
+        signature.clear();
+      });
+
+      // 儲存簽名
+      const saveSignature = document.querySelector("#saveSignature");
+      saveSignature.addEventListener('click', function (event) {
+        const isEmpty = signature.isEmpty();
+        if (isEmpty) {
+          alert("isEmpty");
+          return;
+        }
+        const pngUrl = signature.getPNG();
+        console.log(pngUrl);
+        addSignature(pngUrl);
+      });
+
+      const block = document.querySelector("#btn-block");
+      const blue = document.querySelector("#btn-blue");
+      const red = document.querySelector("#btn-red");
+
+      // 黑色
+      block.addEventListener('click', function (event) {
+        block.classList.add('active');
+        blue.classList.remove('active');
+        red.classList.remove('active');
+        signature.color = '#000000';
+      });
+
+      // 藍色
+      blue.addEventListener('click', function (event) {
+        block.classList.remove('active');
+        blue.classList.add('active');
+        red.classList.remove('active');
+        signature.color = '#0d6efd';
+      });
+
+      // 紅色
+      red.addEventListener('click', function (event) {
+        block.classList.remove('active');
+        blue.classList.remove('active');
+        red.classList.add('active');
+        signature.color = '#dc3545';
+      });
+
+      signaturePanelReady = true;
+    }, 300);
+  };
+
+
+</script>

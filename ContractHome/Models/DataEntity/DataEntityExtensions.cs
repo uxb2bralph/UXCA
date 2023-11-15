@@ -52,7 +52,7 @@ namespace ContractHome.Models.DataEntity
             }
         }
 
-        protected internal Dictionary<Object,Object>? _values;
+        protected internal Dictionary<Object, Object>? _values;
         public object? this[object index]
         {
             get
@@ -77,6 +77,12 @@ namespace ContractHome.Models.DataEntity
             }
         }
 
+        public static UserProfile PrepareNewItem(DCDataContext models)
+        {
+            UserProfile item = new UserProfile();
+            models.UserProfile.InsertOnSubmit(item);
+            return item;
+        }
     }
 
     public partial class CDS_Document
@@ -87,7 +93,64 @@ namespace ContractHome.Models.DataEntity
             PDF = 2,
         }
 
+        public enum StepEnum
+        {
+            Initial = 0,
+            Revoked = 1,
+            InitiatorSealed = 2,
+            ContractorSealed = 3,
+            InitiatorDigitalSigned = 4,
+            ContractorDigitalSigned = 5,
+            Browsed = 6,
+            Terminated = 7,
+            Committed = 8,
+        }
+
+        public static readonly String[] StepNaming =
+            {
+                "合約文件上傳",
+                "已退回",
+                "起約人用印",
+                "簽約人用印",
+                "起約人簽章",
+                "簽約人簽章",
+                "瀏覽",
+                "已終止",
+            };
+
+        public static StepEnum[] PendingState =
+        {
+            StepEnum.Initial,
+            StepEnum.InitiatorDigitalSigned,
+            StepEnum.ContractorDigitalSigned,
+            StepEnum.InitiatorSealed,
+            StepEnum.ContractorSealed
+        };
+
         public bool IsPDF => ProcessType == (int)ProcessTypeEnum.PDF;
+
+        public DocumentProcessLog? CurrentLog => this.DocumentProcessLog
+            .Where(d => d.StepID != (int)StepEnum.Browsed)
+            .OrderByDescending(d => d.LogID).FirstOrDefault();
+    }
+
+    public partial class ContractingIntent
+    {
+        public enum ContractingIntentEnum
+        {
+            Initiator = 1,
+            Contractor = 2,
+        }
+    }
+
+    public partial class Organization
+    {
+        public static Organization PrepareNewItem(DCDataContext models)
+        {
+            Organization item = new Organization();
+            models.Organization.InsertOnSubmit(item);
+            return item;
+        }
     }
 
 }

@@ -1,0 +1,154 @@
+﻿@{
+  Layout = null;
+}
+<!DOCTYPE html>
+<html lang="zh-tw">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge" />
+  <title>安心簽 UX SIGN 數位簽章管理系統 - 資訊安全政策宣告</title>
+  <!-- MDB icon -->
+  <link rel="icon" href="~/images/uxSign.ico" type="image/x-icon" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="~/css/fontawesome/all.css" />
+  <!-- Google Fonts Roboto -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" />
+  <!-- Boostrap -->
+  <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+  <!-- 網站設定樣式 -->
+  <link rel="stylesheet" href="~/css/site.css" />
+  <script src="~/lib/jquery/dist/jquery.min.js"></script>
+  <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body class="bg-secondary bg-opacity-10">
+  <div class="container">
+    <div class="pt-5 pb-3 d-flex justify-content-between align-items-center">
+      <div>
+        <a class="navbar-brand" href="@Url.Action("ListToStampIndex", "ContractConsole")">
+          <img src="~/images/uxSign-logo.png" alt="安心簽" style="height: 35px;">
+        </a>
+      </div>
+      <ul class="nav nav-pills" id="pills-tab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link btn-sm opacity-75 active" id="pills-tw-tab" data-bs-toggle="pill" data-bs-target="#tw"
+            type="button" role="tab" aria-controls="tw" aria-selected="true">中文</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link btn-sm opacity-75" id="pills-eng-tab" data-bs-toggle="pill" data-bs-target="#eng"
+            type="button" role="tab" aria-controls="eng" aria-selected="false">English</button>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="tw" role="tabpanel" aria-labelledby="tw-tab">
+        <h1 class="mt-4 mb-3 ps-3 border-start border-primary border-5 fs-3 fw-bolder text-primary">資訊安全政策宣告</h1>
+        <div class="bg-white rounded-2 p-5 mb-4 shadow">
+          <p class="fw-bolder">感謝您蒞臨網際優勢( 以下簡稱本公司 )！ </p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">一、目的</h5>
+          <p>
+            本公司為確保資訊資料、系統、設備及網路通訊安全，有效降低因人為疏失、蓄意或天然災害等導致之資訊資產遭竊、不當使用、洩漏、竄改或毀損等風險，並建立資訊安全管理系統，特訂定資訊安全政策(以下簡稱本政策)，以確保資訊之機密性、完整性與可用性。
+          </p>
+          <ul>
+            <li class="pb-1">機密性：確保只有經授權的人才能存取資訊。</li>
+            <li class="pb-1">完整性：確保使用之資訊正確無誤、未遭竄改。</li>
+            <li class="pb-1">可用性：確保經授權的使用者在需要時可以存取資訊及相關資訊資產。</li>
+          </ul>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">二、依據</h5>
+          <p>ISO/IEC 27001: 2013 ( Information technology - Security techniques - Information security management
+            systems - Requirements )。
+          </p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">三、內容</h5>
+          <ul>
+            <li class="pb-1">建立組織資訊安全管理委員會，負責推動資訊安全工作。</li>
+            <li class="pb-1">各項資訊安全管理規定必須遵守政府相關法規
+              （如：刑法、國家機密保護法、專利法、商標法、著作權法、營業秘密法、個人資料保護法等）之規定。</li>
+            <li class="pb-1">評估人員之任免、職務之分派，對離職、休職、停職或調職之人員，應建立控管及人力備援制度；
+              另定期辦理資訊安全教育訓練及宣導，提升人員資訊安全認知及水準。</li>
+            <li class="pb-1">建立資訊資產的保管制度，有效分配、運用及管理資訊資源。</li>
+            <li class="pb-1">評估資訊資產之安全等級，並賦予相關人員適當存取權限 。</li>
+            <li class="pb-1">電腦系統之新增或變更作業建立控管制度並完整記錄，以備查核。</li>
+            <li class="pb-1">建立資訊緊急處理機制與災後重建計畫，並定期操演、測試紀錄。</li>
+            <li class="pb-1">訂定資訊安全稽核制度，各項資訊作業安全進行定期或不定期之稽核作業，且嚴禁刪除及修改各項稽核紀錄檔案。</li>
+            <li class="pb-1">本公司所有人員負有維持資訊安全之責任，且應遵守相關之資訊安全管理規範。</li>
+            <li class="pb-1">資訊安全管理系統文件應有明確之管理規範。</li>
+          </ul>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">四、修訂與公告</h5>
+          <ul>
+            <li class="pb-1">本政策每年應至少評估一次，以反映政府、客戶、供應商等內外部議題及本公司業務之最新狀況，
+              確保安全實務作業之可用性及有效性。</li>
+            <li class="pb-1">本政策由「資訊安全管理委員會」審查後頒布實施，修正時亦同。</li>
+          </ul>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="eng" role="tabpanel" aria-labelledby="eng-tab">
+        <h1 class="mt-4 mb-3 ps-3 border-start border-primary border-5 fs-3 fw-bolder text-primary">Information Security
+          Policy</h1>
+        <div class="bg-white rounded-2 p-5 mb-4 shadow">
+          <p class="fw-bolder">Thank you for choosing Universal eXchange INC. ( hereinafter referred to as "the
+            Company" ). </p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">I. Purpose</h5>
+          <p>
+            The Company is committed to ensuring the security of information data, systems, equipment, and network
+            communications. We have established an information security management system to effectively reduce risks
+            such as theft, misuse, leakage, tampering, or damage to information assets due to human negligence,
+            deliberate actions, or natural disasters.
+          </p>
+          <ul>
+            <li class="pb-1">Confidentiality: Ensuring that only authorized individuals can access information.</li>
+            <li class="pb-1">Integrity: Ensuring that the information used is accurate and has not been tampered with.
+            </li>
+            <li class="pb-1">Availability: Ensuring that authorized users can access information and related information
+              assets when needed.</li>
+          </ul>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">II. Basis</h5>
+          <p>This policy is based on ISO/IEC 27001: 2013 ( Information technology - Security techniques - Information
+            security management systems - Requirements ).</p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">III. Content</h5>
+          <ul>
+            <li class="pb-1">Establish an organizational information security management committee responsible for
+              promoting information security work.</li>
+            <li class="pb-1">All information security management regulations must comply with relevant government
+              regulations (such as Criminal Law, National Secret Protection Law, Patent Law, Trademark Law, Copyright
+              Law, Trade Secret Law, Personal Data Protection Law, etc.).</li>
+            <li class="pb-1">Evaluate the appointment and dismissal of personnel and the allocation of duties. For
+              personnel who are leaving, on leave, suspended or transferred, a control and manpower backup system should
+              be established; regular information security education and training should also be conducted to enhance
+              personnel’s awareness and level of information security.</li>
+            <li class="pb-1">Establish a custody system for information assets to effectively allocate, use and manage
+              information resources.</li>
+            <li class="pb-1">Evaluate the security level of information assets and grant appropriate access rights to
+              relevant personnel.</li>
+            <li class="pb-1">Establish a control system for the addition or change of computer systems and keep complete
+              records for audit.</li>
+            <li class="pb-1">Establish an information emergency handling mechanism and post-disaster reconstruction
+              plan, and regularly conduct drills and test records.</li>
+            <li class="pb-1">Establish an information security audit system to conduct regular or irregular audit
+              operations on various information operation securities, and strictly prohibit the deletion and
+              modification of various audit record files.</li>
+            <li class="pb-1">All personnel of the Company have the responsibility to maintain information security and
+              should comply with relevant information security management regulations.</li>
+            <li class="pb-1">The documents of the Information Security Management System should have clear management
+              regulations.</li>
+          </ul>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">IV. Revision and Announcement</h5>
+          <p>
+            This policy should be evaluated at least once a year to reflect internal and external issues and the latest
+            status of the Company’s business. This policy is reviewed by the "Information Security Management Committee"
+            before it is promulgated and implemented, and the same applies when it is revised.
+          </p>
+        </div>
+      </div>
+      <div class="text-center mb-5">
+        <button type="button" class="btn btn-primary opacity-75 px-5" onclick="history.go(-1)">回上頁</button>
+      </div>
+    </div>
+
+  </div>
+</body>
+
+</html>
