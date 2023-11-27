@@ -23,6 +23,10 @@ using System.Data.Linq;
 using ContractHome.Security.Authorization;
 using Irony.Parsing;
 using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.InkML;
+using ContractHome.Helper.Security.MembershipManagement;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace ContractHome.Controllers
 {
@@ -70,7 +74,7 @@ namespace ContractHome.Controllers
       }
       else
       {
-         items = items.Where(u => u.PID == profile.PID);
+         items = items.Where(p => false);
       }
 
       int? companyID = viewModel.GetCompanyID();
@@ -168,6 +172,62 @@ namespace ContractHome.Controllers
       return View("~/Views/UserProfile/Module/EditItem.cshtml", dataItem);
     }
 
+        [HttpPost]
+        [RoleAuthorize(roleID: new int[] {
+            (int)UserRoleDefinition.RoleEnum.User,
+            (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
+        public async Task<ActionResult> PasswordChange(
+            UserPasswordChangeViewModel userPasswordChange) 
+        {
+            if (string.IsNullOrEmpty(userPasswordChange.PID))
+            {
+                ModelState.AddModelError("PID", "使用者不存在");
+            }
+            var profile = UserProfileFactory.CreateInstance(
+                pid: userPasswordChange.PID, 
+                password:userPasswordChange.OldPassword);
+
+            if (profile == null)
+            {
+                ModelState.AddModelError("PID", "使用者不存在");
+            }
+
+            var passwordValidated = UserProfileFactory.VerifyPassword(
+                    profile, 
+                    userPasswordChange.OldPassword);
+            if (!passwordValidated)
+            {
+                ModelState.AddModelError("OldPassword", "帳號密碼有誤");
+            }
+
+            var result = UserProfileFactory.CompareEncryptedPassword(
+                        userPasswordChange.NewPassword,
+                        profile.Password2);
+            if (result)
+            {
+                ModelState.AddModelError("NewPassword", "新密碼與舊密碼相同");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return Json(new { result = false, message = ModelState.ErrorMessage() });
+            }
+
+            try
+            {
+                profile.Password = null;
+                profile.Password2 = userPasswordChange.NewPassword.HashPassword();
+
+                models.SubmitChanges();
+            }
+            catch (Exception)
+            {
+                return Ok(new { result = false });
+                throw;
+            }
+
+            return Ok(new { result = true });
+        }
     public ActionResult VueCommitItem([FromBody] UserProfileViewModel viewModel)
     {
       ViewBag.ViewModel = viewModel;
@@ -219,14 +279,6 @@ namespace ContractHome.Controllers
       }
 
       UserProfile item = dataItem ?? UserProfile.PrepareNewItem(models.DataContext);
-
-      if (item.OrganizationUser == null)
-      {
-        item.OrganizationUser = new OrganizationUser
-        {
-
-        };
-      }
 
       item.OrganizationUser.CompanyID = companyID!.Value;
       item.PID = viewModel.PID;
@@ -309,14 +361,6 @@ namespace ContractHome.Controllers
       UserProfile item = (dataItem as UserProfile)!;
       if (companyID.HasValue)
       {
-        if (item.OrganizationUser == null)
-        {
-          item.OrganizationUser = new OrganizationUser
-          {
-
-          };
-        }
-
         item.OrganizationUser.CompanyID = companyID.Value;
       }
 
@@ -562,5 +606,6 @@ namespace ContractHome.Controllers
 
     }
 
-  }
+
+    }
 }

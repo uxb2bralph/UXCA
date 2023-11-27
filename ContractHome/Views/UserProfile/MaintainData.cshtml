@@ -22,7 +22,7 @@
   _viewModel.UrlAction = Url.Action("InquireData", "UserProfile");
 }
 <div id="userProdile" class="container-lg py-5">
-  <section class="queryform">
+    <section class="queryform">
     <!-- Section title -->
     @{
       // await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
@@ -121,12 +121,15 @@
     </div>
     <div class="row">
       <div class="col-12 hstack gap-3 py-3">
+       @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.SystemAdmin))
+       {
         <div class="tooltip__wrapper">
-          <button type="button" class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="editData('addNew')">
+          <button type="button" class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="editData('addNew')" >
             <i class="fal fa-file-plus"></i>
           </button>
           <div class="tooltip__text">新增使用者</div>
         </div>
+       }
         <div class="ms-auto">
           <button type="button" class="btn btn-secondary opacity-75" v-on:click="resetHandler">重設</button>
         </div>
