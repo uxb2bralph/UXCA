@@ -15,16 +15,22 @@ using GemBox.Document;
 using System.Net;
 using Microsoft.Extensions.Primitives;
 using System.Drawing;
+using ContractHome.Models.Email;
 
 namespace ContractHome.Controllers
 {
     public class HomeController : SampleController
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IMailService _mailService;
 
-        public HomeController(ILogger<HomeController> logger, IServiceProvider serviceProvider) : base(serviceProvider)
+
+        public HomeController(ILogger<HomeController> logger, 
+            IServiceProvider serviceProvider,
+            IMailService _MailService) : base(serviceProvider)
         {
             _logger = logger;
+            _mailService = _MailService;
         }
 
         public IActionResult Index()
@@ -294,6 +300,13 @@ namespace ContractHome.Controllers
             SearchCompany(viewModel.Term);
             IQueryable<Organization> items = (IQueryable<Organization>)ViewBag.DataItems;
             return View("~/Views/Organization/VueModule/OrganizationItems.cshtml", items);
+        }
+
+        [HttpPost]
+        [Route("SendMail")]
+        public bool SendMail([FromBody]MailData mailData)
+        {
+            return _mailService.SendMail(mailData);
         }
 
     }

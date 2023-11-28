@@ -20,6 +20,7 @@ using CommonLib.Core.Utility;
 using System.IO;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using ContractHome.Properties;
+using ContractHome.Models.Email;
 
 namespace WebHome
 {
@@ -105,6 +106,8 @@ namespace WebHome
             services.AddScoped<IViewRenderService, ViewRenderService>();
 
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            services.Configure<MailSettings>(Configuration.GetSection("MailSettings"));
+            services.AddTransient<IMailService, MailService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
