@@ -216,11 +216,11 @@ namespace ContractHome.Models.ViewModel
     {
         [Required]
         [RegularExpression(@"^(?=.*\d)(?=.*[a-zA-Z])(?=.*\W).{8,30}$",
-         ErrorMessage = "密碼格式有誤.")]
+         ErrorMessage = "舊密碼格式有誤.")]
         public string OldPassword { get; set; }
         [Required]
         [RegularExpression(@"^(?=.*\d)(?=.*[a-zA-Z])(?=.*\W).{8,30}$",
-         ErrorMessage = "密碼格式有誤.")]
+         ErrorMessage = "新密碼格式有誤.")]
         public string NewPassword { get; set; }
         [Required]
         public string PID { get; set; }

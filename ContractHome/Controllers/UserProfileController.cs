@@ -178,23 +178,27 @@ namespace ContractHome.Controllers
         }
 
         [HttpPost]
-        [RoleAuthorize(roleID: new int[] {
-            (int)UserRoleDefinition.RoleEnum.User,
-            (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
+        //[RoleAuthorize(roleID: new int[] {(int)UserRoleDefinition.RoleEnum.User,(int)UserRoleDefinition.RoleEnum.MemberAdmin })]
         public async Task<ActionResult> PasswordChange(
             UserPasswordChangeViewModel userPasswordChange) 
         {
+
             if (string.IsNullOrEmpty(userPasswordChange.PID))
             {
-                ModelState.AddModelError("PID", "使用者不存在");
+                ModelState.AddModelError("PID", "認證失敗.");
+                return Json(new { result = false, message = ModelState.ErrorMessage() });
             }
+
+            var PID = userPasswordChange.PID.DecryptData();
+
             var profile = UserProfileFactory.CreateInstance(
-                pid: userPasswordChange.PID, 
+                pid: PID, 
                 password:userPasswordChange.OldPassword);
 
             if (profile == null)
             {
-                ModelState.AddModelError("PID", "使用者不存在");
+                ModelState.AddModelError("PID", "認證失敗.");
+                return Json(new { result = false, message = ModelState.ErrorMessage() });
             }
 
             var passwordValidated = UserProfileFactory.VerifyPassword(
@@ -202,7 +206,7 @@ namespace ContractHome.Controllers
                     userPasswordChange.OldPassword);
             if (!passwordValidated)
             {
-                ModelState.AddModelError("OldPassword", "帳號密碼有誤");
+                ModelState.AddModelError("OldPassword", "認證失敗.");
             }
 
             var result = UserProfileFactory.CompareEncryptedPassword(
@@ -210,7 +214,7 @@ namespace ContractHome.Controllers
                         profile.Password2);
             if (result)
             {
-                ModelState.AddModelError("NewPassword", "新密碼與舊密碼相同");
+                ModelState.AddModelError("NewPassword", "新密碼與舊密碼不應相同");
             }
 
             if (!ModelState.IsValid)
@@ -218,18 +222,10 @@ namespace ContractHome.Controllers
                 return Json(new { result = false, message = ModelState.ErrorMessage() });
             }
 
-            try
-            {
-                profile.Password = null;
-                profile.Password2 = userPasswordChange.NewPassword.HashPassword();
+            profile.Password = null;
+            profile.Password2 = userPasswordChange.NewPassword.HashPassword();
 
-                models.SubmitChanges();
-            }
-            catch (Exception)
-            {
-                return Ok(new { result = false });
-                throw;
-            }
+            models.SubmitChanges();
 
             return Ok(new { result = true });
         }
