@@ -171,6 +171,11 @@ namespace ContractHome.Controllers
       var dataItem = items.FirstOrDefault();
       return View("~/Views/UserProfile/Module/EditItem.cshtml", dataItem);
     }
+        public async Task<ActionResult> PasswordChangeView(
+            UserPasswordChangeViewModel userPasswordChange)
+        {
+            return View("~/Views/UserProfile/VueModule/PasswordChange.cshtml");
+        }
 
         [HttpPost]
         [RoleAuthorize(roleID: new int[] {
