@@ -6,6 +6,7 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
+using System.Web;
 
 namespace ContractHome.Models.ViewModel
 {
@@ -223,6 +224,7 @@ namespace ContractHome.Models.ViewModel
          ErrorMessage = "新密碼格式有誤.")]
         public string NewPassword { get; set; }
         [Required]
-        public string PID { get; set; }
+        public string EncPID { get; set; }
+        public string EncPIDUrlDecode => HttpUtility.UrlDecode(this.EncPID);
     }
 }

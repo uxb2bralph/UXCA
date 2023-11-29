@@ -27,6 +27,7 @@ using DocumentFormat.OpenXml.InkML;
 using ContractHome.Helper.Security.MembershipManagement;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
+using System.Web;
 
 namespace ContractHome.Controllers
 {
@@ -183,14 +184,13 @@ namespace ContractHome.Controllers
             UserPasswordChangeViewModel userPasswordChange) 
         {
 
-            if (string.IsNullOrEmpty(userPasswordChange.PID))
+            if (string.IsNullOrEmpty(userPasswordChange.EncPID))
             {
                 ModelState.AddModelError("PID", "認證失敗.");
                 return Json(new { result = false, message = ModelState.ErrorMessage() });
             }
 
-            var PID = userPasswordChange.PID.DecryptData();
-
+            var PID = userPasswordChange.EncPIDUrlDecode.DecryptData();
             var profile = UserProfileFactory.CreateInstance(
                 pid: PID, 
                 password:userPasswordChange.OldPassword);
