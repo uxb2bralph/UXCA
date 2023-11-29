@@ -225,6 +225,7 @@ namespace ContractHome.Models.ViewModel
         public string NewPassword { get; set; }
         [Required]
         public string EncPID { get; set; }
+        [JsonIgnore]
         public string EncPIDUrlDecode => HttpUtility.UrlDecode(this.EncPID);
     }
 }
