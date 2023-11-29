@@ -222,9 +222,8 @@ namespace ContractHome.Controllers
                 return Json(new { result = false, message = ModelState.ErrorMessage() });
             }
 
-            profile.Password = null;
-            profile.Password2 = userPasswordChange.NewPassword.HashPassword();
-
+            var userProfile = models.GetTable<UserProfile>().Where(c => c.UID== profile.UID).FirstOrDefault();
+            userProfile.Password2 = userPasswordChange.NewPassword.HashPassword();
             models.SubmitChanges();
 
             return Ok(new { result = true });
