@@ -248,7 +248,7 @@ html, body {
 
   // 登入
   &__loginHeight {
-    height: 82px;
+    height: 93px;
     padding-top: 5px;
     padding-bottom: 0;
   }
@@ -757,4 +757,11 @@ html, body {
   margin: 0.5rem 0;
   overflow: hidden;
   border-top: 1px solid rgba(0, 0, 0, .15);
+}
+
+// 正常滿版
+.fullHeight {
+  display: flex;
+  justify-content: center;
+  height: calc(100vh - 65px);
 }

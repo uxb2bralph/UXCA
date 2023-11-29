@@ -188,7 +188,7 @@ html, body {
 }
 
 .input__loginHeight {
-  height: 82px;
+  height: 93px;
   padding-top: 5px;
   padding-bottom: 0;
 }
@@ -607,4 +607,10 @@ html, body {
   margin: 0.5rem 0;
   overflow: hidden;
   border-top: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.fullHeight {
+  display: flex;
+  justify-content: center;
+  height: calc(100vh - 65px);
 }/*# sourceMappingURL=site.css.map */
