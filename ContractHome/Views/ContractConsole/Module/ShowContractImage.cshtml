@@ -51,7 +51,7 @@
     
     <div id="contractImg" class="contractImg" style="@Html.Raw(css)"></div>
     <script>
-        $(function () {
+        @* $(function () {
             $('#contractImg').on('click', function (event) {
                 var event = event || window.event;
                 var rect = this.getBoundingClientRect();
@@ -63,9 +63,9 @@
                 var event = event || window.event;
                 var rect = this.getBoundingClientRect();
                 //$('#pos').text('(' + (event.clientX - rect.left).toFixed() + ',' + (event.clientY - rect.top).toFixed() + ')');
-                @* console.log('(' + (event.clientX - rect.left).toFixed() + ',' + (event.clientY - rect.top).toFixed() + ')'); *@
+                console.log('(' + (event.clientX - rect.left).toFixed() + ',' + (event.clientY - rect.top).toFixed() + ')');
             });
-        })
+        }) *@
     </script>
 }
 

@@ -542,7 +542,7 @@ html, body {
 .contractImg {
   margin: auto;
   background-color: #FFFFFF;
-  cursor: crosshair;
+  // cursor: crosshair;
   box-shadow: 0 0.2rem 0.25rem rgba(0, 0, 0, 0.095);
   position: relative;
 }
@@ -578,7 +578,7 @@ html, body {
 
 .pdf {
   &__wrapper {
-    padding: 10px;
+    padding: 30px 10px;
     height: 100%;
     display: block;
     text-align: center;
@@ -743,13 +743,13 @@ html, body {
 }
 
 // 導覽小幫手
-#tourbutton {
-  padding: 10px 5px;
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 40px;
-}
+// #tourbutton {
+//   padding: 10px 5px;
+//   position: fixed;
+//   bottom: 20px;
+//   right: 20px;
+//   width: 40px;
+// }
 
 // 分隔線
 .divider {

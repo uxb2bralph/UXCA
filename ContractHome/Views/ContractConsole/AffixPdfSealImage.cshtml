@@ -36,7 +36,7 @@
 <div id="AffixPdfSealImage" class="container-fluid py-4 pb-3">
   <section>
     <!-- 標題 - 甲方 / 乙方 -->
-    <div class="d-flex justify-content-between">
+    <div class="d-flex justify-content-between align-items-center pe-4">
       @{
         await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
         await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml",
@@ -47,15 +47,15 @@
       }
       @if (party == null || party.IsInitiator == true)
       {
-        <div>
-          <button class="btn btn-warning bg-gradient me-4" id="editTourbutton">
+        <div id="editTourbutton" class="mb-2 tooltip__wrapper ms-auto">
+          <button type="button" class="px-1 btn btn-lg btn-warning rounded-pill opacity-75" style="width: 48px;">
             <i class="far fa-street-view"></i>
-            導覽小幫手
           </button>
+          <div class="tooltip__text">導覽小幫手</div>
         </div>
       }
     </div>
-    <div class="row" style="height: calc(100vh - 160px);">
+    <div class="row" style="height: calc(100vh - 162px);">
       <!-- 合約影像檔 -->
       <div class="col col-xl-9 col-md-8 contract__wrapper">
         <div class="contract__arrow--left">
@@ -64,7 +64,7 @@
             <i class="fas fa-chevron-left"></i>
           </button>
         </div>
-        <div id="step5" class="card pdf__wrapper" style="height:fit-content;">
+        <div id="step5" class="card pdf__wrapper">
           @{
             await Html.RenderPartialAsync("~/Views/ContractConsole/Module/ShowContractImage.cshtml", _model);
           }

@@ -29,18 +29,18 @@
 <div id="listToStampIndex" class="container-lg py-5">
   <!-- 合約資料列表 -->
   <!-- 標題 -->
-  @{
-    // await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "合約清單");
-  }
-
-  <button class="btn btn-warning bg-gradient" id="tourbutton" v-on:click="tourHandler">
-    <i class="far fa-street-view"></i>
-    導覽小幫手
-  </button>
   <div class="row">
     <div class="col-12 hstack gap-3 py-3">
       <h3 class="mb-3 fw-bolder">合約清單</h3>
-      <div id="addContract" class="tooltip__wrapper ms-auto">
+      <div id="tourbutton" class="tooltip__wrapper ms-auto">
+        <button type="button" class="px-1 btn btn-lg btn-warning rounded-pill opacity-75" style="width: 48px;"
+          v-on:click="tourHandler">
+          <i class="far fa-street-view"></i>
+        </button>
+        <div class="tooltip__text">導覽小幫手</div>
+      </div>
+      <span class="">|</span>
+      <div id="addContract" class="tooltip__wrapper">
         <button type="button" class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="addHandler">
           <i class="fal fa-file-plus"></i>
         </button>
@@ -211,23 +211,26 @@
                 <div>
                   <!-- 簽署者狀態 -->
                   <span class="tooltip__wrapper m-1">
-                    <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded" v-on:click="openSignerStatusModal(contract)">
+                    <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded"
+                      v-on:click="openSignerStatusModal(contract)">
                       <i class="fas fa-info"></i>
                     </button>
                     <div class="tooltip__text">簽署者狀態</div>
                   </span>
                   <!-- 稽核軌跡 -->
                   <span class="tooltip__wrapper m-1">
-                    <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded" v-on:click="openHistoryModal(contract)">
+                    <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded"
+                      v-on:click="openHistoryModal(contract)">
                       <i class="fas fa-shoe-prints fa-rotate-270"></i>
                     </button>
                     <div class="tooltip__text">稽核軌跡</div>
-                </span>
+                  </span>
                 </div>
                 <div>
                   <!-- 下載檔案 -->
                   <span class="tooltip__wrapper m-1">
-                    <button type="button" class="btn btn-sm btn-secondary opacity-75 rounded-pill icon__rounded" v-on:click="downloadPdf(contract)">
+                    <button type="button" class="btn btn-sm btn-secondary opacity-75 rounded-pill icon__rounded"
+                      v-on:click="downloadPdf(contract)">
                       <i class="far fa-download"></i>
                     </button>
                     <div class="tooltip__text">下載檔案</div>
@@ -235,7 +238,8 @@
                   <!-- 終止合約 -->
                   <span class="tooltip__wrapper m-1">
                     <button v-if="!contract.isContractor" type="button" id="deleteCompany"
-                      class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded" v-on:click="openStopContractModal(contract)">
+                      class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded"
+                      v-on:click="openStopContractModal(contract)">
                       <i class="far fa-times"></i>
                     </button>
                     <div class="tooltip__text">終止合約</div>
@@ -595,8 +599,6 @@
                   <td>{{ item.action }}</td>
                   <td>
                     {{ item.role }}
-                    @* <span v-if="item.role === 'isInitiator'" class="badge bg-primary opacity-75">起約人</span>
-                    <span v-else class="badge bg-warning text-dark opacity-75">簽約人</span> *@
                   </td>
                 </tr>
               </tbody>
@@ -672,9 +674,6 @@
       </div>
     </div>
   </div>
-  @{
-    // await Html.RenderPartialAsync("~/Views/ContractConsole/Module/ContractRequestQueryResult.cshtml");
-  }
 </div>
 <script>
   /**
@@ -709,74 +708,6 @@
     ContractorSignerDate: null,
     InitiatorSignerID: null,
     ContractorSignerID: null,
-    KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D',
-    isInitiator: true, // 是否為甲方
-    isContractor: false, // 是否為乙方
-    },
-    {
-    uuid: '222',
-    No: 'CS-000100001',
-    Title: '測試非常重要的一份合約-2',
-    ContractDateFrom: '2023/08/22 14:58',
-    Initiator: '網際優勢甲方公司',
-    Contractor: '網際優勢乙方公司',
-    InitiatorStampDate: '2023/08/22 14:58',
-    ContractorStampDate: null,
-    InitiatorSignerDate: null,
-    ContractorSignerDate: null,
-    InitiatorSignerID: null,
-    ContractorSignerID: null,
-    KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D',
-    isInitiator: false, // 是否為甲方
-    isContractor: true, // 是否為乙方
-    },
-    {
-    uuid: '333',
-    No: 'CS-000100002',
-    Title: '測試很重要的一份合約-3',
-    ContractDateFrom: '2023/08/23 14:20',
-    Initiator: '網際優勢甲方公司',
-    Contractor: '網際優勢乙方公司',
-    InitiatorStampDate: '2023/08/23 14:20',
-    ContractorStampDate: '2023/08/23 14:20',
-    InitiatorSignerDate: null,
-    ContractorSignerDate: null,
-    InitiatorSignerID: null,
-    ContractorSignerID: null,
-    KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D',
-    isInitiator: true, // 是否為甲方
-    isContractor: false, // 是否為乙方
-    },
-    {
-    uuid: '444',
-    No: 'CS-000100003',
-    Title: '測試很重要的一份合約-4',
-    ContractDateFrom: '2023/08/24 13:58',
-    Initiator: '網際優勢甲方公司',
-    Contractor: '網際優勢乙方公司',
-    InitiatorStampDate: '2023/08/24 13:58',
-    ContractorStampDate: '2023/08/24 13:58',
-    InitiatorSignerDate: '2023/08/24 13:58',
-    ContractorSignerDate: null,
-    InitiatorSignerID: 's-1234',
-    ContractorSignerID: null,
-    KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D',
-    isInitiator: true, // 是否為甲方
-    isContractor: false, // 是否為乙方
-    },
-    {
-    uuid: '555',
-    No: 'CS-000100004',
-    Title: '測試很重要的一份合約-5',
-    ContractDateFrom: '2023/08/25 10:58',
-    Initiator: '網際優勢甲方公司',
-    Contractor: '網際優勢乙方股份有限公司',
-    InitiatorStampDate: '2023/08/25 10:58',
-    ContractorStampDate: '2023/08/25 10:58',
-    InitiatorSignerDate: '2023/08/25 10:58',
-    ContractorSignerDate: '2023/08/25 10:58',
-    InitiatorSignerID: 's-1234',
-    ContractorSignerID: 's-5678',
     KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D',
     isInitiator: true, // 是否為甲方
     isContractor: false, // 是否為乙方
@@ -993,9 +924,6 @@
         // 執行查詢合約列表
         this.page = 1;
         this.fetchAPI();
-        // var $tr = $tr || $(window.event.target).closest('form').find('div.data-item');
-        // $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
-        // $inquiryAgent.inquire();
       },
       fetchAPI() {
         // 執行查詢合約列表
@@ -1006,8 +934,7 @@
           sort: this.sort,
           desc: this.desc
         };
-        console.log('payload:', payload);
-        var viewModel = {
+        const viewModel = {
           PageIndex: this.page,
           SortType: this.SortType,
           PageSize: this.pageSize,
@@ -1048,7 +975,6 @@
       },
       // 編輯合約
       editContract() {
-        console.log(this.formData);
         var viewModel = { ...this.formData };
 
         showLoading();
@@ -1080,12 +1006,10 @@
       },
       // 用印
       stampHandler(contract, rule) {
-        console.log({ contract, rule });
         affixPdfSeal(contract.KeyID);
       },
       // 開啟簽署 Modal
       signerHandler(contract, rule) {
-        console.log({ contract, rule });
         this.signerMessage = contract[rule];
         this.currentCompanyData = contract;
 
@@ -1130,25 +1054,6 @@
         console.log({ contract })
         // contract 帶入 signerStatusData 中
         this.signerStatusData = contract;
-  @*{
-          uuid: '555',
-          No: 'CS-000100004',
-          Title: '測試很重要的一份合約-5',
-          ContractDateFrom: '2023/08/25 10:58:20',
-          CurrentEditDate: '2023/08/25 12:58:20',
-          Initiator: '網際優勢甲方公司',
-          Contractor: '網際優勢乙方股份有限公司',
-          InitiatorStampDate: '2023/08/25 10:58',
-          ContractorStampDate: '2023/08/25 10:58',
-          InitiatorSignerDate: '2023/08/25 10:58',
-          ContractorSignerDate: null,
-          InitiatorSignerID: 's-1234',
-          ContractorSignerID: 's-5678',
-          KeyID: 'bw87pgL%2BkxshF4%2F6%2B%2FRFrw%3D%3D',
-          isInitiator: true, // 是否為甲方
-          isContractor: false, // 是否為乙方
-          };*@
-
       },
 
       // 開啟稽核軌跡 Modal
@@ -1328,13 +1233,3 @@
     });
   }
 </script>
-@{
-  // IQueryable<Contract> _model = (IQueryable<Contract>)this.Model;
-  // var items = _model;
-  // if (_viewModel.SortName == null || _viewModel.SortName.Length == 0)
-  // {
-  // items = items.OrderByDescending(c => c.ContractID);
-  // }
-
-  // await Html.RenderPartialAsync("~/Views/ContractConsole/VueModule/ContractRequestList.cshtml", items);
-}
