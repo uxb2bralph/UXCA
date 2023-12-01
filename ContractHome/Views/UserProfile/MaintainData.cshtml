@@ -22,16 +22,13 @@
   _viewModel.UrlAction = Url.Action("InquireData", "UserProfile");
 }
 <div id="userProdile" class="container-lg py-5">
-    <section class="queryform">
+  <section class="queryform">
     <!-- Section title -->
     @{
-      // await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
       await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "使用者基本資料維護");
-      // await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgent.cshtml");
-      // await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
     }
 
-    <!-- Section: Demo -->
+    <!-- Section: 查詢欄位 -->
     <div class="card">
       <form v-on:submit.prevent="inquireData" id="queryArea" method="post" enctype="multipart/form-data">
         <div class="container">
@@ -43,7 +40,7 @@
                   <label for="CompanyName" class="col-sm-12 col-md-3 col-form-label fw-bolder">隸屬公司</label>
                   <div id="searchCompanyName" class="col-sm-12 col-md-9">
                     <input v-model="searchFormData.CompanyName" type="text" class="form-control" name="SearchCompany"
-                      placeholder="可輸入關鍵字查詢公司名稱" v-on:keyup="keypressHandler(searchFormData.CompanyName)" />
+                      placeholder="請輸入關鍵字或統編查詢公司名稱" v-on:keyup="keypressHandler(searchFormData.CompanyName)" />
                     <ul v-show="isSearchOptionsOpen" class="list-group mb-3 shadow__card">
                       <li v-for="(result, index) in searchResults" :key="index"
                         class="list-group-item list-group-item-action" v-on:click="setResult(result, 'search')"
@@ -72,15 +69,6 @@
                 </div>
               </div>
             </div>
-            @* <div class="col input__height">
-            <div class="row">
-            <label for="Password" class="col-sm-12 col-md-3 col-form-label fw-bolder">密碼</label>
-            <div class="col-sm-12 col-md-9">
-            <input v-model="searchFormData.Password" type="password" class="form-control" name="Password"
-            id="Password" />
-            </div>
-            </div>
-            </div> *@
             <div class="col input__height">
               <div class="row">
                 <label for="EMail" class="col-sm-12 col-md-3 col-form-label fw-bolder">電子郵件</label>
@@ -104,32 +92,21 @@
                 </div>
               </div>
             </div>
-            @* <div class="col input__height">
-            <div class="row">
-            <label for="Region" class="col-sm-12 col-md-3 col-form-label fw-bolder">憑證類型</label>
-            <div class="col-sm-12 col-md-9">
-            <select v-model="searchFormData.Region" id="Region" name="Region" class="form-control">
-            <option v-for="(item, index) in regionList" :key="index" :value="item.value">{{ item.text }}
-            </option>
-            </select>
-            </div>
-            </div>
-            </div> *@
           </div>
         </div>
       </form>
     </div>
     <div class="row">
       <div class="col-12 hstack gap-3 py-3">
-       @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.SystemAdmin))
-       {
-        <div class="tooltip__wrapper">
-          <button type="button" class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="editData('addNew')" >
-            <i class="fal fa-file-plus"></i>
-          </button>
-          <div class="tooltip__text">新增使用者</div>
-        </div>
-       }
+        @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.SystemAdmin))
+        {
+          <div class="tooltip__wrapper">
+            <button type="button" class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="editData('addNew')">
+              <i class="fal fa-file-plus"></i>
+            </button>
+            <div class="tooltip__text">新增使用者</div>
+          </div>
+        }
         <div class="ms-auto">
           <button type="button" class="btn btn-secondary opacity-75" v-on:click="resetHandler">重設</button>
         </div>
@@ -155,10 +132,10 @@
               <th scope="col">隸屬公司</th>
               <th scope="col">用戶帳號</th>
               <th scope="col">姓名</th>
-              @* <th scope="col">密碼</th> *@
               <th scope="col">電子郵件</th>
               <th scope="col">角色</th>
               <th scope="col">憑證類型</th>
+              <th scope="col">狀態</th>
               <th scope="col"></th>
             </tr>
           </thead>
@@ -167,12 +144,18 @@
               <td class="text-nowrap">{{ user.CompanyName }}</td>
               <td class="text-nowrap">{{ user.PID }}</td>
               <td>{{ user.UserName }}</td>
-              @* <td>{{ user.Password }}</td> *@
               <td>{{ user.EMail }}</td>
               <td>{{ formatData(user.RoleID, 'roleList') }}</td>
               <td>{{ formatData(user.Region, 'regionList') }}</td>
+              <td>
+                <span v-if="user.PID !== 'ifsadmin'">
+                  <span class="px-1 text-success opacity-75"><i class="fas fa-stamp"></i></span>
+                  <span class="px-1 text-danger opacity-50"><i class="fas fa-ban"></i></span>
+                </span>
+              </td>
               <td class="text-nowrap text-center">
                 <!-- 編輯 -->
+                <!--
                 <span class="tooltip__wrapper mx-1">
                   <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded"
                     v-on:click="editData('edit', user)">
@@ -180,11 +163,29 @@
                   </button>
                   <div class="tooltip__text">修改</div>
                 </span>
-                <!-- 刪除 -->
-                <span class="tooltip__wrapper mx-1">
+                -->
+                <!-- 可進行印鑑管理 -->
+                <span v-if="user.PID !== 'ifsadmin'" class="tooltip__wrapper mx-1">
+                  <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded"
+                    v-on:click="openConfirmDialog('canEditStamp', user)">
+                    <i class="fas fa-stamp"></i>
+                  </button>
+                  <div class="tooltip__text">可進行印鑑管理</div>
+                </span>
+                <!-- 停用 -->
+                <span v-if="user.PID !== 'ifsadmin'" class="tooltip__wrapper mx-1">
                   <button type="button" id="deleteCompany"
                     class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded"
-                    v-on:click="openDeleteDialog(user)">
+                    v-on:click="openConfirmDialog('stop', user)">
+                    <i class="fas fa-stop"></i>
+                  </button>
+                  <div class="tooltip__text">停用</div>
+                </span>
+                <!-- 刪除 -->
+                <span v-if="user.PID !== 'ifsadmin'" class="tooltip__wrapper mx-1">
+                  <button type="button" id="deleteCompany"
+                    class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded"
+                    v-on:click="openConfirmDialog('delete', user)">
                     <i class="fal fa-trash-alt"></i>
                   </button>
                   <div class="tooltip__text">刪除</div>
@@ -260,21 +261,19 @@
     </div>
   </section>
 
-  <!-- 刪除 Dialog -->
-  <div class="modal fade" id="deleteModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-    aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <!-- 確認 Dialog -->
+  <div class="modal fade" id="confirmModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="confirmModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered ">
       <div class="modal-content">
         <div class="modal-header border-bottom-0">
           <h5 class="modal-title" id="staticBackdropLabel"></h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body text-center h5 fw-bolder">
-          確定刪除 <span class="text-primary opacity-75">" {{ currentUserData.CompanyName }} "</span> 相關資料？
-        </div>
+        <div class="modal-body text-center h5 fw-bolder" v-html="confirmMsg"></div>
         <div class="modal-footer border-top-0 justify-content-center">
           <button type="button" class="btn btn-secondary opacity-50" data-bs-dismiss="modal">取消</button>
-          <button type="button" class="btn btn-primary" v-on:click="confirmDel(currentUserData)">確定</button>
+          <button type="button" class="btn btn-primary" v-on:click="confirmHandler()">確定</button>
         </div>
       </div>
     </div>
@@ -300,7 +299,7 @@
                       <label for="iCompanyName" class="col-sm-12 col-md-3 col-form-label fw-bolder">隸屬公司</label>
                       <div id="InputCompanyName" class="col-sm-12 col-md-9">
                         <input v-model="formData.CompanyName" type="text" class="form-control form-control-sm"
-                          :class="{'is-invalid': isCompanyName}" id="iCompanyName"
+                          :class="{'is-invalid': isCompanyName}" id="iCompanyName" placeholder="請輸入關鍵字或統編查詢公司名稱"
                           v-on:focus="resetValidate('isCompanyName')"
                           v-on:blur="validateField('isCompanyName', formData.CompanyName)" autocomplete="off" />
                         <ul v-show="isInputOptionsOpen" class="list-group mb-3 shadow__card">
@@ -349,13 +348,23 @@
                     <label for="iPassword" class="col-sm-12 col-md-3 col-form-label fw-bolder">密碼</label>
                     <div class="col-sm-12 col-md-9">
                       <input v-model="formData.Password" type="password" class="form-control form-control-sm"
-                        :class="{'is-invalid': isPassword}" name="Password" id="iPassword"
+                        :class="{'is-invalid': isPassword || validatePwd}" name="Password" id="iPassword"
                         v-on:focus="resetValidate('isPassword')"
-                        v-on:blur="validateField('isPassword', formData.Password)" />
+                        v-on:blur="validateField('isPassword', formData.Password)"
+                        v-on:keyup="validatePassword('validatePwd', formData.Password)" />
                       <div class="invalid-feedback">
-                        請輸入密碼
+                        {{ isPassword ? '請輸入密碼' : validatePwd ? '密碼格式錯誤，請檢查' : null }}
                       </div>
                     </div>
+                  </div>
+                </div>
+                <div class="row justify-content-end mx-0">
+                  <div class="alert bg-warning bg-opacity-10 col-sm-12 col-md-9">
+                    <ul class="mb-0 small">
+                      <li>至少有一個數字和一個特殊符號</li>
+                      <li>至少有一個大寫或小寫英文字母</li>
+                      <li>字串長度在 6 ~ 30 個字母之間</li>
+                    </ul>
                   </div>
                 </div>
                 <div class="col input__height">
@@ -366,7 +375,7 @@
                         :class="{'is-invalid': isEMail}" name="EMail" id="iEMail" v-on:focus="resetValidate('isEMail')"
                         v-on:blur="validateField('isEMail', formData.EMail);checkMail('isEMail', formData.EMail)" />
                       <div class="invalid-feedback">
-                        請輸入有效的電子郵件地址
+                        請輸入有效的電子郵件
                       </div>
                     </div>
                   </div>
@@ -382,7 +391,7 @@
                         </option>
                       </select>
                       <div class="invalid-feedback">
-                        請輸入角色
+                        請選擇角色
                       </div>
                     </div>
                   </div>
@@ -398,7 +407,7 @@
                         </option>
                       </select>
                       <div class="invalid-feedback">
-                        請輸入憑證類型
+                        請選擇憑證類型
                       </div>
                     </div>
                   </div>
@@ -440,18 +449,18 @@
       text: '請選擇',
       value: ''
     },
-    {
-      text: '系統管理員',
-      value: '0'
-    },
+  @* {
+    text: '系統管理員',
+    value: '0'
+    }, *@
     {
       text: '一般使用者',
       value: '1'
     },
-    {
-      text: '帳號管理員',
-      value: '2'
-    },
+  @* {
+    text: '帳號管理員',
+    value: '2'
+    }, *@
   ];
 
   // 憑證類型選單
@@ -471,50 +480,6 @@
       text: '企業憑證',
       value: 'E'
     },
-  ];
-
-  // Fake company Data
-  const companyOptions = [
-    'Option 1',
-    'Option 111',
-    'Option 11',
-    'Option 22',
-    'Option 2',
-    'Option 3',
-  ];
-
-  // 使用者列表
-  const userList = [
-  @*{
-    uuid: '111',
-    CompanyName: '網際優勢甲方公司',
-    PID: '12345678',
-    UserName: '林大華',
-    Password: '12345679',
-    EMail: 'David@uxb2b.com',
-    RoleID: 'O',
-    Region: 'O'
-    },
-    {
-    uuid: '222',
-    CompanyName: '網際優勢甲方公司',
-    PID: '12345678',
-    UserName: '王大華',
-    Password: '12345679',
-    EMail: 'wang@uxb2b.com',
-    RoleID: 'O',
-    Region: 'O'
-    },
-    {
-    uuid: '333',
-    CompanyName: '網際優勢甲方公司',
-    PID: '12345678',
-    UserName: '陳大華',
-    Password: '12345679',
-    EMail: 'cheng@uxb2b.com',
-    RoleID: '',
-    Region: 'O'
-    },*@
   ];
 
   var app = new Vue({
@@ -551,13 +516,13 @@
         UserName: null,
         Password: null,
         EMail: null,
-        RoleID: null,
+        RoleID: '1',
         Region: null
       },
       formData: {
         CompanyName: null,
       },
-      userList,
+      userList: [],
       /** 分頁 options
        * totalRecordCount: 總筆數
        * pageSize: 每頁筆數
@@ -568,12 +533,15 @@
       pageSize: 10,
       page: 1,
       currentUserData: {},
+      editType: null,
+      confirmMsg: null,
       editTitle: null,
       // 編輯欄位檢核
       isCompanyName: false,
       isUserName: false,
       isPID: false,
       isPassword: false,
+      validatePwd: true,
       isEMail: false,
       isRoleID: false,
       isRegion: false,
@@ -581,7 +549,7 @@
       /**
        * Autocomplete
        */
-      companyOptions,
+      companyOptions: [],
       isSearchOptionsOpen: false,
       isInputOptionsOpen: false,
       searchResults: [],
@@ -657,31 +625,51 @@
           if (this.isCompanyName || this.isPID || this.isUserName || /* this.isPassword || */ this.isEMail || this.isRoleID || this.isRegion) return;
         }
       },
+      // 開啟確認視窗
+      openConfirmDialog(type, item) {
+        console.log({ type, item });
+        this.currentUserData = item;
+        this.editType = type;
+        if (type === 'canEditStamp') {
+          this.confirmMsg = `確定開啟 <span class="text-primary opacity-75">"${item.UserName}"</span> 設定印鑑管理權限？`;
+        }
+        if (type === 'stop') {
+          this.confirmMsg = `確定停用 <span class="text-primary opacity-75">"${item.UserName}"</span> 使用者權限？`;
+        }
+        if (type === 'delete') {
+          this.confirmMsg = `確定刪除 <span class="text-primary opacity-75">"${item.UserName}"</span> 使用者？`;
+        }
+        $("#confirmModal").modal('show');
+      },
+      confirmHandler() {
+        if (this.editType === 'canEditStamp') {
+          this.setEditStamp();
+        }
+        if (this.editType === 'stop') {
+          this.setStop();
+        }
+        if (this.editType === 'delete') {
+          this.confirmDel();
+        }
+        $("#confirmModal").modal('hide');
+      },
+      // 設定印鑑管理權限
+      setEditStamp() {
+        console.log('canEditStamp:', this.currentUserData);
+      },
+      // 設定停用使用者權限
+      setStop() {
+        console.log('stop:', this.currentUserData);
+      },
       // 開啟刪除Modal
       openDeleteDialog(item) {
         console.log('currentUserData:', item);
         this.currentUserData = item;
-        $("#deleteModal").modal('show');
+        $("#confirmModal").modal('show');
       },
       // 刪除廠商資料串API
-      confirmDel(userData) {
-        console.log('userData:', userData);
-
-        $("#deleteModal").modal('hide');
-
-        // showLoading();
-        // setTimeout(() => {
-        //   // 模擬假資料被刪除
-        //   const filterUserList = this.userList.filter(item => item.uuid !== userData.uuid);
-        //   this.userList = filterUserList;
-
-        //   hideLoading();
-        //   // 開啟訊息視窗
-        //   this.infoMsg = `<span class='text-primary opacity-75'>" ${this.currentUserData.CompanyName} "</span> 資料已刪除`;
-        //   $('#infoModal').modal('show');
-        // }, 2000);
-
-        var viewModel = userData;
+      confirmDel() {
+        var viewModel = this.currentUserData;
 
         showLoading();
         $.ajax({
@@ -695,7 +683,6 @@
             if ($.isPlainObject(data)) {
               if (data.result) {
                 // alertModal('資料已刪除!!');
-                debugger;
                 const filterUserList = app.userList.filter(item => item.KeyID !== userData.KeyID);
                 app.userList = filterUserList;
                 app.infoMsg = `<span class='text-primary opacity-75'>" ${userData.UserName} "</span> 資料已刪除`;
@@ -732,16 +719,6 @@
 
         console.log('儲存表單');
         $('#addNewModal').modal('hide');
-        // showLoading();
-
-        // 模擬儲存表單
-        // setTimeout(() => {
-        //   hideLoading();
-        //   this.initialValidate();
-        //   // 開啟訊息視窗
-        //   this.infoMsg = "存檔完成";
-        //   $('#infoModal').modal('show');
-        // }, 2000);
 
         var viewModel = this.formData;
         viewModel.RoleID = Number(viewModel.RoleID);
@@ -783,11 +760,6 @@
         // 表單資料
         this.page = 1;
         this.fetchAPI();
-
-        // var $tr = $tr || $(window.event.target).closest('form').find('div.data-item');
-        // console.log($tr);
-        // $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
-        // $inquiryAgent.inquire();
       },
       fetchAPI() {
         // 執行查詢合約列表
@@ -862,6 +834,12 @@
       // Reset 欄位檢核
       resetValidate(status) {
         this[status] = false;
+      },
+      // 密碼欄位檢核
+      validatePassword(status, password) {
+        var re = /^(?=.*\d)(?=.*[!@@#$%^&*])(?=.*[a-z]).{6,30}$/;
+        console.log(re.test(password))
+        this[status] = password && !re.test(password);
       },
       // 設定每頁筆數
       resetPageSize() {
@@ -942,7 +920,6 @@
       },
       // 選取值後代入欄位
       setResult(result, type) {
-        debugger;
         if (this.searchResults.length > 0) {
           if (type === 'search') {
             this.searchFormData.CompanyName = result.CompanyName;
@@ -969,10 +946,4 @@
       }
     }
   });
-
-  // $inquiryAgent.showQueryResult = function (data) {
-  //   var $tr = $('form div.data-item');
-  //   $tr.empty().append($(data));
-  // }
-
 </script>
