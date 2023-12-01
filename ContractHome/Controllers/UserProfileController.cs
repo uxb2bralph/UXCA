@@ -27,7 +27,6 @@ using DocumentFormat.OpenXml.InkML;
 using ContractHome.Helper.Security.MembershipManagement;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
-using System.Web;
 
 namespace ContractHome.Controllers
 {
@@ -75,7 +74,7 @@ namespace ContractHome.Controllers
       }
       else
       {
-        items = items.Where(p => false);
+         items = items.Where(p => false);
       }
 
       int? companyID = viewModel.GetCompanyID();
@@ -172,62 +171,71 @@ namespace ContractHome.Controllers
       var dataItem = items.FirstOrDefault();
       return View("~/Views/UserProfile/Module/EditItem.cshtml", dataItem);
     }
-    public async Task<ActionResult> PasswordChangeView(
-        UserPasswordChangeViewModel userPasswordChange)
-    {
-      return View("~/Views/UserProfile/VueModule/PasswordChange.cshtml");
-    }
+        public async Task<ActionResult> PasswordChangeView(
+            UserPasswordChangeViewModel userPasswordChange)
+        {
+            return View("~/Views/UserProfile/VueModule/PasswordChange.cshtml");
+        }
 
-    [HttpPost]
-    //[RoleAuthorize(roleID: new int[] {(int)UserRoleDefinition.RoleEnum.User,(int)UserRoleDefinition.RoleEnum.MemberAdmin })]
-    public async Task<ActionResult> PasswordChange(
-      [FromBody] UserPasswordChangeViewModel userPasswordChange)
-    {
+        [HttpPost]
+        //[RoleAuthorize(roleID: new int[] {
+        //    (int)UserRoleDefinition.RoleEnum.User,
+        //    (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
+        public async Task<ActionResult> PasswordChange(
+            UserPasswordChangeViewModel userPasswordChange) 
+        {
+            if (string.IsNullOrEmpty(userPasswordChange.PID))
+            {
+                ModelState.AddModelError("PID", "使用者不存在");
+                return Json(new { result = false, message = ModelState.ErrorMessage() });
+            }
+            var profile = UserProfileFactory.CreateInstance(
+                pid: userPasswordChange.PID, 
+                password:userPasswordChange.OldPassword);
 
-      if (string.IsNullOrEmpty(userPasswordChange.EncPID))
-      {
-        ModelState.AddModelError("PID", "認證失敗");
-        return Json(new { result = false, message = ModelState.ErrorMessage() });
-      }
+            if (profile == null)
+            {
+                ModelState.AddModelError("PID", "使用者不存在");
+                return Json(new { result = false, message = ModelState.ErrorMessage() });
+            }
 
-      var PID = userPasswordChange.EncPIDUrlDecode.DecryptData();
-      var profile = UserProfileFactory.CreateInstance(
-          pid: PID,
-          password: userPasswordChange.OldPassword);
+            var passwordValidated = UserProfileFactory.VerifyPassword(
+                    profile, 
+                    userPasswordChange.OldPassword);
+            if (!passwordValidated)
+            {
+                ModelState.AddModelError("OldPassword", "帳號密碼有誤");
+                return Json(new { result = false, message = ModelState.ErrorMessage() });
+            }
 
-      if (profile == null)
-      {
-        ModelState.AddModelError("PID", "認證失敗");
-        return Json(new { result = false, message = ModelState.ErrorMessage() });
-      }
+            var result = UserProfileFactory.CompareEncryptedPassword(
+                        userPasswordChange.NewPassword,
+                        profile.Password2);
+            if (result)
+            {
+                ModelState.AddModelError("NewPassword", "新密碼與舊密碼相同");
+            }
 
-      var passwordValidated = UserProfileFactory.VerifyPassword(
-              profile,
-              userPasswordChange.OldPassword);
-      if (!passwordValidated)
-      {
-        ModelState.AddModelError("OldPassword", "認證失敗");
-      }
+            if (!ModelState.IsValid)
+            {
+                return Json(new { result = false, message = ModelState.ErrorMessage() });
+            }
 
-      var result = UserProfileFactory.CompareEncryptedPassword(
-                  userPasswordChange.NewPassword,
-                  profile.Password2);
-      if (result)
-      {
-        ModelState.AddModelError("NewPassword", "新密碼與舊密碼不應相同");
-      }
+            try
+            {
+                profile.Password = null;
+                profile.Password2 = userPasswordChange.NewPassword.HashPassword();
 
-      if (!ModelState.IsValid)
-      {
-        return Json(new { result = false, message = ModelState.ErrorMessage() });
-      }
+                models.SubmitChanges();
+            }
+            catch (Exception)
+            {
+                return Ok(new { result = false });
+                throw;
+            }
 
-      var userProfile = models.GetTable<UserProfile>().Where(c => c.UID == profile.UID).FirstOrDefault();
-      userProfile.Password2 = userPasswordChange.NewPassword.HashPassword();
-      models.SubmitChanges();
-
-      return Ok(new { result = true });
-    }
+            return Ok(new { result = true });
+        }
     public ActionResult VueCommitItem([FromBody] UserProfileViewModel viewModel)
     {
       ViewBag.ViewModel = viewModel;
@@ -606,5 +614,6 @@ namespace ContractHome.Controllers
 
     }
 
-  }
+
+    }
 }

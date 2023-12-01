@@ -1,0 +1,30 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model ContractHome.Models.Email.Template.EmailBodyTemplate
+@{
+    Layout = null;
+}
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title></title>
+</head>
+<body>
+    <table width="650" border="0" align="center" cellpadding="0" cellspacing="0" style="border: 1px solid #ccc;">
+        <tbody>
+            <tr>
+                <td>
+                    @(Model._userName)
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    @(Model._userEmail)
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

@@ -15,16 +15,22 @@ using GemBox.Document;
 using System.Net;
 using Microsoft.Extensions.Primitives;
 using System.Drawing;
+using ContractHome.Models.Email;
 
 namespace ContractHome.Controllers
 {
     public class HomeController : SampleController
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IMailService _mailService;
 
-        public HomeController(ILogger<HomeController> logger, IServiceProvider serviceProvider) : base(serviceProvider)
+
+        public HomeController(ILogger<HomeController> logger, 
+            IServiceProvider serviceProvider,
+            IMailService _MailService) : base(serviceProvider)
         {
             _logger = logger;
+            _mailService = _MailService;
         }
 
         public IActionResult Index()
