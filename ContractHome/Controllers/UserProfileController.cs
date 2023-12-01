@@ -181,21 +181,26 @@ namespace ContractHome.Controllers
         //[RoleAuthorize(roleID: new int[] {
         //    (int)UserRoleDefinition.RoleEnum.User,
         //    (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
+        [HttpPost]
+        //[RoleAuthorize(roleID: new int[] {(int)UserRoleDefinition.RoleEnum.User,(int)UserRoleDefinition.RoleEnum.MemberAdmin })]
         public async Task<ActionResult> PasswordChange(
-            UserPasswordChangeViewModel userPasswordChange) 
+      [FromBody] UserPasswordChangeViewModel userPasswordChange)
         {
-            if (string.IsNullOrEmpty(userPasswordChange.PID))
+
+            if (string.IsNullOrEmpty(userPasswordChange.EncPID))
             {
-                ModelState.AddModelError("PID", "使用者不存在");
+                ModelState.AddModelError("PID", "認證失敗");
                 return Json(new { result = false, message = ModelState.ErrorMessage() });
             }
+
+            var PID = userPasswordChange.EncPIDUrlDecode.DecryptData();
             var profile = UserProfileFactory.CreateInstance(
-                pid: userPasswordChange.PID, 
-                password:userPasswordChange.OldPassword);
+                pid: PID,
+                password: userPasswordChange.OldPassword);
 
             if (profile == null)
             {
-                ModelState.AddModelError("PID", "使用者不存在");
+                ModelState.AddModelError("PID", "認證失敗");
                 return Json(new { result = false, message = ModelState.ErrorMessage() });
             }
 
@@ -227,11 +232,12 @@ namespace ContractHome.Controllers
                 profile.Password2 = userPasswordChange.NewPassword.HashPassword();
 
                 models.SubmitChanges();
+
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                FileLogger.Logger.Error(ex);
                 return Ok(new { result = false });
-                throw;
             }
 
             return Ok(new { result = true });
