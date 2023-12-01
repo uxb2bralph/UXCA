@@ -302,12 +302,5 @@ namespace ContractHome.Controllers
             return View("~/Views/Organization/VueModule/OrganizationItems.cshtml", items);
         }
 
-        [HttpPost]
-        [Route("SendMail")]
-        public bool SendMail([FromBody]MailData mailData)
-        {
-            return _mailService.SendMail(mailData);
-        }
-
     }
 }

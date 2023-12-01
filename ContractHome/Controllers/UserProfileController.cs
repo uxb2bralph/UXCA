@@ -178,15 +178,16 @@ namespace ContractHome.Controllers
         }
 
         [HttpPost]
-        [RoleAuthorize(roleID: new int[] {
-            (int)UserRoleDefinition.RoleEnum.User,
-            (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
+        //[RoleAuthorize(roleID: new int[] {
+        //    (int)UserRoleDefinition.RoleEnum.User,
+        //    (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
         public async Task<ActionResult> PasswordChange(
             UserPasswordChangeViewModel userPasswordChange) 
         {
             if (string.IsNullOrEmpty(userPasswordChange.PID))
             {
                 ModelState.AddModelError("PID", "使用者不存在");
+                return Json(new { result = false, message = ModelState.ErrorMessage() });
             }
             var profile = UserProfileFactory.CreateInstance(
                 pid: userPasswordChange.PID, 
@@ -195,6 +196,7 @@ namespace ContractHome.Controllers
             if (profile == null)
             {
                 ModelState.AddModelError("PID", "使用者不存在");
+                return Json(new { result = false, message = ModelState.ErrorMessage() });
             }
 
             var passwordValidated = UserProfileFactory.VerifyPassword(
@@ -203,6 +205,7 @@ namespace ContractHome.Controllers
             if (!passwordValidated)
             {
                 ModelState.AddModelError("OldPassword", "帳號密碼有誤");
+                return Json(new { result = false, message = ModelState.ErrorMessage() });
             }
 
             var result = UserProfileFactory.CompareEncryptedPassword(
