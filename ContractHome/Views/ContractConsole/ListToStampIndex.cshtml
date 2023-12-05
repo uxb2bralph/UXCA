@@ -347,57 +347,112 @@
   <!-- 新增 Project Dialog -->
   <div class="modal fade" id="addProjectModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
     aria-labelledby="addNewModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title fw-bolder" id="staticBackdropLabel">新增合約</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form v-on:submit.prevent>
-            <div class="container">
-              <div class="row row-cols-1 m-3 mb-lg-0 data-item">
-                <div class="col input__height">
-                  <div class="row">
-                    <label for="Title" class="col-sm-12 col-md-3 col-form-label fw-bolder">合約名稱</label>
-                    <div class="col-sm-12 col-md-9">
-                      <input v-model="formData.Title" type="text" class="form-control" id="Title" required />
-                      <div class="invalid-feedback">
-                        請輸入合約名稱
-                      </div>
-                    </div>
+          <div class="container">
+            <form novalidate>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="Title" class="form-label fw-bolder text-primary">合約名稱</label>
+                  <input v-model="formData.Title" type="text" class="form-control" :class="{'is-invalid': !isTitle}"
+                    id="Title" v-on:keyup="checkTitle(formData.Title)">
+                  <div class="invalid-feedback">
+                    請輸入合約名稱
                   </div>
                 </div>
-                <div class="col input__height">
-                  <div class="row">
-                    <label for="ContractNo" class="col-sm-12 col-md-3 col-form-label fw-bolder">合約編號</label>
-                    <div class="col-sm-12 col-md-9">
-                      <input v-model="formData.ContractNo" type="text" class="form-control" id="ContractNo"
-                        v-on:keyup="checkContractNo" required />
-                      <div class="invalid-feedback">
-                        請輸入合約編號
-                      </div>
-                    </div>
+                <div class="col-md-6">
+                  <label for="ContractNo" class="form-label fw-bolder text-primary">合約編號</label>
+                  <input v-model="formData.ContractNo" type="text" class=" form-control"
+                    :class="{'is-invalid': !isContractNo}" id="ContractNo"
+                    v-on:keyup="checkContractNo(formData.ContractNo)">
+                  <div class="invalid-feedback">
+                    請輸入合約編號
                   </div>
                 </div>
-                <div class="col input__height">
-                  <div class="row align-items-center">
-                    <label for="FileTitle" class="col-sm-12 col-md-3 col-form-label fw-bolder">合約內容</label>
-                    <div class="col-sm-12 col-md-9">
-                      <span class="pe-3 fw-bolder">{{ formData.FileTitle }}</span>
-                      <br>
-                      <span class="text-muted">( {{ (formData.Size / 1024000).toFixed(2) }} M )</span>
+                <div class="col-md-12">
+                  <label for="ContractNo" class="form-label fw-bolder text-primary">檔案名稱</label>
+                  <div class="mb-4">
+                    <span class="pe-3 fw-bolder">{{ formData.FileTitle }}</span>
+                    <span class="text-muted">( {{ (formData.Size / 1024000).toFixed(2) }} M )</span>
+                  </div>
+                </div>
+                <div class="divider"></div>
+                <div class="col-md-12">
+                  <label for="ContractNo" class="mb-4 form-label fw-bolder text-primary">簽署人</label>
+                  <div class="row g-3">
+                    <div v-if="alertActived" class="mt-0 col-sm-12">
+                      <div id="contractorAlert"
+                        class="alert alert-danger d-flex align-items-center alert-dismissible fade"
+                        :class="{'show' : alertActived}" role="alert">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                          class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img"
+                          aria-label="Warning:">
+                          <path
+                            d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                        </svg>
+                        <div>
+                          {{ contractorMag }}
+                        </div>
+                        <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"
+                          v-on:click="alertActived = !alertActived"></button>
+                      </div>
+                    </div>
+                    <template v-for="(item, index) in formData.Contractor">
+                      <div class="mt-0 col-sm-12 col-md-4 input__height">
+                        <select v-model="item.company" class="form-select" v-on:change="selectCompany($event, item)">
+                          <option value="0">請選擇簽署方公司名稱</option>
+                          <template v-for="(item, index) in companyList">
+                            <option :value="item.value" :key="index">{{ item.text }}</option>
+                          </template>
+                        </select>
+                        <div class="invalid-feedback">
+                          請選擇簽署方公司名稱
+                        </div>
+                      </div>
+                      <div class="mt-0 col-sm-12 col-md-4 input__height">
+                        <input v-model="item.agentEmail" type="text" class="form-control" placeholder="請輸入承辦人E-mail"
+                          v-on:keyup="checkMail($event, item.agentEmail)" />
+                        <div class="invalid-feedback">
+                          {{ isMailEmpty ? '請輸入承辦人E-mail' : !isMail ? '請檢查 E-mail 格式是否正確' : null }}
+                        </div>
+                      </div>
+                      <div class="mt-0 col-sm-12 col-md-3 input__height">
+                        <input v-model="item.agentName" type="text" class="form-control" placeholder="請輸入承辦人姓名"
+                          v-on:keyup="checkAgentName($event, item.agentName)" />
+                        <div class="invalid-feedback">
+                          請輸入承辦人姓名
+                        </div>
+                      </div>
+                      <div class="mt-0 col-sm-12 col-md-1 text-end input__height">
+                        <span class="tooltip__wrapper m-1">
+                          <button type="button" class="btn btn-sm btn-danger opacity-75"
+                            v-on:click="deleteContractor(item)">
+                            <i class="fas fa-trash-alt"></i>
+                          </button>
+                          <div class="tooltip__text">刪除</div>
+                        </span>
+                      </div>
+                    </template>
+                    <div class="mt-0 mb-4">
+                      <button type="button" class="btn btn-success" v-on:click="addContractor">
+                        <i class="fas fa-plus"></i>
+                      </button>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary opacity-75" data-bs-dismiss="modal">取消</button>
-          <button type="button" class="btn btn-primary" :class="{'disabled': !isContractNo}"
-            v-on:click="editContract">下一步</button>
+          <button type="button" class="btn btn-secondary opacity-75" data-bs-dismiss="modal"
+            v-on:click="initContract">取消</button>
+          <button type="button" class="btn btn-primary" v-on:click="editContract">下一步</button>
         </div>
       </div>
     </div>
@@ -720,10 +775,17 @@
     isContractor: false, // 是否為乙方
     },
     ];*@
+  const companyList = [
+    { text: 'A 公司', value: 'a', email: 'aa@aa.com' },
+    { text: 'B 公司', value: 'b', email: 'bb@bb.com' },
+    { text: 'C 公司', value: 'c', email: 'cc@cc.com' },
+  ];
   const contractList = [];
   var app = new Vue({
     el: '#listToStampIndex',
     data: {
+      isValidate: false,
+      companyList,
       /**
        * 合約表單
        * @@param {string} No 合約號碼
@@ -741,8 +803,19 @@
         No: null,
         ContractDateFrom: null,
         ContractDateTo: null,
+        ContractNo: '',
+        Title: '',
         Initiator: null,
-        Contractor: null
+        //Contractor: null,
+        Contractor: [
+          {
+            uuid: null,
+            company: "0",
+            companyEmail: null,
+            agentEmail: null,
+            agentName: null,
+          }
+        ],
       },
       formData: {},
       /** 分頁 options
@@ -770,7 +843,12 @@
       signerStatusData: {},
       historyData: {},
       stopContractData: {},
-      isContractNo: false
+      alertActived: false,
+      contractorMag: null,
+      isTitle: true,
+      isContractNo: true,
+      isMailEmpty: true,
+      isMail: true
     },
     computed: {
       // 計算總頁數
@@ -790,7 +868,8 @@
       }
 
       // 初始化新增合約表單
-      this.formData = JSON.parse(JSON.stringify(this.initialFormData));
+      this.initContract();
+      // 查詢合約表單
       this.inquireData();
 
       if (this.isUpload) {
@@ -828,10 +907,9 @@
               }
             });
             this.on("addedfile", function (file) {
-              console.log(file.status);
+              // console.log('文件上傳狀態:', file.status);
             });
             this.on("complete", function (file) {
-              console.log("complete", file.status);
               if (file.status === 'error') {
                 // 顯示錯誤訊息，2 秒後自動消失
                 self.isUploadFile = true;
@@ -841,7 +919,6 @@
                   self.uploadFileMsg = null;
                 }, 2000);
 
-                // 測試用
                 const projectName = file.name.split('.');
                 self.isUpload = false;
                 self.formData = {
@@ -851,13 +928,13 @@
                   FileTitle: file.name,
                   Title: projectName[0]
                 };
+
                 $('#addNewModal').modal('hide');
                 $('#addProjectModal').modal('show');
-                // 測試用
               } else {
-                // 伺服器處理檔案儲存
-
-                // 前端畫面切換，資料傳遞
+                /** 伺服器處理檔案儲存
+                  * 前端畫面切換，資料傳遞
+                  */
                 const projectName = file.name.split('.');
                 self.isUpload = false;
                 self.formData = {
@@ -925,6 +1002,10 @@
         const tourguide = new Tourguide({ steps: this.contractList.length > 0 ? steps : stepOnly });
         tourguide.start();
       },
+      initContract() {
+        this.formData = JSON.parse(JSON.stringify(this.initialFormData));
+        this.formData.Contractor[0].uuid = ui_uuid8();
+      },
 
       // 查詢合約列表
       inquireData() {
@@ -980,8 +1061,111 @@
         // 新增時加入一筆uuid
         this.formData.uuid = ui_uuid();
       },
+
+      // 輸入 合約名稱 欄位驗證
+      checkTitle(title) {
+        this.isTitle = title && title.length > 0;
+      },
+
+      // 輸入 合約編號 欄位驗證
+      checkContractNo(contractNo) {
+        this.isContractNo = contractNo && contractNo.length > 0;
+      },
+
+      // 選擇簽約方
+      selectCompany(event, item) {
+        // 檢核欄位
+        if (item.company === "0") {
+          event.target.classList.add('is-invalid');
+          return;
+        } else {
+          event.target.classList.remove('is-invalid');
+        }
+        // 帶入公司 Mail
+        const companyFilter = this.companyList.filter(company => company.value === item.company);
+        const currentItemFilter = this.formData.Contractor.forEach(contractor => {
+          if (contractor.uuid === item.uuid) {
+            contractor.companyEmail = companyFilter[0].email
+          }
+        })
+      },
+
+      // 輸入 email 欄位驗證
+      checkMail(event, contactEmail) {
+        const isEmpty = contactEmail && !contactEmail.length > 0;
+
+        const emailRegex = /^[A-Za-z0-9._%+-]+@@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+        const checkEmail = emailRegex.test(contactEmail);
+        if (isEmpty || !checkEmail) {
+          event.target.classList.add('is-invalid');
+        } else {
+          event.target.classList.remove('is-invalid');
+        }
+        this.isMailEmpty = isEmpty;
+        this.isMail = checkEmail;
+      },
+
+      // 輸入 承辦人姓名 欄位驗證
+      checkAgentName(event, agentName) {
+        const isAgentName = agentName.length > 0;
+        if (!isAgentName) {
+          event.target.classList.add('is-invalid');
+        } else {
+          event.target.classList.remove('is-invalid');
+        }
+      },
+
+      // 檢核object value值是否有空值
+      checkEmptyKey(arr) {
+        return arr.some(obj => {
+          return Object.keys(obj).some(key => {
+            return obj[key] === '' || obj[key] === null || obj['company'] === "0";
+          });
+        });
+      },
+
+      // 新增簽署單位資料
+      addContractor() {
+        this.formData.Contractor.push({
+          uuid: ui_uuid8(),
+          company: "0",
+          companyEmail: null,
+          agentEmail: null,
+          agentName: null,
+        });
+      },
+
+      // 刪除簽署單位資料
+      deleteContractor(obj) {
+        const contractor = this.formData.Contractor;
+        if (contractor.length === 1) {
+          this.contractorMag = '簽署單位至少要填一筆資料。';
+          this.alertActived = true;
+          return
+        }
+        this.formData.Contractor = contractor.filter(item => item.uuid !== obj.uuid);
+      },
+
       // 編輯合約
       editContract() {
+        // this.isValidate = true;
+        // 檢核欄位
+        this.checkTitle(this.formData.Title);
+        this.checkContractNo(this.formData.ContractNo);
+        if (!this.formData.Title) return;
+        if (!this.formData.ContractNo) return;
+        // 檢查簽約方資料有無填寫
+        const hasEmpty = this.checkEmptyKey(this.formData.Contractor);
+        if (hasEmpty) {
+          this.contractorMag = '簽署單位至少要填一筆資料。且輸入欄位全部必填，請檢查。';
+          this.alertActived = true;
+          return
+        }
+        if (hasEmpty) return;
+
+        // this.isValidate = false;
+
+        console.log('formData:', this.formData);
         var viewModel = { ...this.formData };
 
         showLoading();
@@ -1123,14 +1307,8 @@
           terminateContract(contractData.KeyID);
       },
 
-      // 檢查新增合約編號有沒有填寫
-      checkContractNo() {
-        this.isContractNo = this.formData.ContractNo.length > 0;
-      },
-
       // 下載檔案
       downloadPdf(contract) {
-        console.log({ contract });
         showContract(contract.KeyID, @((int)DataResultMode.Download));
       },
 
