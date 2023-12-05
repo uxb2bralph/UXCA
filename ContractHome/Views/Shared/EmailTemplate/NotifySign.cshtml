@@ -1,46 +1,152 @@
 ﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @model ContractHome.Models.Email.Template.EmailBodyTemplate
 @{
-    Layout = null;
+  Layout = null;
 }
 <!DOCTYPE HTML>
 <html xmlns="http://www.w3.org/1999/xhtml">
+
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title></title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>@(Model._userName) 邀請您簽署測試合約2</title>
 </head>
+
 <body>
-    <table width="650" border="0" align="center" cellpadding="0" cellspacing="0" style="border: 1px solid #ccc;">
-        <tbody>
-            <tr>
-                <td>
-                    @(Model._userName)
-                </td>
-                <td>
-                    @(Model._userEmail)
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    @(Model._recipientUserName)
-                </td>
-                <td>
-                    @(Model._recipientUserEmail)
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    @(Model._contractNo)
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    @(Model._contractLink)
-                </td>
-            </tr>
-        </tbody>
+  <div align="center">
+    <table border="0" cellspacing="0" cellpadding="0" width="100%"
+      style="width: 100%; background: #FAFAFA; border-collapse: collapse">
+      <tbody>
+        <tr>
+          <td width="100%" valign="top" style="width: 100.0%; padding: 40pt 15pt 0 15pt">
+            <table width="700" border="0" align="center" cellpadding="0" cellspacing="0"
+              style="border: 1px solid #ccc;background: white;">
+              <tbody>
+                <tr>
+                  <td align="center" style="padding: 40pt 15pt 0pt 15pt">
+                    <span>
+                      <img style="height: 50px" src="https://portal.uxifs.com/ContractHome/images/uxSign-logo.png" />
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding: 40pt 15pt 40pt 15pt">
+                    <span style="font-size:16pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#204dc7;">
+                      <strong>"@(Model._contractNo)" 正在等待您的簽署</strong>
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 0pt 35pt 30pt 35pt">
+                    <span style="font-size:12pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#333333;">
+                      Hello @(Model._recipientUserName)：
+                      <br>
+                      @(Model._userName) (@(Model._userEmail)) 在6天前寄送了一則簽名邀請 "@(Model._contractNo)" 給您，請點擊下方按鈕以查看並簽署文件。
+                      <br>
+                      <br>
+                      <p>
+                        請注意：若您尚未註冊安心簽，為了保障簽署安全性，此連結將於2天內失效。
+                      </p>
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding: 0pt 35pt 30pt 35pt">
+                    <table width="150">
+                      <tbody>
+                        <tr>
+                          <td height="60" align="center" style="background: #0970d1;">
+                            <a href="@(Model._contractLink)" target="_blank"
+                              style="font-size: 12pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#FFFFFF;text-decoration: none;">
+                              查看並簽署
+                            </a>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+                @* @(Model._recipientUserEmail) *@
+              </tbody>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td align="center" width="100%" valign="top" style="padding: 10pt 15pt 40pt 15pt">
+            <table width="700" border="0" align="center" cellpadding="0" cellspacing="0">
+              <tbody>
+                <tr>
+                  <td style="padding: 0 30pt 20pt 30pt">
+                    <span style="font-size:10pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#666666;">
+                      <strong style="font-weight: bold;font-size:10.5pt;">安全性提醒：</strong>
+                      <br>
+                      出於文件的安全性考量，請勿將簽署連結分享給其他人。
+                      <br>
+                      <strong style="font-weight: bold;font-size:10.5pt;">同意及注意事項：</strong>
+                      <br>
+                      點選『查看並簽署』，代表您同意本文件以電子文件方式作成，並以電子簽章方式進行簽署，其效力與書面文件及書面簽署相同。注意事項：
+                      各國對於電子簽章之適用規定略有不同，提醒您需衡酌自身情況，以決定是否使用本服務。
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 0 30pt 20pt 30pt">
+                    <span style="font-size:10pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#666666;">
+                      <strong style="font-weight: bold;font-size:10.5pt;">請注意：</strong>
+                      <br>
+                      本訊息由系統寄出請勿直接回覆。
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <table border="1" cellspacing="0" cellpadding="0" width="100%"
+                      style="width: 100.0%; border-collapse: collapse; border: none">
+                      <tbody>
+                        <tr>
+                          <td style="border: none; border-top: solid #CCCCCC 1.0pt; padding: 0cm 0cm 0cm 0cm"></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:20pt 30pt 20pt 30pt">
+                    <span style="font-size:10pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#666666;">
+                      If this wasn't you, please ignore this email or contact our customer service center:
+                      <a href="mailto:ifs_service@uxb2b.com" target="_blank">ifs_service@uxb2b.com</a> for further
+                      assistance.
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding:0 30pt 20pt 30pt">
+                    <span style="font-size:10pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#666666;">
+                      Copyright Ⓒ 2023 UX SIGN, All rights reserved.
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding:0 30pt 20pt 30pt">
+                    <span style="font-size: 9.0pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color: #656565">
+                      <a href="https://www.uxb2b.com/" target="_blank">
+                        <span style="color: #586AF2; background: #FAFAFA">Uxb2b</span>
+                      </a>
+                      <span style="background: #FAFAFA"> | </span>
+                      <a href="mailto:ifs_service@uxb2b.com" target="_blank">
+                        <span style="color: #586AF2; background: #FAFAFA">Contact us</span>
+                      </a>
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
     </table>
+  </div>
 </body>
+
 </html>
