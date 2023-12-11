@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using ContractHome.Models.DataEntity;
 using ContractHome.Models.ViewModel;
 using CommonLib.Utility;
-using Newtonsoft.Json;
 using ContractHome.Helper;
 using CommonLib.Core.Utility;
 using System.Drawing;
@@ -13,15 +12,19 @@ using System.Data.Linq;
 using System.Data;
 using ContractHome.Helper.DataQuery;
 using System.Web;
+using Newtonsoft.Json;
 
 namespace ContractHome.Controllers
 {
-    [Authorize]
+    //remark for testing by postman
+    //[Authorize]
     public class ContractConsoleController : SampleController
     {
         private readonly ILogger<HomeController> _logger;
-
-        public ContractConsoleController(ILogger<HomeController> logger, IServiceProvider serviceProvider) : base(serviceProvider)
+        private UserProfileRepository? _userProfileRepository;
+        private ContractRepository? _contractRepository;
+        public ContractConsoleController(ILogger<HomeController> logger,
+            IServiceProvider serviceProvider) : base(serviceProvider)
         {
             _logger = logger;
         }
@@ -50,19 +53,11 @@ namespace ContractHome.Controllers
                 ModelState.AddModelError("ContractNo", "請輸入合約編號!!");
             }
 
-            if (viewModel.Initiator != null)
-            {
-                viewModel.InitiatorID = viewModel.Initiator.DecryptKeyValue();
-            }
             if (!viewModel.InitiatorID.HasValue)
             {
                 ModelState.AddModelError("Initiator", "請選擇合約發起人!!");
             }
 
-            if (viewModel.Contractor != null)
-            {
-                viewModel.ContractorID = viewModel.Contractor.DecryptKeyValue();
-            }
             if (!viewModel.ContractorID.HasValue)
             {
                 ModelState.AddModelError("Contractor", "請選擇簽約人!!");
@@ -159,16 +154,48 @@ namespace ContractHome.Controllers
 
         public async Task<ActionResult> CommitContractAsync([FromBody] SignContractViewModel viewModel)
         {
-            if (viewModel.Initiator != null)
+            var profile = await HttpContext.GetUserAsync();
+            int? uid = profile?.UID;
+#region add for postman test
+            if (uid == null)
             {
-                viewModel.InitiatorID = viewModel.Initiator.DecryptKeyValue();
+                uid = Int32.Parse(HttpUtility.UrlDecode(viewModel.EncUID!).DecryptData());
             }
+            #endregion
+            if (uid == null)
+            {
+                return Json(new { result = false, message = "身份驗證失敗." });
+            }
+
+            //wait to do:未做TRANSACTION處理, 檢查提前做, 避免只完成部份Contractor
+            for (int i = 0; i < viewModel.Contractors!.Length; i++)
+            {
+                if (string.IsNullOrEmpty(viewModel.Contractors[i].Contractor)
+                    || string.IsNullOrEmpty(viewModel.Initiator))
+                {
+                    ModelState.AddModelError("Initiator", "起約人或簽約人ID空白!!");
+                    break;
+                }
+
+                var contractorID = viewModel.Contractors[i].ContractorID;
+                var initiatorID = viewModel.InitiatorID!.Value;
+
+                if (contractorID == initiatorID)
+                {
+                    ModelState.AddModelError("Initiator", $"起約人{initiatorID}不可和簽約對象{contractorID}相同.");
+                }
+            }
+
+            //if (viewModel.Initiator != null)
+            //{
+            //    viewModel.InitiatorID = viewModel.Initiator.DecryptKeyValue();
+            //}
             if (!viewModel.InitiatorID.HasValue)
             {
                 ModelState.AddModelError("Initiator", "請選擇合約發起人!!");
             }
 
-            if (!(viewModel.MultiContractor?.Length > 0))
+            if (!(viewModel.Contractors?.Length > 0))
             {
                 ModelState.AddModelError("Contractor", "請選擇簽約人!!");
             }
@@ -185,8 +212,6 @@ namespace ContractHome.Controllers
                 return Json(new { result = false, message = ModelState.ErrorMessage() });
             }
 
-            var profile = await HttpContext.GetUserAsync();
-
             DataLoadOptions ops = new DataLoadOptions();
             ops.LoadWith<CDS_Document>(c => c.Contract);
             ops.LoadWith<Contract>(c => c.ContractSealRequest);
@@ -202,85 +227,62 @@ namespace ContractHome.Controllers
                 return Json(new { result = false, message = "合約資料錯誤!!" });
             }
 
-            if (!contract.ContractSealRequest.Any() && viewModel.IgnoreSeal != true)
-            {
-                return Json(new { result = false, message = "合約未用印!!" });
-            }
+            //remark for postman test
+            //if (!contract.ContractSealRequest.Any() && viewModel.IgnoreSeal != true)
+            //    {
+            //        return Json(new { result = false, message = "合約未用印!!" });
+            //    }
 
             contract.ContractContent = new Binary(System.IO.File.ReadAllBytes(contract.FilePath));
-
-            void makeEffective(Contract c, int initiatorID, int contractorID)
-            {
-                if (!c.ContractingParty.Where(p => p.CompanyID == initiatorID)
-                    .Where(p => p.IntentID == (int)ContractingIntent.ContractingIntentEnum.Initiator)
-                    .Any())
-                {
-                    c.ContractingParty.Add(new ContractingParty
-                    {
-                        CompanyID = initiatorID,
-                        IntentID = (int)ContractingIntent.ContractingIntentEnum.Initiator,
-                        IsInitiator = true,
-                    });
-                }
-
-                if (!c.ContractingParty.Where(p => p.CompanyID == contractorID)
-                                    .Where(p => p.IntentID == (int)ContractingIntent.ContractingIntentEnum.Contractor)
-                                    .Any())
-                {
-                    c.ContractingParty.Add(new ContractingParty
-                    {
-                        CompanyID = contractorID,
-                        IntentID = (int)ContractingIntent.ContractingIntentEnum.Contractor,
-                    });
-                }
-
-                if (!c.ContractSignatureRequest.Any(r => r.CompanyID == initiatorID))
-                {
-                    c.ContractSignatureRequest.Add(new ContractSignatureRequest
-                    {
-                        CompanyID = initiatorID,
-                        StampDate = DateTime.Now,
-                    });
-                }
-
-                if (!c.ContractSignatureRequest.Any(r => r.CompanyID == contractorID))
-                {
-                    c.ContractSignatureRequest.Add(new ContractSignatureRequest
-                    {
-                        CompanyID = contractorID,
-                    });
-                }
-
-                models.SubmitChanges();
-
-                c.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.InitiatorSealed);
-            }
 
 
             models.SubmitChanges();
 
-            List<Contract> contractItems = new List<Contract>
+            _contractRepository = new ContractRepository(models, viewModel.ContractID);
+            if (viewModel.Contractors!.Length == 1)
             {
-                contract
-            };
+                var contractorID = viewModel.Contractors[0].ContractorID;
+                var initiatorID = viewModel.InitiatorID!.Value;
+                _contractRepository.CreateAndSaveParty(
+                    initiatorID: initiatorID,
+                    contractorID: contractorID ?? 0,
+                    viewModel.Contractors[0].SignaturePositions,
+                    uid ?? 0);
 
-            if (viewModel.MultiContractor!.Length > 1)
+                return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
+            }
+
+            for (int i = 0; i < viewModel.Contractors!.Length; i++)
             {
-                var doc = models.GetTable<CDS_Document>().Where(d => d.DocID == contract.ContractID).First();
-                String json = doc.JsonStringify();
-                for (int i = 1; i < viewModel.MultiContractor!.Length; i++)
+                var contractorID = viewModel.Contractors[i].ContractorID;
+                var initiatorID = viewModel.InitiatorID!.Value;
+
+                if ((contract.IsJointContracting == true)||(i==0))
                 {
-                    doc = JsonConvert.DeserializeObject<CDS_Document>(json);
-                    models.GetTable<CDS_Document>().InsertOnSubmit(doc!);
-                    models.SubmitChanges();
-                    contractItems.Add(doc!.Contract);
-                }
-            }
+                    _contractRepository.CreateAndSaveParty(
+                        initiatorID: initiatorID,
+                        contractorID: contractorID ?? 0,
+                        viewModel.Contractors[i].SignaturePositions,
+                        uid ?? 0);
+                } 
+                else 
+                {
+                    var newContract = _contractRepository.CreateAndSaveContractByOld(initiatorID);
+                    var newContractRepository =
+                        new ContractRepository(models, newContract.ContractID);
 
-            for (int i = 0; i < viewModel.MultiContractor!.Length; i++)
-            {
-                makeEffective(contractItems[i], viewModel.InitiatorID!.Value, viewModel.MultiContractor![i].DecryptKeyValue());
+                    newContractRepository.CreateAndSaveParty(
+                        initiatorID: initiatorID,
+                        contractorID: contractorID ?? 0,
+                        viewModel.Contractors[i].SignaturePositions,
+                        uid ?? 0
+                    );
+                }
+
+
             }
+            _contractRepository.SaveContract();
+
 
             return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
         }
@@ -471,12 +473,35 @@ namespace ContractHome.Controllers
 
             item.ContractNo = viewModel.ContractNo;
             item.Title = viewModel.Title;
+            item.IsJointContracting = viewModel.IsJointContracting;
 
             models.SubmitChanges();
 
             return Json(new { result = true });
         }
 
+        public IActionResult GetContractor([FromBody] SignContractViewModel viewModel)
+        {
+            if (viewModel.KeyID == null)
+            {
+                return Json(new { result = false, message = "驗證失敗." });
+            }
+
+            try
+            {
+                var contractID = viewModel.KeyID.DecryptKeyValue();
+                _contractRepository = new ContractRepository(models, contractID);
+                var contractor = _contractRepository.GetContractor(viewModel.ContractorID!.Value);
+                var jsonContractor = new { result = true, dataItem = contractor };
+                return Json(jsonContractor);
+            }
+            catch (Exception ex)
+            {
+                FileLogger.Logger.Error(ex);
+                return Json(new { result = false, message = "驗證失敗." });
+            }
+
+        }
 
         public async Task<ActionResult> InquireDataAsync([FromBody] ContractQueryViewModel viewModel)
         {
@@ -519,7 +544,7 @@ namespace ContractHome.Controllers
 
             if (viewModel.Initiator != null)
             {
-                viewModel.InitiatorID = viewModel.Initiator.DecryptKeyValue();
+                //viewModel.InitiatorID = viewModel.Initiator.DecryptKeyValue();
                 var parties = models.GetTable<ContractingParty>()
                                 .Where(p => p.CompanyID == viewModel.InitiatorID)
                                 .Where(p => p.IsInitiator == true);
@@ -528,7 +553,6 @@ namespace ContractHome.Controllers
 
             if (viewModel.Contractor != null)
             {
-                viewModel.ContractorID = viewModel.Contractor.DecryptKeyValue();
                 var parties = models.GetTable<ContractingParty>()
                                 .Where(p => p.CompanyID == viewModel.ContractorID)
                                 .Where(p => !p.IsInitiator.HasValue || p.IsInitiator == false);

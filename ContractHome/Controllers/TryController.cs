@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.DirectoryServices.Protocols;
+using System.Web;
 
 namespace ContractHome.Controllers
 {
@@ -40,14 +41,15 @@ namespace ContractHome.Controllers
             _emailBodyTemplate = emailBodyTemplate;
         }
 
-        public class SendMailData
+        public class VO
         {
-            public string item { get; set; }
+            public string StringItem { get; set; }
+            public int IntItem { get; set; }
         }
 
         [HttpPost]
         [Route("TestRazorViewToStringRenderer")]
-        public async Task<IActionResult> TestRazorViewToStringRenderer(SendMailData sendMailData)
+        public async Task<IActionResult> TestRazorViewToStringRenderer(VO sendMailData)
         {
             TemplateShopExpired welcome = new TemplateShopExpired();
             welcome.ShopHost = "a";
@@ -56,14 +58,14 @@ namespace ContractHome.Controllers
             welcome.ShopCloseDate = "a";
             welcome.CdnHost = "a";
             var ttt  = await _razorViewToStringRenderer.RenderViewToStringAsync(
-                viewName: sendMailData.item,
+                viewName: sendMailData.StringItem,
                 model: welcome);
             return Ok(ttt.Length);
         }
 
         [HttpPost]
         [Route("TestViewRenderService")]
-        public async Task<IActionResult> TestViewRenderService(SendMailData sendMailData)
+        public async Task<IActionResult> TestViewRenderService(VO sendMailData)
         {
             TemplateShopExpired welcome = new TemplateShopExpired();
             welcome.ShopHost = "a";
@@ -72,19 +74,19 @@ namespace ContractHome.Controllers
             welcome.ShopCloseDate = "a";
             welcome.CdnHost = "a";
             string ttt= await _viewRenderService.RenderToStringAsync(
-                viewName: sendMailData.item,
+                viewName: sendMailData.StringItem,
                 model: welcome);
             return Ok(ttt.Length);
         }
         [HttpPost]
         [Route("SendTemplateEMail")]
-        public async Task<bool> SendTemplateEMail([FromBody] SendMailData sendMailData)
+        public async Task<bool> SendTemplateEMail([FromBody] VO sendMailData)
         {
             try
             {
                 EmailBodyTemplate emailDataTemplate =
                     new EmailBodyTemplateBuilder(_emailBodyTemplate)
-                    .SetTemplateItem(sendMailData.item)
+                    .SetTemplateItem(sendMailData.StringItem)
                     .SetContractNo("ContractNo.12345")
                     .SetTitle("this is title.")
                     .SetUserName("IAmIris.")
@@ -97,7 +99,7 @@ namespace ContractHome.Controllers
 
                 var mailData = _emailDataFactory.GetMailDataToCustomer(
                     email: "iris@uxb2b.com",
-                    subject: $@"{sendMailData.item}",
+                    subject: $@"{sendMailData.StringItem}",
                     body: await emailDataTemplate.GetViewRenderString());
 
                 return await _mailService.SendMailAsync(mailData);
@@ -112,5 +114,46 @@ namespace ContractHome.Controllers
 
         }
 
+        [HttpPost]
+        [Route("GetEncryptUserID")]
+        public IActionResult GetEncryptUserID([FromBody] VO targetString)
+        {
+            try
+            {
+                var encString = targetString.StringItem.EncryptData();
+                var urlEncodeEncString = HttpUtility.UrlEncode(encString);
+                return Ok(urlEncodeEncString);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return BadRequest();
+            }
+
+
+        }
+
+        [HttpPost]
+        [Route("GetEncryptContractID")]
+        public IActionResult GetEncryptContractID([FromBody] VO targetString)
+        {
+            try
+            {
+                //Contract contract = new Contract();
+                //contract.ContractID = targetString.IntItem;
+                //var aaa = targetString.IntItem;
+                var encString = targetString.IntItem.EncryptKey();
+                //var encContractString = contract.ContractID.EncryptKey();
+                //var urlEncodeEncString = HttpUtility.UrlEncode(encString);
+                return Ok(encString);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return BadRequest();
+            }
+
+
+        }
     }
 }

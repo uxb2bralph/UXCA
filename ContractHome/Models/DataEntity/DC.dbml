@@ -18,6 +18,7 @@
       <Column Name="ContractNo" Type="System.String" DbType="NVarChar(64) NOT NULL" CanBeNull="false" />
       <Column Name="Title" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
       <Column Name="ContractContent" Type="System.Data.Linq.Binary" DbType="VarBinary(MAX)" CanBeNull="true" UpdateCheck="Never" />
+      <Column Name="IsJointContracting" Type="System.Boolean" DbType="Bit" CanBeNull="false" />
       <Association Name="Contract_ContractingParty" Member="ContractingParty" ThisKey="ContractID" OtherKey="ContractID" Type="ContractingParty" />
       <Association Name="Contract_ContractSignature" Member="ContractSignature" ThisKey="ContractID" OtherKey="ContractID" Type="ContractSignature" Cardinality="One" />
       <Association Name="Contract_ContractSignatureRequest" Member="ContractSignatureRequest" ThisKey="ContractID" OtherKey="ContractID" Type="ContractSignatureRequest" />
@@ -130,6 +131,8 @@
       <Column Name="InvoiceSignature" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
       <Column Name="UndertakerID" Type="System.String" DbType="NVarChar(16)" CanBeNull="true" />
       <Column Name="ContactTitle" Type="System.String" DbType="NVarChar(16)" CanBeNull="true" />
+      <Column Name="CompanyBelongTo" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="CanCreateContract" Storage="_CompanyBelongTo" Type="System.Boolean" DbType="Int" CanBeNull="true" />
       <Association Name="Organization_ContractingParty" Member="ContractingParty" ThisKey="CompanyID" OtherKey="CompanyID" Type="ContractingParty" />
       <Association Name="Organization_OrganizationUser" Member="OrganizationUser" ThisKey="CompanyID" OtherKey="CompanyID" Type="OrganizationUser" />
       <Association Name="Organization_CHT_Token" Member="CHT_Token" ThisKey="CompanyID" OtherKey="CompanyID" Type="CHT_Token" Cardinality="One" />
@@ -246,6 +249,22 @@
       <Column Name="PageIndex" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Association Name="Contract_ContractNoteRequest" Member="Contract" ThisKey="ContractID" OtherKey="ContractID" Type="Contract" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
       <Association Name="UserProfile_ContractNoteRequest" Member="UserProfile" ThisKey="StampUID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.ContractNoteRequest" Member="ContractSignaturePositionRequests">
+    <Type Name="ContractSignaturePositionRequest">
+      <Column Name="RequestID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="ContractID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="ContractorID" Type="System.Int32" DbType="varchar" CanBeNull="false" />
+      <Column Name="SealScale" Member="ScaleWidth" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="MarginTop" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="MarginLeft" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="PageIndex" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="PositionID" Type="System.String" DbType="NVarChar(32)" CanBeNull="false" />
+      <Column Name="SealScale" Member="ScaleHeight" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="Type" Storage="_ContractID" Type="System.Int32" DbType="Int" CanBeNull="false" />
+      <Association Name="Contract_ContractSignaturePositionRequest" Member="Contract" ThisKey="ContractID" OtherKey="ContractID" Type="Contract" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+      <Association Name="Organization_ContractSignaturePositionRequest" Member="Organization" ThisKey="ContractorID" OtherKey="CompanyID" Type="Organization" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
     </Type>
   </Table>
 </Database>

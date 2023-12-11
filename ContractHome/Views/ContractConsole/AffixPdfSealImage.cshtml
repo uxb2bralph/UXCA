@@ -563,7 +563,11 @@
   });
 
   // 簽約人資料清單
-  const dataContractor = @Html.Raw(models.GetTable<Organization>().Where(o => !userOrgItems.Any(u => u.CompanyID == o.CompanyID)).Select(u => new { id = u.CompanyID.EncryptKey(), text = u.CompanyName }).ToArray().JsonStringify());
+  const dataContractor = @Html.Raw(models.GetTable<Organization>()
+    .Where(o => !userOrgItems.Any(u => u.CompanyID == o.CompanyID))
+        .Where(y=> y.CompanyBelongTo.Equals(userOrgItems.FirstOrDefault().CompanyID))
+    .Select(u => new { id = u.CompanyID.EncryptKey(), text = u.CompanyName })
+    .ToArray().JsonStringify());
   @*[
     { id: 0, text: '網際優勢乙方公司' },
     { id: 1, text: '網際優勢丙方公司' },

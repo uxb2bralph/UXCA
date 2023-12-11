@@ -40,6 +40,7 @@ namespace ContractHome.Controllers
       _logger = logger;
     }
 
+    //remark for testing by postman
     //[RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
     public ActionResult MaintainData(QueryViewModel viewModel)
     {
@@ -193,7 +194,7 @@ namespace ContractHome.Controllers
                 return Json(new { result = false, message = ModelState.ErrorMessage() });
             }
 
-            var PID = userPasswordChange.EncPIDUrlDecode.DecryptData();
+            var PID = userPasswordChange.PID.DecryptData();
             var profile = UserProfileFactory.CreateInstance(
                 pid: PID,
                 password: userPasswordChange.OldPassword);

@@ -65,6 +65,9 @@ namespace ContractHome.Models.DataEntity
     partial void UpdateContractSignature(ContractSignature instance);
     partial void DeleteContractSignature(ContractSignature instance);
     partial void InsertContractSignatureRequest(ContractSignatureRequest instance);
+    partial void InsertContractSignaturePositionRequest(ContractSignaturePositionRequest instance);
+    partial void UpdateContractSignaturePositionRequest(ContractSignaturePositionRequest instance);
+    partial void DeleteContractSignaturePositionRequest(ContractSignaturePositionRequest instance);
     partial void UpdateContractSignatureRequest(ContractSignatureRequest instance);
     partial void DeleteContractSignatureRequest(ContractSignatureRequest instance);
     partial void InsertOrganizationToken(OrganizationToken instance);
@@ -195,8 +198,14 @@ namespace ContractHome.Models.DataEntity
 				return this.GetTable<ContractSignature>();
 			}
 		}
-		
-		public System.Data.Linq.Table<ContractSignatureRequest> ContractSignatureRequest
+        public System.Data.Linq.Table<ContractSignaturePositionRequest> ContractSignaturePositionRequest
+        {
+            get
+            {
+                return this.GetTable<ContractSignaturePositionRequest>();
+            }
+        }
+        public System.Data.Linq.Table<ContractSignatureRequest> ContractSignatureRequest
 		{
 			get
 			{
@@ -548,14 +557,18 @@ namespace ContractHome.Models.DataEntity
 		private string _ContractNo;
 		
 		private string _Title;
+
+		private System.Nullable<bool> _IsJointContracting;
 		
 		private System.Data.Linq.Binary _ContractContent;
 		
 		private EntitySet<ContractingParty> _ContractingParty;
 		
 		private EntityRef<ContractSignature> _ContractSignature;
-		
-		private EntitySet<ContractSignatureRequest> _ContractSignatureRequest;
+
+        private EntitySet<ContractSignaturePositionRequest> _ContractSignaturePositionRequest;
+
+        private EntitySet<ContractSignatureRequest> _ContractSignatureRequest;
 		
 		private EntitySet<ContractSealRequest> _ContractSealRequest;
 		
@@ -579,9 +592,12 @@ namespace ContractHome.Models.DataEntity
     partial void OnTitleChanged();
     partial void OnContractContentChanging(System.Data.Linq.Binary value);
     partial void OnContractContentChanged();
-    #endregion
-		
-		public Contract()
+
+    partial void OnIsJointContractingChanging(System.Nullable<bool> value);
+    partial void OnIsJointContractingChanged();
+        #endregion
+
+        public Contract()
 		{
 			this.Initialize();
 		}
@@ -694,8 +710,8 @@ namespace ContractHome.Models.DataEntity
 				}
 			}
 		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Contract_ContractingParty", Storage="_ContractingParty", ThisKey="ContractID", OtherKey="ContractID")]
+
+        [global::System.Data.Linq.Mapping.AssociationAttribute(Name="Contract_ContractingParty", Storage="_ContractingParty", ThisKey="ContractID", OtherKey="ContractID")]
 		[global::System.Runtime.Serialization.DataMemberAttribute(Order=6, EmitDefaultValue=false)]
 		public EntitySet<ContractingParty> ContractingParty
 		{
@@ -805,8 +821,48 @@ namespace ContractHome.Models.DataEntity
 				this._ContractNoteRequest.Assign(value);
 			}
 		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="CDS_Document_Contract", Storage="_CDS_Document", ThisKey="ContractID", OtherKey="DocID", IsForeignKey=true)]
+
+        [global::System.Data.Linq.Mapping.ColumnAttribute(Storage = "_IsJointContracting", DbType = "Bit")]
+        [global::System.Runtime.Serialization.DataMemberAttribute(Order = 12)]
+        public System.Nullable<bool> IsJointContracting
+        {
+            get
+            {
+                return this._IsJointContracting;
+            }
+            set
+            {
+                if ((this._IsJointContracting != value))
+                {
+                    this.OnIsJointContractingChanging(value);
+                    this.SendPropertyChanging();
+                    this._IsJointContracting = value;
+                    this.SendPropertyChanged("Disabled");
+                    this.OnIsJointContractingChanged();
+                }
+            }
+        }
+
+        [global::System.Data.Linq.Mapping.AssociationAttribute(Name = "Contract_ContractSignaturePositionRequest", Storage = "_ContractSignaturePositionRequest", ThisKey = "ContractID", OtherKey = "ContractID")]
+        [global::System.Runtime.Serialization.DataMemberAttribute(Order = 13, EmitDefaultValue = false)]
+        public EntitySet<ContractSignaturePositionRequest> ContractSignaturePositionRequest
+        {
+            get
+            {
+                if ((this.serializing
+                            && (this._ContractSignaturePositionRequest.HasLoadedOrAssignedValues == false)))
+                {
+                    return null;
+                }
+                return this._ContractSignaturePositionRequest;
+            }
+            set
+            {
+                this._ContractSignaturePositionRequest.Assign(value);
+            }
+        }
+
+        [global::System.Data.Linq.Mapping.AssociationAttribute(Name="CDS_Document_Contract", Storage="_CDS_Document", ThisKey="ContractID", OtherKey="DocID", IsForeignKey=true)]
 		public CDS_Document CDS_Document
 		{
 			get
@@ -907,12 +963,25 @@ namespace ContractHome.Models.DataEntity
 			this.SendPropertyChanging();
 			entity.Contract = null;
 		}
-		
-		private void Initialize()
+
+        private void attach_ContractSignaturePositionRequest(ContractSignaturePositionRequest entity)
+        {
+            this.SendPropertyChanging();
+            entity.Contract = this;
+        }
+
+        private void detach_ContractSignaturePositionRequest(ContractSignaturePositionRequest entity)
+        {
+            this.SendPropertyChanging();
+            entity.Contract = null;
+        }
+
+        private void Initialize()
 		{
 			this._ContractingParty = new EntitySet<ContractingParty>(new Action<ContractingParty>(this.attach_ContractingParty), new Action<ContractingParty>(this.detach_ContractingParty));
 			this._ContractSignature = default(EntityRef<ContractSignature>);
-			this._ContractSignatureRequest = new EntitySet<ContractSignatureRequest>(new Action<ContractSignatureRequest>(this.attach_ContractSignatureRequest), new Action<ContractSignatureRequest>(this.detach_ContractSignatureRequest));
+            this._ContractSignaturePositionRequest = new EntitySet<ContractSignaturePositionRequest>(new Action<ContractSignaturePositionRequest>(this.attach_ContractSignaturePositionRequest), new Action<ContractSignaturePositionRequest>(this.detach_ContractSignaturePositionRequest));
+            this._ContractSignatureRequest = new EntitySet<ContractSignatureRequest>(new Action<ContractSignatureRequest>(this.attach_ContractSignatureRequest), new Action<ContractSignatureRequest>(this.detach_ContractSignatureRequest));
 			this._ContractSealRequest = new EntitySet<ContractSealRequest>(new Action<ContractSealRequest>(this.attach_ContractSealRequest), new Action<ContractSealRequest>(this.detach_ContractSealRequest));
 			this._ContractNoteRequest = new EntitySet<ContractNoteRequest>(new Action<ContractNoteRequest>(this.attach_ContractNoteRequest), new Action<ContractNoteRequest>(this.detach_ContractNoteRequest));
 			this._CDS_Document = default(EntityRef<CDS_Document>);
@@ -1138,8 +1207,8 @@ namespace ContractHome.Models.DataEntity
 		private int _CompanyID;
 		
 		private int _IntentID;
-		
-		private System.Nullable<bool> _IsInitiator;
+
+        private System.Nullable<bool> _IsInitiator;
 		
 		private EntityRef<Contract> _Contract;
 		
@@ -2978,8 +3047,12 @@ namespace ContractHome.Models.DataEntity
 		private string _UndertakerID;
 		
 		private string _ContactTitle;
-		
-		private EntitySet<ContractingParty> _ContractingParty;
+
+        private System.Nullable<int> _CompanyBelongTo;
+
+        private System.Nullable<bool> _CanCreateContract;
+
+        private EntitySet<ContractingParty> _ContractingParty;
 		
 		private EntitySet<OrganizationUser> _OrganizationUser;
 		
@@ -3041,9 +3114,13 @@ namespace ContractHome.Models.DataEntity
     partial void OnUndertakerIDChanged();
     partial void OnContactTitleChanging(string value);
     partial void OnContactTitleChanged();
-    #endregion
-		
-		public Organization()
+    partial void OnCompanyBelongToeChanging(System.Nullable<int> value);
+    partial void OnCompanyBelongToChanged();
+    partial void OnCanCreateContractChanging(System.Nullable<bool> value);
+    partial void OnCanCreateContractChanged();
+        #endregion
+
+        public Organization()
 		{
 			this.Initialize();
 		}
@@ -3530,8 +3607,50 @@ namespace ContractHome.Models.DataEntity
 				}
 			}
 		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Organization_ContractingParty", Storage="_ContractingParty", ThisKey="CompanyID", OtherKey="CompanyID")]
+
+        [global::System.Data.Linq.Mapping.ColumnAttribute(Storage = "_CompanyBelongTo", DbType="Int")]
+        [global::System.Runtime.Serialization.DataMemberAttribute(Order = 29)]
+        public System.Nullable<int> CompanyBelongTo
+        {
+            get
+            {
+                return this._CompanyBelongTo;
+            }
+            set
+            {
+                if ((this._CompanyBelongTo != value))
+                {
+                    this.OnCompanyBelongToeChanging(value);
+                    this.SendPropertyChanging();
+                    this._CompanyBelongTo = value;
+                    this.SendPropertyChanged("CompanyBelongTo");
+                    this.OnCompanyBelongToChanged();
+                }
+            }
+        }
+
+        [global::System.Data.Linq.Mapping.ColumnAttribute(Storage = "_CanCreateContract", DbType = "Bit")]
+        [global::System.Runtime.Serialization.DataMemberAttribute(Order = 30)]
+        public System.Nullable<bool> CanCreateContract
+        {
+            get
+            {
+                return this._CanCreateContract;
+            }
+            set
+            {
+                if ((this._CanCreateContract != value))
+                {
+                    this.OnCanCreateContractChanging(value);
+                    this.SendPropertyChanging();
+                    this._CanCreateContract = value;
+                    this.SendPropertyChanged("CanCreateContract");
+                    this.OnCanCreateContractChanged();
+                }
+            }
+        }
+
+        [global::System.Data.Linq.Mapping.AssociationAttribute(Name="Organization_ContractingParty", Storage="_ContractingParty", ThisKey="CompanyID", OtherKey="CompanyID")]
 		[global::System.Runtime.Serialization.DataMemberAttribute(Order=24, EmitDefaultValue=false)]
 		public EntitySet<ContractingParty> ContractingParty
 		{
@@ -4172,8 +4291,328 @@ namespace ContractHome.Models.DataEntity
 			this.Initialize();
 		}
 	}
-	
-	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.ContractSignatureRequest")]
+
+    [global::System.Data.Linq.Mapping.TableAttribute(Name = "dbo.ContractSignaturePositionRequest")]
+    [global::System.Runtime.Serialization.DataContractAttribute()]
+    public partial class ContractSignaturePositionRequest : INotifyPropertyChanging, INotifyPropertyChanged
+    {
+
+        private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+
+        private int _RequestID;
+
+        private int _ContractID;
+
+        private int _ContractorID;
+
+        private string _PositionID;
+
+        private System.Nullable<double> _ScaleWidth;
+
+        private System.Nullable<double> _ScaleHeight;
+
+        private System.Nullable<double> _MarginTop;
+
+        private System.Nullable<double> _MarginLeft;
+
+        private System.Nullable<int> _Type;
+
+        private System.Nullable<int> _PageIndex;
+
+        private EntityRef<Contract> _Contract;
+
+        #region Extensibility Method Definitions
+        partial void OnLoaded();
+        partial void OnValidate(System.Data.Linq.ChangeAction action);
+        partial void OnCreated();
+        partial void OnRequestIDChanging(int value);
+        partial void OnRequestIDChanged();
+        partial void OnContractIDChanging(int value);
+        partial void OnContractIDChanged();
+        partial void OnContractorIDChanging(int value);
+        partial void OnContractorIDChanged();
+        partial void OnPositionIDChanging(string value);
+        partial void OnPositionIDChanged();
+        partial void OnScaleWidthChanging(System.Nullable<double> value);
+        partial void OnScaleWidthChanged();
+        partial void OnScaleHeightChanging(System.Nullable<double> value);
+        partial void OnScaleHeightChanged();
+        partial void OnMarginTopChanging(System.Nullable<double> value);
+        partial void OnMarginTopChanged();
+        partial void OnMarginLeftChanging(System.Nullable<double> value);
+        partial void OnMarginLeftChanged();
+        partial void OnTypeChanging(System.Nullable<int> value);
+        partial void OnTypeChanged();
+        partial void OnPageIndexChanging(System.Nullable<int> value);
+        partial void OnPageIndexChanged();
+        #endregion
+
+        public ContractSignaturePositionRequest()
+        {
+            this._Contract = default(EntityRef<Contract>);
+            OnCreated();
+        }
+
+        [Column(Storage = "_RequestID", AutoSync = AutoSync.OnInsert, DbType = "Int NOT NULL IDENTITY", IsPrimaryKey = true, IsDbGenerated = true)]
+        public int RequestID
+        {
+            get
+            {
+                return this._RequestID;
+            }
+            set
+            {
+                if ((this._RequestID != value))
+                {
+                    this.OnRequestIDChanging(value);
+                    this.SendPropertyChanging();
+                    this._RequestID = value;
+                    this.SendPropertyChanged("RequestID");
+                    this.OnRequestIDChanged();
+                }
+            }
+        }
+
+        [Column(Storage = "_ContractID", DbType = "Int NOT NULL")]
+        public int ContractID
+        {
+            get
+            {
+                return this._ContractID;
+            }
+            set
+            {
+                if ((this._ContractID != value))
+                {
+                    if (this._Contract.HasLoadedOrAssignedValue)
+                    {
+                        throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+                    }
+                    this.OnContractIDChanging(value);
+                    this.SendPropertyChanging();
+                    this._ContractID = value;
+                    this.SendPropertyChanged("ContractID");
+                    this.OnContractIDChanged();
+                }
+            }
+        }
+
+        [Column(Storage = "_ContractorID", DbType = "Int NOT NULL")]
+        public int ContractorID
+        {
+            get
+            {
+                return this._ContractorID;
+            }
+            set
+            {
+                if ((this._ContractorID != value))
+                {
+                    this.OnContractorIDChanging(value);
+                    this.SendPropertyChanging();
+                    this._ContractorID = value;
+                    this.SendPropertyChanged("ContractorID");
+                    this.OnContractorIDChanged();
+                }
+            }
+        }
+
+        [Column(Storage = "_PositionID", DbType = "VarChar(32) NOT NULL", CanBeNull = false)]
+        public string PositionID
+        {
+            get
+            {
+                return this._PositionID;
+            }
+            set
+            {
+                if ((this._PositionID != value))
+                {
+                    this.OnPositionIDChanging(value);
+                    this.SendPropertyChanging();
+                    this._PositionID = value;
+                    this.SendPropertyChanged("PositionID");
+                    this.OnPositionIDChanged();
+                }
+            }
+        }
+
+        [Column(Storage = "_ScaleWidth", DbType = "Float")]
+        public System.Nullable<double> ScaleWidth
+        {
+            get
+            {
+                return this._ScaleWidth;
+            }
+            set
+            {
+                if ((this._ScaleWidth != value))
+                {
+                    this.OnScaleWidthChanging(value);
+                    this.SendPropertyChanging();
+                    this._ScaleWidth = value;
+                    this.SendPropertyChanged("ScaleWidth");
+                    this.OnScaleWidthChanged();
+                }
+            }
+        }
+
+        [Column(Storage = "_ScaleHeight", DbType = "Float")]
+        public System.Nullable<double> ScaleHeight
+        {
+            get
+            {
+                return this._ScaleHeight;
+            }
+            set
+            {
+                if ((this._ScaleHeight != value))
+                {
+                    this.OnScaleHeightChanging(value);
+                    this.SendPropertyChanging();
+                    this._ScaleHeight = value;
+                    this.SendPropertyChanged("ScaleHeight");
+                    this.OnScaleHeightChanged();
+                }
+            }
+        }
+
+        [Column(Storage = "_MarginTop", DbType = "Float")]
+        public System.Nullable<double> MarginTop
+        {
+            get
+            {
+                return this._MarginTop;
+            }
+            set
+            {
+                if ((this._MarginTop != value))
+                {
+                    this.OnMarginTopChanging(value);
+                    this.SendPropertyChanging();
+                    this._MarginTop = value;
+                    this.SendPropertyChanged("MarginTop");
+                    this.OnMarginTopChanged();
+                }
+            }
+        }
+
+        [Column(Storage = "_MarginLeft", DbType = "Float")]
+        public System.Nullable<double> MarginLeft
+        {
+            get
+            {
+                return this._MarginLeft;
+            }
+            set
+            {
+                if ((this._MarginLeft != value))
+                {
+                    this.OnMarginLeftChanging(value);
+                    this.SendPropertyChanging();
+                    this._MarginLeft = value;
+                    this.SendPropertyChanged("MarginLeft");
+                    this.OnMarginLeftChanged();
+                }
+            }
+        }
+
+        [Column(Storage = "_Type", DbType = "SmallInt NOT NULL")]
+        public System.Nullable<int> Type
+        {
+            get
+            {
+                return this._Type;
+            }
+            set
+            {
+                if ((this._Type != value))
+                {
+                    this.OnTypeChanging(value);
+                    this.SendPropertyChanging();
+                    this._Type = value;
+                    this.SendPropertyChanged("Type");
+                    this.OnTypeChanged();
+                }
+            }
+        }
+
+        [Column(Storage = "_PageIndex", DbType = "Int")]
+        public System.Nullable<int> PageIndex
+        {
+            get
+            {
+                return this._PageIndex;
+            }
+            set
+            {
+                if ((this._PageIndex != value))
+                {
+                    this.OnPageIndexChanging(value);
+                    this.SendPropertyChanging();
+                    this._PageIndex = value;
+                    this.SendPropertyChanged("PageIndex");
+                    this.OnPageIndexChanged();
+                }
+            }
+        }
+
+        [Association(Name = "FK_ContractSignaturePositionRequest_Contract", Storage = "_Contract", ThisKey = "ContractID", OtherKey = "ContractID", IsForeignKey = true, DeleteOnNull = true)]
+        public Contract Contract
+        {
+            get
+            {
+                return this._Contract.Entity;
+            }
+            set
+            {
+                Contract previousValue = this._Contract.Entity;
+                if (((previousValue != value)
+                            || (this._Contract.HasLoadedOrAssignedValue == false)))
+                {
+                    this.SendPropertyChanging();
+                    if ((previousValue != null))
+                    {
+                        this._Contract.Entity = null;
+                        previousValue.ContractSignaturePositionRequest.Remove(this);
+                    }
+                    this._Contract.Entity = value;
+                    if ((value != null))
+                    {
+                        value.ContractSignaturePositionRequest.Add(this);
+                        this._ContractID = value.ContractID;
+                    }
+                    else
+                    {
+                        this._ContractID = default(int);
+                    }
+                    this.SendPropertyChanged("Contract");
+                }
+            }
+        }
+
+        public event PropertyChangingEventHandler PropertyChanging;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void SendPropertyChanging()
+        {
+            if ((this.PropertyChanging != null))
+            {
+                this.PropertyChanging(this, emptyChangingEventArgs);
+            }
+        }
+
+        protected virtual void SendPropertyChanged(String propertyName)
+        {
+            if ((this.PropertyChanged != null))
+            {
+                this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+
+    [global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.ContractSignatureRequest")]
 	[global::System.Runtime.Serialization.DataContractAttribute()]
 	public partial class ContractSignatureRequest : INotifyPropertyChanging, INotifyPropertyChanged
 	{

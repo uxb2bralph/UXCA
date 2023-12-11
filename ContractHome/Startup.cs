@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using ContractHome.Properties;
 using ContractHome.Models.Email;
 using ContractHome.Models.Email.Template;
-
+using CommonLib.DataAccess;
+using ContractHome.Models.DataEntity;
+using ContractHome.Models.Helper;
 
 namespace WebHome
 {
@@ -94,10 +96,12 @@ namespace WebHome
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
             services.AddOptions<MailSettings>().BindConfiguration("MailSettings");
-            services.AddSingleton<IMailService, MailService>();
-            services.AddSingleton<EmailDataFactory>();
+            services.AddScoped<IMailService, MailService>();
+            services.AddScoped<EmailDataFactory>();
             services.AddScoped<EmailBodyTemplate>();
             //services.AddSingleton<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
+            //services.AddSingleton<GenericManager<DCDataContext>>();
+            //services.AddScoped<ContractRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

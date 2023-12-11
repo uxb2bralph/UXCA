@@ -1,4 +1,5 @@
-﻿using MailKit.Net.Smtp;
+﻿using CommonLib.Core.Utility;
+using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
@@ -16,8 +17,8 @@ namespace ContractHome.Models.Email
 
         public async Task<bool> SendMailAsync(MailData mailData, CancellationToken ct = default)
         {
-            //try
-            //{
+            try
+            {
                 // Initialize a new instance of the MimeKit.MimeMessage class
                 var mail = new MimeMessage();
 
@@ -89,11 +90,12 @@ namespace ContractHome.Models.Email
 
                 return true;
 
-            //}
-            //catch (Exception)
-            //{
-            //    return false;
-            //}
+            }
+            catch (Exception ex)
+            {
+                FileLogger.Logger.Error(ex.ToString());
+                return false;
+            }
         }
 
     }
