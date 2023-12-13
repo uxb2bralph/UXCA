@@ -21,7 +21,7 @@ namespace ContractHome.Controllers
     public class ContractConsoleController : SampleController
     {
         private readonly ILogger<HomeController> _logger;
-        private UserProfileRepository? _userProfileRepository;
+        private UserRepository? _userProfileRepository;
         private ContractRepository? _contractRepository;
         public ContractConsoleController(ILogger<HomeController> logger,
             IServiceProvider serviceProvider) : base(serviceProvider)
@@ -167,29 +167,6 @@ namespace ContractHome.Controllers
                 return Json(new { result = false, message = "身份驗證失敗." });
             }
 
-            //wait to do:未做TRANSACTION處理, 檢查提前做, 避免只完成部份Contractor
-            for (int i = 0; i < viewModel.Contractors!.Length; i++)
-            {
-                if (string.IsNullOrEmpty(viewModel.Contractors[i].Contractor)
-                    || string.IsNullOrEmpty(viewModel.Initiator))
-                {
-                    ModelState.AddModelError("Initiator", "起約人或簽約人ID空白!!");
-                    break;
-                }
-
-                var contractorID = viewModel.Contractors[i].ContractorID;
-                var initiatorID = viewModel.InitiatorID!.Value;
-
-                if (contractorID == initiatorID)
-                {
-                    ModelState.AddModelError("Initiator", $"起約人{initiatorID}不可和簽約對象{contractorID}相同.");
-                }
-            }
-
-            //if (viewModel.Initiator != null)
-            //{
-            //    viewModel.InitiatorID = viewModel.Initiator.DecryptKeyValue();
-            //}
             if (!viewModel.InitiatorID.HasValue)
             {
                 ModelState.AddModelError("Initiator", "請選擇合約發起人!!");
@@ -198,6 +175,27 @@ namespace ContractHome.Controllers
             if (!(viewModel.Contractors?.Length > 0))
             {
                 ModelState.AddModelError("Contractor", "請選擇簽約人!!");
+            }
+            else
+            {
+                //wait to do:未做TRANSACTION處理, 檢查提前做, 避免只完成部份Contractor
+                for (int i = 0; i < viewModel.Contractors!.Length; i++)
+                {
+                    if (string.IsNullOrEmpty(viewModel.Contractors[i].Contractor)
+                        || string.IsNullOrEmpty(viewModel.Initiator))
+                    {
+                        ModelState.AddModelError("Initiator", "起約人或簽約人ID空白!!");
+                        break;
+                    }
+
+                    var contractorID = viewModel.Contractors[i].ContractorID;
+                    var initiatorID = viewModel.InitiatorID!.Value;
+
+                    if (contractorID == initiatorID)
+                    {
+                        ModelState.AddModelError("Initiator", $"起約人{initiatorID}不可和簽約對象{contractorID}相同.");
+                    }
+                }
             }
 
             viewModel.KeyID = viewModel.KeyID.GetEfficientString();
@@ -416,6 +414,10 @@ namespace ContractHome.Controllers
             items = items.Where(c => docItems.Any(d => d.DocID == c.ContractID));
 
             viewModel.RecordCount = items?.Count();
+
+            UserRepository userRepository = 
+                new UserRepository(models: models, pid: profile.PID);
+            ViewBag.CanCreateContract = userRepository.CanCreateContract;
 
             if (viewModel.PageIndex.HasValue)
             {

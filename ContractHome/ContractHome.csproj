@@ -8,12 +8,16 @@
 
   <ItemGroup>
     <Compile Remove="bin\Debug\net6.0\**" />
+    <Compile Remove="Views\EmailTemplate\**" />
     <Compile Remove="wwwroot\logs\**" />
     <Content Remove="bin\Debug\net6.0\**" />
+    <Content Remove="Views\EmailTemplate\**" />
     <Content Remove="wwwroot\logs\**" />
     <EmbeddedResource Remove="bin\Debug\net6.0\**" />
+    <EmbeddedResource Remove="Views\EmailTemplate\**" />
     <EmbeddedResource Remove="wwwroot\logs\**" />
     <None Remove="bin\Debug\net6.0\**" />
+    <None Remove="Views\EmailTemplate\**" />
     <None Remove="wwwroot\logs\**" />
   </ItemGroup>
 
@@ -38,7 +42,6 @@
     <Folder Include="bin\Debug\" />
     <Folder Include="Helper\Security\Authorization\" />
     <Folder Include="Security\" />
-    <Folder Include="Views\EmailTemplate\" />
   </ItemGroup>
 
   <ItemGroup>
