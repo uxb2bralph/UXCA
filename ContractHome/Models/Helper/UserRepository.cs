@@ -18,11 +18,15 @@ namespace ContractHome.Models.Helper
             _models = models;
             UserProfileManager userProfile = new UserProfileManager();
             _userProfile = userProfile.GetUserProfileByPID(pid);
-            _organization = _userProfile.OrganizationUser.Organization;
+            if (!this.IsSystemAdmin)
+            { 
+                _organization = _userProfile?.OrganizationUser.Organization;
+            }
         }
 
         public UserProfile? UserProfile => _userProfile;
         public bool CanCreateContract => _organization?.CanCreateContract??false;
+        public bool IsSystemAdmin => (_userProfile?.UserRole.Where(x => x.RoleID == 0).Count()>0);
         public UserProfile? SaveContract()
         {
             _models.SubmitChanges();
