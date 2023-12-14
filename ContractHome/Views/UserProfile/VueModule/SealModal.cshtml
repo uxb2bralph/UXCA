@@ -33,7 +33,8 @@
           <ul class="nav nav-pills nav-pill" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
               <button class="nav-link fw-bolder px-5 active" id="seal-tab" data-bs-toggle="tab" data-bs-target="#seal"
-                type="button" role="tab" aria-controls="seal" aria-selected="true">印鑑圖檔</button>
+                type="button" role="tab" aria-controls="seal" aria-selected="true"
+                onclick="stampHandler();">印鑑圖檔</button>
             </li>
             <li class="nav-item" role="presentation">
               <button class="nav-link fw-bolder px-5" id="signature-tab" data-bs-toggle="tab"
@@ -51,7 +52,7 @@
               <div class="row g-3">
                 @if (_model != null)
                 {
-                  foreach (var item in _model.Where(s=>s.FilePath!=null))
+                  foreach (var item in _model.Where(s => s.FilePath != null))
                   {
                     await Html.RenderPartialAsync("~/Views/UserProfile/VueModule/SealModalItem.cshtml", item);
                   }
@@ -74,6 +75,7 @@
           </div>
           <div class="tab-pane fade" id="signature" role="tabpanel" aria-labelledby="signature-tab">
             <form method="post" enctype="multipart/form-data" class="pt-3 pb-5 text-center">
+              <!-- 簽名區 -->
               <div id="signatureCanvas" class="card d-inline-flex" style="min-width: 600px;">
                 <canvas></canvas>
               </div>
@@ -96,7 +98,7 @@
             <div class="row g-3" id="addSignature">
               @if (_model != null)
               {
-                foreach (var item in _model.Where(s=>s.FilePath==null))
+                foreach (var item in _model.Where(s => s.FilePath == null))
                 {
                   await Html.RenderPartialAsync("~/Views/UserProfile/VueModule/SealModalItem.cshtml", item);
                 }
@@ -113,12 +115,18 @@
     $('#sealModal').modal('show');
   });
 
+  // 使用印章
+  function stampHandler() {
+    $global.viewModel.stampType = 'seal';
+  };
+
   var signaturePanelReady;
   // 使用簽名
   function signatureHandler() {
-      if(signaturePanelReady) {
-          return;
-      }
+    $global.viewModel.stampType = 'signature';
+    if (signaturePanelReady) {
+      return;
+    }
     setTimeout(() => {
       const signatureCanvas = document.querySelector("#signatureCanvas");
       var signatureWidth = signatureCanvas.offsetWidth;
@@ -132,7 +140,7 @@
         minWidth: 4,
         maxWidth: 10,
         color: '#000000',
-        bgColor: '#efefef'
+        bgColor: '#ffffff'
       }
       // SmoothSignature Canvas 畫面生成
       var signature = new SmoothSignature(canvas, options);

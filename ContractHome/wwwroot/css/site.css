@@ -455,13 +455,12 @@ html, body {
   padding: 30px 10px;
   height: 100%;
   display: block;
-  text-align: center;
   overflow-y: auto;
   background-color: #fbf8f8;
 }
 
 .vmSeal {
-  padding: 5px;
+  padding: 2px;
   border-radius: 5px;
   border-bottom-right-radius: 0;
   height: 120px;
@@ -473,7 +472,6 @@ html, body {
 }
 
 .vmNote {
-  padding: 5px;
   border-radius: 5px;
   border-bottom-right-radius: 0;
   height: 100px;
