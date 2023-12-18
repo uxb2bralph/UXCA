@@ -25,6 +25,7 @@
   // await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
   await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgent.cshtml");
   await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
+  <script src="~/js/api.js"></script>
 }
 <div id="listToStampIndex" class="container-lg py-5">
   <!-- 合約資料列表 -->
@@ -382,7 +383,7 @@
                   </div>
                 </div>
                 <div class="col-md-12">
-                  <input v-model="formData.isSameFile" type="checkbox" class="form-check-input me-1"
+                  <input v-model="formData.IsJointContracting" type="checkbox" class="form-check-input me-1"
                     id="isInitiatorStamp" name="IgnoreSeal" />
                   <label class="form-check-label fw-bolder" for="isInitiatorStamp">
                     多人簽署同一份文件
@@ -644,7 +645,6 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body text-center h5 fw-bolder pt-5">
-          <div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div>
           <div v-html="infoMsg"></div>
         </div>
         <div class="modal-footer border-top-0 justify-content-center">
@@ -743,23 +743,11 @@
         * @@param {boolean} desc 排序
         */
         initialFormData: {
-          uuid: null,
-          No: null,
-          ContractDateFrom: null,
-          ContractDateTo: null,
+          KeyID: null,
           ContractNo: '',
           Title: '',
-          Initiator: null,
-          Contractor: null,
-          isSameFile: false,
+          IsJointContracting: false,
         },
-        contractor: [
-          {
-            uuid: null,
-            company: "0",
-            companyEmail: null,
-          }
-        ],
         formData: {},
         /** 分頁 options
         * totalRecordCount: 總筆數
@@ -786,8 +774,6 @@
         signerStatusData: {},
         historyData: {},
         stopContractData: {},
-        alertActived: false,
-        contractorMag: null,
         isTitle: true,
         isContractNo: true,
         ViewModel: {},
@@ -947,13 +933,6 @@
       },
       initContract() {
         this.formData = JSON.parse(JSON.stringify(this.initialFormData));
-        this.contractor = [{
-          uuid: ui_uuid8(),
-          company: "0",
-          companyEmail: null,
-        }];
-        this.contractorMag = null;
-        this.alertActived = false;
       },
 
       // 查詢合約列表
@@ -1007,8 +986,6 @@
       // 新增合約 Modal
       addHandler() {
         $('#addNewModal').modal('show');
-        // 新增時加入一筆uuid
-        this.formData.uuid = ui_uuid();
       },
 
       // 輸入 合約名稱 欄位驗證
@@ -1029,36 +1006,26 @@
         if (!this.formData.Title) return;
         if (!this.formData.ContractNo) return;
 
-        var viewModel = { ...this.formData };
+        const { ContractNo, KeyID, Title, IsJointContracting } = this.formData;
+        const payload = { ContractNo, KeyID, Title, IsJointContracting };
         const self = this;
 
         showLoading();
-        $.ajax({
-          type: 'POST',
-          url: '@(Url.Action("VueApplyContract", "ContractConsole"))',
-          data: JSON.stringify(viewModel),
-          type: "POST",
-          //dataType: "json",
-          contentType: "application/json;charset=utf-8",
-          success: function (data) {
-            hideLoading();
-            if ($.isPlainObject(data)) {
-              if (data.result) {
-                $('#addProjectModal').modal('hide');
-                affixPdfSeal(viewModel.KeyID);
-              } else {
-                alertModal(data.message);
-              }
+        postData('@(Url.Action("VueApplyContract", "ContractConsole"))', payload)
+          .then((data) => {
+            this.changeStatus = data.result;
+            if ($.isPlainObject(data) && data.result) {
+              // 成功
+              hideLoading();
+              $('#addProjectModal').modal('hide');
+              affixPdfSeal(payload.KeyID);
             } else {
-              $(data).appendTo($('body')).remove();
+              // 失敗            
+              this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;
+              $("#infoModal").modal("show");
             }
-          },
-          error: function (xhr, ajaxOptions, thrownError) {
-            hideLoading();
-            console.log(xhr.status);
-            console.log(thrownError);
-          }
-        });
+
+          })
       },
 
       // 用印
