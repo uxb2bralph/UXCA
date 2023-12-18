@@ -108,7 +108,7 @@ namespace ContractHome.Models.Helper
 
                 foreach (var note in contract.ContractNoteRequest)
                 {
-                    ApplyStamp(pdf, note.Note, note.MarginLeft, note.MarginTop, note.PageIndex);
+                    ApplyStamp(pdf, note.Note, note.MarginLeft, note.MarginTop, note.PageIndex, note.SealScale);
                 }
 
                 //pdf.SaveAs(Path.Combine(FileLogger.Logger.LogDailyPath, $"DBG-{contract.ContractID:00000000}.pdf"));
@@ -138,7 +138,7 @@ namespace ContractHome.Models.Helper
             }
         }
 
-        private static void ApplyStamp(PdfDocument pdf, String text, double? marginLeft, double? marginTop, int? pageIndex)
+        private static void ApplyStamp(PdfDocument pdf, String text, double? marginLeft, double? marginTop, int? pageIndex, double? width)
         {
             var backgroundStamp = new HtmlStamper($"<div>{text}</div>")
             {
@@ -148,6 +148,7 @@ namespace ContractHome.Models.Helper
                 VerticalAlignment = IronPdf.Editing.VerticalAlignment.Top,
                 HorizontalAlignment = IronPdf.Editing.HorizontalAlignment.Left,
                 IsStampBehindContent = true,
+                MaxWidth = new Length(unit: MeasurementUnit.Centimeter) { Value = width ?? 0, }
             };
             pdf.ApplyStamp(backgroundStamp, pageIndex ?? 0);
         }
