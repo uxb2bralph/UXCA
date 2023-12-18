@@ -501,6 +501,34 @@ html, body {
   }
 }
 
+.bd-orange-100 {
+  padding: 4px 10px;
+  color: #666666;
+  background-color: #eeeeee;
+  border: #eeeeee solid 1px;
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: left;
+
+  &:hover {
+    background-color: #eeeeee;
+    border-color: #eeeeee;
+  }
+
+  &.active {
+    outline: #eeeeee 4px double;
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 0.25rem rgba(241, 215, 159, 0.25);
+    outline: #eeeeee 4px double !important;
+  }
+
+  &.disabled {
+    pointer-events: none;
+  }
+}
+
 .btn {
   &--size-20 {
     width: 20px;
@@ -595,7 +623,7 @@ html, body {
   height: 120px;
   width: 170px;
   display: block;
-  background: rgba(74, 146, 253, 0.3);
+  background: rgba(132, 181, 253, 0.5);
   position: absolute;
   cursor: move;
 }
@@ -617,7 +645,7 @@ html, body {
   }
 }
 
-// 虛擬縮放區塊
+// 虛擬縮放按鈕
 .vmScale {
   height: 15px;
   width: 15px;
@@ -630,7 +658,7 @@ html, body {
   cursor: se-resize;
 }
 
-// 虛擬刪除區塊
+// 虛擬刪除按鈕
 .vmDelete {
   padding: 0;
   height: 24px;
@@ -647,7 +675,7 @@ html, body {
   }
 }
 
-// 虛擬套用區塊
+// 虛擬套用按鈕
 .vmUse {
   padding: 0;
   height: 25px;
@@ -659,7 +687,7 @@ html, body {
   box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.35);
 }
 
-// 虛擬套用區塊
+// 虛擬套用全部按鈕
 .vmUseAll {
   padding: 0 5px;
   height: 25px;
@@ -668,6 +696,61 @@ html, body {
   top: -28px;
   right: 55px;
   box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.35);
+}
+
+// 虛擬圈選區塊
+.vmBox {
+  &__wrapper {
+    padding: 2px;
+    display: flex;
+    height: 50px;
+    width: 170px;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed #0d6efd;
+    border-radius: 5px;
+    //border-bottom-right-radius: 0;
+    background: rgba(132, 181, 253, 0.5);
+    position: absolute;
+    cursor: move;
+  }
+  &__realBox {
+    padding: 2px;
+    display: flex;
+    height: 50px;
+    width: 170px;
+    align-items: center;
+    justify-content: center;
+    border: 2px sold #0d6efd;
+    border-radius: 5px;
+    border-bottom-right-radius: 0;
+    background: rgba(132, 181, 253, 0.5);
+    position: absolute;
+    cursor: move;
+
+  }
+  &__note {
+    color: #FFFFFF;
+    font-weight: 700;
+    font-size: 1.5rem;
+  }
+  &__subtext {
+    position: absolute;
+    bottom: -22px;
+    left: 0;
+    white-space: nowrap;
+    font-size: 13px;
+    color: #666666;
+  }
+  &__arrow {
+    padding: 0;
+    height: 24px;
+    width: 24px;
+    display: block;
+    position: absolute;
+    top: -25px;
+    left: -18px;
+  }
 }
 
 // 印鑑檔管理

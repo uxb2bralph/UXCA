@@ -397,6 +397,30 @@ html, body {
   outline: #b02a37 4px double !important;
 }
 
+.bd-orange-100 {
+  padding: 4px 10px;
+  color: #666666;
+  background-color: #eeeeee;
+  border: #eeeeee solid 1px;
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: left;
+}
+.bd-orange-100:hover {
+  background-color: #eeeeee;
+  border-color: #eeeeee;
+}
+.bd-orange-100.active {
+  outline: #eeeeee 4px double;
+}
+.bd-orange-100:focus {
+  box-shadow: 0 0 0 0.25rem rgba(241, 215, 159, 0.25);
+  outline: #eeeeee 4px double !important;
+}
+.bd-orange-100.disabled {
+  pointer-events: none;
+}
+
 .btn--size-20 {
   width: 20px;
   height: 20px;
@@ -466,7 +490,7 @@ html, body {
   height: 120px;
   width: 170px;
   display: block;
-  background: rgba(74, 146, 253, 0.3);
+  background: rgba(132, 181, 253, 0.5);
   position: absolute;
   cursor: move;
 }
@@ -532,6 +556,56 @@ html, body {
   top: -28px;
   right: 55px;
   box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.35);
+}
+
+.vmBox__wrapper {
+  padding: 2px;
+  display: flex;
+  height: 50px;
+  width: 170px;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #0d6efd;
+  border-radius: 5px;
+  background: rgba(132, 181, 253, 0.5);
+  position: absolute;
+  cursor: move;
+}
+.vmBox__realBox {
+  padding: 2px;
+  display: flex;
+  height: 50px;
+  width: 170px;
+  align-items: center;
+  justify-content: center;
+  border: 2px sold #0d6efd;
+  border-radius: 5px;
+  border-bottom-right-radius: 0;
+  background: rgba(132, 181, 253, 0.5);
+  position: absolute;
+  cursor: move;
+}
+.vmBox__note {
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+.vmBox__subtext {
+  position: absolute;
+  bottom: -22px;
+  left: 0;
+  white-space: nowrap;
+  font-size: 13px;
+  color: #666666;
+}
+.vmBox__arrow {
+  padding: 0;
+  height: 24px;
+  width: 24px;
+  display: block;
+  position: absolute;
+  top: -25px;
+  left: -18px;
 }
 
 .inputSale {
