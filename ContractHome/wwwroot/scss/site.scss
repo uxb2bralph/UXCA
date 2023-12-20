@@ -596,6 +596,12 @@ html, body {
       z-index: 10;
     }
   }
+
+  &__list {
+    max-height: 145px;
+    overflow: hidden;
+    overflow-y: auto;
+  }
 }
 // 用印簽名區
 #signatureCanvas {
@@ -709,25 +715,25 @@ html, body {
     justify-content: center;
     border: 2px dashed #0d6efd;
     border-radius: 5px;
-    //border-bottom-right-radius: 0;
-    background: rgba(132, 181, 253, 0.5);
+    // border-bottom-right-radius: 0;
+    background: rgba(132, 181, 253, .5);
     position: absolute;
-    cursor: move;
-  }
-  &__realBox {
-    padding: 2px;
-    display: flex;
-    height: 50px;
-    width: 170px;
-    align-items: center;
-    justify-content: center;
-    border: 2px sold #0d6efd;
-    border-radius: 5px;
-    border-bottom-right-radius: 0;
-    background: rgba(132, 181, 253, 0.5);
-    position: absolute;
-    cursor: move;
-
+    cursor: move;&--bg00 {
+        border: 2px dashed #0d6efd;
+        background: rgba(132, 181, 253, .5);
+      }
+    &--bg00 {
+      border: 2px dashed #0d6efd;
+      background: rgba(132, 181, 253, .5);
+    }
+    &--bg01 {
+      border: 2px dashed #fdad0d;
+      background: rgba(253, 227, 132, 0.584);
+    }
+    &--bg02 {
+      border: 2px dashed #13e232;
+      background: rgba(142, 253, 132, 0.5);
+    }
   }
   &__note {
     color: #FFFFFF;
@@ -751,6 +757,107 @@ html, body {
     top: -25px;
     left: -18px;
   }
+  &__scale {
+    height: 15px;
+    width: 15px;
+    display: block;
+    position: absolute;
+    right: -7px;
+    bottom: -6px;
+    border-bottom: #6495ED 3px solid;
+    border-right: #6495ED 3px solid;
+    cursor: se-resize;
+  }
+  &__delete {
+    padding: 0;
+    height: 24px;
+    width: 24px;
+    display: block;
+    position: absolute;
+    border-radius: 50%;
+    top: -15px;
+    left: -14px;
+    border: 2px solid #FF5722;
+    background-color: #FFFFFF;
+    color: #FF5722;
+    box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.35);
+  
+    &:hover {
+      background-color: #FF5722;
+      color: #FFFFFF;
+    }
+  }
+  &__check {
+    padding: 0;
+    height: 24px;
+    width: 24px;
+    display: block;
+    position: absolute;
+    border-radius: 50%;
+    top: -15px;
+    right: -12px;
+    border: 2px solid #15a340;
+    background-color: #FFFFFF;
+    color: #15a340;
+    box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.35);
+  
+    &:hover {
+      background-color: #15a340;
+      color: #FFFFFF;
+    }
+  }
+  &__edit {
+    padding: 0;
+    height: 24px;
+    width: 24px;
+    display: block;
+    position: absolute;
+    border-radius: 50%;
+    top: -15px;
+    right: -12px;
+    border: 2px solid #186ac7;
+    background-color: #FFFFFF;
+    color: #186ac7;
+    box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.35);
+
+    &:hover {
+      background-color: #186ac7;
+      color: #FFFFFF;
+    }
+  }
+}
+.bd-00 {
+  border-left: 8px solid #4e90f1;
+  &:hover {
+    border-left: 8px solid #4e90f1;
+    background-color: #e2e2e2;
+  }
+}
+
+.bd-01 {
+  border-left: 8px solid #eb9c42;
+  &:hover {
+    border-left: 8px solid #eb9c42;
+    background-color: #e2e2e2;
+  }
+}
+
+.bd-02 {
+  border-left: 8px solid #49c271;  
+  &:hover {
+    border-left: 8px solid #49c271;
+    background-color: #e2e2e2;
+  }
+}
+
+.hide {
+  display: none;
+}
+.show {
+  display: block;
+}
+.disabled {
+  pointer-events: none;
 }
 
 // 印鑑檔管理
