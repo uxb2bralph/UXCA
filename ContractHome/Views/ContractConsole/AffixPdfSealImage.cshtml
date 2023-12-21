@@ -34,6 +34,9 @@
   var pageCount = _model.GetPdfPageCount();
 }
 <div id="AffixPdfSealImage" class="container-fluid py-4 pb-3">
+    <div>
+        <input type="text" id="EComID" name="EComID" value="@(party?.CompanyID.EncryptKey())" hidden />
+    </div>
   <section>
     <!-- 標題 - 甲方 / 乙方 -->
     <div class="d-flex justify-content-between align-items-center pe-4">
