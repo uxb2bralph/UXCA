@@ -25,6 +25,7 @@
   // await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
   await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgent.cshtml");
   await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
+  <script src="~/js/api.js"></script>
 }
 <div id="listToStampIndex" class="container-lg py-5">
   <!-- 合約資料列表 -->
@@ -354,50 +355,48 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form v-on:submit.prevent>
-            <div class="container">
-              <div class="row row-cols-1 m-3 mb-lg-0 data-item">
-                <div class="col input__height">
-                  <div class="row">
-                    <label for="Title" class="col-sm-12 col-md-3 col-form-label fw-bolder">合約名稱</label>
-                    <div class="col-sm-12 col-md-9">
-                      <input v-model="formData.Title" type="text" class="form-control" id="Title" required />
-                      <div class="invalid-feedback">
-                        請輸入合約名稱
-                      </div>
-                    </div>
+          <div class="container">
+            <form novalidate>
+              <div class="row g-3">
+                <div class="col-md-12">
+                  <label for="Title" class="form-label fw-bolder text-primary">合約名稱</label>
+                  <input v-model="formData.Title" type="text" class="form-control" :class="{'is-invalid': !isTitle}"
+                    id="Title" v-on:keyup="checkTitle(formData.Title)">
+                  <div class="invalid-feedback">
+                    請輸入合約名稱
                   </div>
                 </div>
-                <div class="col input__height">
-                  <div class="row">
-                    <label for="ContractNo" class="col-sm-12 col-md-3 col-form-label fw-bolder">合約編號</label>
-                    <div class="col-sm-12 col-md-9">
-                      <input v-model="formData.ContractNo" type="text" class="form-control" id="ContractNo"
-                        v-on:keyup="checkContractNo" required />
-                      <div class="invalid-feedback">
-                        請輸入合約編號
-                      </div>
-                    </div>
+                <div class="col-md-12">
+                  <label for="ContractNo" class="form-label fw-bolder text-primary">合約編號</label>
+                  <input v-model="formData.ContractNo" type="text" class=" form-control"
+                    :class="{'is-invalid': !isContractNo}" id="ContractNo"
+                    v-on:keyup="checkContractNo(formData.ContractNo)">
+                  <div class="invalid-feedback">
+                    請輸入合約編號
                   </div>
                 </div>
-                <div class="col input__height">
-                  <div class="row align-items-center">
-                    <label for="FileTitle" class="col-sm-12 col-md-3 col-form-label fw-bolder">合約內容</label>
-                    <div class="col-sm-12 col-md-9">
-                      <span class="pe-3 fw-bolder">{{ formData.FileTitle }}</span>
-                      <br>
-                      <span class="text-muted">( {{ (formData.Size / 1024000).toFixed(2) }} M )</span>
-                    </div>
+                <div class="col-md-12">
+                  <label for="ContractNo" class="form-label fw-bolder text-primary">檔案名稱</label>
+                  <div class="mb-4">
+                    <span class="pe-3 fw-bolder">{{ formData.FileTitle }}</span>
+                    <span class="text-muted">( {{ (formData.Size / 1024000).toFixed(2) }} M )</span>
                   </div>
+                </div>
+                <div class="col-md-12">
+                  <input v-model="formData.IsJointContracting" type="checkbox" class="form-check-input me-1"
+                    id="isInitiatorStamp" name="IgnoreSeal" />
+                  <label class="form-check-label fw-bolder" for="isInitiatorStamp">
+                    多人簽署同一份文件
+                  </label>
                 </div>
               </div>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary opacity-75" data-bs-dismiss="modal">取消</button>
-          <button type="button" class="btn btn-primary" :class="{'disabled': !isContractNo}"
-            v-on:click="editContract">下一步</button>
+          <button type="button" class="btn btn-secondary opacity-75" data-bs-dismiss="modal"
+            v-on:click="initContract">取消</button>
+          <button type="button" class="btn btn-primary" v-on:click="saveContractNo">下一步</button>
         </div>
       </div>
     </div>
@@ -646,7 +645,6 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body text-center h5 fw-bolder pt-5">
-          <div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div>
           <div v-html="infoMsg"></div>
         </div>
         <div class="modal-footer border-top-0 justify-content-center">
@@ -720,57 +718,66 @@
     isContractor: false, // 是否為乙方
     },
     ];*@
+  const companyList = [
+    { text: 'A 公司', value: 'a', email: 'aa@aa.com' },
+    { text: 'B 公司', value: 'b', email: 'bb@bb.com' },
+    { text: 'C 公司', value: 'c', email: 'cc@cc.com' },
+  ];
   const contractList = [];
   var app = new Vue({
     el: '#listToStampIndex',
-    data: {
-      /**
-       * 合約表單
-       * @@param {string} No 合約號碼
-       * @@param {string} ContractDateFrom 建檔起日
-       * @@param {string} ContractDateTo 建檔迄日
-       * @@param {string} Initiator 起約人
-       * @@param {string} Contractor 簽約人
-       * @@param {string} pageSize 每頁筆數
-       * @@param {string} page 目前頁面
-       * @@param {string} sort 排序欄位
-       * @@param {boolean} desc 排序
-       */
-      initialFormData: {
-        uuid: null,
-        No: null,
-        ContractDateFrom: null,
-        ContractDateTo: null,
-        Initiator: null,
-        Contractor: null
-      },
-      formData: {},
-      /** 分頁 options
-       * totalRecordCount: 總筆數
-       * pageSize: 每頁筆數
-       * totalPages: 總頁數
-       * page: 目前頁面
-       */
-      totalRecordCount: 0,
-      pageSize: 10,
-      page: 1,
-      sort: null,
-      desc: true,
-      SortName: [],
-      SortType: [],
-      contractList,
-      isSortDateFrom: true,
-      isSortNo: true,
-      isUpload: true,
-      currentCompanyData: {},
-      signerMessage: null,
-      infoMsg: null,
-      isUploadFile: false,
-      uploadFileMsg: null,
-      signerStatusData: {},
-      historyData: {},
-      stopContractData: {},
-      isContractNo: false
+    data() {
+      return {
+        isValidate: false,
+        companyList,
+        /**
+        * 合約表單
+        * @@param {string} No 合約號碼
+        * @@param {string} ContractDateFrom 建檔起日
+        * @@param {string} ContractDateTo 建檔迄日
+        * @@param {string} Initiator 起約人
+        * @@param {string} Contractor 簽約人
+        * @@param {string} pageSize 每頁筆數
+        * @@param {string} page 目前頁面
+        * @@param {string} sort 排序欄位
+        * @@param {boolean} desc 排序
+        */
+        initialFormData: {
+          KeyID: null,
+          ContractNo: '',
+          Title: '',
+          IsJointContracting: false,
+        },
+        formData: {},
+        /** 分頁 options
+        * totalRecordCount: 總筆數
+        * pageSize: 每頁筆數
+        * totalPages: 總頁數
+        * page: 目前頁面
+        */
+        totalRecordCount: 0,
+        pageSize: 10,
+        page: 1,
+        sort: null,
+        desc: true,
+        SortName: [],
+        SortType: [],
+        contractList,
+        isSortDateFrom: true,
+        isSortNo: true,
+        isUpload: true,
+        currentCompanyData: {},
+        signerMessage: null,
+        infoMsg: null,
+        isUploadFile: false,
+        uploadFileMsg: null,
+        signerStatusData: {},
+        historyData: {},
+        stopContractData: {},
+        isTitle: true,
+        isContractNo: true,
+        ViewModel: {},
+      };
     },
     computed: {
       // 計算總頁數
@@ -790,7 +797,8 @@
       }
 
       // 初始化新增合約表單
-      this.formData = JSON.parse(JSON.stringify(this.initialFormData));
+      this.initContract();
+      // 查詢合約表單
       this.inquireData();
 
       if (this.isUpload) {
@@ -828,10 +836,9 @@
               }
             });
             this.on("addedfile", function (file) {
-              console.log(file.status);
+              // console.log('文件上傳狀態:', file.status);
             });
             this.on("complete", function (file) {
-              console.log("complete", file.status);
               if (file.status === 'error') {
                 // 顯示錯誤訊息，2 秒後自動消失
                 self.isUploadFile = true;
@@ -841,7 +848,6 @@
                   self.uploadFileMsg = null;
                 }, 2000);
 
-                // 測試用
                 const projectName = file.name.split('.');
                 self.isUpload = false;
                 self.formData = {
@@ -851,13 +857,13 @@
                   FileTitle: file.name,
                   Title: projectName[0]
                 };
+
                 $('#addNewModal').modal('hide');
                 $('#addProjectModal').modal('show');
-                // 測試用
               } else {
-                // 伺服器處理檔案儲存
-
-                // 前端畫面切換，資料傳遞
+                /** 伺服器處理檔案儲存
+                  * 前端畫面切換，資料傳遞
+                  */
                 const projectName = file.name.split('.');
                 self.isUpload = false;
                 self.formData = {
@@ -925,6 +931,9 @@
         const tourguide = new Tourguide({ steps: this.contractList.length > 0 ? steps : stepOnly });
         tourguide.start();
       },
+      initContract() {
+        this.formData = JSON.parse(JSON.stringify(this.initialFormData));
+      },
 
       // 查詢合約列表
       inquireData() {
@@ -977,44 +986,53 @@
       // 新增合約 Modal
       addHandler() {
         $('#addNewModal').modal('show');
-        // 新增時加入一筆uuid
-        this.formData.uuid = ui_uuid();
       },
-      // 編輯合約
-      editContract() {
-        var viewModel = { ...this.formData };
+
+      // 輸入 合約名稱 欄位驗證
+      checkTitle(title) {
+        this.isTitle = title && title.length > 0;
+      },
+
+      // 輸入 合約編號 欄位驗證
+      checkContractNo(contractNo) {
+        this.isContractNo = contractNo && contractNo.length > 0;
+      },
+
+      // 儲存合約編號
+      saveContractNo() {
+        // 檢核欄位
+        this.checkTitle(this.formData.Title);
+        this.checkContractNo(this.formData.ContractNo);
+        if (!this.formData.Title) return;
+        if (!this.formData.ContractNo) return;
+
+        const { ContractNo, KeyID, Title, IsJointContracting } = this.formData;
+        const payload = { ContractNo, KeyID, Title, IsJointContracting };
+        const self = this;
 
         showLoading();
-        $.ajax({
-          type: 'POST',
-          url: '@(Url.Action("VueApplyContract", "ContractConsole"))',
-          data: JSON.stringify(viewModel),
-          type: "POST",
-          //dataType: "json",
-          contentType: "application/json;charset=utf-8",
-          success: function (data) {
-            hideLoading();
-            if ($.isPlainObject(data)) {
-              if (data.result) {
-                affixPdfSeal(viewModel.KeyID);
-              } else {
-                alertModal(data.message);
-              }
+        postData('@(Url.Action("VueApplyContract", "ContractConsole"))', payload)
+          .then((data) => {
+            this.changeStatus = data.result;
+            if ($.isPlainObject(data) && data.result) {
+              // 成功
+              hideLoading();
+              $('#addProjectModal').modal('hide');
+              affixPdfSeal(payload.KeyID);
             } else {
-              $(data).appendTo($('body')).remove();
+              // 失敗            
+              this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;
+              $("#infoModal").modal("show");
             }
-          },
-          error: function (xhr, ajaxOptions, thrownError) {
-            hideLoading();
-            console.log(xhr.status);
-            console.log(thrownError);
-          }
-        });
+
+          })
       },
+
       // 用印
       stampHandler(contract, rule) {
         affixPdfSeal(contract.KeyID);
       },
+
       // 開啟簽署 Modal
       signerHandler(contract, rule) {
         this.signerMessage = contract[rule];
@@ -1022,19 +1040,12 @@
 
         $('#signModal').modal('show');
       },
+
       // 簽署
       confirmSign(currentCompanyData) {
         const payload = currentCompanyData;
         $('#signModal').modal('hide');
-  @*showLoading();
-          setTimeout(() => {
-          console.log(payload);
-          hideLoading();
-          this.infoMsg = '數位簽章已完成';
-          this.signerMessage = null;
-          $('#infoModal').modal('show');
-          }, 2000);*@
-          commitDigitalSignature(currentCompanyData.KeyID);
+        commitDigitalSignature(currentCompanyData.KeyID);
       },
       // 排序功能
       sortHandler(dataField, status, sortStatus) {
@@ -1070,30 +1081,6 @@
 
         // contract 帶入 historyData 中
         this.historyData = contract;
-  @*{
-          uuid: '555',
-          No: 'CS-000100004',
-          Title: '測試很重要的一份合約-5',
-          ContractDateFrom: '2023/08/25 10:58:20',
-          CurrentEditDate: '2023/08/25 12:58:20',
-          Initiator: '網際優勢甲方公司',
-          Contractor: '網際優勢乙方股份有限公司',
-
-          isInitiator: true, // 是否為甲方
-          isContractor: false, // 是否為乙方
-          LogList: [
-          {
-          time: '2023/08/25 10:58:20',
-          action: '瀏覽',
-          role: 'isInitiator'
-          },
-          {
-          time: '2023/08/25 12:58:20',
-          action: '用印',
-          role: 'isContractor'
-          }
-          ]
-          }*@
       },
 
       // 開啟終止合約 Modal
@@ -1102,7 +1089,6 @@
         console.log({ contract });
 
         this.stopContractData = contract;
-  @*this.stopContractData.Title = "測試很重要的一份合約";*@
       },
 
       // 終止合約料串API
@@ -1110,27 +1096,11 @@
         console.log('contractData:', contractData);
 
         $("#stopContractModal").modal('hide');
-
-  @*showLoading();
-          setTimeout(() => {
-          // 模擬假資料被終止
-
-          hideLoading();
-          // 開啟訊息視窗
-          this.infoMsg = `<span class='text-primary opacity-75'>" ${this.stopContractData.Title} "</span> 合約已終止`;
-          $('#infoModal').modal('show');
-          }, 2000);  *@
-          terminateContract(contractData.KeyID);
-      },
-
-      // 檢查新增合約編號有沒有填寫
-      checkContractNo() {
-        this.isContractNo = this.formData.ContractNo.length > 0;
+        terminateContract(contractData.KeyID);
       },
 
       // 下載檔案
       downloadPdf(contract) {
-        console.log({ contract });
         showContract(contract.KeyID, @((int)DataResultMode.Download));
       },
 
@@ -1196,11 +1166,9 @@
     $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "ContractConsole"))', { 'KeyID': keyID, 'ResultMode': mode });
   }
 
-
   function affixPdfSeal(keyID) {
     $('').launchDownload('@Html.Raw(Url.Action("AffixPdfSeal", "ContractConsole"))', { 'KeyID': keyID });
   }
-
 
   function commitDigitalSignature(keyID) {
     showLoading();
