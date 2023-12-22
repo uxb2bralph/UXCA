@@ -360,8 +360,8 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body pb-0">
-          <input type="text" v-model:trim="noteItem" id="noteItem" name="inputText" class="form-control"
-            v-on:keyup="addNote">
+          <textarea type="text" v-model:trim="noteItem" id="noteItem" name="inputText" class="form-control"
+            v-on:keyup="addNote"></textarea>
         </div>
         <div class="modal-footer border-top-0 justify-content-center">
           <button type="button" id="noteItemBtn" class="btn btn-primary opacity-75"
@@ -984,15 +984,19 @@
           <button id="useAllNote-${uuid}" class="btn btn-success opacity-75 btn-sm vmUseAll"> 套用文件 </button>
           <button id="useNote-${uuid}" class="btn btn-success opacity-75 btn-sm vmUse"> 套用 </utton>`;
 
+
         const self = this;
         const note = document.querySelector(`#${uuid}`);
         const textInput = document.querySelector(`#note-${uuid}-text`);
+        console.log('height:', textInput.height)
+        note.style.height = `${textInput.offsetHeight}px`;
         // textInput.style.left = `calc(100px)`;
         // textInput.style.top = `calc(10px)`;
         this.currentSeal.MarginTop = (note.offsetTop / 37.7).toFixed(2);
         this.currentSeal.MarginLeft = (note.offsetLeft / 37.7).toFixed(2);
+        this.currentSeal.SealScale = 100; // 目前寬度取值用這個
         this.currentSeal.Width = 170;
-        this.currentSeal.Height = 100;
+        //this.currentSeal.Height = 100;
 
         // 滑鼠拖曳效果
         note.onmousedown = (ev) => {
@@ -1087,8 +1091,8 @@
           // 設置文字區塊的最大寬高
           // w = w >= contractArea.offsetWidth - note.offsetLeft ? contractArea.offsetWidth - note.offsetLeft : w < 170 ? 170 : w;
           // h = h >= contractArea.offsetHeight - note.offsetTop ? contractArea.offsetHeight - note.offsetTop : h < noteHeight + 5 ? noteHeight + 15 : h;
-          note.style.width = w + 'px';
-          note.style.height = h + 'px';
+          note.style.width = `${w}px`;
+          note.style.height = h > textInput.offsetHeight ? `${h}px` : `${textInput.offsetHeight}px`;
           self.currentSeal.Width = w;
           self.currentSeal.Height = h;
         }
@@ -1154,8 +1158,8 @@
           PageIndex: this.selectedPage - 1,
           MarginLeft: Number(this.currentSeal.MarginLeft),
           MarginTop: Number(this.currentSeal.MarginTop),
-          Width: Number(this.currentSeal.Width),
-          Height: Number(this.currentSeal.Height),
+          SealScale: (Number(this.currentSeal.Width) / 37.795).toFixed(2),
+          //height: (Number(this.currentSeal.Height) / 37.795).toFixed(2),
         }
         console.log('viewModel:', payload);
         showLoading();
