@@ -117,6 +117,8 @@ namespace ContractHome.Controllers
     public class ContractBase
     {
         [JsonProperty]
+        public Contract Contract { get; set; }
+        [JsonProperty]
         public string KeyID { get; set; }
         [JsonProperty]
         public string ContractNo { get; set; }
@@ -132,6 +134,7 @@ namespace ContractHome.Controllers
 
         public ContractBase(Contract contract, int? userCompanyID = null)
         {
+            Contract = contract;
             KeyID = contract.ContractID.EncryptKey();
             ContractNo = contract.ContractNo;
             Title = contract.Title;
