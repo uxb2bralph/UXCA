@@ -155,84 +155,47 @@ namespace ContractHome.Models.Helper
             return _contract;
         }
 
-        public class Contractor
-        { 
-            public IEnumerable<ContractSignaturePositionResponse>? contractSignaturePositions { get; set; }
+        //public class Contractor
+        //{ 
+        //    public IEnumerable<ContractSignaturePositionResponse>? contractSignaturePositions { get; set; }
 
-            public Contractor(List<ContractSignaturePositionRequest>? 
-                contractSignaturePositionRequests)
-            {
-                //原ContractSignaturePositionRequest沒有constructor, 也沒有get;set;且不是public, 無法用Newtonsoft.JsonConvert
-                this.contractSignaturePositions = contractSignaturePositionRequests?
-                    .Select(x => new ContractSignaturePositionResponse(
-                        requestID: x.RequestID, 
-                        contract: x.ContractID.EncryptKey(),
-                        contractor: x.ContractorID.EncryptKey(), 
-                        positionID: x.PositionID, 
-                        scaleWidth:x.ScaleWidth!.Value, scaleHeight:x.ScaleHeight!.Value,
-                        marginTop:x.MarginTop!.Value, marginLeft:x.MarginLeft!.Value, 
-                        type:x.Type!.Value, pageIndex:x.PageIndex!.Value));
-            }
-        }
-
-        public class ContractSignaturePositionResponse
-        {
-            [JsonIgnore]
-            public int RequestID { get; set; }
-            public string Contract { get; set; }
-            public string Contractor { get; set; }
-            public string PositionID { get; set; }
-
-            public double ScaleWidth { get; set; }
-
-            public double ScaleHeight { get; set; }
-
-            public double MarginTop { get; set; }
-
-            public double MarginLeft { get; set; }
-
-            public int Type { get; set; }
-
-            public int PageIndex { get; set; }
+        //    public Contractor(List<ContractSignaturePositionRequest>? 
+        //        contractSignaturePositionRequests)
+        //    {
+        //        //原ContractSignaturePositionRequest沒有constructor, 也沒有get;set;且不是public, 無法用Newtonsoft.JsonConvert
+        //        this.contractSignaturePositions = contractSignaturePositionRequests?
+        //            .Select(x => new ContractSignaturePositionResponse(
+        //                //requestID: x.RequestID, 
+        //                //contract: x.ContractID.EncryptKey(),
+        //                //contractor: x.ContractorID.EncryptKey(), 
+        //                //positionID: x.PositionID, 
+        //                //scaleWidth:x.ScaleWidth!.Value, scaleHeight:x.ScaleHeight!.Value,
+        //                //marginTop:x.MarginTop!.Value, marginLeft:x.MarginLeft!.Value, 
+        //                //type:x.Type!.Value, pageIndex:x.PageIndex!.Value)
+        //            ));
+        //    }
+        //}
 
 
-            public ContractSignaturePositionResponse(int requestID, string contract,
-                string contractor, string positionID, double scaleWidth, double scaleHeight, 
-                double marginTop, double marginLeft, int type, int pageIndex)
-
-                {
-                RequestID = requestID;
-                Contract = contract;
-                Contractor = contractor;
-                PositionID = positionID;
-                ScaleWidth = scaleWidth;
-                ScaleHeight = scaleHeight;
-                MarginTop = marginTop;
-                MarginLeft = marginLeft;
-                Type = type;
-                PageIndex = pageIndex;
-            }
-        }
-
-        public Contractor GetContractor(int contractorID)
-        {
-            if (_contract == null) 
-            {
-                throw new ArgumentNullException();
-            }
+        //public Contractor GetContractor(int contractorID)
+        //{
+        //    if (_contract == null) 
+        //    {
+        //        throw new ArgumentNullException();
+        //    }
 
 
-            var signaturePositions = 
-                _contract
-                .ContractSignaturePositionRequest.Where(x => x.ContractorID == contractorID)
-                .ToList();
-            Contractor contractor = new Contractor(signaturePositions);
+        //    var signaturePositions = 
+        //        _contract
+        //        .ContractSignaturePositionRequest.Where(x => x.ContractorID == contractorID)
+        //        .ToList();
+        //    Contractor contractor = new Contractor(signaturePositions);
 
-            //_contract
-            //    .ContractSignatureRequest.Where(x => x.CompanyID == contractorID);
+        //    //_contract
+        //    //    .ContractSignatureRequest.Where(x => x.CompanyID == contractorID);
 
-            return contractor;
-        }
+        //    return contractor;
+        //}
 
         public Contract? SaveContract()
         {
@@ -241,4 +204,5 @@ namespace ContractHome.Models.Helper
             return _contract;
         }
     }
+
 }

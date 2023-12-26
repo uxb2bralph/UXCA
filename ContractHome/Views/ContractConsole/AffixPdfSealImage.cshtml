@@ -16,32 +16,30 @@
 
   ModelStateDictionary _modelState;
   ModelSource? models;
-  Contract _model = (Contract)this.Model;
+  ContractWithRefsResponse _model = (ContractWithRefsResponse)this.Model;
+  /*
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
 
-  models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
-  _modelState = (ModelStateDictionary)ViewBag.ModelState;
-  QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
-
-  var profile = await Context.GetUserAsync();
-  var party = models!.GetTable<ContractingParty>()
-  .Where(p => p.ContractID == _model.ContractID)
-  .Where(p => models.GetTable<OrganizationUser>()
-  .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
-  .FirstOrDefault();
+    var profile = await Context.GetUserAsync();
+    var party = models!.GetTable<ContractingParty>()
+    .Where(p => p.ContractID == _model.ContractID)
+    .Where(p => models.GetTable<OrganizationUser>()
+    .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
+    .FirstOrDefault();
 
 
-  var contractData = @Html.Raw(_model.JsonStringify());
-  var partyData = @Html.Raw(party.JsonStringify());
-  var pageCount = _model.GetPdfPageCount();
+    var contractData = @Html.Raw(_model.JsonStringify());
+    var partyData = @Html.Raw(party.JsonStringify());
+    var pageCount = _model.GetPdfPageCount();
+            */
 }
 @{
   await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
   <script src="~/js/api.js"></script>
 }
 <div id="AffixPdfSealImage" class="container-fluid py-4 pb-3">
-    <div>
-        <input type="text" id="EComID" name="EComID" value="@(party?.CompanyID.EncryptKey())" hidden />
-    </div>
   <section>
     <!-- 標題 - 甲方 / 乙方 -->
     <div class="d-flex justify-content-between align-items-center pe-4">
