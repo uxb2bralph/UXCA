@@ -155,48 +155,6 @@ namespace ContractHome.Models.Helper
             return _contract;
         }
 
-        //public class Contractor
-        //{ 
-        //    public IEnumerable<ContractSignaturePositionResponse>? contractSignaturePositions { get; set; }
-
-        //    public Contractor(List<ContractSignaturePositionRequest>? 
-        //        contractSignaturePositionRequests)
-        //    {
-        //        //原ContractSignaturePositionRequest沒有constructor, 也沒有get;set;且不是public, 無法用Newtonsoft.JsonConvert
-        //        this.contractSignaturePositions = contractSignaturePositionRequests?
-        //            .Select(x => new ContractSignaturePositionResponse(
-        //                //requestID: x.RequestID, 
-        //                //contract: x.ContractID.EncryptKey(),
-        //                //contractor: x.ContractorID.EncryptKey(), 
-        //                //positionID: x.PositionID, 
-        //                //scaleWidth:x.ScaleWidth!.Value, scaleHeight:x.ScaleHeight!.Value,
-        //                //marginTop:x.MarginTop!.Value, marginLeft:x.MarginLeft!.Value, 
-        //                //type:x.Type!.Value, pageIndex:x.PageIndex!.Value)
-        //            ));
-        //    }
-        //}
-
-
-        //public Contractor GetContractor(int contractorID)
-        //{
-        //    if (_contract == null) 
-        //    {
-        //        throw new ArgumentNullException();
-        //    }
-
-
-        //    var signaturePositions = 
-        //        _contract
-        //        .ContractSignaturePositionRequest.Where(x => x.ContractorID == contractorID)
-        //        .ToList();
-        //    Contractor contractor = new Contractor(signaturePositions);
-
-        //    //_contract
-        //    //    .ContractSignatureRequest.Where(x => x.CompanyID == contractorID);
-
-        //    return contractor;
-        //}
-
         public Contract? SaveContract()
         {
             _models.SubmitChanges();

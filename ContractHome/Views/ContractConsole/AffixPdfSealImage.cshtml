@@ -29,7 +29,7 @@
     .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
     .FirstOrDefault();
     
-    var contractRefs = new ContractRefs(_model, party.CompanyID);
+    var contractRefs = new ContractRefs(_model, "SignaturePositions", party.CompanyID);
 
     var contractData = @Html.Raw(_model.JsonStringify());
     var partyData = @Html.Raw(party.JsonStringify());
