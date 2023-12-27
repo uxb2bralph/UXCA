@@ -12,12 +12,12 @@
 @using Newtonsoft.Json
 
 @{
-  Layout = "~/Views/Shared/MasterPage.cshtml";
+    Layout = "~/Views/Shared/MasterPage.cshtml";
 
-  ModelStateDictionary _modelState;
-  ModelSource? models;
-  ContractWithRefsResponse _model = (ContractWithRefsResponse)this.Model;
-  /*
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+    Contract _model = (Contract)this.Model;
+
     models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
     _modelState = (ModelStateDictionary)ViewBag.ModelState;
     QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
@@ -28,12 +28,13 @@
     .Where(p => models.GetTable<OrganizationUser>()
     .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
     .FirstOrDefault();
-
+    
+    var contractRefs = new ContractRefs(_model, party.CompanyID);
 
     var contractData = @Html.Raw(_model.JsonStringify());
     var partyData = @Html.Raw(party.JsonStringify());
     var pageCount = _model.GetPdfPageCount();
-            */
+    var contractRefsJson = @Html.Raw(contractRefs.JsonStringify());
 }
 @{
   await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");

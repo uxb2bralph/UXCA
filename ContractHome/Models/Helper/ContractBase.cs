@@ -1,31 +1,30 @@
 ﻿using ContractHome.Helper;
 using ContractHome.Models.DataEntity;
-using ContractHome.Models.Helper;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Newtonsoft.Json;
 
-namespace ContractHome.Controllers
+namespace ContractHome.Models.Helper
 {
     public class PartyBase
     {
-        public PartyBase(Contract contract, 
-            ContractingParty contractingParty, 
+        public PartyBase(Contract contract,
+            ContractingParty contractingParty,
             int? userCompanyID = null)
         {
 
             var initiatContractSignatureRequest =
                 contract.ContractSignatureRequest.Where(x => x.CompanyID == contractingParty.CompanyID).FirstOrDefault();
-            
+
             ID = contractingParty.CompanyID;
             KeyID = contractingParty.CompanyID.EncryptKey();
             Name = contractingParty.Organization.CompanyName;
-            StampDate = ((initiatContractSignatureRequest.StampDate.HasValue) ?
-                initiatContractSignatureRequest?.StampDate.Value.ToString("yyyy/MM/dd HH:mm") : string.Empty);
-            SignerDate = ((initiatContractSignatureRequest.SignatureDate.HasValue) ?
-                initiatContractSignatureRequest?.SignatureDate.Value.ToString("yyyy/MM/dd HH:mm") : string.Empty);
-            SignerID = (initiatContractSignatureRequest?.UserProfile?.PID ?? string.Empty);
+            StampDate = initiatContractSignatureRequest.StampDate.HasValue ?
+                initiatContractSignatureRequest?.StampDate.Value.ToString("yyyy/MM/dd HH:mm") : string.Empty;
+            SignerDate = initiatContractSignatureRequest.SignatureDate.HasValue ?
+                initiatContractSignatureRequest?.SignatureDate.Value.ToString("yyyy/MM/dd HH:mm") : string.Empty;
+            SignerID = initiatContractSignatureRequest?.UserProfile?.PID ?? string.Empty;
             isInitiator = contractingParty.IsInitiator ?? false;
-            IsCurrentUserCompany = (userCompanyID != null) ? (ID == userCompanyID) : false;
+            IsCurrentUserCompany = userCompanyID != null ? ID == userCompanyID : false;
         }
 
         [JsonIgnore]
@@ -50,14 +49,14 @@ namespace ContractHome.Controllers
 
     }
 
-    public class PartyRefs: PartyBase
+    public class PartyRefs : PartyBase
     {
         [JsonProperty]
         public List<SignaturePositionBase> SignaturePositions { get; set; }
 
         public PartyRefs(Contract contract,
             ContractingParty contractingParty,
-            int? userCompanyID = null) :base(contract, contractingParty, userCompanyID)
+            int? userCompanyID = null) : base(contract, contractingParty, userCompanyID)
         {
             SignaturePositions = contract.ContractSignaturePositionRequest.Select(x =>
                 new SignaturePositionBase(
@@ -102,12 +101,12 @@ namespace ContractHome.Controllers
         }
     }
 
-    public class ContractWithRefsResponse: ContractBase
+    public class ContractRefs : ContractBase
     {
         [JsonProperty]
         public List<PartyRefs> Parties { get; set; }
 
-        public ContractWithRefsResponse(Contract contract, int? userCompanyID = null):base(contract)
+        public ContractRefs(Contract contract, int? userCompanyID = null) : base(contract)
         {
             Parties = contract.ContractingParty.Select(x => new PartyRefs(contract, x, userCompanyID)).ToList();
         }
@@ -116,8 +115,6 @@ namespace ContractHome.Controllers
 
     public class ContractBase
     {
-        [JsonProperty]
-        public Contract Contract { get; set; }
         [JsonProperty]
         public string KeyID { get; set; }
         [JsonProperty]
@@ -134,7 +131,6 @@ namespace ContractHome.Controllers
 
         public ContractBase(Contract contract, int? userCompanyID = null)
         {
-            Contract = contract;
             KeyID = contract.ContractID.EncryptKey();
             ContractNo = contract.ContractNo;
             Title = contract.Title;

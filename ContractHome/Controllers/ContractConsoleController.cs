@@ -484,29 +484,6 @@ namespace ContractHome.Controllers
             return Json(new { result = true });
         }
 
-        //public IActionResult GetContractor([FromBody] SignContractViewModel viewModel)
-        //{
-        //    if (viewModel.KeyID == null)
-        //    {
-        //        return Json(new { result = false, message = "驗證失敗." });
-        //    }
-
-        //    try
-        //    {
-        //        var contractID = viewModel.KeyID.DecryptKeyValue();
-        //        _contractRepository = new ContractRepository(models, contractID);
-        //        var contractor = _contractRepository.GetContractor(viewModel.ContractorID!.Value);
-        //        var jsonContractor = new { result = true, dataItem = contractor };
-        //        return Json(jsonContractor);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        FileLogger.Logger.Error(ex);
-        //        return Json(new { result = false, message = "驗證失敗." });
-        //    }
-
-        //}
-
         public async Task<ActionResult> InquireDataAsync([FromBody] ContractQueryViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
@@ -738,7 +715,7 @@ namespace ContractHome.Controllers
         }
 
 
-        public async Task<ActionResult> AffixPdfSeal(SignatureRequestViewModel viewModel)
+        public ActionResult AffixPdfSeal(SignatureRequestViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
 
@@ -752,35 +729,12 @@ namespace ContractHome.Controllers
                                 .Where(c => c.ContractID == contractID)
                                 .FirstOrDefault();
 
-            var profile = await HttpContext.GetUserAsync();
-            int? uid = profile?.UID;
-            #region add for postman test
-            if (uid == null)
-            {
-                uid = Int32.Parse(HttpUtility.UrlDecode(viewModel.EncUID!).DecryptData());
-            }
-            #endregion
-            if (uid == null)
-            {
-                return new BadRequestResult();
-            }
-            var orgUsers = models.GetTable<OrganizationUser>()
-                    .Where(c => c.UID == uid)
-                    .FirstOrDefault();
-
-            if (orgUsers == null) 
-            { 
-                return new BadRequestResult(); 
-            }
-            ContractWithRefsResponse response = 
-                new ContractWithRefsResponse(contract:item, orgUsers.Organization.CompanyID);
-
-            if (response == null)
+            if (item == null)
             {
                 return new BadRequestResult();
             }
 
-            return View("~/Views/ContractConsole/AffixPdfSealImage.cshtml", response);
+            return View("~/Views/ContractConsole/AffixPdfSealImage.cshtml", item);
 
         }
 
@@ -923,7 +877,7 @@ namespace ContractHome.Controllers
                 return Json(new { result = false, message = "請設定上邊界位置!!" });
             }
 
-            ViewResult? result = await AffixPdfSeal(viewModel) as ViewResult;
+            ViewResult? result = AffixPdfSeal(viewModel) as ViewResult;
             if (result == null)
             {
                 return Json(new { result = false, message = "資料錯誤!!" });
@@ -998,7 +952,7 @@ namespace ContractHome.Controllers
                 return Json(new { result = false, message = "請設定上邊界位置!!" });
             }
 
-            ViewResult? result = await AffixPdfSeal(viewModel) as ViewResult;
+            ViewResult? result = AffixPdfSeal(viewModel) as ViewResult;
             if (result == null)
             {
                 return Json(new { result = false, message = "資料錯誤!!" });
@@ -1048,7 +1002,7 @@ namespace ContractHome.Controllers
 
         public async Task<ActionResult> ResetPdfSignatureAsync(SignatureRequestViewModel viewModel)
         {
-            ViewResult? result = await AffixPdfSeal(viewModel) as ViewResult;
+            ViewResult? result = AffixPdfSeal(viewModel) as ViewResult;
             if (result == null)
             {
                 return Json(new { result = false, message = "資料錯誤!!" });
@@ -1083,7 +1037,7 @@ namespace ContractHome.Controllers
 
         public async Task<ActionResult> AbortContractAsync(SignatureRequestViewModel viewModel)
         {
-            ViewResult? result = await AffixPdfSeal(viewModel) as ViewResult;
+            ViewResult? result = AffixPdfSeal(viewModel) as ViewResult;
             if (result == null)
             {
                 return Json(new { result = false, message = "資料錯誤!!" });
@@ -1104,7 +1058,7 @@ namespace ContractHome.Controllers
 
         public async Task<ActionResult> DeleteContract(SignatureRequestViewModel viewModel)
         {
-            ViewResult? result = await AffixPdfSeal(viewModel) as ViewResult;
+            ViewResult? result = AffixPdfSeal(viewModel) as ViewResult;
             if (result == null)
             {
                 return Json(new { result = false, message = "資料錯誤!!" });
