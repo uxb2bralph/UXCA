@@ -12,29 +12,29 @@
 @using Newtonsoft.Json
 
 @{
-    Layout = "~/Views/Shared/MasterPage.cshtml";
+  Layout = "~/Views/Shared/MasterPage.cshtml";
 
-    ModelStateDictionary _modelState;
-    ModelSource? models;
-    Contract _model = (Contract)this.Model;
+  ModelStateDictionary _modelState;
+  ModelSource? models;
+  Contract _model = (Contract)this.Model;
 
-    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
-    _modelState = (ModelStateDictionary)ViewBag.ModelState;
-    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+  models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+  _modelState = (ModelStateDictionary)ViewBag.ModelState;
+  QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
 
-    var profile = await Context.GetUserAsync();
-    var party = models!.GetTable<ContractingParty>()
-    .Where(p => p.ContractID == _model.ContractID)
-    .Where(p => models.GetTable<OrganizationUser>()
-    .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
-    .FirstOrDefault();
-    
-    var contractRefs = new ContractRefs(_model, party.CompanyID);
+  var profile = await Context.GetUserAsync();
+  var party = models!.GetTable<ContractingParty>()
+  .Where(p => p.ContractID == _model.ContractID)
+  .Where(p => models.GetTable<OrganizationUser>()
+  .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
+  .FirstOrDefault();
 
-    var contractData = @Html.Raw(_model.JsonStringify());
-    var partyData = @Html.Raw(party.JsonStringify());
-    var pageCount = _model.GetPdfPageCount();
-    var contractRefsJson = @Html.Raw(contractRefs.JsonStringify());
+  var contractRefs = new ContractRefs(_model, party?.CompanyID);
+
+  var contractData = @Html.Raw(_model.JsonStringify());
+  //var partyData = @Html.Raw(party.JsonStringify());
+  // var pageCount = _model.GetPdfPageCount();
+  var contractRefsJson = @Html.Raw(contractRefs.JsonStringify());
 }
 @{
   await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
@@ -45,9 +45,9 @@
     <!-- 標題 - 甲方 / 乙方 -->
     <div class="d-flex justify-content-between align-items-center pe-4">
       <h4 class="mb-3 fw-bolder">
-        {{ isNew ? '建立新合約' : isInitiator ? '起約人用印' : '簽署人用印'}}
+        {{ isNew ? '建立新合約' : '簽署人用印'}} {{ isContractorEmpty}}
       </h4>
-      <div v-if="isNew || isInitiator" id="editTourbutton" class="mb-2 tooltip__wrapper ms-auto">
+      <div v-if="isNew" id="editTourbutton" class="mb-2 tooltip__wrapper ms-auto">
         <button type="button" class="px-1 btn btn-lg btn-warning rounded-pill opacity-75" style="width: 48px;"
           v-on:click="tourHandler">
           <i class="far fa-street-view"></i>
@@ -73,7 +73,7 @@
         <div class="contract__arrow--right">
           <button type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="下一頁"
             class="btn btn-primary rounded-pill opacity-50"
-            :class="{'btn-secondary opacity-25 disabled' : selectedPage === pageCount}" v-on:click="commitData('next')">
+            :class="{'btn-secondary opacity-25 disabled' : selectedPage === PageCount}" v-on:click="commitData('next')">
             <i class="fas fa-chevron-right"></i>
           </button>
         </div>
@@ -83,14 +83,19 @@
         <div id="toAffix" class="row ps-2 pe-4">
           <form method="post" enctype="multipart/form-data">
             <!-- 起約人簽署設定 -->
-            <div v-if="isNew || isInitiator">
+            <div v-if="isNew">
               <template v-if="editStep === '1'">
                 <div class="card p-3 mb-3">
                   <h6 class="fw-bolder text-primary">
                     <i class="fad fa-user me-1"></i>
                     起約人簽署
                   </h6>
-                  <p class="my-0 pt-2 pb-3 lh-sm"><small>若您在上傳合約前合約已經用印，請勾選「合約已用印」，並按「下一步」繼續下個流程。</small></p>
+                  <p class="my-0 pt-2 pb-3 lh-sm">
+                    <small>
+                      <i class="fas fa-exclamation-circle text-danger me-1"></i>
+                      若您在上傳合約前合約已經用印，請勾選「合約已用印」，並按「下一步」繼續下個流程。
+                    </small>
+                  </p>
                   <div class="pb-1">
                     <input v-model="form.usedStamp" type="checkbox" class="form-check-input" id="isInitiatorStamp"
                       name="IgnoreSeal" />
@@ -108,7 +113,7 @@
                     <label class="form-label fw-bolder" for="PageIndex">選擇簽署所在頁碼</label>
                     <select v-model="selectedPage" id="PageIndex" name="PageIndex" class="form-select form-select-sm"
                       v-on:change="pageHandler">
-                      <option v-for="(page, index) in pageCount" :key="index" :value="page">第{{ page }}頁</option>
+                      <option v-for="(page, index) in PageCount" :key="index" :value="page">第{{ page }}頁</option>
                     </select>
                   </div>
                   <div>
@@ -136,11 +141,13 @@
                       邀請簽署人
                     </button>
                     <p class="my-0 py-2 lh-sm">
-                      <small v-if="IsJointContracting">
-                        上傳文件時有設定「多人簽署同一份文件」時，請依簽署人分別設定簽署區域。
-                      </small>
-                      <small v-else>
+                      <small v-if="isContractorEmpty">
+                        <i class="fas fa-exclamation-circle text-danger me-1"></i>
                         請先選取簽署人再設定簽署區域。
+                      </small>
+                      <small v-if="!isContractorEmpty && IsJointContracting">
+                        <i class="fas fa-exclamation-circle text-danger me-1"></i>
+                        您有設定「多人簽署同一份文件」，請先指定簽署人再設定簽署區域。
                       </small>
                     </p>
                     <div class="d-grid gap-2 contract__list">
@@ -171,7 +178,7 @@
                     <label class="form-label fw-bolder" for="PageIndex">選擇簽署所在頁碼</label>
                     <select v-model="selectedPage" id="PageIndex" name="PageIndex" class="form-select form-select-sm"
                       v-on:change="pageHandler">
-                      <option v-for="(page, index) in pageCount" :key="index" :value="page">第{{ page }}頁</option>
+                      <option v-for="(page, index) in PageCount" :key="index" :value="page">第{{ page }}頁</option>
                     </select>
                   </div>
                   <div>
@@ -189,23 +196,31 @@
               </template>
             </div>
             <!-- 簽署人簽章 -->
-            <div class="p-3 ps-0 pb-0 mb-3">
-              <h6 class="fw-bolder text-primary">
-                <i class="fad fa-users me-1"></i>
-                簽署人簽章
-              </h6>
-            </div>
-            <div class="card p-3 mb-3">
-              <h6 class="fw-bolder text-primary">
-                <i class="fad fa-tasks-alt me-1"></i>
-                簽署選項
-              </h6>
-              <div class="pb-3">
-                <label class="form-label fw-bolder" for="PageIndex">選擇簽署所在頁碼</label>
-                <select v-model="selectedPage" id="PageIndex" name="PageIndex" class="form-select form-select-sm"
-                  v-on:change="pageHandler">
-                  <option v-for="(page, index) in pageCount" :key="index" :value="page">第{{ page }}頁</option>
-                </select>
+            <div v-else>
+              <div class="p-3 ps-0 pb-0 mb-3">
+                <h6 class="fw-bolder text-primary">
+                  <i class="fad fa-users me-1"></i>
+                  簽署人簽章
+                </h6>
+              </div>
+              <div class="card p-3 mb-3">
+                <h6 class="fw-bolder text-primary">
+                  <i class="fad fa-tasks-alt me-1"></i>
+                  簽署選項
+                </h6>
+                <div class="pb-3">
+                  <label class="form-label fw-bolder" for="PageIndex">選擇簽署所在頁碼</label>
+                  <select v-model="selectedPage" id="PageIndex" name="PageIndex" class="form-select form-select-sm"
+                    v-on:change="pageHandler">
+                    <option v-for="(page, index) in PageCount" :key="index" :value="page">第{{ page }}頁</option>
+                  </select>
+                </div>
+                <p class="my-0 lh-sm">
+                  <small>
+                    <i class="fas fa-exclamation-circle text-danger me-1"></i>
+                    請點選簽署區塊進行編輯。
+                  </small>
+                </p>
               </div>
             </div>
             <!-- 操作按鈕 -->
@@ -220,7 +235,7 @@
                   <i class="fas fa-reply"></i> 上一步
                 </button>
               </div>
-              <div v-if="isNew || isInitiator" class="col py-1">
+              <div v-if="isNew" class="col py-1">
                 <button type="button" v-on:click="cancelHandler" class="btn btn-success opacity-75 w-100">
                   <i class="far fa-times"></i> 取消
                 </button>
@@ -241,7 +256,7 @@
             </div>
             <div v-if="editStep === '2' || !isNew" class="row g-2 my-0">
               <div class="col py-1">
-                <button type="button" v-on:click="commitContract(isNew, isInitiator)"
+                <button type="button" v-on:click="commitContract()"
                   class="btn btn-lg btn-primary opacity-75 w-100 fw-bolder">
                   送出合約
                 </button>
@@ -479,8 +494,6 @@
     // 取得人員資料
     var userOrgItems = models.GetTable<OrganizationUser>().Where(u => u.UID == profile.UID);
   }
-  // 取得文件 ID 加密
-  const contractID = '@Html.Raw(_model!.ContractID.EncryptKey())';
   // 取得公司(乙方) ID 加密
   const companyID = '@Html.Raw(party?.CompanyID.EncryptKey())';
   // 起約人資料清單
@@ -488,23 +501,21 @@
   // 簽署人資料清單
   const contractorAllList = @Html.Raw(models.GetTable<Organization>().Where(o => !userOrgItems.Any(u => u.CompanyID == o.CompanyID)).Select(u => new { id = u.CompanyID.EncryptKey(), text = u.CompanyName }).ToArray().JsonStringify());
   // 取得上傳 PDF 總頁數
-  const pageCount = @(pageCount);
-  const contractData = @Html.Raw(contractData);
-  const partyData = @Html.Raw(partyData);
+  @* const pageCount = @(pageCount); *@
+  const { IsJointContracting, KeyID: contractID, PageCount, Parties } = @Html.Raw(contractRefsJson);
 
   var app = new Vue({
     el: '#AffixPdfSealImage',
     data() {
       return {
         editStep: '1',
-        contractData,
-        partyData,
         dataInitiator,
         contractorAllList,
-        pageCount,
+        IsJointContracting,
+        PageCount,
+        Parties,
         contractID,
         companyID,
-        //isInitiator: false,
         selectedPage: 1,
         noteItem: null,
         isNoteEmpty: true,
@@ -533,6 +544,7 @@
         currentCompany: {},
         signaturePositionsTemp: [],
         contractSignaturePositions: [],
+        contractSignaturePositionsTemp: [],
         currentSeal: {},
         day: null,
         month: null,
@@ -546,7 +558,6 @@
           { text: '文字', value: '3' },
         ],
         initiatorStampList: [],
-        IsJointContracting: false,
         infoMsg: null,
         isCanael: false,
         isCreate: false,
@@ -556,26 +567,27 @@
     },
     computed: {
       isNew() {
-        return !this.partyData;
+        return this.Parties.length === 0;
       },
-      isInitiator() {
-        return this.partyData && !!this.partyData.IsInitiator;
+      isContractorEmpty() {
+        const isZero = this.selectedContractor[0]?.id === '0';
+        const isEmpty = this.selectedContractor.length === 1;
+        return isZero && isEmpty;
       }
     },
     mounted() {
       this.init();
       this.scrollHeight();
-      if (!this.isNew || !this.isInitiator) {
+      if (!this.isNew) {
         this.getContractor();
       }
     },
     methods: {
       init() {
-        this.form.KeyID = contractID;
+        this.form.KeyID = this.contractID;
         this.form.EncUID = getCookie('userID');
         this.form.Initiator = this.dataInitiator[0].id;
         this.addContractor();
-        this.IsJointContracting = this.contractData.IsJointContracting;
         this.getDate();
 
         // 若為第一次登入，顯示歡迎視窗並進入導覽流程
@@ -621,35 +633,23 @@
       },
 
       // 合約簽署設定查詢
+      // 取出當前簽署人簽署區塊資料
       getContractor() {
-        const payload = {
-          KeyID: this.contractID,
-          Contractor: this.companyID,
-        }
-        //console.log({ payload });
-        postData('@(Url.Action("GetContractor", "ContractConsole"))', payload)
-          .then((data) => {
-            const { result, dataItem } = data;
-            this.changeStatus = result;
-            if ($.isPlainObject(data) && result) {
-              // 成功
-              hideLoading();
-              const dataItemFilter = dataItem.contractSignaturePositions.map((item, index) => {
-                return {
-                  ...item,
-                  ItemClass: `vmBox__wrapper--bg00`
-                }
-              });
-
-              this.contractSignaturePositions = [...dataItemFilter];
-              //console.log('contractSignaturePositions', this.contractSignaturePositions);
-
-              this.loadPageItem(this.selectedPage - 1);
-            } else {
-              // 失敗
-              console.log(result);
-            }
+        const getSignaturePositions = this.Parties
+          .filter(item => !item.isInitiator && item.IsCurrentUserCompany)
+          .map(item => {
+            return item.SignaturePositions;
           })
+          .reduce((acc, cur) => {
+            return acc.concat(cur);
+          }, [])
+          .map(item => {
+            item.ItemClass = `vmBox__wrapper--bg00`;
+            return item;
+          });
+        this.contractSignaturePositions = [...getSignaturePositions];
+        this.contractSignaturePositionsTemp = [...getSignaturePositions];
+        this.loadPageItem(this.selectedPage - 1);
       },
 
       // 開啟 簽署人設定 Modal
@@ -685,7 +685,7 @@
       // 新增簽署單位資料
       addContractor() {
         this.selectedContractor.push({
-          id: "0",
+          id: '0',
         });
       },
 
@@ -744,7 +744,7 @@
           return;
         }
         if (step === 'next') {
-          this.selectedPage = currentPage < this.pageCount ? this.selectedPage + 1 : this.selectedPage;
+          this.selectedPage = currentPage < this.PageCount ? this.selectedPage + 1 : this.selectedPage;
         } else {
           this.selectedPage = currentPage > 0 ? this.selectedPage - 1 : this.selectedPage;
         }
@@ -763,7 +763,7 @@
             pageitem.forEach(item => this.getComponent(item));
           }
         } else {
-          const pageitem = this.contractSignaturePositions.filter(item => item.pageIndex === this.selectedPage - 1);
+          const pageitem = this.contractSignaturePositions.filter(item => item.PageIndex === this.selectedPage - 1);
           pageitem.forEach(item => this.getCompanyComponent(item));
         }
       },
@@ -820,15 +820,15 @@
 
       // 產生乙方用印元件
       getCompanyComponent(itemObj) {
-        const { positionID: uuid, marginLeft, marginTop, requestID, scaleHeight, scaleWidth, type, ItemClass } = itemObj;
+        const { ID: uuid, MarginLeft, MarginTop, ScaleHeight, ScaleWidth, Type, ItemClass } = itemObj;
         // 產生一個虛擬 textBox
         const contractArea = document.querySelector("#contractImg");
         const textBox = document.createElement("div");
         // id 動態產生
         textBox.id = uuid;
         textBox.setAttribute('class', 'vmBox__wrapper vmBox__compantEdit');
-        textBox.setAttribute('style', `top: ${marginTop}px;left:${marginLeft}px;width:${scaleWidth}px;height:${scaleHeight}px;`);
-        const typeText = this.inputType.filter(item => item.value === `${type}`)[0].text;
+        textBox.setAttribute('style', `top: ${MarginTop}px;left:${MarginLeft}px;width:${ScaleWidth}px;height:${ScaleHeight}px;`);
+        const typeText = this.inputType.filter(item => item.value === `${Type}`)[0].text;
         contractArea.appendChild(textBox);
 
         textBox.classList.add(ItemClass);
@@ -841,7 +841,7 @@
 
         textBox.onclick = () => {
           // 簽章
-          if (type === 1) {
+          if (Type === 1) {
             // 一次只能出現一個 editItem
             const children = contractArea.children;
             children.forEach(item => item.classList.remove('editItem'));
@@ -851,7 +851,7 @@
           };
 
           // 日期
-          if (type === 2) {
+          if (Type === 2) {
             const children = contractArea.children;
             children.forEach(item => item.classList.remove('editItem'));
 
@@ -860,7 +860,7 @@
           };
 
           // 文字
-          if (type === 3) {
+          if (Type === 3) {
             const children = contractArea.children;
             children.forEach(item => item.classList.remove('editItem'));
 
@@ -949,7 +949,7 @@
         showLoading();
         $.post(
           '@Html.Raw(Url.Action("DeleteContract", "ContractConsole"))',
-          { 'KeyID': contractID },
+          { 'KeyID': self.contractID },
           function (data) {
             if ($.isPlainObject(data)) {
               hideLoading();
@@ -1012,14 +1012,14 @@
       },
 
       // 送出合約
-      commitContract(isNew, isInitiator) {
+      commitContract() {
         const self = this;
         const payload = { ...this.form };
         const hasStamp = this.initiatorStampList.length > 0;
         const hasVm = this.signaturePositionsTemp.length > 0;
 
-        // 檢查起約人是否有用印及圈選用印區塊
-        if (isNew || isInitiator) {
+        if (this.isNew) {
+          // 檢查起約人是否有用印及圈選用印區塊
           if (!this.form.usedStamp && !hasStamp) {
             this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base">請檢查文件是否已用印</div>`;
             $("#infoModal").modal("show");
@@ -1031,14 +1031,12 @@
             $("#infoModal").modal("show");
             return;
           };
-        };
-
-        // 簽暑人送出合約前，先檢查是否有漏填的簽章.join('、 ')
-        if (!this.isNew || !this.isInitiator) {
+        } else {
+          // 簽暑人送出合約前，先檢查是否有漏填的簽章
           const signatureCount = this.contractSignaturePositions.length;
           if (signatureCount > 0) {
             let signaturePage = this.contractSignaturePositions.map(item => {
-              return item.pageIndex + 1;
+              return item.PageIndex + 1;
             });
             // 去重複
             signaturePage = [...new Set(signaturePage)].join('、 ');
@@ -1072,15 +1070,14 @@
               item.SignaturePositions = filterList;
             });
         }
-        //return console.log({ payload })
         showLoading();
-        postData('@(Url.Action(party == null || party.IsInitiator == true ? "CommitContract" : "AcceptContract", "ContractConsole"))', payload)
+        postData('@(Url.Action(party == null ? "CommitContract" : "AcceptContract", "ContractConsole"))', payload)
           .then((data) => {
             this.changeStatus = data.result;
             hideLoading();
             if ($.isPlainObject(data) && data.result) {
               // 成功
-              this.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"> ${this.isNew || this.isInitiator ? "已建立新合約" : "合約已用印"} (${data.dataItem.contractNo})。</div>`;
+              this.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"> ${this.isNew ? "已建立新合約" : "合約已用印"} (${data.dataItem.contractNo})</div>`;
               this.isCreate = true;
             } else {
               // 失敗
@@ -1098,7 +1095,6 @@
           ...$global.viewModel,
           PageIndex: this.selectedPage - 1,
         };
-        // console.log('payload:', payload)
         $('form').ajaxForm({
           url: '@Html.Raw(Url.Action("ResetPdfSignature", "ContractConsole"))',
           data: payload,
@@ -1110,7 +1106,7 @@
             if ($.isPlainObject(data)) {
               if (data.result) {
                 // 成功
-                self.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"> 已清除用印。</div>`;
+                self.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"> 已清除用印</div>`;
                 self.isClear = true;
               }
               else {
@@ -1331,7 +1327,6 @@
 
       // 套用文字區塊
       useNoteHandler(ev, note, contractArea, status) {
-        console.log({ ev, note, contractArea })
         const self = this;
         const oEvent = ev;
         // 阻止冒泡,避免縮放時觸發移動事件
@@ -1382,10 +1377,9 @@
               loadContractPage(payload.PageIndex);
               const currentNote = document.querySelector(`#${self.currentSeal.Id}`);
               currentNote.remove();
-              if (!this.isNew || !this.isInitiator) {
+              if (!this.isNew) {
                 const { Id } = self.currentSeal;
-                const listData = self.contractSignaturePositions;
-                const listDataFilter = self.contractSignaturePositions.filter(item => item.positionID !== Id);
+                const listDataFilter = self.contractSignaturePositions.filter(item => item.ID !== Id);
                 self.contractSignaturePositions = listDataFilter;
               }
 
@@ -1668,8 +1662,6 @@
 
       // 簽署人設定區塊
       contractorSetHandler(company) {
-        console.log(typeof this.companyList.filter(item => item.id
-          === company.id)[0])
         this.currentCompany = this.companyList.filter(item => item.id
           === company.id)[0];
       },
@@ -1685,7 +1677,15 @@
         if (this.isClear) {
           loadContractPage(this.selectedPage - 1);
           this.currentSeal = { ...this.initSeal };
-          this.isClear = false
+          this.isClear = false;
+
+          // 簽署人清除用印後要還原用印區塊
+          if (!this.isNew) {
+            const listDataFilter = this.contractSignaturePositionsTemp
+              .filter(item => item.PageIndex === this.selectedPage - 1);
+            this.contractSignaturePositions = this.contractSignaturePositions.concat(listDataFilter);
+            this.loadPageItem(this.selectedPage - 1)
+          }
         };
       }
     },
@@ -1867,7 +1867,6 @@
         sealImg.classList.remove('h-100');
         sealImg.classList.add('w-100');
       }
-      console.log({ vmH, vmW, h, w })
       hScale = ((sealImg.width / sealImg.naturalWidth) * 100).toFixed(2);
 
       $global.useSeal = true;
@@ -1898,7 +1897,6 @@
       id: sealBox.id,
       type: '1'
     }
-    console.log({ sealinfo })
     app.$data.initiatorStampList.push(sealinfo);
 
     contractArea.onmouseleave = function () {
@@ -1994,7 +1992,7 @@
           if (!!$global.useSeal) {
             const sealId = $global.currentSeal.id;
             const listData = app.$data.contractSignaturePositions;
-            const listDataFilter = listData.filter(item => item.positionID !== sealId);
+            const listDataFilter = listData.filter(item => item.ID !== sealId);
             app.$data.contractSignaturePositions = listDataFilter;
             $global.useSeal = false;
           }
