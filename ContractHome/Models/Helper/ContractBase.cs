@@ -58,7 +58,9 @@ namespace ContractHome.Models.Helper
             ContractingParty contractingParty,
             int? userCompanyID = null) : base(contract, contractingParty, userCompanyID)
         {
-            SignaturePositions = contract.ContractSignaturePositionRequest.Select(x =>
+            SignaturePositions = contract.ContractSignaturePositionRequest
+                .Where(x=>x.ContractorID==contractingParty.CompanyID)
+                .Select(x =>
                 new SignaturePositionBase(
                     id: x.PositionID,
                     scaleWidth: x.ScaleWidth,
