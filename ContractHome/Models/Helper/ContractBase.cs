@@ -18,11 +18,17 @@ namespace ContractHome.Models.Helper
             ID = contractingParty.CompanyID;
             KeyID = contractingParty.CompanyID.EncryptKey();
             Name = contractingParty.Organization.CompanyName;
-            StampDate = initiatContractSignatureRequest.StampDate.HasValue ?
-                initiatContractSignatureRequest?.StampDate.Value.ToString("yyyy/MM/dd HH:mm") : string.Empty;
-            SignerDate = initiatContractSignatureRequest.SignatureDate.HasValue ?
-                initiatContractSignatureRequest?.SignatureDate.Value.ToString("yyyy/MM/dd HH:mm") : string.Empty;
-            SignerID = initiatContractSignatureRequest?.UserProfile?.PID ?? string.Empty;
+            StampDate = string.Empty;
+            SignerDate = string.Empty;
+            SignerID = string.Empty;
+            if (initiatContractSignatureRequest!=null)
+            { 
+                StampDate = (initiatContractSignatureRequest.StampDate.HasValue) ?
+                    initiatContractSignatureRequest?.StampDate.Value.ToString("yyyy/MM/dd HH:mm") : string.Empty;
+                SignerDate = initiatContractSignatureRequest.SignatureDate.HasValue ?
+                    initiatContractSignatureRequest?.SignatureDate.Value.ToString("yyyy/MM/dd HH:mm") : string.Empty;
+                SignerID = initiatContractSignatureRequest?.UserProfile?.PID ?? string.Empty;
+            }
             isInitiator = contractingParty.IsInitiator ?? false;
             IsCurrentUserCompany = userCompanyID != null ? ID == userCompanyID : false;
         }
@@ -56,9 +62,12 @@ namespace ContractHome.Models.Helper
 
         public PartyRefs(Contract contract,
             ContractingParty contractingParty,
+            string queryItem = "",
             int? userCompanyID = null) : base(contract, contractingParty, userCompanyID)
         {
-            SignaturePositions = contract.ContractSignaturePositionRequest
+            if (queryItem.Equals("SignaturePositions"))
+            {
+                SignaturePositions = contract.ContractSignaturePositionRequest
                 .Where(x=>x.ContractorID==contractingParty.CompanyID)
                 .Select(x =>
                 new SignaturePositionBase(
@@ -70,6 +79,7 @@ namespace ContractHome.Models.Helper
                     type: x.Type,
                     pageIndex: x.PageIndex
                 )).ToList();
+            }
         }
     }
 
@@ -107,13 +117,12 @@ namespace ContractHome.Models.Helper
     {
         [JsonProperty]
         public List<PartyRefs> Parties { get; set; }
-
-        public ContractRefs(Contract contract, int? userCompanyID = null) : base(contract)
+        public ContractRefs(Contract contract, string queryItem="", int? userCompanyID = null) : base(contract, queryItem)
         {
-            Parties = contract.ContractingParty.Select(x => new PartyRefs(contract, x, userCompanyID)).ToList();
+            Parties = contract.ContractingParty
+                .Select(x => new PartyRefs(contract, x, queryItem, userCompanyID)).ToList();
         }
     }
-
 
     public class ContractBase
     {
@@ -129,9 +138,9 @@ namespace ContractHome.Models.Helper
         public int? CurrentStep { get; set; }
         [JsonProperty]
         public int? PageCount { get; set; }
-
-
-        public ContractBase(Contract contract, int? userCompanyID = null)
+        [JsonProperty]
+        public List<ProcessLog>? ProcessLogs { get; set; }
+        public ContractBase(Contract contract, string? queryItem = "", int? userCompanyID = null)
         {
             KeyID = contract.ContractID.EncryptKey();
             ContractNo = contract.ContractNo;
@@ -139,7 +148,27 @@ namespace ContractHome.Models.Helper
             IsJointContracting = contract.IsJointContracting ?? false;
             PageCount = contract.GetPdfPageCount();
             CurrentStep = contract.CDS_Document.CurrentStep;
+            if (queryItem.Equals("ProcessLog"))
+            {
+                ProcessLogs = contract.CDS_Document.DocumentProcessLog.Select(l =>
+                    new ProcessLog()
+                    {
+                        time = $"{l.LogDate:yyyy/MM/dd HH:mm:ss}",
+                        action = CDS_Document.StepNaming[l.StepID],
+                        role = l.UserProfile?.UserName,
+                    }).ToList();
+            }
         }
     }
 
+    public class ProcessLog
+    {
+        public ProcessLog()
+        {
+        }
+
+        public string time { get; set; }
+        public string action { get; set; }
+        public string role { get; set; }
+    }
 }

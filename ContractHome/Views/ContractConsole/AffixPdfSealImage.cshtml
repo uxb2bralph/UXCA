@@ -22,14 +22,14 @@
   _modelState = (ModelStateDictionary)ViewBag.ModelState;
   QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
 
-  var profile = await Context.GetUserAsync();
-  var party = models!.GetTable<ContractingParty>()
-  .Where(p => p.ContractID == _model.ContractID)
-  .Where(p => models.GetTable<OrganizationUser>()
-  .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
-  .FirstOrDefault();
-
-  var contractRefs = new ContractRefs(_model, party?.CompanyID);
+    var profile = await Context.GetUserAsync();
+    var party = models!.GetTable<ContractingParty>()
+    .Where(p => p.ContractID == _model.ContractID)
+    .Where(p => models.GetTable<OrganizationUser>()
+    .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
+    .FirstOrDefault();
+   
+    var contractRefs = new ContractRefs(_model, "SignaturePositions", party?.CompanyID);
 
   var contractData = @Html.Raw(_model.JsonStringify());
   //var partyData = @Html.Raw(party.JsonStringify());

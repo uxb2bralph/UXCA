@@ -2,6 +2,7 @@
 @using System.Linq
 @using System.IO
 @using System.Linq.Expressions
+@using ContractHome.Models.Helper;
 @using Microsoft.AspNetCore.Mvc.ModelBinding
 
 @using ContractHome.Helper
@@ -118,7 +119,9 @@
 
 <script>
     $(function () {
-        app.contractList = @Html.Raw(items!.ToArray().Select(c=>BuildData((Contract)c)).JsonStringify());
+        app.contractList = @Html.Raw(items!.ToArray()
+            .Select(c=>new ContractRefs((Contract)c, queryItem: "ProcessLog", userCompanyID: profile?.OrganizationUser?.CompanyID))
+            .JsonStringify());
         app.totalRecordCount = @(_model.Count());
     });
 </script>
