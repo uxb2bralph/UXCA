@@ -54,6 +54,7 @@
         }
       </div>
     </div>
+    <!-- 排序項目 -->
     <div class="row my-0 pt-3 border-top border-2">
       <div class="col col-2">
         <div class="input-group input-group-sm">
@@ -76,7 +77,7 @@
       </div>
     </div>
     <section id="queryArea">
-      <div v-if="contractList.length === 0" class="card p-3 text-center">
+      <div v-if="contractListAll.length === 0" class="card p-3 text-center">
         <span class="text-primary opacity-75" style="font-size: 50px;">
           <i class="fad fa-folder-open"></i>
         </span>
@@ -163,7 +164,7 @@
                     待簽署
                   </span>
                   <span v-if="!!contract.Initiator.StampDate && !! contract.Initiator.SignerDate"
-                    class="fw-bolder text-primary opacity-75">
+                    class="fw-bolder text-success opacity-75">
                     已完成
                   </span>
                 </div>
@@ -185,8 +186,7 @@
                   <i class="fas fa-signature"></i>
                 </button>
                 <div class="progresses__company">
-                  <span class=" progresses__name"
-                    :class="[contract.Initiator.IsCurrentUserCompany ? 'bg-lightBlue' : '']">
+                  <span class=" progresses__name" :class="{ 'bg-lightBlue': contract.Initiator.IsCurrentUserCompany }">
                     {{ formatName(contract.Initiator.Name) }}
                   </span>
                 </div>
@@ -202,7 +202,7 @@
                     <span v-if="!!item.StampDate && !item.SignerDate" class="fw-bolder text-primary opacity-75">
                       待簽署
                     </span>
-                    <span v-if="!!item.StampDate && !!item.SignerDate" class="fw-bolder text-primary opacity-75">
+                    <span v-if="!!item.StampDate && !!item.SignerDate" class="fw-bolder text-success opacity-75">
                       已完成
                     </span>
                   </div>
@@ -230,7 +230,7 @@
                   </div>
                   <div class="progresses__company">
                     <span class=" progresses__name"
-                      :class="[item.IsCurrentUserCompany ? 'bg-warning opacity-75 text-dark' : '']">
+                      :class="{ 'bg-warning opacity-75 text-dark': item.IsCurrentUserCompany }">
                       {{ formatName(item.Name) }}
                     </span>
                   </div>
@@ -241,7 +241,7 @@
         </div>
       </div>
       <!-- 分頁模組 -->
-      <div v-if="contractList.length > 0" class="row g-3 align-items-center justify-content-between">
+      <div v-if="contractListAll.length > 0" class="row g-3 align-items-center justify-content-between">
         <div class="col-auto">
           <nav aria-label="Page navigation">
             <ul class="pagination justify-content-center mb-0">
@@ -438,7 +438,6 @@
               </div>
             </div>
             <!-- 用印流程 -->
-            <!-- <p class="mb-0 mt-4 fw-bolder text-secondary">簽署狀態</p> -->
             <div class="card p-2 my-2">
               <!-- 起約人 -->
               <div class="d-flex align-items-center">
@@ -452,8 +451,8 @@
                     <span class="badge bg-primary opacity-75">{{ signerStatusData.Initiator?.Name }}</span>
                   </div>
                 </div>
-                <div class="col fw-bolder text-center fs-13"
-                  :class="{'text-primary opacity-75' : signerStatusData.Initiator?.StampDate && signerStatusData.Initiator?.SignerDate}">
+                <div class="col fw-bolder text-center text-primary opacity-75 fs-13"
+                  :class="{'text-success': signerStatusData.Initiator?.StampDate && signerStatusData.Initiator?.SignerDate}">
                   {{ !signerStatusData.Initiator?.StampDate ? '待用印': !signerStatusData.Initiator?.SignerDate ?
                   '待簽署': '已完成' }}</div>
               </div>
@@ -469,8 +468,8 @@
                     <span class="badge bg-warning text-dark opacity-75">{{ item.Name }}</span>
                   </div>
                 </div>
-                <div class="col fw-bolder text-center fs-13"
-                  :class="{'text-primary opacity-75' : signerStatusData.ContractorStampDate}">
+                <div class="col fw-bolder text-center text-primary opacity-75 fs-13"
+                  :class="{'text-success': item.StampDate && item.SignerDate }">
                   {{ !item.StampDate ? '待用印': !item.SignerDate ?
                   '待簽署': '已完成' }}
                 </div>

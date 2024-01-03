@@ -76,7 +76,8 @@ html, body {
   color: #FFFFFF;
 }
 
-#listToStampIndex {
+#listToStampIndex,
+#queryIndex {
   background-color: #f2f2f2;
 }
 
