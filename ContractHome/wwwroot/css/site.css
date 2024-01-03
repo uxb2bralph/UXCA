@@ -11,6 +11,7 @@ html, body {
 .tooltip__wrapper {
   position: relative;
   display: inline-block;
+  z-index: 4;
 }
 .tooltip__wrapper:hover .tooltip__text {
   display: inline-block;
@@ -73,10 +74,6 @@ html, body {
 
 .nav-link.menuLink {
   color: #FFFFFF;
-}
-
-#listToStampIndex {
-  height: calc(100% - 65px);
 }
 
 .border__uxb2b--bottom {
@@ -215,11 +212,23 @@ html, body {
 }
 
 .progresses__wrapper {
+  height: 110px;
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  align-items: start;
+  overflow: hidden;
+  overflow-x: auto;
 }
 .progresses__stepGroup {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  align-items: end;
+  justify-content: center;
+  font-size: 14px !important;
+  position: relative;
+  z-index: 2;
+}
+.progresses__companyGroup {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -232,29 +241,50 @@ html, body {
   width: 35px;
   height: 35px;
   margin-top: 4px;
-  margin-bottom: 2px;
+  margin-bottom: 6px;
   align-items: center;
   justify-content: center;
   background-color: #B5BABE;
   color: #fff;
   font-size: 14px;
   border-radius: 50%;
+  z-index: 2;
 }
 .progresses__steps--done {
   background-color: #63d19e;
 }
+.progresses__steps--done:hover {
+  background-color: #63d19e !important;
+}
+.progresses__steps--actived {
+  background-color: #4f81ee;
+}
+.progresses__steps--actived:hover {
+  background-color: #3c68c9 !important;
+}
+.progresses__steps:hover {
+  color: #ffffff;
+  background-color: #a2a6aa;
+}
+.progresses__steps.disabled {
+  opacity: 1;
+}
 .progresses__line {
-  width: 168px;
-  height: 3px;
-  margin-left: -30px;
-  margin-right: -30px;
-  background-color: #B5BABE;
+  width: 100%;
+  height: 5px;
+  position: absolute;
+  border-top: 3px solid #B5BABE;
+  top: calc(50% - 4px);
+  left: -28px;
 }
 .progresses__line--done {
   background-color: #63d19e;
 }
 .progresses__line--w200 {
   width: 200px;
+}
+.progresses__btn {
+  position: relative;
 }
 .progresses__signature.progresses__steps--done {
   background-color: #FFA500;
@@ -264,10 +294,22 @@ html, body {
 }
 .progresses__company {
   width: 90px;
-  height: 31px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+.progresses__name {
+  max-width: 70px;
+  display: inline-block;
+  padding: 0.35em 0.65em;
+  font-size: 0.75em;
+  font-weight: 700;
+  line-height: 1.5;
+  color: #a5a5a5;
+  text-align: center;
+  white-space: normal;
+  vertical-align: baseline;
+  border-radius: 0.25rem;
 }
 
 .dropzone {
@@ -774,12 +816,25 @@ html, body {
   height: 100px;
 }
 
+.bg-lightBlue {
+  background-color: #cfe2ff;
+  color: #666666;
+}
+
+a {
+  text-decoration: none;
+}
+
 .fs-12 {
-  font-size: 12px;
+  font-size: 0.8rem;
+}
+
+.fs-13 {
+  font-size: 0.875rem;
 }
 
 .fs-14 {
-  font-size: 14px;
+  font-size: 0.95rem;
 }
 
 .divider {
