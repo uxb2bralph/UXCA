@@ -76,6 +76,10 @@ html, body {
   color: #FFFFFF;
 }
 
+#listToStampIndex {
+  background-color: #f2f2f2;
+}
+
 .border__uxb2b--bottom {
   border-bottom: 1px solid #bec2c6 !important;
 }
