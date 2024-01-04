@@ -20,18 +20,12 @@
 
   _viewModel.UrlAction = Url.Action("InquireData", "Organization");
 }
-<div id="organization" class="container-lg py-5">
+<div id="organization" class="container-lg py-4">
   <section class="queryform">
     <!-- 標題 -->
-    @{
-      // await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
-      await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "公司資料管理");
-      // await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgent.cshtml");
-      // await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
-    }
-
+    <h4 class="mb-2 fw-bolder">公司資料管理</h4>
     <!-- 公司資料維護搜尋-->
-    <div class="card">
+    <div class="card shadow-sm">
       <form v-on:submit.prevent method="post" enctype="multipart/form-data">
         <div class="container">
           <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3 m-3 mb-lg-0 data-item">
@@ -131,11 +125,10 @@
   <!-- 公司資料查詢列表 -->
   <section>
     <!-- 標題 -->
-    @{
-      await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "公司列表");
-    }
+    <h4 class="mb-2 mt-3 fw-bolder">公司列表</h4>
+    <!-- 標題 -->
     <div v-if="companyList.length > 0">
-      <div class="card p-2 mb-3 table-responsive">
+      <div class="card shadow-sm p-2 mb-3 table-responsive">
         <table class="table table-hover mb-0">
           <thead>
             <tr>
@@ -151,13 +144,13 @@
           </thead>
           <tbody>
             <tr v-for="(company, index) in companyList" :key="`c_${index}`">
-              <td class="text-nowrap">{{ company.CompanyName }}</td>
-              <td class="text-nowrap">{{ company.ReceiptNo }}</td>
-              <td class="text-nowrap">{{ company.UndertakerName }}</td>
-              <td>{{ company.Phone }}</td>
-              <td>{{ company.Fax }}</td>
-              <td>{{ company.Addr }}</td>
-              <td>{{ company.ContactEmail }}</td>
+              <td class="text-nowrap fs-13">{{ company.CompanyName }}</td>
+              <td class="text-nowrap fs-13">{{ company.ReceiptNo }}</td>
+              <td class="fs-13">{{ company.UndertakerName }}</td>
+              <td class="fs-13">{{ company.Phone }}</td>
+              <td class="fs-13">{{ company.Fax }}</td>
+              <td class="fs-13">{{ company.Addr }}</td>
+              <td class="fs-13">{{ company.ContactEmail }}</td>
               <td class="text-nowrap text-center">
                 <!-- 編輯 -->
                 <span class="tooltip__wrapper mx-1">
@@ -219,7 +212,7 @@
         </div>
         <div class="col-auto">
           <div class="row g-3 align-items-center">
-            <div class="col-auto">
+            <div class="col-auto fs-13">
               <label for="PageSize">每頁筆數：</label>
             </div>
             <div class="col-auto">
@@ -232,7 +225,7 @@
                 <option>200</option>
               </select>
             </div>
-            <div class="col-auto">
+            <div class="col-auto fs-13">
               共 {{ totalPages }} 頁，{{ totalRecordCount }} 筆
             </div>
           </div>

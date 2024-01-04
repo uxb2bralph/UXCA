@@ -1130,6 +1130,7 @@
       /********** 用印區塊 ***********/
       // 虛擬文字框
       createVirtualText(string) {
+        const self = this;
         // 未套用前一次只能新增一個虛擬框
         if (this.currentSeal.Id) {
           const currentNote = document.querySelector(`#${this.currentSeal.Id}`);
@@ -1148,7 +1149,7 @@
           const uuid = ui_uuid8();
           textBox.id = uuid;
           textBox.setAttribute('class', 'vmNote');
-          textBox.setAttribute('style', `top: calc(10px); left: calc((${contractArea.offsetWidth}px - 220px) / 2);`);
+          textBox.setAttribute('style', `top: calc(${(contractArea.offsetTop + Number(self.scrolly))}px); left: calc(${(contractArea.offsetWidth - 220) / 2}px);`);
           document.querySelector("#contractImg").appendChild(textBox);
           // 產生文字內容並放到 textBox
           textBox.innerHTML = `
@@ -1698,6 +1699,7 @@
     $('#sealModal').modal('hide');
     $global.viewModel.SealID = sealID;
     const contractArea = document.querySelector("#contractImg");
+    const pageItem = document.querySelector("#pdf__wrapper");
     const editItem = document.querySelector('.editItem');
 
     if (!editItem) {
@@ -1707,7 +1709,7 @@
       const uuid = ui_uuid8();
       sealBox.id = uuid;
       sealBox.setAttribute('class', 'vmSeal');
-      sealBox.setAttribute('style', `top:calc(10px);left:calc((${contractArea.offsetWidth}px - 170px) / 2);`);
+      sealBox.setAttribute('style', `top: calc(${(contractArea.offsetTop + Number.parseInt($(pageItem).scrollTop()))}px); left: calc(${(contractArea.offsetWidth - 170) / 2}px);`);
       document.querySelector("#contractImg").appendChild(sealBox);
       // 產生印章並放到 sealBox
       sealBox.innerHTML = `
