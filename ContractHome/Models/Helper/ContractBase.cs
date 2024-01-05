@@ -139,7 +139,7 @@ namespace ContractHome.Models.Helper
         [JsonProperty]
         public int? PageCount { get; set; }
         [JsonProperty]
-        public List<ProcessLog>? ProcessLogs { get; set; }
+        public IEnumerable<ProcessLog>? ProcessLogs { get; set; }
         public ContractBase(Contract contract, string? queryItem = "", int? userCompanyID = null)
         {
             KeyID = contract.ContractID.EncryptKey();
@@ -151,20 +151,22 @@ namespace ContractHome.Models.Helper
             if (queryItem.Equals("ProcessLog"))
             {
                 ProcessLogs = contract.CDS_Document.DocumentProcessLog.Select(l =>
-                    new ProcessLog()
-                    {
-                        time = $"{l.LogDate:yyyy/MM/dd HH:mm:ss}",
-                        action = CDS_Document.StepNaming[l.StepID],
-                        role = l.UserProfile?.UserName,
-                    }).ToList();
+                    new ProcessLog(
+                        time: $"{l.LogDate:yyyy/MM/dd HH:mm:ss}",
+                        action: CDS_Document.StepNaming[l.StepID],
+                        role: l.UserProfile?.UserName
+                    ));
             }
         }
     }
 
     public class ProcessLog
     {
-        public ProcessLog()
+        public ProcessLog(string time, string action, string role)
         {
+            this.time = time;
+            this.action = action;
+            this.role = role;
         }
 
         public string time { get; set; }

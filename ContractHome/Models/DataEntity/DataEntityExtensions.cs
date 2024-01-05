@@ -116,6 +116,7 @@ namespace ContractHome.Models.DataEntity
                 "簽約人簽章",
                 "瀏覽",
                 "已終止",
+                "合約完成"
             };
 
         public static StepEnum[] PendingState =
