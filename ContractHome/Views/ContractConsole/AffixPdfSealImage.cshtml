@@ -778,14 +778,14 @@
 
       // 產生圈選元件
       getComponent(itemObj) {
-        const { Id: uuid, MarginLeft, MarginTop, SealScale, Width, Height, Type, PageIndex, canEdit, UserId, ItemClass } = itemObj;
+        const { Id: uuid, MarginLeft, MarginTop, SealScale, ScaleWidth, ScaleHeight, Type, PageIndex, canEdit, UserId, ItemClass } = itemObj;
         // 產生一個虛擬 textBox
         const contractArea = document.querySelector("#contractImg");
         const textBox = document.createElement("div");
         // id 動態產生
         textBox.id = uuid;
         textBox.setAttribute('class', 'vmBox__wrapper');
-        textBox.setAttribute('style', `top: ${MarginTop}px;left:${MarginLeft}px;width:${Width}px;height:${Height}px;`);
+        textBox.setAttribute('style', `top: ${MarginTop}px;left:${MarginLeft}px;width:${ScaleWidth}px;height:${ScaleHeight}px;`);
 
         const typeText = this.inputType.filter(item => item.value === Type)[0].text;
 
