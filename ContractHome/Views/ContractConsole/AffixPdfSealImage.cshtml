@@ -337,8 +337,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary opacity-75" data-bs-dismiss="modal"
-            v-on:click="initContract">取消</button>
+          <button type="button" class="btn btn-secondary opacity-75" data-bs-dismiss="modal">取消</button>
           <button type="button" class="btn btn-primary" v-on:click="contractorHandler">下一步</button>
         </div>
       </div>
@@ -709,6 +708,7 @@
           this.alertActived = true;
           return
         }
+        // 檢查簽約方是否重複
         if (this.hasDuplicateContractor) return;
 
         const contractorArray = this.selectedContractor.map(item => item.id);
@@ -728,6 +728,14 @@
         contractorFilter.forEach((item, index) => {
           this.form.Contractors.push({ Contractor: item.id, Text: item.text });
         });
+
+        // 多人簽署時重新送出表單後會檢查簽數人是否有更動，並調整已圈選的元件
+        let signaturePositions = this.signaturePositionsTemp;
+        if (this.IsJointContracting && signaturePositions.length > 0) {
+
+          this.signaturePositionsTemp = signaturePositions.filter(item => contractorArray.includes(item.UserId));
+          this.loadPageItem(this.selectedPage - 1);
+        }
         $('#addContractorModal').modal('hide');
       },
 
