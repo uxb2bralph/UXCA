@@ -51,7 +51,8 @@ namespace ContractHome.Models.Helper
                 doc!.Contract.ContractingParty = null;
                 doc!.Contract.ContractSignature = null;
                 doc!.Contract.ContractSignatureRequest = null;
-                doc!.Contract.ContractSealRequest = null;
+                //甲方起約時的用印也要複製一份到新的獨立合約
+                //doc!.Contract.ContractSealRequest = null;
                 doc!.Contract.ContractNoteRequest = null;
                 _models.GetTable<Contract>().InsertOnSubmit(doc!.Contract);
                 _models.SubmitChanges();
