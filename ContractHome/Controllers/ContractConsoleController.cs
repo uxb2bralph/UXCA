@@ -228,10 +228,10 @@ namespace ContractHome.Controllers
             }
 
             //remark for postman test
-            //if (!contract.ContractSealRequest.Any() && viewModel.IgnoreSeal != true)
-            //    {
-            //        return Json(new { result = false, message = "合約未用印!!" });
-            //    }
+            if (!contract.ContractSealRequest.Any() && viewModel.IgnoreSeal != true)
+            {
+                return Json(new { result = false, message = "合約未用印!!" });
+            }
 
             contract.ContractContent = new Binary(System.IO.File.ReadAllBytes(contract.FilePath));
 
@@ -1016,14 +1016,16 @@ namespace ContractHome.Controllers
 
                 var table = models.GetTable<ContractSealRequest>();
                 var items = table.Where(s => s.StampUID == profile.UID)
-                                .Where(s => s.PageIndex == viewModel.PageIndex)
+                                //iris:因挖框和圖章現行沒有做關連, 有圖章時挖框無法得知, 只能圖章和挖框都顯示, 設定User下的Seal及Note全清除
+                                //.Where(s => s.PageIndex == viewModel.PageIndex)
                                 .Where(s => s.ContractID == contract.ContractID);
                 table.DeleteAllOnSubmit(items);
                 models.SubmitChanges();
 
                 var noteTable = models.GetTable<ContractNoteRequest>();
                 var notes = noteTable.Where(s => s.StampUID == profile.UID)
-                                .Where(s => s.PageIndex == viewModel.PageIndex)
+                                //iris:因挖框和圖章現行沒有做關連, 有圖章時挖框無法得知, 只能圖章和挖框都顯示, 設定User下的Seal及Note全清除
+                                //.Where(s => s.PageIndex == viewModel.PageIndex)
                                 .Where(s => s.ContractID == contract.ContractID);
                 noteTable.DeleteAllOnSubmit(notes);
                 models.SubmitChanges();
