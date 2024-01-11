@@ -353,12 +353,17 @@ html, body {
   }
 
   &__line {
-    width: 100%;
+    width: calc(100% - 27px);
     height: 5px;
     position: absolute;
-    border-top: 3px solid #B5BABE;
-    top: calc(50% - 4px);
-    left: -28px;
+    border-top: 2px solid #e6e6e6;
+    top: calc(50% - 5px);
+    left: -27px;
+
+    &--sign {
+      top: calc(50% - 1px);
+      border-color: #78f0b8;
+    }
 
     &--done {
       background-color: #63d19e;
@@ -368,6 +373,7 @@ html, body {
       width: 200px;
     }
   }
+
   &__btn {
     position: relative;
   }
