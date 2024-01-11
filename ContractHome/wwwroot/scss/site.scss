@@ -890,6 +890,11 @@ html, body {
       color: #FFFFFF;
     }
   }
+  &--edit {
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+  }
 }
 .bd-00 {
   border-left: 8px solid #4e90f1;
