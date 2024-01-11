@@ -61,7 +61,7 @@
                 <div class="row">
                   <label for="Initiator" class="col-sm-12 col-md-3 col-form-label fs-14 fw-bolder">起約人</label>
                   <div id="initiatorField" class="col-sm-12 col-md-9">
-                    <input v-model="formData.Initiator" type="text" class="form-control" name="Initiator" id="Initiator"
+                    <input v-model="formData.InitiatorName" type="text" class="form-control" name="Initiator"
                       placeholder="可輸入鍵字查詢公司名稱" autocomplete="off" />
                     <ul v-show="isInitiatorOptionsOpen" class="list-group mb-3 shadow__card">
                       <li v-for="(result, index) in searchResults" :key="index"
@@ -117,8 +117,11 @@
               aria-expanded="false">{{ currentSortName }}</button>
             <ul class="dropdown-menu shadow">
               <template v-for="(item, index) in SortList">
-                <li :key="index"><a class="dropdown-item fs-12" href="#" v-on:click="changeSortItem(item)">{{ item.text
-                    }}</a></li>
+                <li :key="index">
+                  <a class="dropdown-item fs-12" href="#" v-on:click="changeSortItem(item)">
+                    {{ item.text }}
+                  </a>
+                </li>
               </template>
             </ul>
             <button v-if="isSortNo" class="btn btn-outline-secondary" type="button"
@@ -207,6 +210,7 @@
               <div class="divider pb-2"></div>
               <!-- 用印流程 -->
               <div class="progresses__wrapper">
+                <!-- 起約方 -->
                 <div class="progresses__companyGroup">
                   <div class="progresses__company">
                     <span v-if="!contract.Initiator?.StampDate" class="fw-bolder text-primary opacity-75">
@@ -221,16 +225,19 @@
                       已完成
                     </span>
                   </div>
+                  <!-- 已完成 -->
                   <button v-if="!!contract.Initiator?.StampDate && !!contract.Initiator?.SignerDate" type="button"
                     class="btn progresses__steps progresses__steps--done disabled">
                     <i class="fas fa-circle"></i>
                   </button>
 
+                  <!-- 待用印 -->
                   <button v-if="!contract.Initiator?.StampDate" type="button" class="btn progresses__steps disabled"
                     :class="{ 'progresses__steps--actived': contract.Initiator?.IsCurrentUserCompany }">
                     <i class="fas fa-stamp"></i>
                   </button>
 
+                  <!-- 待簽署 -->
                   <button v-if="!!contract.Initiator?.StampDate && !contract.Initiator?.SignerDate" type="button"
                     class="btn progresses__steps disabled"
                     :class="{ 'progresses__steps--actived': contract.Initiator?.IsCurrentUserCompany }">
@@ -243,8 +250,13 @@
                     </span>
                   </div>
                 </div>
+                <!-- 簽約方 -->
                 <div v-for="(item, index) in contract.Contractor" :key="index" class="progresses__stepGroup">
-                  <span class="progresses__line"
+                  <!-- 待用印 -->
+                  <span v-if="item.StampDate" class="progresses__line"
+                    :class="{'progresses__line--done': contract.ContractorStampDate }"></span>
+                  <!-- 待簽署 -->
+                  <span v-if="item.SignerDate" class="progresses__line progresses__line--sign"
                     :class="{'progresses__line--done': contract.ContractorStampDate }"></span>
                   <div class="progresses__companyGroup">
                     <div class="progresses__company">
@@ -706,9 +718,11 @@
           const contractorName = item.Parties.filter(item => !item.isInitiator)
             .map(item => item.Name)
             .join('、');
+          const canSigner = item.Parties.filter(item => !item.StampDate).length === 0;
           item.Initiator = initiator;
           item.Contractor = contractor;
           item.contractorName = contractorName;
+          item.canSigner = canSigner;
         })
         this.contractListAll = this.contractList;
       },

@@ -255,10 +255,17 @@
               </div>
             </div>
             <div v-if="editStep === '2' || !isNew" class="row g-2 my-0">
-              <div class="col py-1">
+              <div class="col-12 py-1 mb-2">
                 <button type="button" v-on:click="commitContract()"
                   class="btn btn-lg btn-primary opacity-75 w-100 fw-bolder">
                   送出合約
+                </button>
+              </div>
+              <div class="divider "></div>
+              <div class="col-12 py-1">
+                <button type="button" v-on:click="backSearch"
+                  class="btn btn-light w-100">
+                  <span class="text-black-50">返回合約查詢</span>
                 </button>
               </div>
             </div>
@@ -516,8 +523,8 @@
         contractID,
         companyID,
         selectedPage: 1,
-        noteItem: null,
-        isNoteEmpty: true,
+        noteItem: null, // 輸入的文字
+        isNoteEmpty: true, // 輸入文字欄位狀態
         hasDuplicateContractor: false,
         selectedContractor: [],
         companyList: [],
@@ -530,18 +537,8 @@
         },
         alertActived: false,
         contractorMag: null,
-        initSeal: {
-          Id: null,
-          MarginLeft: null,
-          MarginTop: null,
-          SealScale: null,
-          ScaleWidth: null,
-          ScaleHeight: null,
-          Type: null,
-          PageIndex: 0
-        },
         currentCompany: {},
-        signaturePositionsTemp: [],
+        signaturePositionsTemp: [], // 設定簽屬區域列表
         contractSignaturePositions: [],
         contractSignaturePositionsTemp: [],
         currentSeal: {},
@@ -556,12 +553,13 @@
           { text: '日期', value: '2' },
           { text: '文字', value: '3' },
         ],
-        initiatorStampList: [],
+        usedStampList: [], // 簽署人用印的資料(文字/印章)
         infoMsg: null,
         isCanael: false,
         isCreate: false,
         isClear: false,
         isReject: false,
+        sealTempList: [],
       };
     },
     computed: {
@@ -577,9 +575,13 @@
     mounted() {
       this.init();
       this.scrollHeight();
-      if (!this.isNew) {
-        this.getContractor();
-      }
+      setTimeout(() => {
+        if (!this.isNew) {
+          this.getContractor();
+          // 簽約方進入先清除用印以免用印未送出產生圖檔重疊
+          this.resetSignatureOnLoad();
+        }
+      }, 100)
     },
     methods: {
       init() {
@@ -612,7 +614,7 @@
       getDate() {
         let objectDate = new Date();
         this.day = objectDate.getDate();
-        this.month = objectDate.getMonth();
+        this.month = objectDate.getMonth() + 1;
         this.year = objectDate.getFullYear();
         this.rocYear = this.year - 1911;
       },
@@ -634,6 +636,9 @@
       // 合約簽署設定查詢
       // 取出當前簽署人簽署區塊資料
       getContractor() {
+        // 初始化
+        this.contractSignaturePositions = [];
+        this.contractSignaturePositionsTemp = [];
         const getSignaturePositions = this.Parties
           .filter(item => !item.isInitiator && item.IsCurrentUserCompany)
           .map(item => {
@@ -757,7 +762,6 @@
           this.selectedPage = currentPage > 0 ? this.selectedPage - 1 : this.selectedPage;
         }
         loadContractPage(this.selectedPage - 1);
-
         this.loadPageItem(this.selectedPage - 1);
       },
 
@@ -772,6 +776,7 @@
           }
         } else {
           const pageitem = this.contractSignaturePositions.filter(item => item.PageIndex === this.selectedPage - 1);
+          //console.log({ pageitem })
           pageitem.forEach(item => this.getCompanyComponent(item));
         }
       },
@@ -842,12 +847,15 @@
         textBox.classList.add(ItemClass);
         // 產生文字內容並放到 textBox
         textBox.innerHTML = `
-          <div class="vmBox__note">${typeText}</div>
+          <div id="vmBox-${uuid}-edit" class="vmBox--edit">
+            <div class="vmBox__note">${typeText}</div>
+          </div>
           <div id="vmBox-${uuid}-subtext" class="vmBox__subtext">點擊區塊進行編輯</div>
           <button id="useSeal-${uuid}" class="btn btn-success opacity-75 btn-sm vmUse"> 套用 </utton>
           `;
 
-        textBox.onclick = () => {
+        const editBox = document.querySelector(`#vmBox-${uuid}-edit`);
+        editBox.onclick = () => {
           // 簽章
           if (Type === 1) {
             // 一次只能出現一個 editItem
@@ -1023,11 +1031,11 @@
       commitContract() {
         const self = this;
         const payload = { ...this.form };
-        const hasStamp = this.initiatorStampList.length > 0;
+        const hasStamp = this.sealTempList.length > 0;
         const hasVm = this.signaturePositionsTemp.length > 0;
 
         if (this.isNew) {
-          // 檢查起約人是否有用印及圈選用印區塊
+          // 檢查起約人是否有用印
           if (!this.form.usedStamp && !hasStamp) {
             this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base">請檢查文件是否已用印</div>`;
             $("#infoModal").modal("show");
@@ -1048,7 +1056,7 @@
             });
             // 去重複
             signaturePage = [...new Set(signaturePage)].join('、 ');
-            this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base">您第 ${signaturePage} 頁尚未簽暑完成</div>`;
+            this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base">請檢查第 ${signaturePage} 頁尚未簽暑完成</div>`;
             $("#infoModal").modal("show");
             return;
           };
@@ -1100,57 +1108,79 @@
         const self = this;
         clearErrors();
         const payload = {
-          ...$global.viewModel,
+          KeyID: $global.viewModel.KeyID,
           PageIndex: this.selectedPage - 1,
         };
-        $('form').ajaxForm({
-          url: '@Html.Raw(Url.Action("ResetPdfSignature", "ContractConsole"))',
-          data: payload,
-          beforeSubmit: function () {
-            showLoading();
-          },
-          success: function (data) {
-            hideLoading();
-            if ($.isPlainObject(data)) {
-              if (data.result) {
-                // 成功
-                self.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"> 已清除用印</div>`;
-                self.isClear = true;
-              }
-              else {
-                // 失敗
-                self.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;
-              }
-              $("#infoModal").modal("show");
+
+        showLoading();
+        // Post API
+        // 解決重複跑三次的問題，不用Form submit的方式做
+        $.post('@Html.Raw(Url.Action("ResetPdfSignature", "ContractConsole"))', payload, function (data) {
+          if (data.result) {
+            // 成功
+            if (self.isNew) {
+              self.sealTempList = [];
+            } else {
+              // 簽署人清除用印後要還原用印區塊
+              self.contractSignaturePositions = [...self.contractSignaturePositionsTemp];
+              self.usedStampList = [];              
+              self.currentSeal = {};
+              self.loadPageItem(self.selectedPage - 1);              
             }
-            else {
-              $(data).appendTo($('body'));
-            }
-          },
-          error: function (xhr, ajaxOptions, thrownError) {
+            loadContractPage(self.selectedPage - 1);
+            // 開啟訊息視窗
+            self.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"> 已清除用印</div>`;
+            self.isClear = true;              
             hideLoading();
-            console.log(xhr.status);
-            alertModal(thrownError);
+            $("#infoModal").modal("show");
           }
-        }).submit();
+          else {
+            // 失敗
+            self.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;            
+            hideLoading();
+            $("#infoModal").modal("show");
+          }
+          
+        });
+      },
+
+      // onLoad 清除用印
+      resetSignatureOnLoad() {
+        const self = this;
+        clearErrors();
+        const payload = {
+          KeyID: $global.viewModel.KeyID,
+          PageIndex: this.selectedPage - 1,
+        };
+        showLoading();
+        // Post API
+        // 解決重複跑三次的問題，不用Form submit的方式做
+        $.post('@Html.Raw(Url.Action("ResetPdfSignature", "ContractConsole"))', payload, function (data) {
+          if (data.result) {
+            // 成功
+            self.loadPageItem(this.selectedPage - 1);
+            loadContractPage(this.selectedPage - 1);
+            setTimeout(() => {
+              hideLoading();
+            }, 500);
+          }
+          else {
+            // 失敗
+            self.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;
+            hideLoading();
+            $("#infoModal").modal("show");
+          }
+        });
       },
 
       /********** 用印區塊 ***********/
       // 虛擬文字框
-      createVirtualText(string) {
+      createVirtualText(noteString) {
         const self = this;
-        // 未套用前一次只能新增一個虛擬框
-        if (this.currentSeal.Id) {
-          const currentNote = document.querySelector(`#${this.currentSeal.Id}`);
-          currentNote.remove();
-          // 將新增用印取消記錄
-          this.initiatorStampList = this.initiatorStampList.filter(item => item.id !== this.currentSeal.Id);
-        }
-        this.currentSeal = { ...this.initSeal };
         const contractArea = document.querySelector("#contractImg");
-        const element = document.querySelector('.editItem');
+        const editItem = document.querySelector('.editItem'); // 編輯中檔案
 
-        if (!element) {
+        if (!editItem) {
           // 產生一個虛擬 textBox
           const textBox = document.createElement("div");
           // id 動態產生
@@ -1161,94 +1191,112 @@
           document.querySelector("#contractImg").appendChild(textBox);
           // 產生文字內容並放到 textBox
           textBox.innerHTML = `
-            <div id="note-${uuid}-text" class="note">${string}</div>
+            <div id="note-${uuid}-text" class="note">${noteString}</div>
             <div id="scaleText-${uuid}" class="vmScale"></div>
-            <button id="delNote-${uuid}" class="btn btn-sm text-white vmDelete"><i class="far fa-times"></i></button>
+            <button id="delNote-${uuid}" class="btn btn-sm vmDelete"><i class="far fa-times"></i></button>
             <button id="useAllNote-${uuid}" class="btn btn-success opacity-75 btn-sm vmUseAll"> 套用文件 </button>
             <button id="useNote-${uuid}" class="btn btn-success opacity-75 btn-sm vmUse"> 套用 </utton>`;
 
-          const note = document.querySelector(`#${uuid}`);
+          // 未套用前一次只能新增一個虛擬框
+          const currentId = this.currentSeal.Id;
+          if (currentId) {
+            const currentNote = document.querySelector(`#${currentId}`);
+            currentNote.remove();
+          }
+
           const textInput = document.querySelector(`#note-${uuid}-text`);
-          note.style.height = `${textInput.offsetHeight}px`;
-          // textInput.style.left = `calc(100px)`;
-          // textInput.style.top = `calc(10px)`;
-          this.currentSeal.MarginTop = (note.offsetTop / 37.7).toFixed(2);
-          this.currentSeal.MarginLeft = (note.offsetLeft / 37.7).toFixed(2);
-          this.currentSeal.SealScale = 100; // 目前寬度取值用這個
-          this.currentSeal.Width = 220;
-          //this.currentSeal.Height = 100;
+
+          // 將新增的文字檔資料暫存
+          const noteData = {
+            Id: textBox.id,
+            Note: noteString,
+            currentItem: textBox,
+            MarginTop: (textBox.offsetTop / 37.7).toFixed(2),
+            MarginLeft: (textBox.offsetLeft / 37.7).toFixed(2),
+            SealScale: 100, // 目前寬度取值用這個
+            Width: 220,
+            Height: `${textInput.offsetHeight}px`,
+            PageIndex: this.selectedPage - 1
+          }
+          this.currentSeal.Id = uuid;
 
           // 滑鼠拖曳效果
-          note.onmousedown = (ev) => {
-            this.dragHandler(ev, uuid, note, contractArea);
+          textBox.onmousedown = (ev) => {
+            this.dragHandler(ev, noteData, contractArea);
           };
 
           // 文字區塊縮放效果
           const scale = document.querySelector(`#scaleText-${uuid}`);
           scale.onmousedown = (ev) => {
-            this.scaleHandler(ev, note, textInput, contractArea);
+            this.scaleHandler(ev, noteData, textInput, contractArea);
           };
 
           // 取消文字區塊
           const deleteNote = document.querySelector(`#delNote-${uuid}`);
           deleteNote.onmousedown = (ev) => {
-            this.deleteHandler(ev, note, contractArea);
+            this.deleteHandler(ev, noteData, contractArea);
           };
 
           // 套用 - 文字區塊
           const useNote = document.querySelector(`#useNote-${uuid}`);
           useNote.onmousedown = (ev) => {
-            this.useNoteHandler(ev, note, contractArea, false);
+            this.useNoteHandler(ev, noteData, contractArea, false);
           };
 
           // 套用整份文件 - 文字區塊
           const useAllNote = document.querySelector(`#useAllNote-${uuid}`);
           useAllNote.onmousedown = (ev) => {
-            this.useNoteHandler(ev, note, contractArea, true);
+            this.useNoteHandler(ev, noteData, contractArea, true);
           };
-
-          this.currentSeal.Id = uuid;
-          this.currentSeal.SealScale = 100;
         } else {
+          const self = this;
           // 未套用前一次只能新增一個虛擬框
-          if (this.currentSeal.Id) {
-            const currentNote = document.querySelector(`#${this.currentSeal.Id}`);
-            currentNote.remove();
-          }
-          this.currentSeal = { ...this.initSeal };
+          const currentItemFilter = this.usedStampList.filter(item => item.Id !== editItem.id);
+          this.usedStampList = currentItemFilter;
+          
           // 簽署人用印
-          element.innerHTML = '';
-          element.innerHTML = `
-          <div id="note-${element.id}-text" class="note">${string}</div>
-          <div id="vmBox-${element.id}-subtext" class="vmBox__subtext">點擊區塊進行編輯</div>
-          <button id="useNote-${element.id}" class="btn btn-success opacity-75 btn-sm vmUse"> 套用 </utton>
+          editItem.innerHTML = '';
+          editItem.innerHTML = `
+          <div id="note-${editItem.id}-text" class="note">${noteString}</div>
+          <button id="useNote-${editItem.id}" class="btn btn-success opacity-75 btn-sm vmUse"> 套用 </utton>
           `;
 
-          const textInput = document.querySelector(`#note-${element.id}-text`);
+          const textInput = document.querySelector(`#note-${editItem.id}-text`);
 
-          this.currentSeal.Id = element.id;
-          this.currentSeal.MarginTop = (element.offsetTop / 37.7).toFixed(2);
-          this.currentSeal.MarginLeft = (element.offsetLeft / 37.7).toFixed(2);
-          this.currentSeal.SealScale = 100; // 目前寬度取值用這個
-          this.currentSeal.Width = element.offsetWidth;
-          this.currentSeal.Height = element.offsetHeight;
+          // 將新增的文字檔資料暫存
+          const noteData = {
+            Id: editItem.id,
+            Note: noteString,
+            currentItem: editItem,
+            MarginTop: (editItem.offsetTop / 37.7).toFixed(2),
+            MarginLeft: (editItem.offsetLeft / 37.7).toFixed(2),
+            SealScale: 100, // 目前寬度取值用這個
+            Width: editItem.offsetWidth,
+            Height: editItem.offsetHeight,
+            PageIndex: this.selectedPage - 1
+          }
+
+          // 用印暫存列表
+          this.usedStampList.push(noteData);
 
           // 套用 - 文字區塊
-          const useNote = document.querySelector(`#useNote-${element.id}`);
+          const useNote = document.querySelector(`#useNote-${editItem.id}`);
           useNote.onmousedown = (ev) => {
-            this.useNoteHandler(ev, element, contractArea, false);
+            const sealFilter = self.usedStampList.filter(item => item.Id === editItem.id)[0];
+            self.useNoteHandler(ev, sealFilter, contractArea, false);
           };
         }
       },
 
       // 滑鼠拖曳效果
-      dragHandler(ev, uuid, note, contractArea) {
+      dragHandler(ev, noteData, contractArea) {
         const self = this;
         const oEvent = ev;
         // 阻擋瀏覽器的預設行為
         oEvent.preventDefault();
-        const disX = oEvent.clientX - note.offsetLeft;
-        const disY = oEvent.clientY - note.offsetTop;
+        const { Id, Note, currentItem, MarginTop, MarginLeft, SealScale, Width, Height, PageIndex } = noteData;
+        const disX = oEvent.clientX - currentItem.offsetLeft;
+        const disY = oEvent.clientY - currentItem.offsetTop;
         contractArea.onmousemove = function (ev) {
           ev.preventDefault();
           let x = ev.clientX - disX;
@@ -1256,38 +1304,37 @@
 
           // 文字區塊移動時的邊界判斷-必須在文件內的範圍
           x = x <= 0 ? 0 : x;
-          x = x >= contractArea.offsetWidth - note.offsetWidth ? contractArea.offsetWidth - note.offsetWidth : x;
+          x = x >= contractArea.offsetWidth - currentItem.offsetWidth ? contractArea.offsetWidth - currentItem.offsetWidth : x;
           y = y <= 0 ? 0 : y;
-          y = y >= contractArea.offsetHeight - note.offsetHeight ? contractArea.offsetHeight - note.offsetHeight : y;
-          note.style.left = x + 'px';
-          note.style.top = y + 'px';
-          let MarginLeft = (x / 37.7).toFixed(2);
-          let MarginTop = (y / 37.7).toFixed(2);
-          // console.log('mx-左邊界(cm):', MarginLeft);
-          // console.log('my-上邊界(cm):', MarginTop);
-          self.currentSeal.MarginLeft = MarginLeft;
-          self.currentSeal.MarginTop = MarginTop;
+          y = y >= contractArea.offsetHeight - currentItem.offsetHeight ? contractArea.offsetHeight - currentItem.offsetHeight : y;
+          currentItem.style.left = x + 'px';
+          currentItem.style.top = y + 'px';
+          // MarginLeft: 左邊界(cm)
+          // MarginTop: 上邊界(cm)
+          noteData.MarginLeft = (x / 37.7).toFixed(2);
+          noteData.MarginTop = (y / 37.7).toFixed(2);
         }
         // 文字區塊移出文件範圍取消移動是,防止移動過快觸發滑鼠移出事件，導致滑鼠彈起事件失效
         contractArea.onmouseleave = function () {
           self.unBinding(contractArea);
         }
-        // 署標彈起後停止移動
+        // 鼠標彈起後停止移動
         contractArea.onmouseup = function () {
           self.unBinding(contractArea);
         }
       },
 
       // 文字區塊縮放效果
-      scaleHandler(ev, note, textInput, contractArea) {
+      scaleHandler(ev, noteData, textInput, contractArea) {
         const self = this;
         const oEvent = ev;
         // 阻止冒泡,避免縮放時觸發移動事件
         oEvent.stopPropagation();
         oEvent.preventDefault();
+        const { Id, Note, currentItem, MarginTop, MarginLeft, SealScale, Width, Height, PageIndex } = noteData;
         const pos = {
-          'w': note.offsetWidth,
-          'h': note.offsetHeight,
+          'w': currentItem.offsetWidth,
+          'h': currentItem.offsetHeight,
           'x': ev.clientX,
           'y': ev.clientY
         };
@@ -1296,15 +1343,12 @@
           // 設置文字區塊的最小縮放為100*30
           let w = Math.max(160, ev.clientX - pos.x + pos.w);
           let h = Math.max(30, ev.clientY - pos.y + pos.h);
-          const noteHeight = textInput.offsetHeight;
 
           // 設置文字區塊的最大寬高
-          // w = w >= contractArea.offsetWidth - note.offsetLeft ? contractArea.offsetWidth - note.offsetLeft : w < 170 ? 170 : w;
-          // h = h >= contractArea.offsetHeight - note.offsetTop ? contractArea.offsetHeight - note.offsetTop : h < noteHeight + 5 ? noteHeight + 15 : h;
-          note.style.width = `${w}px`;
-          note.style.height = h > textInput.offsetHeight ? `${h}px` : `${textInput.offsetHeight}px`;
-          self.currentSeal.Width = w;
-          self.currentSeal.Height = h;
+          currentItem.style.width = `${w}px`;
+          currentItem.style.height = h > textInput.offsetHeight ? `${h}px` : `${textInput.offsetHeight}px`;
+          noteData.Width = w;
+          noteData.Height = h;
         }
         contractArea.onmouseleave = function () {
           self.unBinding(contractArea);
@@ -1315,15 +1359,15 @@
       },
 
       // 取消文字區塊
-      deleteHandler(ev, note, contractArea) {
+      deleteHandler(ev, noteData, contractArea) {
         const self = this;
         const oEvent = ev;
         // 阻止冒泡,避免縮放時觸發移動事件
         oEvent.stopPropagation();
         oEvent.preventDefault();
-        note.remove();
+        noteData.currentItem.remove();
 
-        this.currentSeal = { ...this.initSeal };
+        this.currentSeal = {};
         this.noteItem = null;
 
         contractArea.onmouseleave = function () {
@@ -1335,21 +1379,14 @@
       },
 
       // 套用文字區塊
-      useNoteHandler(ev, note, contractArea, status) {
+      useNoteHandler(ev, noteData, contractArea, status) {
         const self = this;
         const oEvent = ev;
         // 阻止冒泡,避免縮放時觸發移動事件
         oEvent.stopPropagation();
         oEvent.preventDefault();
         // 套用文字區塊
-        this.commitNote(note.querySelector('.note').innerText, status);
-
-        // 將新增用印記錄起來
-        const noteinfo = {
-          id: note.id,
-          type: '2'
-        }
-        this.initiatorStampList.push(noteinfo);
+        this.commitNote(noteData, status);
 
         contractArea.onmouseleave = function () {
           self.unBinding(contractArea);
@@ -1364,37 +1401,44 @@
         contractArea.onmouseup = null;
       },
 
-      // 儲存 套用文字區塊
-      commitNote(note, doAllPages) {
+      // 儲存 - 套用文字區塊
+      commitNote(noteData, doAllPages) {
         const self = this;
         clearErrors();
+        const { Id, Note, currentItem, MarginTop, MarginLeft, SealScale, Width, Height, PageIndex } = noteData
         const payload = {
-          ...$global.viewModel,
-          Note: note,
-          DoAllPages: doAllPages || false,
-          PageIndex: this.selectedPage - 1,
-          MarginLeft: Number(this.currentSeal.MarginLeft),
-          MarginTop: Number(this.currentSeal.MarginTop),
-          SealScale: (Number(this.currentSeal.Width) / 37.795).toFixed(2),
-          //height: (Number(this.currentSeal.Height) / 37.795).toFixed(2),
+          Id,
+          Note,
+          SealScale,
+          MarginTop,
+          MarginLeft,
+          Width: (Number(Width) / 37.795).toFixed(2),
+          Height: (Number(Height) / 37.795).toFixed(2),
+          PageIndex: PageIndex,
+          DoAllPages: doAllPages,
+          KeyID: $global.viewModel.KeyID
         }
         showLoading();
         $.post('@Html.Raw(Url.Action("CommitPdfNote", "ContractConsole"))', payload, function (data) {
           hideLoading();
           if ($.isPlainObject(data)) {
             if (data.result) {
-              loadContractPage(payload.PageIndex);
-              const currentNote = document.querySelector(`#${self.currentSeal.Id}`);
-              currentNote.remove();
               if (!this.isNew) {
-                const { Id } = self.currentSeal;
-                const listDataFilter = self.contractSignaturePositions.filter(item => item.ID !== Id);
-                self.contractSignaturePositions = listDataFilter;
+                // 套用一筆 contractSignaturePositions 要刪掉一筆紀錄才能計算有幾筆還未用簽
+                const contractFilter = self.contractSignaturePositions.filter(item => item.ID !== Id);
+                self.contractSignaturePositions = contractFilter;
+
+                const usedStampFilter = self.usedStampList.filter(item => item.Id !== Id);
+                self.usedStampList = usedStampFilter;
               }
 
-              self.currentSeal = { ...self.initSeal };
+              self.currentSeal = {};
               self.noteItem = null;
+              loadContractPage(PageIndex);
 
+              if (currentItem) {
+                currentItem.remove();
+              }
             }
             else {
               alertModal(data.message);
@@ -1447,19 +1491,20 @@
         const useBox = document.querySelector(`#vmBox-${uuid}-check`);
         const editBox = document.querySelector(`#vmBox-${uuid}-edit`);
 
-        const vmSeal = { ...this.initSeal };
-        vmSeal.Id = uuid;
-        vmSeal.Type = type;
-        vmSeal.PageIndex = this.selectedPage - 1;
-        vmSeal.SealScale = 100;
-        vmSeal.ScaleWidth = 170;
-        vmSeal.ScaleHeight = 50;
-        vmSeal.MarginLeft = ((contractArea.offsetWidth - 170) / 2).toFixed(2);
-        vmSeal.MarginTop = (contractArea.offsetTop + Number(self.scrolly)).toFixed(2);
-        vmSeal.canEdit = true;
-        vmSeal.UserId = this.currentCompany.id || null;
-        vmSeal.ItemClass = this.currentCompany.ItemClass || null;
-        this.signaturePositionsTemp.push({ ...vmSeal });
+        const vmSeal = {
+          Id: uuid,
+          Type: type,
+          PageIndex: this.selectedPage - 1,
+          SealScale: 100,
+          ScaleWidth: 170,
+          ScaleHeight: 50,
+          MarginLeft: ((contractArea.offsetWidth - 170) / 2).toFixed(2),
+          MarginTop: (contractArea.offsetTop + Number(self.scrolly)).toFixed(2),
+          canEdit: true,
+          UserId: this.currentCompany.id || null,
+          ItemClass: this.currentCompany.ItemClass || null,
+        };
+        this.signaturePositionsTemp.push(vmSeal);
 
         this.operator({ uuid, contractArea, textBox, removeBox, scaleBox, useBox, editBox, subtext });
       },
@@ -1526,8 +1571,8 @@
           textBox.style.top = y + 'px';
           let MarginLeft = x.toFixed(2);
           let MarginTop = y.toFixed(2);
-          // console.log('mx-左邊界(cm):', MarginLeft);
-          // console.log('my-上邊界(cm):', MarginTop);
+          // MarginLeft: 左邊界(cm)
+          // MarginTop: 上邊界(cm)
 
           // 設定 簽署人區塊時要記錄上邊界和左邊界
           if (uuid) {
@@ -1684,18 +1729,13 @@
           window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
         };
         if (this.isClear) {
-          loadContractPage(this.selectedPage - 1);
-          this.currentSeal = { ...this.initSeal };
           this.isClear = false;
-
-          // 簽署人清除用印後要還原用印區塊
-          if (!this.isNew) {
-            const listDataFilter = this.contractSignaturePositionsTemp
-              .filter(item => item.PageIndex === this.selectedPage - 1);
-            this.contractSignaturePositions = this.contractSignaturePositions.concat(listDataFilter);
-            this.loadPageItem(this.selectedPage - 1)
-          }
         };
+      },
+
+      // 返回合約查詢
+      backSearch() {
+        window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
       }
     },
   });
@@ -1705,7 +1745,6 @@
   // 選擇印鑑
   function useSealHandler(sealID, id) {
     $('#sealModal').modal('hide');
-    $global.viewModel.SealID = sealID;
     const contractArea = document.querySelector("#contractImg");
     const pageItem = document.querySelector("#pdf__wrapper");
     const editItem = document.querySelector('.editItem');
@@ -1723,36 +1762,54 @@
       sealBox.innerHTML = `
       <img id="seal-${uuid}-img" class="sealimg h-100" src="${document.getElementById(id).getAttribute('src')}">
       <div id="scale-${uuid}" class="vmScale"></div>
-      <button id="del-${uuid}" class="btn btn-sm text-white vmDelete"><i class="far fa-times"></i></button>
+      <button id="del-${uuid}" class="btn btn-sm vmDelete"><i class="far fa-times"></i></button>
       <button id="useAllSeal-${uuid}" class="btn btn-success opacity-75 btn-sm vmUseAll">套用文件</button>
       <button id="useSeal-${uuid}" class="btn btn-success opacity-75 btn-sm vmUse">套用</button>`;
 
-      const seal = document.querySelector(`#${uuid}`);
-      const sealImg = document.querySelector(`#seal-${uuid}-img`);
-
       // 未套用前一次只能新增一個虛擬框
-      if ($global.currentSeal) {
-        $global.currentSeal.remove();
+      const currentId = app.$data.currentSeal.Id;
+      if (currentId) {
+        const currentSeal = document.querySelector(`#${currentId}`);
+        currentSeal.remove();
       }
-      // 取得圖片類型
+
+      // 取得圖片類型 (用印 / 簽名)
       const stampType = $global.viewModel.stampType ? $global.viewModel.stampType : 'seal';
-      $global.currentSeal = seal;
-      $global.viewModel.MarginLeft = (seal.offsetLeft / 37.7).toFixed(2);
-      $global.viewModel.MarginTop = (seal.offsetTop / 37.7).toFixed(2);
-      var hScale = ((sealImg.width / sealImg.naturalWidth) * 100);
-      seal.style.width = `${sealImg.width}px`;
-      // console.log('圖片的寬的縮放比 %:', hScale);
+      const sealImg = document.querySelector(`#seal-${uuid}-img`);
+      const sealImgWidth = sealImg.width;
+      const sealImgHeight = sealImg.offsetHeight;
+      var hScale = ((sealImgWidth / sealImg.naturalWidth) * 100);
+
+      // 設置框最小縮放為160*30
+      var w = Math.max(160, sealImgWidth)
+      var h = Math.max(30, sealImgHeight)
+
+      // 設置圖片虛擬框的寬高
+      sealBox.style.width = w <= sealImgWidth ? `${sealImgWidth}px` : `${w}px`;
+      sealBox.style.height = h + 'px';
+
       // 顯示和實際貼圖的比例差了 1.2 倍
       // 使用簽名時，不需要乘 1.2，原因待查
-      $global.viewModel.SealScale = stampType === 'seal' ? hScale * 1.2 : hScale;
+      let sealData = {
+        Id: sealBox.id,
+        SealID: sealID,
+        currentItem: sealBox,
+        SealScale: stampType === 'seal' ? (hScale * 1.2).toFixed(2) : hScale,
+        MarginLeft: (sealBox.offsetLeft / 37.7).toFixed(2),
+        MarginTop: (sealBox.offsetTop / 37.7).toFixed(2),
+        stampType: stampType,
+        useSeal: true,
+        PageIndex: app.$data.selectedPage - 1
+      }
+      app.$data.currentSeal.Id = uuid;
 
       // 滑鼠拖曳效果
-      seal.onmousedown = function (ev) {
+      sealBox.onmousedown = function (ev) {
         var oEvent = ev;
         // 阻擋瀏覽器的預設行為
         oEvent.preventDefault();
-        var disX = oEvent.clientX - seal.offsetLeft;
-        var disY = oEvent.clientY - seal.offsetTop;
+        var disX = oEvent.clientX - sealBox.offsetLeft;
+        var disY = oEvent.clientY - sealBox.offsetTop;
         contractArea.onmousemove = function (ev) {
           oEvent = ev;
           oEvent.preventDefault();
@@ -1761,17 +1818,15 @@
 
           // 圖形移動時的邊界判斷-必須在文件內的範圍
           x = x <= 0 ? 0 : x;
-          x = x >= contractArea.offsetWidth - seal.offsetWidth ? contractArea.offsetWidth - seal.offsetWidth : x;
+          x = x >= contractArea.offsetWidth - sealBox.offsetWidth ? contractArea.offsetWidth - sealBox.offsetWidth : x;
           y = y <= 0 ? 0 : y;
-          y = y >= contractArea.offsetHeight - seal.offsetHeight ? contractArea.offsetHeight - seal.offsetHeight : y;
-          seal.style.left = x + 'px';
-          seal.style.top = y + 'px';
-          const MarginLeft = (x / 37.795).toFixed(2);
-          const MarginTop = (y / 37.795).toFixed(2);
-          // console.log('mx-左邊界(cm):', MarginLeft);
-          // console.log('my-上邊界(cm):', MarginTop);
-          $global.viewModel.MarginLeft = MarginLeft;
-          $global.viewModel.MarginTop = MarginTop;
+          y = y >= contractArea.offsetHeight - sealBox.offsetHeight ? contractArea.offsetHeight - sealBox.offsetHeight : y;
+          sealBox.style.left = x + 'px';
+          sealBox.style.top = y + 'px';
+          // MarginLeft: 左邊界(cm)
+          // MarginTop: 上邊界(cm)
+          sealData.MarginLeft = (x / 37.795).toFixed(2);
+          sealData.MarginTop = (y / 37.795).toFixed(2);
         }
         // 圖形移出文件範圍取消移動是,防止移動過快觸發滑鼠移出事件，導致滑鼠彈起事件失效
         contractArea.onmouseleave = function () {
@@ -1790,8 +1845,8 @@
         oEvent.stopPropagation();
         oEvent.preventDefault();
         var pos = {
-          'w': seal.offsetWidth,
-          'h': seal.offsetHeight,
+          'w': sealBox.offsetWidth,
+          'h': sealBox.offsetHeight,
           'x': oEvent.clientX,
           'y': oEvent.clientY
         };
@@ -1803,17 +1858,15 @@
 
           // 設置圖片的寬高
           const sealImgHeight = sealImg.offsetHeight;
-          // w = w >= contractArea.offsetWidth - seal.offsetLeft ? contractArea.offsetWidth - seal.offsetLeft : w;
-          // h = h >= contractArea.offsetHeight - seal.offsetTop ? contractArea.offsetHeight - seal.offsetTop : h < sealImgHeight ? sealImgHeight : h;
-          seal.style.width = w <= sealImg.width ? `${sealImg.width}px` : `${w}px`;
-          seal.style.height = h + 'px';
+          sealBox.style.width = w <= sealImg.width ? `${sealImg.width}px` : `${w}px`;
+          sealBox.style.height = h + 'px';
 
           // 取得圖片縮放 % 比
           // 顯示和實際貼圖的比例差了 1.2 倍
           // 使用簽名時，不需要乘 1.2，原因待查
           hScale = ((sealImg.width / sealImg.naturalWidth) * 100);
           // var vScale = ((sealImg.height / sealImg.naturalHeight) * 100);
-          $global.viewModel.SealScale = stampType === 'seal' ? hScale * 1.2 : hScale;
+          sealData.SealScale = stampType === 'seal' ? hScale * 1.2 : hScale;
         }
         contractArea.onmouseleave = function () {
           sealUnBinding(contractArea);
@@ -1831,8 +1884,8 @@
         // 阻止冒泡,避免縮放時觸發移動事件
         oEvent.stopPropagation();
         oEvent.preventDefault();
-        seal.remove();
-        delete $global.viewModel.SealID;
+        sealBox.remove();
+        sealData = {};
 
         contractArea.onmouseleave = function () {
           sealUnBinding(contractArea);
@@ -1845,24 +1898,26 @@
       // 套用整份文件印鑑檔
       const useAllSeal = document.querySelector(`#useAllSeal-${uuid}`);
       useAllSeal.onmousedown = function (ev) {
-        applySealHandler(ev, sealBox, contractArea, true);;
+        applySealHandler(ev, sealData, contractArea, true);
       }
 
       // 套用印鑑檔
       const useSeal = document.querySelector(`#useSeal-${uuid}`);
       useSeal.onmousedown = function (ev) {
-        applySealHandler(ev, sealBox, contractArea, false);;
+        applySealHandler(ev, sealData, contractArea, false);
       }
     } else {
-      // 未套用前一次只能新增一個虛擬框
-      if ($global.currentSeal) {
-        $global.currentSeal.remove();
-      }
-      // 簽署人用印
+      // 未套用前一次只能選擇一個虛擬框
+      const currentItemFilter = app.$data.usedStampList.filter(item => item.Id !== editItem.id);
+      app.$data.usedStampList = currentItemFilter;
+
+      // 簽署人用印 - 選擇印鑑後置入用印區塊
+      const sealBox = document.querySelector(`#${editItem.id}`);
       editItem.innerHTML = '';
-      editItem.innerHTML = `
-      <img id="seal-${editItem.id}-img" class="sealimg h-100" src="${document.getElementById(id).getAttribute('src')}">
-      <div id="vmBox-${editItem.id}-subtext" class="vmBox__subtext">點擊區塊進行編輯</div>
+      editItem.innerHTML = `      
+      <div id="vmBox-${editItem.id}-edit" class="vmBox--edit">
+        <img id="seal-${editItem.id}-img" class="sealimg h-100" src="${document.getElementById(id).getAttribute('src')}">
+      </div>
       <button id="useSeal-${editItem.id}" class="btn btn-success opacity-75 btn-sm vmUse"> 套用 </utton>
       `;
       const sealImg = document.querySelector(`#seal-${editItem.id}-img`);
@@ -1879,35 +1934,51 @@
       }
       hScale = ((sealImg.width / sealImg.naturalWidth) * 100).toFixed(2);
 
-      $global.useSeal = true;
-      $global.currentSeal = editItem;
-      $global.viewModel.SealScale = stampType === 'seal' ? hScale * 1.2 : hScale;
-      $global.viewModel.MarginLeft = (editItem.offsetLeft / 37.7).toFixed(2);
-      $global.viewModel.MarginTop = (editItem.offsetTop / 37.7).toFixed(2);
+      // 將新增的印鑑檔資料暫存
+      const sealData = {
+        Id: editItem.id,
+        SealID: sealID,
+        currentItem: editItem,
+        SealScale: stampType === 'seal' ? (hScale * 1.2).toFixed(2) : hScale,
+        MarginLeft: (editItem.offsetLeft / 37.7).toFixed(2),
+        MarginTop: (editItem.offsetTop / 37.7).toFixed(2),
+        stampType: stampType,
+        useSeal: true,
+        PageIndex: app.$data.selectedPage - 1
+      }
+
+      // 用印暫存列表
+      app.$data.usedStampList.push(sealData);
 
       // 套用印鑑檔
       const useSeal = document.querySelector(`#useSeal-${editItem.id}`);
       useSeal.onmousedown = function (ev) {
-        applySealHandler(ev, contractArea, false);;
+        const sealFilter = app.$data.usedStampList.filter(item => item.Id === editItem.id)[0];
+        applySealHandler(ev, sealFilter, contractArea, false);
       }
+
+      // 編輯印章
+      const editBox = document.querySelector(`#vmBox-${editItem.id}-edit`);
+      editBox.addEventListener('click', function () {
+        // 一次只能出現一個 editItem
+        const children = contractArea.children;
+        children.forEach(item => item.classList.remove('editItem'));
+        sealBox.classList.add('editItem');
+        // 簽章
+        app.sealHandler();
+      })
     }
   };
 
   // 套用印鑑檔
-  function applySealHandler(ev, sealBox, contractArea, doAllPages) {
+  function applySealHandler(ev, sealFilter, contractArea, doAllPages) {
     var oEvent = ev;
     // 阻止冒泡,避免縮放時觸發移動事件
     oEvent.stopPropagation();
     oEvent.preventDefault();
     // 套用印鑑
-    commitSignature(doAllPages);
 
-    // 將新增用印記錄起來
-    const sealinfo = {
-      id: sealBox.id,
-      type: '1'
-    }
-    app.$data.initiatorStampList.push(sealinfo);
+    commitSignature(sealFilter, doAllPages);
 
     contractArea.onmouseleave = function () {
       sealUnBinding(contractArea);
@@ -1917,8 +1988,52 @@
     }
   };
 
+  // 儲存 - 套用印鑑檔
+  function commitSignature(sealData, doAllPages) {
+    clearErrors();
+    const { Id, SealID, currentItem, SealScale, MarginLeft, MarginTop, stampType, useSeal, PageIndex } = sealData;
+    const payload = {
+      SealID,
+      SealScale,
+      MarginLeft,
+      MarginTop,
+      stampType,
+      PageIndex,
+      DoAllPages: doAllPages,
+      KeyID: $global.viewModel.KeyID
+    };
+    showLoading();
+    $.post('@Html.Raw(Url.Action("CommitPdfSignature", "ContractConsole"))', payload, function (data) {
+      hideLoading();
+      if ($.isPlainObject(data)) {
+        if (data.result) {
+          if (app.isNew) {
+            // 用印暫存列表
+            app.$data.sealTempList.push(sealData);
+          } else {
+            if (useSeal) {
+              // 套用一筆 contractSignaturePositions 要刪掉一筆紀錄才能計算有幾筆還未用簽
+              const listData = app.$data.contractSignaturePositions;
+              const listDataFilter = listData.filter(item => item.ID !== Id);
+              app.$data.contractSignaturePositions = listDataFilter;
+
+              const usedStampFilter = app.$data.usedStampList.filter(item => item.Id !== Id);
+              app.$data.usedStampList = usedStampFilter;
+            }
+          }
+          app.$data.currentSeal = {};
+          currentItem && currentItem.remove();
+          loadContractPage(PageIndex);
+        } else {
+          alertModal(data.message);
+        }
+      } else {
+        $(data).appendTo($('body'));
+      }
+    });
+  };
+
   // 新增印鑑檔
-  let sealList = [];
   function addSealHandler() {
     var event = event || window.event;
     if (event.target.form != undefined) {
@@ -1983,39 +2098,6 @@
         hideLoading();
         console.log(xhr.status);
         console.log(thrownError);
-      }
-    });
-  };
-
-  // 套用印鑑檔
-  function commitSignature(doAllPages) {
-    clearErrors();
-    $global.viewModel.DoAllPages = doAllPages;
-    $global.viewModel.PageIndex = Number($('select[name="PageIndex"]').val() - 1);
-    showLoading();
-    $.post('@Html.Raw(Url.Action("CommitPdfSignature", "ContractConsole"))', $global.viewModel, function (data) {
-      hideLoading();
-      if ($.isPlainObject(data)) {
-        if (data.result) {
-          loadContractPage($('select[name="PageIndex"]').val() - 1);
-          // 套用一筆 contractSignaturePositions 要刪掉一筆紀錄才能計算有幾筆還未用簽
-          if (!!$global.useSeal) {
-            const sealId = $global.currentSeal.id;
-            const listData = app.$data.contractSignaturePositions;
-            const listDataFilter = listData.filter(item => item.ID !== sealId);
-            app.$data.contractSignaturePositions = listDataFilter;
-            $global.useSeal = false;
-          }
-
-          if ($global.currentSeal) {
-            $global.currentSeal.remove();
-          }
-          delete $global.viewModel.SealID;
-        } else {
-          alertModal(data.message);
-        }
-      } else {
-        $(data).appendTo($('body'));
       }
     });
   };
