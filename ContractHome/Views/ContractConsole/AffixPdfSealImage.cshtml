@@ -1115,12 +1115,10 @@
               self.sealTempList = [];
             } else {
               // 簽署人清除用印後要還原用印區塊
-              self.loadPageItem(self.selectedPage - 1);              
-              const listDataFilter = self.contractSignaturePositionsTemp
-                .filter(item => item.PageIndex === self.selectedPage - 1);
               self.contractSignaturePositions = [...self.contractSignaturePositionsTemp];
               self.usedStampList = [];              
               self.currentSeal = {};
+              self.loadPageItem(self.selectedPage - 1);              
             }
             loadContractPage(self.selectedPage - 1);
             // 開啟訊息視窗
@@ -1193,8 +1191,9 @@
             <button id="useNote-${uuid}" class="btn btn-success opacity-75 btn-sm vmUse"> 套用 </utton>`;
 
           // 未套用前一次只能新增一個虛擬框
-          if (this.currentSeal.Id) {
-            const currentNote = document.querySelector(`#${this.currentSeal.Id}`);
+          const currentId = this.currentSeal.Id;
+          if (currentId) {
+            const currentNote = document.querySelector(`#${currentId}`);
             currentNote.remove();
           }
 
@@ -1212,6 +1211,7 @@
             Height: `${textInput.offsetHeight}px`,
             PageIndex: this.selectedPage - 1
           }
+          this.currentSeal.Id = uuid;
 
           // 滑鼠拖曳效果
           textBox.onmousedown = (ev) => {
@@ -1241,17 +1241,12 @@
           useAllNote.onmousedown = (ev) => {
             this.useNoteHandler(ev, noteData, contractArea, true);
           };
-
-          this.currentSeal.Id = uuid;
-          //this.currentSeal.SealScale = 100;
         } else {
           const self = this;
           // 未套用前一次只能新增一個虛擬框
-          if (this.currentSeal.Id) {
-            const currentNote = document.querySelector(`#${this.currentSeal.Id}`);
-            currentNote.remove();
-          }
-          //this.currentSeal = { ...this.initSeal };
+          const currentItemFilter = this.usedStampList.filter(item => item.Id !== editItem.id);
+          this.usedStampList = currentItemFilter;
+          
           // 簽署人用印
           editItem.innerHTML = '';
           editItem.innerHTML = `
@@ -1273,7 +1268,6 @@
             Height: editItem.offsetHeight,
             PageIndex: this.selectedPage - 1
           }
-          this.usedStampList.push(noteData);
 
           // 用印暫存列表
           this.usedStampList.push(noteData);
@@ -1282,7 +1276,6 @@
           const useNote = document.querySelector(`#useNote-${editItem.id}`);
           useNote.onmousedown = (ev) => {
             const sealFilter = self.usedStampList.filter(item => item.Id === editItem.id)[0];
-            console.log('commit', { ev, noteData })
             self.useNoteHandler(ev, sealFilter, contractArea, false);
           };
         }
@@ -1762,10 +1755,11 @@
       <button id="useSeal-${uuid}" class="btn btn-success opacity-75 btn-sm vmUse">套用</button>`;
 
       // 未套用前一次只能新增一個虛擬框
-      if ($global.currentSeal) {
-        $global.currentSeal.remove();
+      const currentId = app.$data.currentSeal.Id;
+      if (currentId) {
+        const currentSeal = document.querySelector(`#${currentId}`);
+        currentSeal.remove();
       }
-      $global.currentSeal = sealBox;
 
       // 取得圖片類型 (用印 / 簽名)
       const stampType = $global.viewModel.stampType ? $global.viewModel.stampType : 'seal';
@@ -1795,6 +1789,7 @@
         useSeal: true,
         PageIndex: app.$data.selectedPage - 1
       }
+      app.$data.currentSeal.Id = uuid;
 
       // 滑鼠拖曳效果
       sealBox.onmousedown = function (ev) {
@@ -1939,6 +1934,7 @@
         useSeal: true,
         PageIndex: app.$data.selectedPage - 1
       }
+
       // 用印暫存列表
       app.$data.usedStampList.push(sealData);
 
@@ -2013,7 +2009,7 @@
               app.$data.usedStampList = usedStampFilter;
             }
           }
-
+          app.$data.currentSeal = {};
           currentItem && currentItem.remove();
           loadContractPage(PageIndex);
         } else {
