@@ -1,16 +1,29 @@
-﻿using DocumentFormat.OpenXml.Wordprocessing;
+﻿using ContractHome.Models.Email.Template;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.Extensions.Options;
 
 namespace ContractHome.Models.Email
 {
-    public class EmailDataFactory
+    public class EmailFactory
     {
         private readonly MailSettings _mailSettings;
-        public EmailDataFactory(IOptions<MailSettings> mailSettingsOptions)
+        public EmailFactory(IOptions<MailSettings> mailSettingsOptions)
         {
             _mailSettings = mailSettingsOptions.Value;
         }
-        public MailData GetMailDataToCustomer(string email, string subject, string body)
+
+        internal MailSettings MailSettings => _mailSettings;
+        public string GetEmailTitle(EmailBody.EmailTemplate emailTemplate)
+        {
+            if (emailTemplate == EmailBody.EmailTemplate.NotifySeal)
+                return @"[安心簽]用印通知信";
+            else if (emailTemplate == EmailBody.EmailTemplate.NotifySign)
+                return @"[安心簽]簽署通知信";
+            else
+                return @"[安心簽]通知信";
+
+        }
+        public MailData GetEmailToCustomer(string email, string subject, string body)
         {
             List<string> emailList = new List<string>
             {
@@ -30,7 +43,7 @@ namespace ContractHome.Models.Email
                 );
 
         }
-        public MailData GetMailDataToSystemNotify(string subject, string body)
+        public MailData GetEmailToSystem(string subject, string body)
         {
             List<string> emailList = new List<string>
             {

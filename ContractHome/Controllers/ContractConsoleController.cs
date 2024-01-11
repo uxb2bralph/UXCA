@@ -15,6 +15,8 @@ using System.Web;
 using Newtonsoft.Json;
 using System.ComponentModel;
 using System.Linq;
+using ContractHome.Models.Email.Template;
+using ContractHome.Models.Email;
 
 namespace ContractHome.Controllers
 {
@@ -24,11 +26,14 @@ namespace ContractHome.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private UserRepository? _userProfileRepository;
-        private ContractRepository? _contractRepository;
+        private ContractServices? _contractServices;
+        private readonly IMailService _mailService;
         public ContractConsoleController(ILogger<HomeController> logger,
             IServiceProvider serviceProvider) : base(serviceProvider)
         {
             _logger = logger;
+            _contractServices = ServiceProvider.GetRequiredService<ContractServices>(); ;
+            _mailService = ServiceProvider.GetRequiredService<IMailService>();
         }
 
         public IActionResult ApplyContract(TemplateResourceViewModel viewModel)
@@ -158,12 +163,7 @@ namespace ContractHome.Controllers
         {
             var profile = await HttpContext.GetUserAsync();
             int? uid = profile?.UID;
-#region add for postman test
-            if (uid == null)
-            {
-                uid = Int32.Parse(HttpUtility.UrlDecode(viewModel.EncUID!).DecryptData());
-            }
-            #endregion
+
             if (uid == null)
             {
                 return Json(new { result = false, message = "身份驗證失敗." });
@@ -237,51 +237,71 @@ namespace ContractHome.Controllers
 
 
             models.SubmitChanges();
-
-            _contractRepository = new ContractRepository(models, viewModel.ContractID);
-            if (viewModel.Contractors!.Length == 1)
+            try
             {
-                var contractorID = viewModel.Contractors[0].ContractorID;
-                var initiatorID = viewModel.InitiatorID!.Value;
-                _contractRepository.CreateAndSaveParty(
-                    initiatorID: initiatorID,
-                    contractorID: contractorID ?? 0,
-                    viewModel.Contractors[0].SignaturePositions,
-                    uid ?? 0);
-
-                return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
-            }
-
-            for (int i = 0; i < viewModel.Contractors!.Length; i++)
-            {
-                var contractorID = viewModel.Contractors[i].ContractorID;
-                var initiatorID = viewModel.InitiatorID!.Value;
-
-                if ((contract.IsJointContracting == true)||(i==0))
+                _contractServices?.SetModels(models);
+                List<Contract> notifyList = new List<Contract>();
+                if (viewModel.Contractors!.Length == 1)
                 {
-                    _contractRepository.CreateAndSaveParty(
+                    var contractorID = viewModel.Contractors[0].ContractorID;
+                    var initiatorID = viewModel.InitiatorID!.Value;
+                    _contractServices?.CreateAndSaveParty(
                         initiatorID: initiatorID,
                         contractorID: contractorID ?? 0,
-                        viewModel.Contractors[i].SignaturePositions,
+                        contract: contract,
+                        viewModel.Contractors[0].SignaturePositions,
                         uid ?? 0);
-                } 
-                else 
-                {
-                    var newContract = _contractRepository.CreateAndSaveContractByOld(initiatorID);
-                    var newContractRepository =
-                        new ContractRepository(models, newContract.ContractID);
 
-                    newContractRepository.CreateAndSaveParty(
-                        initiatorID: initiatorID,
-                        contractorID: contractorID ?? 0,
-                        viewModel.Contractors[i].SignaturePositions,
-                        uid ?? 0
-                    );
+                    return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
                 }
 
+                for (int i = 0; i < viewModel.Contractors!.Length; i++)
+                {
+                    var contractorID = viewModel.Contractors[i].ContractorID;
+                    var initiatorID = viewModel.InitiatorID!.Value;
 
+                    if ((contract.IsJointContracting == true) || (i == 0))
+                    {
+                        _contractServices?.CreateAndSaveParty(
+                            initiatorID: initiatorID,
+                            contractorID: contractorID ?? 0,
+                            contract: contract,
+                            viewModel.Contractors[i].SignaturePositions,
+                            uid ?? 0);
+                        notifyList.Add(contract);
+                    }
+                    else
+                    {
+                        var newContract = _contractServices.CreateAndSaveContractByOld(contract);
+
+                        _contractServices.CreateAndSaveParty(
+                            initiatorID: initiatorID,
+                            contractorID: contractorID ?? 0,
+                            contract: newContract,
+                            viewModel.Contractors[i].SignaturePositions,
+                            uid ?? 0
+                        );
+                        notifyList.Add(newContract);
+                    }
+
+                }
+                _contractServices.SaveContract();
+
+                if (notifyList.Count > 0)
+                {
+                    await foreach (var mailData in _contractServices.GetContractorNotifyEmailAsync(
+                        notifyList, EmailBody.EmailTemplate.NotifySeal))
+                    {
+                        await _mailService.SendMailAsync(mailData, default);
+                    }
+                }
             }
-            _contractRepository.SaveContract();
+            catch (Exception ex)
+            {
+                FileLogger.Logger.Error(ex);
+                return Json(new { result = false, message = "合約建立失敗." });
+            }
+
 
 
             return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });

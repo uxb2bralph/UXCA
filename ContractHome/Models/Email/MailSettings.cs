@@ -11,6 +11,7 @@
         public bool UseSSL { get; set; }
         public bool DefaultNetworkCredentials { get; set; }
         //public book UseStartTls { get; set; }
+        public bool Enable { get; set; }
 
     }
 }

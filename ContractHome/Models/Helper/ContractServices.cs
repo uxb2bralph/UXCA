@@ -3,25 +3,35 @@ using CommonLib.DataAccess;
 using CommonLib.Utility;
 using ContractHome.Helper;
 using ContractHome.Models.DataEntity;
+using ContractHome.Models.Email.Template;
+using ContractHome.Models.Email;
 using ContractHome.Models.ViewModel;
 using DocumentFormat.OpenXml.Office.CustomUI;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Newtonsoft.Json;
-using static ContractHome.Models.Helper.ContractRepository;
 
 namespace ContractHome.Models.Helper
 {
-    public class ContractRepository
+    public class ContractServices
     {
         protected internal GenericManager<DCDataContext> _models;
-        protected internal Contract? _contract;
-        public ContractRepository(GenericManager<DCDataContext> models, int? contractID) 
+        //protected internal Contract? _contract;
+        private readonly EmailFactory _emailFactory;
+        private readonly EmailBody _emailBody;
+        public ContractServices(EmailBody emailBody,
+            EmailFactory emailFactory) 
         {
-            _models = models;
-            _contract = GetContractByID(contractID);
+            _emailBody = emailBody;
+            _emailFactory = emailFactory;
+            //_contract = GetContractByID(contractID);
         }
 
-        public Contract? GetContract => _contract;
+        public void SetModels(GenericManager<DCDataContext> models)
+        {
+            _models = models;
+        }
+
+        //public Contract? GetContract => _contract;
 
         public Contract? GetContractByID(int? contractID)
         {
@@ -32,10 +42,10 @@ namespace ContractHome.Models.Helper
 
         //利用原有合約資料新增合約, for非聯合承攬用, 各別成立合約用
         //同時新增CDS_Document及Contract資料
-        public Contract? CreateAndSaveContractByOld(int initiatorID)
+        public Contract? CreateAndSaveContractByOld(Contract contract)
         {
             var doc = _models.GetTable<CDS_Document>()
-                .Where(d => d.DocID == _contract.ContractID).First();
+                .Where(d => d.DocID == contract.ContractID).First();
 
             if (doc==null)
             {
@@ -67,18 +77,19 @@ namespace ContractHome.Models.Helper
 
         public Contract CreateAndSaveParty(int initiatorID, 
             int contractorID, 
+            Contract contract,
             SignaturePosition[] SignaturePositions,
             int uid)
         {
-            if (_contract == null) { return null; };
+            if (contract == null) { return null; };
 
             #region 新增ContractingParty
             //移到[建立合約]下一洞新增ContractingParty,for甲方進行[聯合承攬]設定用印位置, 再進入[編輯合約]
-            if (!_contract.ContractingParty.Where(p => p.CompanyID == initiatorID)
+            if (!contract.ContractingParty.Where(p => p.CompanyID == initiatorID)
                 .Where(p => p.IntentID == (int)ContractingIntent.ContractingIntentEnum.Initiator)
                 .Any())
             {
-                _contract.ContractingParty.Add(new ContractingParty
+                contract.ContractingParty.Add(new ContractingParty
                 {
                     CompanyID = initiatorID,
                     IntentID = (int)ContractingIntent.ContractingIntentEnum.Initiator,
@@ -86,11 +97,11 @@ namespace ContractHome.Models.Helper
                 });
             }
 
-            if (!_contract.ContractingParty.Where(p => p.CompanyID == contractorID)
+            if (!contract.ContractingParty.Where(p => p.CompanyID == contractorID)
                                 .Where(p => p.IntentID == (int)ContractingIntent.ContractingIntentEnum.Contractor)
                                 .Any())
             {
-                _contract.ContractingParty.Add(new ContractingParty
+                contract.ContractingParty.Add(new ContractingParty
                 {
                     CompanyID = contractorID,
                     IntentID = (int)ContractingIntent.ContractingIntentEnum.Contractor,
@@ -98,7 +109,7 @@ namespace ContractHome.Models.Helper
             }
             #endregion
 
-                        #region 新增SignaturePositions
+            #region 新增SignaturePositions
             //viewModel.SignaturePositions:
             //[聯合承攬]時, SignaturePositions綁原ContractID,
             //非[聯合承攬]時, SignaturePositions綁各別新增ContractID-->只能在新合約後做,才有新ContractID
@@ -107,15 +118,15 @@ namespace ContractHome.Models.Helper
             foreach (var pos in SignaturePositions)
             {
 
-                if (!_contract.ContractSignaturePositionRequest
-                    .Where(p => p.ContractID == _contract.ContractID)
+                if (!contract.ContractSignaturePositionRequest
+                    .Where(p => p.ContractID == contract.ContractID)
                     .Where(p => p.ContractorID == contractorID)
                     .Where(p => p.PositionID == pos.ID)
                 .Any())
                 {
-                    _contract.ContractSignaturePositionRequest.Add(new ContractSignaturePositionRequest
+                    contract.ContractSignaturePositionRequest.Add(new ContractSignaturePositionRequest
                     {
-                        ContractID = _contract.ContractID,
+                        ContractID = contract.ContractID,
                         ContractorID = contractorID,
                         PositionID = pos.ID,
                         ScaleWidth = pos.ScaleWidth,
@@ -132,18 +143,18 @@ namespace ContractHome.Models.Helper
 
             #region 新增ContractSignatureRequest
 
-            if (!_contract.ContractSignatureRequest.Any(r => r.CompanyID == initiatorID))
+            if (!contract.ContractSignatureRequest.Any(r => r.CompanyID == initiatorID))
             {
-                _contract.ContractSignatureRequest.Add(new ContractSignatureRequest
+                contract.ContractSignatureRequest.Add(new ContractSignatureRequest
                 {
                     CompanyID = initiatorID,
                     StampDate = DateTime.Now,
                 });
             }
 
-            if (!_contract.ContractSignatureRequest.Any(r => r.CompanyID == contractorID))
+            if (!contract.ContractSignatureRequest.Any(r => r.CompanyID == contractorID))
             {
-                _contract.ContractSignatureRequest.Add(new ContractSignatureRequest
+                contract.ContractSignatureRequest.Add(new ContractSignatureRequest
                 {
                     CompanyID = contractorID,
                 });
@@ -152,15 +163,57 @@ namespace ContractHome.Models.Helper
 
             _models.SubmitChanges();
 
-            _contract.CDS_Document.TransitStep(_models, uid, CDS_Document.StepEnum.InitiatorSealed);
-            return _contract;
+            contract.CDS_Document.TransitStep(_models, uid, CDS_Document.StepEnum.InitiatorSealed);
+            return contract;
         }
 
-        public Contract? SaveContract()
+
+        public IQueryable<UserProfile>? GetUsersbyCompanyID(int companyID)
+        {
+            return _models.GetTable<OrganizationUser>()
+                .Where(x => x.CompanyID == companyID)
+                .Select(y => y.UserProfile);
+        }
+
+        public async IAsyncEnumerable<MailData> GetContractorNotifyEmailAsync(
+            List<Contract> contracts,
+            EmailBody.EmailTemplate emailTemplate)
+        {
+            foreach (var contract in contracts)
+            {
+                var initiatorOrg = contract.GetInitiator(_models)?.GetPartyOrganization(_models);
+                var contractors = contract.GetContractor(_models);
+                var contractorUsers = contractors.SelectMany(x => x.GetPartyUsers(_models));
+
+                if ((initiatorOrg != null) && (initiatorOrg != null))
+                {
+                    foreach (var user in contractorUsers)
+                    {
+                        var emailBody =
+                            new EmailBodyBuilder(_emailBody)
+                            .SetTemplateItem(emailTemplate)
+                            .SetContractNo(contract.ContractNo)
+                            .SetTitle(contract.Title)
+                            .SetUserName(initiatorOrg.CompanyName)
+                            .SetRecipientUserName(user.UserName)
+                            .SetRecipientUserEmail(user.EMail)
+                            .Build();
+
+                        yield return _emailFactory.GetEmailToCustomer(
+                            emailBody.RecipientUserEmail,
+                            _emailFactory.GetEmailTitle(emailTemplate),
+                            await emailBody.GetViewRenderString());
+
+                    }
+                }
+            }
+
+            yield break;
+        }
+
+        public void SaveContract()
         {
             _models.SubmitChanges();
-            _models.Dispose();
-            return _contract;
         }
     }
 

@@ -97,8 +97,9 @@ namespace WebHome
 
             services.AddOptions<MailSettings>().BindConfiguration("MailSettings");
             services.AddScoped<IMailService, MailService>();
-            services.AddScoped<EmailDataFactory>();
-            services.AddScoped<EmailBodyTemplate>();
+            services.AddScoped<EmailFactory>();
+            services.AddScoped<EmailBody>();
+            services.AddScoped<ContractServices>();
             //services.AddSingleton<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
             //services.AddSingleton<GenericManager<DCDataContext>>();
             //services.AddScoped<ContractRepository>();

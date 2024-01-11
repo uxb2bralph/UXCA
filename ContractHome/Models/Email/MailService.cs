@@ -17,6 +17,8 @@ namespace ContractHome.Models.Email
 
         public async Task<bool> SendMailAsync(MailData mailData, CancellationToken ct = default)
         {
+            if (_mailSettings.Enable==false) { return false; }
+
             try
             {
                 // Initialize a new instance of the MimeKit.MimeMessage class
@@ -84,6 +86,7 @@ namespace ContractHome.Models.Email
                 }
 
                 await smtp.SendAsync(mail, ct);
+                //FileLogger.Logger.Error($"Mail To:{mail.To.ToString()}");
                 await smtp.DisconnectAsync(true, ct);
 
                 #endregion

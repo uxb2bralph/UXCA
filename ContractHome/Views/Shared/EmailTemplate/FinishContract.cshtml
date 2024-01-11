@@ -1,7 +1,7 @@
 ﻿@*
 For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
-@model ContractHome.Models.Email.Template.EmailBodyTemplate
+@model ContractHome.Models.Email.Template.EmailBody
 @{
   Layout = null;
 }
@@ -10,7 +10,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>您的文件已完成簽署：@(Model._contractNo)</title>
+  <title>您的文件已完成簽署：@(Model.ContractNo)</title>
 </head>
 
 <body>
@@ -33,16 +33,16 @@ For more information on enabling MVC for empty projects, visit https://go.micros
                 <tr>
                   <td align="center" style="padding: 40pt 15pt 40pt 15pt">
                     <span style="font-size:16pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#204dc7;">
-                      <strong>"@(Model._contractNo)" 已完成簽署</strong>
+                      <strong>"@(Model.ContractNo)" 已完成簽署</strong>
                     </span>
                   </td>
                 </tr>
                 <tr>
                   <td style="padding: 0pt 35pt 30pt 35pt">
                     <span style="font-size:12pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#333333;">
-                      Hello @(Model._userName)：
+                      Hello @(Model.UserName)
                       <br>
-                      附檔為已完成的簽署任務："@(Model._contractNo)" 。您也可以在安心簽中查看並下載檔案。
+                      附檔為已完成的簽署任務："@(Model.ContractNo)" 。您也可以在安心簽中查看並下載檔案。
                       <br>
                       <br>
                       祝一切順心。
@@ -57,7 +57,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
                       <tbody>
                         <tr>
                           <td height="60" align="center" style="background: #0970d1;">
-                            <a href="@(Model._contractLink)" target="_blank"
+                            <a href="@(Model.ContractLink)" target="_blank"
                               style="font-size: 12pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#FFFFFF;text-decoration: none;">
                               檢視並下載
                             </a>
