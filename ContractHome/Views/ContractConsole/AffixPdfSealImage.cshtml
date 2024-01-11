@@ -531,7 +531,7 @@
         alertActived: false,
         contractorMag: null,
         currentCompany: {},
-        signaturePositionsTemp: [],
+        signaturePositionsTemp: [], // 設定簽屬區域列表
         contractSignaturePositions: [],
         contractSignaturePositionsTemp: [],
         currentSeal: {},
@@ -552,7 +552,7 @@
         isCreate: false,
         isClear: false,
         isReject: false,
-        // sealTempList: [],
+        sealTempList: [],
       };
     },
     computed: {
@@ -1024,13 +1024,13 @@
       commitContract() {
         const self = this;
         const payload = { ...this.form };
-        const hasStamp = this.usedStampList.length > 0;
+        const hasStamp = this.sealTempList.length > 0;
         const hasVm = this.signaturePositionsTemp.length > 0;
 
         if (this.isNew) {
           // 檢查起約人是否有用印
-          if (!this.form.usedStamp && !hasVm) {
-            this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base">請檢查文件是否已用印並設定簽署人簽章區域</div>`;
+          if (!this.form.usedStamp && !hasStamp) {
+            this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base">請檢查文件是否已用印</div>`;
             $("#infoModal").modal("show");
             return;
           };
@@ -1104,7 +1104,6 @@
           KeyID: $global.viewModel.KeyID,
           PageIndex: this.selectedPage - 1,
         };
-        console.log({ payload })
 
         showLoading();
         // Post API
@@ -1112,19 +1111,35 @@
         $.post('@Html.Raw(Url.Action("ResetPdfSignature", "ContractConsole"))', payload, function (data) {
           if (data.result) {
             // 成功
+            if (self.isNew) {
+              self.sealTempList = [];
+            } else {
+              // 簽署人清除用印後要還原用印區塊
+              self.loadPageItem(self.selectedPage - 1);              
+              const listDataFilter = self.contractSignaturePositionsTemp
+                .filter(item => item.PageIndex === self.selectedPage - 1);
+              self.contractSignaturePositions = [...self.contractSignaturePositionsTemp];
+              self.usedStampList = [];              
+              self.currentSeal = {};
+            }
+            loadContractPage(self.selectedPage - 1);
+            // 開啟訊息視窗
             self.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"> 已清除用印</div>`;
-            self.isClear = true;
+            self.isClear = true;              
+            hideLoading();
+            $("#infoModal").modal("show");
           }
           else {
             // 失敗
-            self.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;
+            self.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;            
+            hideLoading();
+            $("#infoModal").modal("show");
           }
-          hideLoading();
-          $("#infoModal").modal("show");
+          
         });
       },
 
-      // 清除用印
+      // onLoad 清除用印
       resetSignatureOnLoad() {
         const self = this;
         clearErrors();
@@ -1173,7 +1188,7 @@
           textBox.innerHTML = `
             <div id="note-${uuid}-text" class="note">${noteString}</div>
             <div id="scaleText-${uuid}" class="vmScale"></div>
-            <button id="delNote-${uuid}" class="btn btn-sm text-white vmDelete"><i class="far fa-times"></i></button>
+            <button id="delNote-${uuid}" class="btn btn-sm vmDelete"><i class="far fa-times"></i></button>
             <button id="useAllNote-${uuid}" class="btn btn-success opacity-75 btn-sm vmUseAll"> 套用文件 </button>
             <button id="useNote-${uuid}" class="btn btn-success opacity-75 btn-sm vmUse"> 套用 </utton>`;
 
@@ -1228,7 +1243,7 @@
           };
 
           this.currentSeal.Id = uuid;
-          this.currentSeal.SealScale = 100;
+          //this.currentSeal.SealScale = 100;
         } else {
           const self = this;
           // 未套用前一次只能新增一個虛擬框
@@ -1714,20 +1729,7 @@
           window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
         };
         if (this.isClear) {
-          loadContractPage(this.selectedPage - 1);
-          this.currentSeal = {};
           this.isClear = false;
-
-          // 簽署人清除用印後要還原用印區塊
-          if (!this.isNew) {
-            const listDataFilter = this.contractSignaturePositionsTemp
-              .filter(item => item.PageIndex === this.selectedPage - 1);
-            this.contractSignaturePositions = [...this.contractSignaturePositionsTemp];
-            this.usedStampList = [];
-            this.loadPageItem(this.selectedPage - 1)
-          }
-          this.usedStampList = [];
-          //this.signaturePositionsTemp = [];
         };
       }
     },
@@ -1755,7 +1757,7 @@
       sealBox.innerHTML = `
       <img id="seal-${uuid}-img" class="sealimg h-100" src="${document.getElementById(id).getAttribute('src')}">
       <div id="scale-${uuid}" class="vmScale"></div>
-      <button id="del-${uuid}" class="btn btn-sm text-white vmDelete"><i class="far fa-times"></i></button>
+      <button id="del-${uuid}" class="btn btn-sm vmDelete"><i class="far fa-times"></i></button>
       <button id="useAllSeal-${uuid}" class="btn btn-success opacity-75 btn-sm vmUseAll">套用文件</button>
       <button id="useSeal-${uuid}" class="btn btn-success opacity-75 btn-sm vmUse">套用</button>`;
 
@@ -1898,6 +1900,10 @@
         applySealHandler(ev, sealData, contractArea, false);
       }
     } else {
+      // 未套用前一次只能選擇一個虛擬框
+      const currentItemFilter = app.$data.usedStampList.filter(item => item.Id !== editItem.id);
+      app.$data.usedStampList = currentItemFilter;
+
       // 簽署人用印 - 選擇印鑑後置入用印區塊
       const sealBox = document.querySelector(`#${editItem.id}`);
       editItem.innerHTML = '';
@@ -1942,6 +1948,17 @@
         const sealFilter = app.$data.usedStampList.filter(item => item.Id === editItem.id)[0];
         applySealHandler(ev, sealFilter, contractArea, false);
       }
+
+      // 編輯印章
+      const editBox = document.querySelector(`#vmBox-${editItem.id}-edit`);
+      editBox.addEventListener('click', function () {
+        // 一次只能出現一個 editItem
+        const children = contractArea.children;
+        children.forEach(item => item.classList.remove('editItem'));
+        sealBox.classList.add('editItem');
+        // 簽章
+        app.sealHandler();
+      })
     }
   };
 
@@ -1977,20 +1994,24 @@
       DoAllPages: doAllPages,
       KeyID: $global.viewModel.KeyID
     };
-    console.log({ sealData })
     showLoading();
     $.post('@Html.Raw(Url.Action("CommitPdfSignature", "ContractConsole"))', payload, function (data) {
       hideLoading();
       if ($.isPlainObject(data)) {
         if (data.result) {
-          if (useSeal) {
-            // 套用一筆 contractSignaturePositions 要刪掉一筆紀錄才能計算有幾筆還未用簽
-            const listData = app.$data.contractSignaturePositions;
-            const listDataFilter = listData.filter(item => item.ID !== Id);
-            app.$data.contractSignaturePositions = listDataFilter;
+          if (app.isNew) {
+            // 用印暫存列表
+            app.$data.sealTempList.push(sealData);
+          } else {
+            if (useSeal) {
+              // 套用一筆 contractSignaturePositions 要刪掉一筆紀錄才能計算有幾筆還未用簽
+              const listData = app.$data.contractSignaturePositions;
+              const listDataFilter = listData.filter(item => item.ID !== Id);
+              app.$data.contractSignaturePositions = listDataFilter;
 
-            const usedStampFilter = app.$data.usedStampList.filter(item => item.Id !== Id);
-            app.$data.usedStampList = usedStampFilter;
+              const usedStampFilter = app.$data.usedStampList.filter(item => item.Id !== Id);
+              app.$data.usedStampList = usedStampFilter;
+            }
           }
 
           currentItem && currentItem.remove();

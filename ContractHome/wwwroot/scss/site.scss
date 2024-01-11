@@ -726,13 +726,17 @@ html, body {
   width: 24px;
   display: block;
   position: absolute;
-  top: -28px;
-  left: 1px;
-  background-color: #B5BABE;
+  border-radius: 50%;
+  top: -15px;
+  left: -14px;
+  border: 2px solid #FF5722;
+  background-color: #FFFFFF;
+  color: #FF5722;
   box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.35);
 
   &:hover {
-    background-color: #a0a4a8;
+    background-color: #FF5722;
+    color: #FFFFFF;
   }
 }
 
