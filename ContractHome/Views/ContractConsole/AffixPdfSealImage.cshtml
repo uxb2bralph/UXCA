@@ -255,10 +255,17 @@
               </div>
             </div>
             <div v-if="editStep === '2' || !isNew" class="row g-2 my-0">
-              <div class="col py-1">
+              <div class="col-12 py-1 mb-2">
                 <button type="button" v-on:click="commitContract()"
                   class="btn btn-lg btn-primary opacity-75 w-100 fw-bolder">
                   送出合約
+                </button>
+              </div>
+              <div class="divider "></div>
+              <div class="col-12 py-1">
+                <button type="button" v-on:click="backSearch"
+                  class="btn btn-light w-100">
+                  <span class="text-black-50">返回合約查詢</span>
                 </button>
               </div>
             </div>
@@ -1724,6 +1731,11 @@
         if (this.isClear) {
           this.isClear = false;
         };
+      },
+
+      // 返回合約查詢
+      backSearch() {
+        window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
       }
     },
   });
