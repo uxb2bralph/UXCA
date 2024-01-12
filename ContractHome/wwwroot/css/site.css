@@ -182,7 +182,7 @@ html, body {
 .infoAlert {
   display: none;
   margin: 0 10px;
-  padding: 30px;
+  padding: 20px 30px;
   width: calc(100% - 20px);
   position: fixed;
   bottom: 10px;
@@ -191,7 +191,6 @@ html, body {
 .infoAlert a {
   margin-left: 0;
   margin-right: 0;
-  font-size: 1rem;
 }
 .infoAlert.show {
   display: flex;

@@ -110,7 +110,7 @@
     <section id="queryArea">
       <div class="row my-0 pt-3 border-top border-1">
         <!-- 排序項目 -->
-        <div class="col col-2">
+        <div class="col col-12 col-md-2">
           <div v-if="contractListAll.length > 0" class="input-group input-group-sm">
             <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
               aria-expanded="false">{{ currentSortName }}</button>
@@ -139,8 +139,8 @@
           </span>
           <span class="text-primary opacity-75 fw-bolder">目前尚無合約資料</span>
         </div>
-        <div v-else class="row row-cols-sm-2 row-cols-lg-3 g-3 my-0 pb-3">
-          <div class="col" v-for="(contract, index) in contractListAll" :key="`c_${index}`">
+        <div v-else class="row g-3 my-0 pb-3">
+          <div class="col-12 col-sm-6 col-lg-4" v-for="(contract, index) in contractListAll" :key="`c_${index}`">
             <div :id="`contractNo-${index}`" class="card justify-content-between p-2 pb-1 h-100 shadow-sm">
               <div class="d-flex justify-content-between">
                 <div class="d-flex">
