@@ -122,12 +122,21 @@ html, body {
     color: #FFFFFF;
   }
 }
-
-// #listToStampIndex,
-// #queryIndex,
-// #maintainSeal {
-//   background-color: #f2f2f2;
-// }
+.nav {
+  &--tab {
+    .nav-link {
+      color: #999999;
+      &.active {
+        color: #0d6efd;
+        border-bottom: 4px solid #0d6efd;
+        background-color: #FFFFFF;
+      }
+      &:focus {
+        box-shadow: none;
+      }
+    }
+  }   
+}
 
 // header 底色
 .border {
