@@ -4,6 +4,7 @@ using CommonLib.Utility;
 using ContractHome.Models.DataEntity;
 using ContractHome.Models.Helper;
 using ContractHome.Properties;
+using DocumentFormat.OpenXml.Drawing;
 using GemBox.Document;
 using IronPdf.Editing;
 using Newtonsoft.Json.Linq;
@@ -19,7 +20,7 @@ namespace ContractHome.Helper
     {
         public static String StoreContractDocument(this IFormFile file)
         {
-            String filePath = Path.Combine(Contract.ContractStore, $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}");
+            String filePath = System.IO.Path.Combine(Contract.ContractStore, $"{Guid.NewGuid()}{System.IO.Path.GetExtension(file.FileName)}");
             file.SaveAs(filePath);
             return filePath;
         }
@@ -165,6 +166,37 @@ namespace ContractHome.Helper
 
         //    return 0;
         //}
+
+        public static ContractingParty? GetInitiator(this Contract contract, 
+            GenericManager<DCDataContext> models)
+        {
+            return contract.ContractingParty.Where(x => x.IsInitiator == true).FirstOrDefault();
+        }
+
+        public static Organization? GetPartyOrganization(this ContractingParty contract, 
+            GenericManager<DCDataContext> models)
+        {
+            return models.GetTable<Organization>()
+                .Where(c => c.CompanyID == contract.CompanyID)
+                .FirstOrDefault();
+        }
+
+        public static IEnumerable<UserProfile>? GetPartyUsers(this ContractingParty contract,
+            GenericManager<DCDataContext> models)
+        {
+            return models.GetTable<OrganizationUser>()
+                .Where(c => c.CompanyID == contract.CompanyID)
+                .Select(y=>y.UserProfile);
+
+        }
+
+        public static IEnumerable<ContractingParty>? GetContractor(this Contract contract, 
+            GenericManager<DCDataContext> models)
+        {
+            return
+                contract.ContractingParty
+                    .Where(x => (x.IsInitiator==null)|| (x.IsInitiator == false));
+        }
 
     }
 }

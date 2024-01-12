@@ -1,7 +1,7 @@
 ﻿@*
 For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
-@model ContractHome.Models.Email.Template.EmailBodyTemplate
+@model ContractHome.Models.Email.Template.EmailBody
 @{
   Layout = null;
 }
@@ -10,7 +10,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>@(Model._userName) 邀請您簽署測試合約2</title>
+  <title>@(Model.UserName) 邀請您簽署測試合約2</title>
 </head>
 
 <body>
@@ -33,31 +33,28 @@ For more information on enabling MVC for empty projects, visit https://go.micros
                 <tr>
                   <td align="center" style="padding: 40pt 15pt 40pt 15pt">
                     <span style="font-size:16pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#204dc7;">
-                      <strong>"@(Model._contractNo)" 正在等待您的簽署</strong>
+                      <strong>"@(Model.ContractNo)" 正在等待您的簽署</strong>
                     </span>
                   </td>
                 </tr>
                 <tr>
                   <td style="padding: 0pt 35pt 30pt 35pt">
                     <span style="font-size:12pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#333333;">
-                      Hello @(Model._recipientUserName)：
+                      Hello @(Model.RecipientUserName)：
                       <br>
-                      @(Model._userName) (@(Model._userEmail)) 在6天前寄送了一則簽名邀請 "@(Model._contractNo)" 給您，請點擊下方按鈕以查看並簽署文件。
+                                            @(Model.UserName) 寄送了一則簽署邀請 "@(Model.ContractNo)-@(Model.Title)" 給您，請登入安心簽查看。
                       <br>
                       <br>
-                      <p>
-                        請注意：若您尚未註冊安心簽，為了保障簽署安全性，此連結將於2天內失效。
-                      </p>
                     </span>
                   </td>
                 </tr>
-                <tr>
+                                @*<tr>
                   <td align="center" style="padding: 0pt 35pt 30pt 35pt">
                     <table width="150">
                       <tbody>
                         <tr>
                           <td height="60" align="center" style="background: #0970d1;">
-                            <a href="@(Model._contractLink)" target="_blank"
+                            <a href="@(Model.ContractLink)" target="_blank"
                               style="font-size: 12pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#FFFFFF;text-decoration: none;">
                               查看並簽署
                             </a>
@@ -67,7 +64,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
                     </table>
                   </td>
                 </tr>
-                @* @(Model._recipientUserEmail) *@
+                 @(Model._recipientUserEmail) *@
               </tbody>
             </table>
           </td>
