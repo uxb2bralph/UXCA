@@ -356,7 +356,10 @@ namespace ContractHome.Controllers
             requestItem.StampDate = DateTime.Now;
             models.SubmitChanges();
 
-            contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.ContractorSealed);
+            if (contract.ifSealSignatureFlowFinished())
+            { 
+                contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.ContractorSealed);
+            }
 
             return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
         }

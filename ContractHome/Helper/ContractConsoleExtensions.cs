@@ -198,5 +198,10 @@ namespace ContractHome.Helper
                     .Where(x => (x.IsInitiator==null)|| (x.IsInitiator == false));
         }
 
+        public static bool ifSealSignatureFlowFinished(this Contract contract)
+        {
+            return (contract.ContractSignatureRequest.Where(x => x.StampDate == null).Count() == 0);
+        }
+
     }
 }
