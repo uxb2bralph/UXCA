@@ -25,7 +25,7 @@
   await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
   <script src="~/js/api.js"></script>
 }
-<div id="listToStampIndex">
+<div id="listToStamp" class="listToStamp__wrapper">
   <!-- Tab -->
   <div class="bg-white border-bottom border-1">
     <div class="container-lg pt-3">
@@ -55,7 +55,8 @@
             </li>
           </ul>
         </div>
-        <div class="col-12 col-md-6 pt-2 order-1 order-md-2 d-flex align-items-center justify-content-center justify-content-md-end">
+        <div
+          class="col-12 col-md-6 pt-2 order-1 order-md-2 d-flex align-items-center justify-content-center justify-content-md-end">
           <div id="tourbutton" class="tooltip__wrapper">
             <button type="button" class="px-1 btn btn-lg btn-warning rounded-pill opacity-75" style="width: 48px;"
               v-on:click="tourHandler">
@@ -79,7 +80,7 @@
       </div>
     </div>
   </div>
-  <div class="container-lg pb-4">
+  <div class="container-lg listToStamp__container">
     <!-- 排序項目 -->
     <div v-if="contractListAll.length > 0" class="row my-0 pt-3">
       <div class="col-12 col-md-2">
@@ -106,14 +107,14 @@
       </div>
     </div>
     <!-- 合約資料列表 -->
-    <section id="queryArea">
+    <section id="queryArea" class="listToStamp__queryArea">
       <div v-if="contractListAll.length === 0" class="card shadow-sm my-3 p-3 text-center">
         <span class="text-primary opacity-75" style="font-size: 50px;">
           <i class="fad fa-folder-open"></i>
         </span>
         <span class="text-primary opacity-75 fw-bolder">目前尚無合約資料</span>
       </div>
-      <div v-else class="row g-3 my-0 pb-3">
+      <div v-else class="row g-3 my-0 pb-3 listToStamp__queryList">
         <div class="col-12 col-sm-6 col-lg-4" v-for="(contract, index) in contractListAll" :key="`c_${index}`">
           <div :id="`contractNo-${index}`" class="card justify-content-between p-2 pb-1 h-100 shadow-sm">
             <div class="d-flex justify-content-between">
@@ -280,7 +281,7 @@
         </div>
       </div>
       <!-- 分頁模組 -->
-      <div v-if="contractListAll.length > 0" class="row g-3 align-items-center justify-content-between">
+      <div v-if="contractListAll.length > 0" class="row pb-4 g-3 align-items-center justify-content-between">
         <div class="col-auto">
           <nav aria-label="Page navigation">
             <ul class="pagination justify-content-center mb-0">
@@ -662,7 +663,7 @@
     * @@param {Number} CurrentStep 目前進度
     */
   var app = new Vue({
-    el: '#listToStampIndex',
+    el: '#listToStamp',
     data() {
       return {
         /**

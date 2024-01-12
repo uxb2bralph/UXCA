@@ -21,10 +21,10 @@
   _viewModel.UrlAction = Url.Action("InquireData", "ContractConsole");
 }
 <div id="queryIndex">
-  <div class="container-lg py-4">
+  <div class="container-lg">
     <section class="queryform">
       <!-- 標題 -->
-      <h4 class="mb-2 fw-bolder">合約查詢</h4>
+      <h4 class="mb-2 pt-4 fw-bolder">合約查詢</h4>
       <!-- 合約搜尋 -->
       <div class="card shadow-sm">
         <form v-on:submit.prevent method="post" enctype="multipart/form-data">
@@ -304,7 +304,7 @@
           </div>
         </div>
         <!-- 分頁模組 -->
-        <div v-if="contractListAll.length > 0" class="row align-items-center justify-content-between">
+        <div v-if="contractListAll.length > 0" class="row pb-4 align-items-center justify-content-between">
           <div class="col-auto">
             <nav aria-label="Page navigation">
               <ul class="pagination justify-content-center mb-0">
