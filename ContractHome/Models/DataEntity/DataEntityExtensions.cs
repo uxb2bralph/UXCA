@@ -97,10 +97,10 @@ namespace ContractHome.Models.DataEntity
         {
             Initial = 0,
             Revoked = 1,
-            InitiatorSealed = 2,
-            ContractorSealed = 3,
-            InitiatorDigitalSigned = 4,
-            ContractorDigitalSigned = 5,
+            Sealing = 2,
+            Sealed = 3,
+            DigitalSigning = 4,
+            DigitalSigned = 5,
             Browsed = 6,
             Terminated = 7,
             Committed = 8,
@@ -110,10 +110,10 @@ namespace ContractHome.Models.DataEntity
             {
                 "合約文件上傳",
                 "已退回",
-                "起約人用印",
-                "簽約人用印",
-                "起約人簽章",
-                "簽約人簽章",
+                "用印中",
+                "用印完成",
+                "簽章中",
+                "簽章完成",
                 "瀏覽",
                 "已終止",
                 "合約完成"
@@ -122,10 +122,10 @@ namespace ContractHome.Models.DataEntity
         public static StepEnum[] PendingState =
         {
             StepEnum.Initial,
-            StepEnum.InitiatorDigitalSigned,
-            StepEnum.ContractorDigitalSigned,
-            StepEnum.InitiatorSealed,
-            StepEnum.ContractorSealed
+            StepEnum.Sealing,
+            StepEnum.Sealed,
+            StepEnum.DigitalSigning,
+            StepEnum.DigitalSigned
         };
 
         public bool IsPDF => ProcessType == (int)ProcessTypeEnum.PDF;
