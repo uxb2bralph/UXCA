@@ -163,7 +163,8 @@ namespace ContractHome.Models.Helper
 
             _models.SubmitChanges();
 
-            contract.CDS_Document.TransitStep(_models, uid, CDS_Document.StepEnum.InitiatorSealed);
+            contract.CDS_Document.TransitStep(_models, uid, CDS_Document.StepEnum.Sealing);
+
             return contract;
         }
 

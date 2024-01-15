@@ -17,6 +17,7 @@ using System.ComponentModel;
 using System.Linq;
 using ContractHome.Models.Email.Template;
 using ContractHome.Models.Email;
+using System.Runtime.CompilerServices;
 
 namespace ContractHome.Controllers
 {
@@ -356,7 +357,10 @@ namespace ContractHome.Controllers
             requestItem.StampDate = DateTime.Now;
             models.SubmitChanges();
 
-            contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.ContractorSealed);
+            if (contract.isSealFlowFinished())
+            { 
+                contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Sealed);
+            }
 
             return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
         }
@@ -427,13 +431,22 @@ namespace ContractHome.Controllers
             ViewBag.ViewModel = viewModel;
 
             var profile = await HttpContext.GetUserAsync();
+
             IQueryable<Contract> items = PromptContractItems(profile);
 
-            IQueryable<CDS_Document> docItems =
-                models.GetTable<CDS_Document>()
-                    .Where(d => !d.CurrentStep.HasValue || CDS_Document.PendingState.Contains((CDS_Document.StepEnum)d.CurrentStep!));
+            //IQueryable<CDS_Document> docItems =
+            //    models.GetTable<CDS_Document>()
+            //        .Where(d => !d.CurrentStep.HasValue || CDS_Document.PendingState.Contains((CDS_Document.StepEnum)d.CurrentStep!));
 
-            items = items.Where(c => docItems.Any(d => d.DocID == c.ContractID));
+            //items = items.Where(c => docItems.Any(d => d.DocID == c.ContractID));
+
+            items = items.Where(d => !d.CDS_Document.CurrentStep.HasValue 
+                || CDS_Document.PendingState.Contains((CDS_Document.StepEnum)d.CDS_Document.CurrentStep!));
+
+            if (!string.IsNullOrEmpty(viewModel.ContractFlowStep))
+            {
+                items = items.Where(x => x.CDS_Document.CurrentStep == (int)Enum.Parse(typeof(CDS_Document.StepEnum), viewModel.ContractFlowStep));
+            }
 
             viewModel.RecordCount = items?.Count();
 
@@ -519,7 +532,7 @@ namespace ContractHome.Controllers
 
             bool queryByDocument = false;
             IQueryable<CDS_Document> documents = models.GetTable<CDS_Document>();
-
+            //wait to fix...查詢合約時, 非聯合承攬狀況, 在部份完成簽署狀態, 會在合約查詢中, 顯示所有合約, 包括未完成簽署的合約
             if (viewModel.QueryStep?.Length > 0)
             {
                 documents = documents
@@ -1158,13 +1171,25 @@ namespace ContractHome.Controllers
                         .Where(p => p.ContractID == item.ContractID)
                         .Where(p => p.CompanyID == item.CompanyID).FirstOrDefault();
 
-                    if (party?.IsInitiator == true)
+                    //if (party?.IsInitiator == true)
+                    //{
+                    //    item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.InitiatorDigitalSigned);
+                    //}
+                    //else
+                    //{
+                    //    if (item.Contract.ifDigitalSignatureFlowFinished())
+                    //    { 
+                    //        item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.ContractorDigitalSigned);
+                    //    }
+                    //}
+
+                    if (item.Contract.isDigitalSignatureFlowFinished())
                     {
-                        item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.InitiatorDigitalSigned);
-                    }
+                        item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.DigitalSigned);
+                    } 
                     else
                     {
-                        item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.ContractorDigitalSigned);
+                        item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.DigitalSigning);
                     }
 
                     if (!models.GetTable<ContractSignatureRequest>()
