@@ -77,6 +77,18 @@ html, body {
   color: #FFFFFF;
 }
 
+.nav--tab .nav-link {
+  color: #999999;
+}
+.nav--tab .nav-link.active {
+  color: #0d6efd;
+  border-bottom: 4px solid #0d6efd;
+  background-color: #FFFFFF;
+}
+.nav--tab .nav-link:focus {
+  box-shadow: none;
+}
+
 .border__uxb2b--bottom {
   border-bottom: 1px solid #bec2c6 !important;
 }
@@ -170,7 +182,7 @@ html, body {
 .infoAlert {
   display: none;
   margin: 0 10px;
-  padding: 30px;
+  padding: 20px 30px;
   width: calc(100% - 20px);
   position: fixed;
   bottom: 10px;
@@ -179,7 +191,6 @@ html, body {
 .infoAlert a {
   margin-left: 0;
   margin-right: 0;
-  font-size: 1rem;
 }
 .infoAlert.show {
   display: flex;

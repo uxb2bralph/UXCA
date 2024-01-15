@@ -122,12 +122,30 @@ html, body {
     color: #FFFFFF;
   }
 }
+.nav {
+  &--tab {
+    .nav-link {
+      color: #999999;
+      &.active {
+        color: #0d6efd;
+        border-bottom: 4px solid #0d6efd;
+        background-color: #FFFFFF;
+      }
+      &:focus {
+        box-shadow: none;
+      }
+    }
+  }   
+}
 
-// #listToStampIndex,
-// #queryIndex,
-// #maintainSeal {
-//   background-color: #f2f2f2;
-// }
+//.listToStamp {
+//  &__wrapper {
+//    height: calc(100% - 65px);
+//  }
+//  &__container {
+//    height: calc(100% - 93px);
+//  }
+//}
 
 // header 底色
 .border {
@@ -228,7 +246,7 @@ html, body {
 .infoAlert {
   display: none;
   margin: 0 10px;
-  padding: 30px;
+  padding: 20px 30px;
   width: calc(100% - 20px);
   position: fixed;
   bottom: 10px;
@@ -236,11 +254,6 @@ html, body {
   a {
     margin-left: 0;
     margin-right: 0;
-    font-size: 1rem;
-    // color: #FFF;
-    // &:hover {
-    //   color: #333;
-    // }
   }
   &.show {
     display: flex;
