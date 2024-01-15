@@ -210,11 +210,16 @@ html, body {
   }
 }
 
+.seal__add {
+  height: 150px;
+}
+
 .icon__rounded {
-  width: 33px;
+  width: 30px;
+  height: 30px;
 }
 .icon__rounded > i {
-  width: 15px;
+  font-size: 12px;
 }
 
 .error-msg {
@@ -482,6 +487,28 @@ html, body {
 .btn--size-20 {
   width: 20px;
   height: 20px;
+}
+
+.seal__add {
+  cursor: pointer;
+  color: #333333;
+  background-color: #fecba1;
+}
+.seal__add:hover {
+  color: #FFFFFF;
+  background-color: #fd9843;
+}
+.seal__add .btn {
+  background-color: #FFFFFF;
+}
+.seal__add [type=file] {
+  position: absolute;
+  top: 50px;
+  opacity: 0;
+}
+
+.signature__canvas {
+  background-color: #f2f2f2;
 }
 
 .block--hover {
