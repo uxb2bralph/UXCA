@@ -328,11 +328,16 @@
                           <div class="btn-group flex-grow-1" role="group">
                             <button id="btnGroupDrop1" type="button"
                               class="btn btn-outline-secondary d-flex align-items-center justify-content-between opacity-75 dropdown-toggle"
-                              data-bs-toggle="dropdown" aria-expanded="false">
+                              data-bs-toggle="dropdown" aria-expanded="false" v-on:click="initContractor">
                               {{ item.text || '請選擇簽署方公司名稱' }}
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                              <li v-for="(item, idx) in contractorAllList" :key="idx">
+                              <li class="px-2 pb-2">
+                                <input v-model="inputSearchCompany" type="text" class="form-control" placeholder=""
+                                  aria-label="Companyname" aria-describedby="basic-addon1"
+                                  v-on:keyup="searchCompany($event.target.value)">
+                              </li>
+                              <li v-for="(item, idx) in contractorList" :key="idx">
                                 <a class="dropdown-item" v-on:click="selectCompany(index, item)">{{ item.text }}</a>
                               </li>
                             </ul>
@@ -523,6 +528,8 @@
         editStep: '1',
         dataInitiator,
         contractorAllList,
+        contractorList: [],
+        inputSearchCompany: '',
         IsJointContracting,
         PageCount,
         Parties,
@@ -601,7 +608,7 @@
         this.form.EncUID = getCookie('userID');
         this.form.Initiator = this.dataInitiator[0].id;
         this.form.Contractors = [];
-        //this.selectedContractor = [];
+        this.contractorList = [...this.contractorAllList];
         this.contractorMag = null;
         this.alertActived = false;
         this.getDate();
@@ -696,6 +703,18 @@
             currentItem.classList.remove('is-invalid');
           }
         })
+      },
+
+      // Filter 簽約方資料
+      searchCompany(string) {
+        console.log({ string })
+        this.contractorList = this.contractorAllList.filter(item => item.text.includes(string));
+      },
+
+      // 初始化簽約方名單
+      initContractor() {
+        this.inputSearchCompany = '';
+        this.contractorList = [...this.contractorAllList];
       },
 
       // 新增簽署單位資料
