@@ -122,6 +122,7 @@ namespace ContractHome.Helper
             };
 
             String dataToSign = data.JsonStringify();
+            File.WriteAllText(Path.Combine(FileLogger.Logger.LogDailyPath, $"request-{Guid.NewGuid()}.json"), dataToSign);
 
             using (WebClientEx client = new WebClientEx())
             {

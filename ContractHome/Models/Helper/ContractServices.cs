@@ -176,15 +176,50 @@ namespace ContractHome.Models.Helper
                 .Select(y => y.UserProfile);
         }
 
+        public async IAsyncEnumerable<MailData> GetAllContractUsersNotifyEmailAsync(
+            List<Contract> contracts,
+            EmailBody.EmailTemplate emailTemplate)
+        {
+            foreach (var contract in contracts)
+            {
+                var initiatorOrg = contract.GetInitiator()?.GetOrganization(_models);
+                var users = contract.ContractingParty.SelectMany(x => x.GetUsers(_models));
+
+                if ((initiatorOrg != null) && (initiatorOrg != null))
+                {
+                    foreach (var user in users)
+                    {
+                        var emailBody =
+                            new EmailBodyBuilder(_emailBody)
+                            .SetTemplateItem(emailTemplate)
+                            .SetContractNo(contract.ContractNo)
+                            .SetTitle(contract.Title)
+                            .SetUserName(initiatorOrg.CompanyName)
+                            .SetRecipientUserName(user.UserName)
+                            .SetRecipientUserEmail(user.EMail)
+                            .Build();
+
+                        yield return _emailFactory.GetEmailToCustomer(
+                            emailBody.RecipientUserEmail,
+                            _emailFactory.GetEmailTitle(emailTemplate),
+                            await emailBody.GetViewRenderString());
+
+                    }
+                }
+            }
+
+            yield break;
+        }
+
         public async IAsyncEnumerable<MailData> GetContractorNotifyEmailAsync(
             List<Contract> contracts,
             EmailBody.EmailTemplate emailTemplate)
         {
             foreach (var contract in contracts)
             {
-                var initiatorOrg = contract.GetInitiator(_models)?.GetPartyOrganization(_models);
-                var contractors = contract.GetContractor(_models);
-                var contractorUsers = contractors.SelectMany(x => x.GetPartyUsers(_models));
+                var initiatorOrg = contract.GetInitiator()?.GetOrganization(_models);
+                var contractors = contract.GetContractor();
+                var contractorUsers = contractors.SelectMany(x => x.GetUsers(_models));
 
                 if ((initiatorOrg != null) && (initiatorOrg != null))
                 {
