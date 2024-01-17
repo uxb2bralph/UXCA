@@ -263,8 +263,7 @@
               </div>
               <div class="divider "></div>
               <div class="col-12 py-1">
-                <button type="button" v-on:click="backSearch"
-                  class="btn btn-light w-100">
+                <button type="button" v-on:click="backSearch" class="btn btn-light w-100">
                   <span class="text-black-50">返回合約查詢</span>
                 </button>
               </div>
@@ -312,28 +311,40 @@
                           {{ contractorMag }}
                         </div>
                         <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"
-                          v-on:click="alertActived = !alertActived"></button>
+                          v-on:click="closeAlert"></button>
                       </div>
                     </div>
                     <template v-for="(item, index) in selectedContractor">
-                      <div class="mt-0 mb-4 col-sm-12 col-md-3 input__height">
-                        <div class="input-group">
+                      <div class="my-0 col-sm-12 col-md-3 input__height">
+                        <div :key="index" :id="`company_${index}`" class="btn-group w-100" role="group"
+                          aria-label="Button group with nested dropdown">
                           <span class="tooltip__wrapper">
                             <button type="button" class="btn btn-outline-secondary opacity-75 rounded-0 rounded-start"
-                              v-on:click="deleteContractor(item)">
+                              v-on:click="deleteContractor(item, index)">
                               <i class="fas fa-trash-alt"></i>
                             </button>
                             <div class="tooltip__text">刪除</div>
                           </span>
-                          <select v-model="item.id" class="form-select" v-on:change="selectCompany($event, item)">
-                            <option value="0">請選擇簽署方公司名稱</option>
-                            <template v-for="(item, index) in contractorAllList">
-                              <option :value="item.id" :key="index">{{ item.text }}</option>
-                            </template>
-                          </select>
+                          <div class="btn-group flex-grow-1" role="group">
+                            <button id="btnGroupDrop1" type="button"
+                              class="btn btn-outline-secondary d-flex align-items-center justify-content-between opacity-75 dropdown-toggle"
+                              data-bs-toggle="dropdown" aria-expanded="false" v-on:click="initContractor">
+                              {{ item.text || '請選擇簽署方公司名稱' }}
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                              <li class="px-2 pb-2">
+                                <input v-model="inputSearchCompany" type="text" class="form-control" placeholder=""
+                                  aria-label="Companyname" aria-describedby="basic-addon1"
+                                  v-on:keyup="searchCompany($event.target.value)">
+                              </li>
+                              <li v-for="(item, idx) in contractorList" :key="idx">
+                                <a class="dropdown-item" v-on:click="selectCompany(index, item)">{{ item.text }}</a>
+                              </li>
+                            </ul>
+                          </div>
                         </div>
                         <div class="invalid-feedback">
-                          {{ hasDuplicateContractor ? '簽署方公司名稱重複，請檢查' : '請選擇簽署方公司名稱' }}
+                          {{ item.isDuplicate ? '簽署方公司名稱重複，請檢查' : '請選擇簽署方公司名稱' }}
                         </div>
                       </div>
                     </template>
@@ -365,22 +376,22 @@
             <div class="row g-3">
               <div class="col-md-6 col-sm-12"
                 v-on:click="useDateHandler(`中華民國 ${ rocYear } 年 ${ month } 月 ${ day } 日`)">
-                <div class="card block--hover">
+                <div class="card shadow-sm block--hover">
                   <span class="h6 fw-bolder mb-0 py-4">中華民國 {{ rocYear }} 年 {{ month }} 月 {{ day }} 日</span>
                 </div>
               </div>
               <div class="col-md-6 col-sm-12" v-on:click="useDateHandler(`${ year } / ${ month } / ${ day }`)">
-                <div class="card block--hover">
+                <div class="card shadow-sm block--hover">
                   <span class="h6 fw-bolder mb-0 py-4">{{ year }} / {{ month }} / {{ day }}</span>
                 </div>
               </div>
               <div class="col-md-6 col-sm-12" v-on:click="useDateHandler(`${ month } / ${ day } / ${ year }`)">
-                <div class="card block--hover">
+                <div class="card shadow-sm block--hover">
                   <span class="h6 fw-bolder mb-0 py-4">{{ month }} / {{ day }} / {{ year }}</span>
                 </div>
               </div>
               <div class="col-md-6 col-sm-12" v-on:click="useDateHandler(`${ day } / ${ month } / ${ year }`)">
-                <div class="card block--hover">
+                <div class="card shadow-sm block--hover">
                   <span class="h6 fw-bolder mb-0 py-4">{{ day }} / {{ month }} / {{ year }}</span>
                 </div>
               </div>
@@ -517,6 +528,8 @@
         editStep: '1',
         dataInitiator,
         contractorAllList,
+        contractorList: [],
+        inputSearchCompany: '',
         IsJointContracting,
         PageCount,
         Parties,
@@ -526,7 +539,13 @@
         noteItem: null, // 輸入的文字
         isNoteEmpty: true, // 輸入文字欄位狀態
         hasDuplicateContractor: false,
-        selectedContractor: [],
+        selectedContractor: [
+          {
+            id: '0',
+            text: null,
+            isDuplicate: false
+          }
+        ],
         companyList: [],
         form: {
           KeyID: null,
@@ -588,7 +607,10 @@
         this.form.KeyID = this.contractID;
         this.form.EncUID = getCookie('userID');
         this.form.Initiator = this.dataInitiator[0].id;
-        this.addContractor();
+        this.form.Contractors = [];
+        this.contractorList = [...this.contractorAllList];
+        this.contractorMag = null;
+        this.alertActived = false;
         this.getDate();
 
         // 若為第一次登入，顯示歡迎視窗並進入導覽流程
@@ -617,15 +639,6 @@
         this.month = objectDate.getMonth() + 1;
         this.year = objectDate.getFullYear();
         this.rocYear = this.year - 1911;
-      },
-
-      // 初始化簽署人表單
-      initContract() {
-        this.selectedContractor = [];
-        this.form.Contractors = [];
-        this.addContractor();
-        this.contractorMag = null;
-        this.alertActived = false;
       },
 
       // 簽署步驟
@@ -662,59 +675,100 @@
       },
 
       // 選擇簽約方
-      selectCompany(event, contratcor) {
-        // 檢核欄位        
-        this.hasDuplicateContractor = this.hasDuplicateValues(this.selectedContractor);
-        if (contratcor.id === "0" || this.hasDuplicateContractor) {
-          event.target.parentNode.classList.add('is-invalid');
-          return;
-        } else {
-          event.target.parentNode.classList.remove('is-invalid');
-        }
+      selectCompany(index, contratcor) {
+        this.selectedContractor[index].id = contratcor.id;
+        this.selectedContractor[index].text = contratcor.text;
+        // 檢核欄位
+
+        this.hasDuplicateValues();
       },
 
       // 檢查是否重複
-      hasDuplicateValues(arr) {
-        let values = [];
-        for (let i = 0; i < arr.length; i++) {
-          let value = arr[i].id;
-          if (values.includes(value)) {
-            return true;
+      hasDuplicateValues() {
+        const source = this.selectedContractor;
+        let items = [];
+        const sourceMap = source.map(sourceItem => {
+          sourceItem.isDuplicate = sourceItem.id !== '0' && items.includes(sourceItem.id);
+          items.push(sourceItem.id);
+          return sourceItem;
+        })
+
+        sourceMap.forEach((item, index) => {
+          const currentItem = document.querySelector(`#company_${index}`);
+          if (item.isDuplicate) {
+            this.hasDuplicateContractor = item.isDuplicate;
+            currentItem.classList.add('is-invalid');
+          } else {
+            this.hasDuplicateContractor = item.isDuplicate;
+            currentItem.classList.remove('is-invalid');
           }
-          values.push(value);
-        }
-        return false;
+        })
+      },
+
+      // Filter 簽約方資料
+      searchCompany(string) {
+        console.log({ string })
+        this.contractorList = this.contractorAllList.filter(item => item.text.includes(string));
+      },
+
+      // 初始化簽約方名單
+      initContractor() {
+        this.inputSearchCompany = '';
+        this.contractorList = [...this.contractorAllList];
       },
 
       // 新增簽署單位資料
       addContractor() {
         this.selectedContractor.push({
           id: '0',
+          text: null,
+          isDuplicate: false
         });
       },
 
       // 刪除簽署單位資料
-      deleteContractor(obj) {
-        const contractors = this.selectedContractor;
-        if (contractors.length === 1) {
+      deleteContractor(obj, index) {
+        if (this.selectedContractor.length === 1) {
           this.contractorMag = '簽署單位至少要填一筆資料。';
           this.alertActived = true;
           return
         }
-        this.selectedContractor = contractors.filter(item => item.id !== obj.id);
+        this.selectedContractor.splice(index, 1);
+      },
+
+      closeAlert() {
+        this.alertActived = !this.alertActived;
+        this.contractorMag = null;
       },
 
       // 選擇簽署人
       contractorHandler() {
         // 檢查簽約方資料有無填寫
-        const filterEmpty = this.selectedContractor.filter(item => item.id === '0').length > 0;
-        if (filterEmpty) {
+        const selectedItem = [...this.selectedContractor];
+        selectedItem.forEach((item, index) => {
+          const currentItem = document.querySelector(`#company_${index}`);
+          const isEmpty = item.id === '0';
+          const isDuplicate = item.isDuplicate;
+          // 顯示 UI 狀態
+          if (isEmpty || isDuplicate) {
+            currentItem.classList.add('is-invalid');
+          } else {
+            currentItem.classList.remove('is-invalid');
+          }
+        });
+
+        const hasEmpty = selectedItem.filter(item => item.id === '0').length > 0;
+        const hasDuplicate = selectedItem.filter(item => item.isDuplicate).length > 0;
+
+        // 簽署單位未選取不給過
+        if (hasEmpty) {
           this.contractorMag = '簽署單位有未選取簽署人，請檢查。';
           this.alertActived = true;
-          return
-        }
-        // 檢查簽約方是否重複
-        if (this.hasDuplicateContractor) return;
+          return;
+        };
+
+        // 簽署單位重複選取不給過
+        if (hasDuplicate) return;
 
         const contractorArray = this.selectedContractor.map(item => item.id);
         const contractorFilter = this.contractorAllList
@@ -1123,24 +1177,24 @@
             } else {
               // 簽署人清除用印後要還原用印區塊
               self.contractSignaturePositions = [...self.contractSignaturePositionsTemp];
-              self.usedStampList = [];              
+              self.usedStampList = [];
               self.currentSeal = {};
-              self.loadPageItem(self.selectedPage - 1);              
+              self.loadPageItem(self.selectedPage - 1);
             }
             loadContractPage(self.selectedPage - 1);
             // 開啟訊息視窗
             self.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"> 已清除用印</div>`;
-            self.isClear = true;              
+            self.isClear = true;
             hideLoading();
             $("#infoModal").modal("show");
           }
           else {
             // 失敗
-            self.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;            
+            self.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;
             hideLoading();
             $("#infoModal").modal("show");
           }
-          
+
         });
       },
 
@@ -1253,7 +1307,7 @@
           // 未套用前一次只能新增一個虛擬框
           const currentItemFilter = this.usedStampList.filter(item => item.Id !== editItem.id);
           this.usedStampList = currentItemFilter;
-          
+
           // 簽署人用印
           editItem.innerHTML = '';
           editItem.innerHTML = `

@@ -280,13 +280,19 @@ html, body {
   }
 }
 
+.seal {
+  &__add {
+    height: 150px;
+  }
+}
+
 // 圓形按鈕
 .icon {
   &__rounded {
-    width: 33px;
-
+    width: 30px;
+    height: 30px;
     >i {
-      width: 15px;
+      font-size: 12px;
     }
   }
 }
@@ -607,6 +613,33 @@ html, body {
   &--size-20 {
     width: 20px;
     height: 20px;
+  }
+}
+
+.seal {
+  &__add {
+    cursor: pointer;
+    color: #333333;
+    background-color: #fecba1;
+    &:hover {
+      color: #FFFFFF;
+      background-color: #fd9843;
+    }
+
+    .btn {
+      background-color: #FFFFFF;
+    }
+
+    [type="file"] {
+      position: absolute;
+      top: 50px;
+      opacity: 0;
+    }
+  }
+}
+.signature {
+  &__canvas {
+    background-color: #f2f2f2;
   }
 }
 
