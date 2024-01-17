@@ -360,7 +360,7 @@ namespace ContractHome.Controllers
             requestItem.StampDate = DateTime.Now;
             models.SubmitChanges();
 
-            if (contract.isSealFlowFinished())
+            if (contract.isStamped())
             { 
                 contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Sealed);
                 _contractServices?.SetModels(models);
@@ -435,9 +435,19 @@ namespace ContractHome.Controllers
             return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
         }
 
+        [Flags]
+        public enum QueryStepEnum
+        {
+            CurrentUser = 1,  // 0001
+            UnStamped = 2,   // 0010
+            UnSigned = 4,   // 0100
+            UnCommited =8  // 1000
+        }
+
         public async Task<ActionResult> ListToStampAsync(SignContractViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
+            if (viewModel.ContractQueryStep == null) { viewModel.ContractQueryStep = 0; }
 
             var profile = await HttpContext.GetUserAsync();
 
@@ -452,11 +462,54 @@ namespace ContractHome.Controllers
             items = items.Where(d => !d.CDS_Document.CurrentStep.HasValue 
                 || CDS_Document.PendingState.Contains((CDS_Document.StepEnum)d.CDS_Document.CurrentStep!));
 
-            if (!string.IsNullOrEmpty(viewModel.ContractFlowStep))
-            {
-                items = items.Where(x => x.CDS_Document.CurrentStep == (int)Enum.Parse(typeof(CDS_Document.StepEnum), viewModel.ContractFlowStep));
-            }
+            #region 處理查詢條件:是否為登入者/是否已用印/是否已用簽
+            if (viewModel.ContractQueryStep>=3 && viewModel.ContractQueryStep<=5) {
 
+                //沒有查詢條件預設:0000=0
+                //是登入者未印:0011=3
+                //是登入者未簽:0101=5   
+                //非登入者未印:0010=2
+                //非登入者未簽:0100=4    
+
+                //StepEnum.Sealing,2
+                //StepEnum.Sealed,3
+                //StepEnum.DigitalSigning,4
+                //StepEnum.DigitalSigned 5
+
+                int[] queryItem = { 2, 3 };
+                items.Where(d => queryItem.Contains(d.CDS_Document.CurrentStep ?? 0));
+                //FileLogger.Logger.Error(String.Join(",", items.Select(x => x.ContractID)));
+                List<int> removeContractID = new List<int>();
+
+                var removeContract = items
+                    .SelectMany(x => x.ContractSignatureRequest)
+                    //判斷是查詢登入者的合約, 或是其他人的合約
+                    .Where(y => (Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.CurrentUser)) ?
+                        (y.CompanyID == profile.OrganizationUser.CompanyID) :
+                        (y.CompanyID != profile.OrganizationUser.CompanyID))
+                    ;
+
+                //if StepEnum.Sealing and StampDate!=null then 已印->移除contract
+                //if StepEnum.Sealing and StampDate==null then 未印->不移除contract
+                if ((Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.UnStamped)))
+                {
+                    removeContract = removeContract.Where(y=>y.StampDate != null);
+                }
+
+                if ((Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.UnSigned)))
+                {
+                    removeContract = removeContract.Where(y => y.SignatureDate != null);
+                }
+
+                removeContractID = removeContract.Select(x => x.Contract.ContractID).ToList();
+
+
+                //FileLogger.Logger.Error(String.Join(",", removeContractID.Select(x => x)));
+                items = items.Where(y => !removeContractID.Contains(y.ContractID));
+                //FileLogger.Logger.Error(String.Join(",", items.Select(x => x.ContractID)));
+
+            }
+            #endregion
             viewModel.RecordCount = items?.Count();
 
             UserRepository userRepository = 
@@ -474,6 +527,7 @@ namespace ContractHome.Controllers
                 return View("~/Views/ContractConsole/Module/ContractRequestQueryResult.cshtml", items);
             }
         }
+
 
         public async Task<ActionResult> VueListToStampAsync([FromBody] SignContractViewModel viewModel)
         {
@@ -1192,7 +1246,7 @@ namespace ContractHome.Controllers
                     //    }
                     //}
 
-                    if (item.Contract.isDigitalSignatureFlowFinished())
+                    if (item.Contract.isDigitalSignatureDone())
                     {
                         item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.DigitalSigned);
                     } 
