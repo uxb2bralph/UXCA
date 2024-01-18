@@ -76,6 +76,15 @@
 
 </html>
 <script>
+  /** 設定不顯示 MainNavBar 的頁面*/
+  const pathName = location.pathname;
+  // 登入首頁
+  const isHomePage = pathName === '/' || pathName === '/Home';
+  const mainNavBar = document.querySelector('#mainNavBar');
+  if (mainNavBar) {
+    mainNavBar.style.display = isHomePage ? 'none' : null;
+  }
+
   // 初始化 網頁導覽
   const infoAlert = document.querySelector('#infoAlert');
   const agreement = document.querySelector('#agreement');
