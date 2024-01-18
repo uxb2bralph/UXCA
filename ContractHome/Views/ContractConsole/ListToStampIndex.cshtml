@@ -34,25 +34,32 @@
           <ul class="nav nav-pills nav--tab" id="pills-tab" role="tablist">
             <li class="nav-item flex-grow-1 flex-md-grow-0" role="presentation">
               <button class="nav-link rounded-0 px-4 w-100 active" data-bs-toggle="pill" type="button" role="tab"
-                aria-selected="true" v-on:click="usedStampHandler">
-                <span class="fs-14 fw-bolder">20</span><br>
-                <span class="fs-6 fw-bolder">待用印</span>
+                aria-selected="true" v-on:click="queryHandler(3)">
+                <span class="fs-13 fw-bolder">20</span><br>
+                <span class="fs-14 fw-bolder">待自己用印</span>
               </button>
             </li>
             <li class="nav-item flex-grow-1 flex-md-grow-0" role="presentation">
               <button class="nav-link rounded-0 px-4 w-100" data-bs-toggle="pill" type="button" role="tab"
-                aria-selected="false" v-on:click="usedSignHandler">
-                <span class="fs-14 fw-bolder">20</span><br>
-                <span class="fs-6 fw-bolder">待簽署</span>
+                aria-selected="false" v-on:click="queryHandler(5)">
+                <span class="fs-13 fw-bolder">20</span><br>
+                <span class="fs-14 fw-bolder">待自己簽署</span>
               </button>
             </li>
-            <!--li class="nav-item flex-grow-1 flex-md-grow-0" role="presentation">
+            <li class="nav-item flex-grow-1 flex-md-grow-0" role="presentation">
               <button class="nav-link rounded-0 px-4 w-100" data-bs-toggle="pill" type="button" role="tab"
-                aria-selected="false" v-on:click="completeHandler">
-                <span class="fs-14 fw-bolder">20</span><br>
-                <span class="fs-6 fw-bolder">已完成</span>
+                aria-selected="true" v-on:click="queryHandler(2)">
+                <span class="fs-13 fw-bolder">20</span><br>
+                <span class="fs-14 fw-bolder">待他人用印</span>
               </button>
-            </li-->
+            </li>
+            <li class="nav-item flex-grow-1 flex-md-grow-0" role="presentation">
+              <button class="nav-link rounded-0 px-4 w-100" data-bs-toggle="pill" type="button" role="tab"
+                aria-selected="false" v-on:click="queryHandler(4)">
+                <span class="fs-13 fw-bolder">20</span><br>
+                <span class="fs-14 fw-bolder">待他人簽署</span>
+              </button>
+            </li>
           </ul>
         </div>
         <div
@@ -730,7 +737,8 @@
           6: '瀏覽',
           7: '已終止',
           8: '合約完成',
-        }
+        },
+        searchStatus: 3
       };
     },
     computed: {
@@ -754,7 +762,7 @@
       this.initContract();
 
       // 查詢合約表單
-      this.inquireData();
+      this.queryHandler(3);
 
       if (this.isUpload) {
         const self = this;
@@ -891,36 +899,25 @@
       },
 
       // 查詢合約列表
-      inquireData() {
+      //inquireData() {
+      //  // 執行查詢合約列表
+      //  this.page = 1;
+      //  this.fetchAPI({ ContractQueryStep: 0 });
+      //},
+
+      // 查詢-合約列表
+      queryHandler(value) {
         // 執行查詢合約列表
         this.page = 1;
+        this.searchStatus = value
         this.fetchAPI();
       },
 
-      // 查詢-待用印合約列表
-      usedStampHandler() {
-        // 執行查詢合約列表
-        this.page = 1;
-        console.log('待用印合約列表');
-      },
-
-      // 查詢-待簽署合約列表
-      usedSignHandler() {
-        // 執行查詢合約列表
-        this.page = 1;
-        console.log('待簽署合約列表');
-      },
-
-      // 查詢-已完成合約列表
-      completeHandler() {
-        // 執行查詢合約列表
-        this.page = 1;
-        console.log('已完成合約列表');
-      },
-
       fetchAPI() {
+        console.log(this.searchStatus)
         // 執行查詢合約列表
         const viewModel = {
+          ContractQueryStep: this.searchStatus,
           PageIndex: this.page,
           SortType: this.SortType,
           PageSize: this.pageSize,
