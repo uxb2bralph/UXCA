@@ -93,7 +93,7 @@ namespace ContractHome.Models.ViewModel
         public string? EncUID { get; set; }
         //public int? UID => Int32.Parse(HttpUtility.UrlDecode(this.EncUID!.).DecryptData());
         //public string? EncContractorID { get; set; }
-        public string? ContractFlowStep { get; set; }
+        public int? ContractQueryStep { get; set; }
 
     }
 

@@ -10,7 +10,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>@(Model.UserName) 邀請您用印@(Model.ContractNo)</title>
+    <title>@(Model.ContractNo) 用印邀請</title>
 </head>
 
 <body>
@@ -33,7 +33,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
                 <tr>
                   <td align="center" style="padding: 40pt 15pt 40pt 15pt">
                     <span style="font-size:16pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#204dc7;">
-                      <strong>"@(Model.ContractNo)" 正在等待您的用印</strong>
+                      <strong>"@(Model.ContractNo)" 正在等待用印</strong>
                     </span>
                   </td>
                 </tr>
@@ -42,30 +42,12 @@ For more information on enabling MVC for empty projects, visit https://go.micros
                     <span style="font-size:12pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#333333;">
                       Hello @(Model.RecipientUserName)：
                       <br>
-                                            @(Model.UserName) 寄送了一則用印邀請 "@(Model.ContractNo)-@(Model.Title)" 給您，請登入安心簽查看。
+                                            @(Model.UserName) 寄送了一則用印邀請 "@(Model.ContractNo)-@(Model.Title)"，請登入安心簽查看。
                       <br>
                       <br>
                     </span>
                   </td>
                 </tr>
-                                @*
-                                <tr>
-                  <td align="center" style="padding: 0pt 35pt 30pt 35pt">
-                    <table width="150">
-                      <tbody>
-                        <tr>
-                          <td height="60" align="center" style="background: #0970d1;">
-                            <a href="@(Model._contractLink)" target="_blank"
-                              style="font-size: 12pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#FFFFFF;text-decoration: none;">
-                              查看並簽署
-                            </a>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </td>
-                </tr>
-                @(Model._recipientUserEmail) *@
               </tbody>
             </table>
           </td>

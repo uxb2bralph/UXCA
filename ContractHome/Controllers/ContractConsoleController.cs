@@ -241,7 +241,7 @@ namespace ContractHome.Controllers
             try
             {
                 _contractServices?.SetModels(models);
-                List<Contract> notifyList = new List<Contract>();
+                List<Contract> notifyList = new List<Contract>() { contract };
                 if (viewModel.Contractors!.Length == 1)
                 {
                     var contractorID = viewModel.Contractors[0].ContractorID;
@@ -253,39 +253,42 @@ namespace ContractHome.Controllers
                         viewModel.Contractors[0].SignaturePositions,
                         uid ?? 0);
 
-                    return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
-                }
-
-                for (int i = 0; i < viewModel.Contractors!.Length; i++)
+                    //return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
+                } 
+                else
                 {
-                    var contractorID = viewModel.Contractors[i].ContractorID;
-                    var initiatorID = viewModel.InitiatorID!.Value;
-
-                    if ((contract.IsJointContracting == true) || (i == 0))
+                    for (int i = 0; i < viewModel.Contractors!.Length; i++)
                     {
-                        _contractServices?.CreateAndSaveParty(
-                            initiatorID: initiatorID,
-                            contractorID: contractorID ?? 0,
-                            contract: contract,
-                            viewModel.Contractors[i].SignaturePositions,
-                            uid ?? 0);
-                        notifyList.Add(contract);
-                    }
-                    else
-                    {
-                        var newContract = _contractServices.CreateAndSaveContractByOld(contract);
+                        var contractorID = viewModel.Contractors[i].ContractorID;
+                        var initiatorID = viewModel.InitiatorID!.Value;
 
-                        _contractServices.CreateAndSaveParty(
-                            initiatorID: initiatorID,
-                            contractorID: contractorID ?? 0,
-                            contract: newContract,
-                            viewModel.Contractors[i].SignaturePositions,
-                            uid ?? 0
-                        );
-                        notifyList.Add(newContract);
-                    }
+                        if ((contract.IsJointContracting == true) || (i == 0))
+                        {
+                            _contractServices?.CreateAndSaveParty(
+                                initiatorID: initiatorID,
+                                contractorID: contractorID ?? 0,
+                                contract: contract,
+                                viewModel.Contractors[i].SignaturePositions,
+                                uid ?? 0);
 
+                        }
+                        else
+                        {
+                            var newContract = _contractServices.CreateAndSaveContractByOld(contract);
+
+                            _contractServices.CreateAndSaveParty(
+                                initiatorID: initiatorID,
+                                contractorID: contractorID ?? 0,
+                                contract: newContract,
+                                viewModel.Contractors[i].SignaturePositions,
+                                uid ?? 0
+                            );
+                            notifyList.Add(newContract);
+                        }
+
+                    }
                 }
+
                 _contractServices.SaveContract();
 
                 if (notifyList.Count > 0)
@@ -293,7 +296,7 @@ namespace ContractHome.Controllers
                     await foreach (var mailData in _contractServices.GetContractorNotifyEmailAsync(
                         notifyList, EmailBody.EmailTemplate.NotifySeal))
                     {
-                        await _mailService.SendMailAsync(mailData, default);
+                        _mailService.SendMailAsync(mailData, default);
                     }
                 }
             }
@@ -357,9 +360,15 @@ namespace ContractHome.Controllers
             requestItem.StampDate = DateTime.Now;
             models.SubmitChanges();
 
-            if (contract.isSealFlowFinished())
+            if (contract.isStamped())
             { 
                 contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Sealed);
+                _contractServices?.SetModels(models);
+                await foreach (var mailData in _contractServices?.GetAllContractUsersNotifyEmailAsync(
+                    new List<Contract>() { contract }, EmailBody.EmailTemplate.NotifySign))
+                {
+                    _mailService.SendMailAsync(mailData, default);
+                }
             }
 
             return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
@@ -426,9 +435,19 @@ namespace ContractHome.Controllers
             return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
         }
 
+        [Flags]
+        public enum QueryStepEnum
+        {
+            CurrentUser = 1,  // 0001
+            UnStamped = 2,   // 0010
+            UnSigned = 4,   // 0100
+            UnCommited =8  // 1000
+        }
+
         public async Task<ActionResult> ListToStampAsync(SignContractViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
+            if (viewModel.ContractQueryStep == null) { viewModel.ContractQueryStep = 0; }
 
             var profile = await HttpContext.GetUserAsync();
 
@@ -443,11 +462,54 @@ namespace ContractHome.Controllers
             items = items.Where(d => !d.CDS_Document.CurrentStep.HasValue 
                 || CDS_Document.PendingState.Contains((CDS_Document.StepEnum)d.CDS_Document.CurrentStep!));
 
-            if (!string.IsNullOrEmpty(viewModel.ContractFlowStep))
-            {
-                items = items.Where(x => x.CDS_Document.CurrentStep == (int)Enum.Parse(typeof(CDS_Document.StepEnum), viewModel.ContractFlowStep));
-            }
+            #region 處理查詢條件:是否為登入者/是否已用印/是否已用簽
+            if (viewModel.ContractQueryStep>=3 && viewModel.ContractQueryStep<=5) {
 
+                //沒有查詢條件預設:0000=0
+                //是登入者未印:0011=3
+                //是登入者未簽:0101=5   
+                //非登入者未印:0010=2
+                //非登入者未簽:0100=4    
+
+                //StepEnum.Sealing,2
+                //StepEnum.Sealed,3
+                //StepEnum.DigitalSigning,4
+                //StepEnum.DigitalSigned 5
+
+                int[] queryItem = { 2, 3 };
+                items.Where(d => queryItem.Contains(d.CDS_Document.CurrentStep ?? 0));
+                //FileLogger.Logger.Error(String.Join(",", items.Select(x => x.ContractID)));
+                List<int> removeContractID = new List<int>();
+
+                var removeContract = items
+                    .SelectMany(x => x.ContractSignatureRequest)
+                    //判斷是查詢登入者的合約, 或是其他人的合約
+                    .Where(y => (Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.CurrentUser)) ?
+                        (y.CompanyID == profile.OrganizationUser.CompanyID) :
+                        (y.CompanyID != profile.OrganizationUser.CompanyID))
+                    ;
+
+                //if StepEnum.Sealing and StampDate!=null then 已印->移除contract
+                //if StepEnum.Sealing and StampDate==null then 未印->不移除contract
+                if ((Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.UnStamped)))
+                {
+                    removeContract = removeContract.Where(y=>y.StampDate != null);
+                }
+
+                if ((Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.UnSigned)))
+                {
+                    removeContract = removeContract.Where(y => y.SignatureDate != null);
+                }
+
+                removeContractID = removeContract.Select(x => x.Contract.ContractID).ToList();
+
+
+                //FileLogger.Logger.Error(String.Join(",", removeContractID.Select(x => x)));
+                items = items.Where(y => !removeContractID.Contains(y.ContractID));
+                //FileLogger.Logger.Error(String.Join(",", items.Select(x => x.ContractID)));
+
+            }
+            #endregion
             viewModel.RecordCount = items?.Count();
 
             UserRepository userRepository = 
@@ -465,6 +527,7 @@ namespace ContractHome.Controllers
                 return View("~/Views/ContractConsole/Module/ContractRequestQueryResult.cshtml", items);
             }
         }
+
 
         public async Task<ActionResult> VueListToStampAsync([FromBody] SignContractViewModel viewModel)
         {
@@ -1183,7 +1246,7 @@ namespace ContractHome.Controllers
                     //    }
                     //}
 
-                    if (item.Contract.isDigitalSignatureFlowFinished())
+                    if (item.Contract.isDigitalSignatureDone())
                     {
                         item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.DigitalSigned);
                     } 
@@ -1198,6 +1261,13 @@ namespace ContractHome.Controllers
                         .Any())
                     {
                         item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Committed);
+                        _contractServices?.SetModels(models);
+                        await foreach (var mailData in 
+                            _contractServices?.GetAllContractUsersNotifyEmailAsync(
+                            new List<Contract>() { item?.Contract }, EmailBody.EmailTemplate.FinishContract))
+                        {
+                            _mailService?.SendMailAsync(mailData, default);
+                        }
                     }
 
                     return Json(new { result = true });

@@ -167,13 +167,12 @@ namespace ContractHome.Helper
         //    return 0;
         //}
 
-        public static ContractingParty? GetInitiator(this Contract contract, 
-            GenericManager<DCDataContext> models)
+        public static ContractingParty? GetInitiator(this Contract contract)
         {
             return contract.ContractingParty.Where(x => x.IsInitiator == true).FirstOrDefault();
         }
 
-        public static Organization? GetPartyOrganization(this ContractingParty contract, 
+        public static Organization? GetOrganization(this ContractingParty contract, 
             GenericManager<DCDataContext> models)
         {
             return models.GetTable<Organization>()
@@ -181,7 +180,7 @@ namespace ContractHome.Helper
                 .FirstOrDefault();
         }
 
-        public static IEnumerable<UserProfile>? GetPartyUsers(this ContractingParty contract,
+        public static IEnumerable<UserProfile>? GetUsers(this ContractingParty contract,
             GenericManager<DCDataContext> models)
         {
             return models.GetTable<OrganizationUser>()
@@ -190,20 +189,19 @@ namespace ContractHome.Helper
 
         }
 
-        public static IEnumerable<ContractingParty>? GetContractor(this Contract contract, 
-            GenericManager<DCDataContext> models)
+        public static IEnumerable<ContractingParty>? GetContractor(this Contract contract)
         {
             return
                 contract.ContractingParty
                     .Where(x => (x.IsInitiator==null)|| (x.IsInitiator == false));
         }
 
-        public static bool isSealFlowFinished(this Contract contract)
+        public static bool isStamped(this Contract contract)
         {
             return (contract.ContractSignatureRequest.Where(x => x.StampDate == null).Count() == 0);
         }
 
-        public static bool isDigitalSignatureFlowFinished(this Contract contract)
+        public static bool isDigitalSignatureDone(this Contract contract)
         {
             return (contract.ContractSignatureRequest.Where(x => x.SignatureDate == null).Count() == 0);
         }

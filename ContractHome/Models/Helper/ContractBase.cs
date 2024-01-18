@@ -2,6 +2,7 @@
 using ContractHome.Models.DataEntity;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Newtonsoft.Json;
+using static ContractHome.Models.DataEntity.CDS_Document;
 
 namespace ContractHome.Models.Helper
 {
@@ -15,12 +16,14 @@ namespace ContractHome.Models.Helper
             var initiatContractSignatureRequest =
                 contract.ContractSignatureRequest.Where(x => x.CompanyID == contractingParty.CompanyID).FirstOrDefault();
 
+            ContractID = contract.ContractID;
             ID = contractingParty.CompanyID;
             KeyID = contractingParty.CompanyID.EncryptKey();
             Name = contractingParty.Organization.CompanyName;
             StampDate = string.Empty;
             SignerDate = string.Empty;
             SignerID = string.Empty;
+            Step = contract.CDS_Document.CurrentStep;
             if (initiatContractSignatureRequest!=null)
             { 
                 StampDate = (initiatContractSignatureRequest.StampDate.HasValue) ?
@@ -28,6 +31,14 @@ namespace ContractHome.Models.Helper
                 SignerDate = initiatContractSignatureRequest.SignatureDate.HasValue ?
                     initiatContractSignatureRequest?.SignatureDate.Value.ToString("yyyy/MM/dd HH:mm") : string.Empty;
                 SignerID = initiatContractSignatureRequest?.UserProfile?.PID ?? string.Empty;
+                if ((Step == (int)StepEnum.Sealing) && (!string.IsNullOrEmpty(StampDate)))
+                {
+                    Step = (int)StepEnum.Sealed; 
+                }
+                if ((Step == (int)StepEnum.DigitalSigning) && (!string.IsNullOrEmpty(SignerDate)))
+                {
+                    Step = (int)StepEnum.DigitalSigned;
+                }
             }
             isInitiator = contractingParty.IsInitiator ?? false;
             IsCurrentUserCompany = userCompanyID != null ? ID == userCompanyID : false;
@@ -35,6 +46,12 @@ namespace ContractHome.Models.Helper
 
         [JsonIgnore]
         public int? ID { get; set; }
+
+        [JsonIgnore]
+        public int? ContractID { get; set; }
+
+        [JsonIgnore]
+        public int? Step { get; set; }
 
         [JsonProperty]
         public string KeyID { get; set; }

@@ -1,4 +1,5 @@
 ﻿using CommonLib.Core.Utility;
+using ContractHome.Models.DataEntity;
 using Microsoft.IdentityModel.Tokens;
 using System.ComponentModel;
 using static ContractHome.Models.Email.Template.EmailBody;
@@ -28,7 +29,8 @@ namespace ContractHome.Models.Email.Template
         {
             Undefined = 0,
             NotifySeal = 2,
-            NotifySign = 5
+            NotifySign = 5,
+            FinishContract =8
         }
 
         public void SetContractNo(string contractno)
