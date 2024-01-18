@@ -47,10 +47,10 @@ namespace ContractHome.Models.Helper
         [JsonIgnore]
         public int? ID { get; set; }
 
-        [JsonIgnore]
+        [JsonProperty]
         public int? ContractID { get; set; }
 
-        [JsonIgnore]
+        [JsonProperty]
         public int? Step { get; set; }
 
         [JsonProperty]
