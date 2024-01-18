@@ -450,6 +450,9 @@ namespace ContractHome.Controllers
             if (viewModel.ContractQueryStep == null) { viewModel.ContractQueryStep = 0; }
 
             var profile = await HttpContext.GetUserAsync();
+            var profileCompanyID = 0;
+            var organizationUser = models.GetTable<OrganizationUser>().Where(x => x.UID == profile.UID);
+            profileCompanyID = (organizationUser!=null)?organizationUser.Select(x=>x.CompanyID).FirstOrDefault():0;
 
             IQueryable<Contract> items = PromptContractItems(profile);
 
@@ -463,7 +466,8 @@ namespace ContractHome.Controllers
                 || CDS_Document.PendingState.Contains((CDS_Document.StepEnum)d.CDS_Document.CurrentStep!));
 
             #region 處理查詢條件:是否為登入者/是否已用印/是否已用簽
-            if (viewModel.ContractQueryStep>=3 && viewModel.ContractQueryStep<=5) {
+            if (viewModel.ContractQueryStep >= 3 && viewModel.ContractQueryStep <= 5)
+            {
 
                 //沒有查詢條件預設:0000=0
                 //是登入者未印:0011=3
@@ -476,8 +480,6 @@ namespace ContractHome.Controllers
                 //StepEnum.DigitalSigning,4
                 //StepEnum.DigitalSigned 5
 
-                int[] queryItem = { 2, 3 };
-                items.Where(d => queryItem.Contains(d.CDS_Document.CurrentStep ?? 0));
                 //FileLogger.Logger.Error(String.Join(",", items.Select(x => x.ContractID)));
                 List<int> removeContractID = new List<int>();
 
@@ -485,15 +487,15 @@ namespace ContractHome.Controllers
                     .SelectMany(x => x.ContractSignatureRequest)
                     //判斷是查詢登入者的合約, 或是其他人的合約
                     .Where(y => (Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.CurrentUser)) ?
-                        (y.CompanyID == profile.OrganizationUser.CompanyID) :
-                        (y.CompanyID != profile.OrganizationUser.CompanyID))
+                        (y.CompanyID == profileCompanyID) :
+                        (y.CompanyID != profileCompanyID))
                     ;
 
                 //if StepEnum.Sealing and StampDate!=null then 已印->移除contract
                 //if StepEnum.Sealing and StampDate==null then 未印->不移除contract
                 if ((Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.UnStamped)))
                 {
-                    removeContract = removeContract.Where(y=>y.StampDate != null);
+                    removeContract = removeContract.Where(y => y.StampDate != null);
                 }
 
                 if ((Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.UnSigned)))
