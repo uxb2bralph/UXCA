@@ -46,13 +46,13 @@
                 <span class="fs-6 fw-bolder">待簽署</span>
               </button>
             </li>
-            <li class="nav-item flex-grow-1 flex-md-grow-0" role="presentation">
+            <!--li class="nav-item flex-grow-1 flex-md-grow-0" role="presentation">
               <button class="nav-link rounded-0 px-4 w-100" data-bs-toggle="pill" type="button" role="tab"
                 aria-selected="false" v-on:click="completeHandler">
                 <span class="fs-14 fw-bolder">20</span><br>
                 <span class="fs-6 fw-bolder">已完成</span>
               </button>
-            </li>
+            </li-->
           </ul>
         </div>
         <div
@@ -172,7 +172,6 @@
                       <button class="dropdown-item d-flex align-items-center fs-13"
                         v-on:click="openStopContractModal(contract)">
                         <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
-                          @* <i class="far fa-times text-danger opacity-75"></i> *@
                           <i class="fas fa-ban text-danger opacity-75"></i>
                         </span>
                         終止合約
@@ -660,7 +659,16 @@
     * @@param {array} Parties 甲乙雙方人員資料
     * @@param {array} ProcessLogs 歷程記錄
     * @@param {string} contractorName 合約名稱
-    * @@param {Number} CurrentStep 目前進度
+    * @@param {Number} CurrentStep 合約狀態
+        0: Initial - 合約文件上傳
+        1: Revoked - 已退回
+        2: Sealing - 用印中
+        3: Sealed - 用印完成
+        4: DigitalSigning - 簽章中
+        5: DigitalSigned - 簽章完成
+        6: Browsed - 瀏覽
+        7: Terminated - 已終止
+        8: Committed - 合約完成
     */
   var app = new Vue({
     el: '#listToStamp',
@@ -712,6 +720,17 @@
         isTitle: true,
         isContractNo: true,
         ViewModel: {},
+        contractStatus: {
+          0: '合約文件上傳',
+          1: '已退回',
+          2: '用印中',
+          3: '用印完成',
+          4: '簽章中',
+          5: '簽章完成',
+          6: '瀏覽',
+          7: '已終止',
+          8: '合約完成',
+        }
       };
     },
     computed: {
