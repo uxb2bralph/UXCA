@@ -466,7 +466,7 @@ namespace ContractHome.Controllers
                 || CDS_Document.PendingState.Contains((CDS_Document.StepEnum)d.CDS_Document.CurrentStep!));
 
             #region 處理查詢條件:是否為登入者/是否已用印/是否已用簽
-            if (viewModel.ContractQueryStep >= 3 && viewModel.ContractQueryStep <= 5)
+            if (viewModel.ContractQueryStep >= 2 && viewModel.ContractQueryStep <= 5)
             {
 
                 //沒有查詢條件預設:0000=0
@@ -503,7 +503,7 @@ namespace ContractHome.Controllers
                     removeContract = removeContract.Where(y => y.SignatureDate != null);
                 }
 
-                removeContractID = removeContract.Select(x => x.Contract.ContractID).ToList();
+                removeContractID = removeContract.Select(x => x.Contract.ContractID).Distinct().ToList();
 
 
                 //FileLogger.Logger.Error(String.Join(",", removeContractID.Select(x => x)));
