@@ -560,7 +560,9 @@ namespace ContractHome.Models.DataEntity
 
 		private System.Nullable<bool> _IsJointContracting;
 		
-		private System.Data.Linq.Binary _ContractContent;
+        private System.Nullable<bool> _InProgress;
+
+        private System.Data.Linq.Binary _ContractContent;
 		
 		private EntitySet<ContractingParty> _ContractingParty;
 		
@@ -595,6 +597,9 @@ namespace ContractHome.Models.DataEntity
 
     partial void OnIsJointContractingChanging(System.Nullable<bool> value);
     partial void OnIsJointContractingChanged();
+
+        partial void OnInProgressChanging(System.Nullable<bool> value);
+        partial void OnInProgressChanged();
         #endregion
 
         public Contract()
@@ -839,6 +844,27 @@ namespace ContractHome.Models.DataEntity
                     this._IsJointContracting = value;
                     this.SendPropertyChanged("Disabled");
                     this.OnIsJointContractingChanged();
+                }
+            }
+        }
+
+        [global::System.Data.Linq.Mapping.ColumnAttribute(Storage = "_InProgress", DbType = "Bit")]
+        [global::System.Runtime.Serialization.DataMemberAttribute(Order = 14)]
+        public System.Nullable<bool> InProgress
+        {
+            get
+            {
+                return this._InProgress;
+            }
+            set
+            {
+                if ((this._InProgress != value))
+                {
+                    this.OnInProgressChanging(value);
+                    this.SendPropertyChanging();
+                    this._InProgress = value;
+                    this.SendPropertyChanged("Disabled");
+                    this.OnInProgressChanged();
                 }
             }
         }
@@ -4644,8 +4670,8 @@ namespace ContractHome.Models.DataEntity
 		private System.Nullable<System.DateTime> _StampDate;
 		
 		private string _RequestTicket;
-		
-		private EntitySet<ContractSignature> _ContractSignature;
+
+        private EntitySet<ContractSignature> _ContractSignature;
 		
 		private EntityRef<Contract> _Contract;
 		
@@ -4685,9 +4711,9 @@ namespace ContractHome.Models.DataEntity
     partial void OnStampDateChanged();
     partial void OnRequestTicketChanging(string value);
     partial void OnRequestTicketChanged();
-    #endregion
-		
-		public ContractSignatureRequest()
+        #endregion
+
+        public ContractSignatureRequest()
 		{
 			this.Initialize();
 		}
@@ -4976,8 +5002,8 @@ namespace ContractHome.Models.DataEntity
 				}
 			}
 		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="ContractSignatureRequest_ContractSignature", Storage="_ContractSignature", ThisKey="ContractID,CompanyID", OtherKey="ContractID,CompanyID")]
+
+        [global::System.Data.Linq.Mapping.AssociationAttribute(Name="ContractSignatureRequest_ContractSignature", Storage="_ContractSignature", ThisKey="ContractID,CompanyID", OtherKey="ContractID,CompanyID")]
 		[global::System.Runtime.Serialization.DataMemberAttribute(Order=14, EmitDefaultValue=false)]
 		public EntitySet<ContractSignature> ContractSignature
 		{

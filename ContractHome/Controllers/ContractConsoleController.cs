@@ -1177,13 +1177,21 @@ namespace ContractHome.Controllers
         public async Task<ActionResult> CommitDigitalSignatureAsync(SignatureRequestViewModel viewModel)
         {
             var result = await LoadSignatureRequestAsync(viewModel);
-
-            ContractSignatureRequest? item = ViewBag.SignatureRequest as ContractSignatureRequest;
+            Contract? contract = ViewBag.Contract as Contract;
+            ContractSignatureRequest ? item = ViewBag.SignatureRequest as ContractSignatureRequest;
 
             if (item == null)
             {
                 return result;
             }
+
+            if (contract.InProgress??false)
+            {
+                return Json(new { result = false });
+            }
+
+            contract.InProgress = true;
+            models.SubmitChanges();
 
             UserProfile profile = (UserProfile)ViewBag.Profile;
             if (!item.SignerID.HasValue)
@@ -1235,9 +1243,9 @@ namespace ContractHome.Controllers
 
                     models.SubmitChanges();
 
-                    var party = models.GetTable<ContractingParty>()
-                        .Where(p => p.ContractID == item.ContractID)
-                        .Where(p => p.CompanyID == item.CompanyID).FirstOrDefault();
+                    //var party = models.GetTable<ContractingParty>()
+                    //    .Where(p => p.ContractID == item.ContractID)
+                    //    .Where(p => p.CompanyID == item.CompanyID).FirstOrDefault();
 
                     //if (party?.IsInitiator == true)
                     //{
@@ -1251,7 +1259,7 @@ namespace ContractHome.Controllers
                     //    }
                     //}
 
-                    if (item.Contract.isDigitalSignatureDone())
+                    if (item.Contract.isAllDigitalSignatureDone())
                     {
                         item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.DigitalSigned);
                     } 
@@ -1275,8 +1283,21 @@ namespace ContractHome.Controllers
                         }
                     }
 
+                    if (contract.InProgress != null && contract.InProgress == true)
+                    {
+                        contract.InProgress = null;
+                        models.SubmitChanges();
+                    }
+
                     return Json(new { result = true });
                 }
+            }
+
+
+            if (contract.InProgress != null && contract.InProgress == true)
+            {
+                contract.InProgress = null;
+                models.SubmitChanges();
             }
 
             return Json(new { result = false });
