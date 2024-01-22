@@ -18,6 +18,7 @@ using System.Linq;
 using ContractHome.Models.Email.Template;
 using ContractHome.Models.Email;
 using System.Runtime.CompilerServices;
+using static ContractHome.Models.DataEntity.CDS_Document;
 
 namespace ContractHome.Controllers
 {
@@ -360,7 +361,7 @@ namespace ContractHome.Controllers
             requestItem.StampDate = DateTime.Now;
             models.SubmitChanges();
 
-            if (contract.isStamped())
+            if (contract.isAllStamped())
             { 
                 contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Sealed);
                 _contractServices?.SetModels(models);
@@ -500,7 +501,9 @@ namespace ContractHome.Controllers
 
                 if ((Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.UnSigned)))
                 {
-                    removeContract = removeContract.Where(y => y.SignatureDate != null);
+                    removeContract = removeContract
+                        .Where(y => ((y.SignatureDate != null)||(y.StampDate == null)))
+                        .Where(y => (y.Contract.CDS_Document.CurrentStep == (int)StepEnum.Sealing));
                 }
 
                 removeContractID = removeContract.Select(x => x.Contract.ContractID).Distinct().ToList();

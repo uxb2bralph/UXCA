@@ -196,12 +196,12 @@ namespace ContractHome.Helper
                     .Where(x => (x.IsInitiator==null)|| (x.IsInitiator == false));
         }
 
-        public static bool isStamped(this Contract contract)
+        public static bool isAllStamped(this Contract contract)
         {
             return (contract.ContractSignatureRequest.Where(x => x.StampDate == null).Count() == 0);
         }
 
-        public static bool isDigitalSignatureDone(this Contract contract)
+        public static bool isAllDigitalSignatureDone(this Contract contract)
         {
             return (contract.ContractSignatureRequest.Where(x => x.SignatureDate == null).Count() == 0);
         }
