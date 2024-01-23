@@ -710,6 +710,16 @@ html, body {
     overflow-y: auto;
   }
 }
+
+.options {
+  &__wrapper {
+    width: 300px;
+    height: 100%;
+    overflow: hidden;
+    overflow-y: auto;
+  }
+}
+
 // 用印簽名區
 #signatureCanvas {
   > canvas {
