@@ -1,41 +1,38 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.WebUtilities;
-using System.Diagnostics;
-using System.IO;
-using System.Xml;
-using System.Net;
-using System.Text;
 using System.Linq.Dynamic.Core;
 using System.Drawing;
 using System.Drawing.Imaging;
-using ContractHome.Models;
 using ContractHome.Models.DataEntity;
 using ContractHome.Models.ViewModel;
-using ContractHome.Models.Helper;
 using ContractHome.Helper;
 using ContractHome.Properties;
-using CommonLib.Core.Utility;
 using CommonLib.Utility;
 //using Microsoft.Extensions.Primitives;
-using CommonLib.Core.AspNetMvc;
-using Newtonsoft.Json;
 using Color = System.Drawing.Color;
+using ContractHome.Models.Email.Template;
+using ContractHome.Models.Email;
 
 namespace ContractHome.Controllers
 {
     public class AccountController : SampleController
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IMailService _mailService;
+        private readonly EmailBody _emailBody;
+        private readonly EmailFactory _emailFactory;
 
         public AccountController(ILogger<HomeController> logger, IServiceProvider serviceProvider) : base(serviceProvider)
         {
             _logger = logger;
+            _mailService = ServiceProvider.GetRequiredService<IMailService>();
+            _emailFactory = serviceProvider.GetRequiredService<EmailFactory>();
+            _emailBody = serviceProvider.GetRequiredService<EmailBody>();
         }
 
         [HttpPost]
         [AllowAnonymous]
-        public ActionResult CheckLogin([FromBody] LoginViewModel viewModel)
+        public async Task<ActionResult> CheckLogin([FromBody] LoginViewModel viewModel)
         {
             LoginHandler login = new LoginHandler(this);
             if (!login.ProcessLogin(viewModel.PID, viewModel.Password, out string msg))
@@ -43,9 +40,48 @@ namespace ContractHome.Controllers
                 ModelState.AddModelError("PID", msg);
             }
 
+            var userprofile = models.GetTable<UserProfile>().Where(x => x.PID == viewModel.PID).FirstOrDefault();
+            var userOrg = userprofile?.OrganizationUser.Organization ?? null;
+
             if (!ModelState.IsValid)
             {
+                //wait to do...甲方的公司UserEmail登入失敗通知信
+
+                if (userOrg != null && userOrg.CanCreateContract == true)
+                {
+                    var emailBody =
+                        new EmailBodyBuilder(_emailBody)
+                        .SetTemplateItem(EmailBody.EmailTemplate.LoginFailed)
+                        .SetUserName(userprofile.UserName)
+                        .SetUserEmail(userprofile.EMail)
+                    .Build();
+
+                    var emailData = _emailFactory.GetEmailToCustomer(
+                        emailBody.UserEmail,
+                        _emailFactory.GetEmailTitle(EmailBody.EmailTemplate.LoginFailed),
+                        await emailBody.GetViewRenderString());
+
+                    _mailService?.SendMailAsync(emailData, default);
+                }
+
                 return Json(new { result = false, message = ModelState.ErrorMessage() });
+            }
+
+            if (userOrg != null && userOrg.CanCreateContract == true)
+            {
+                var emailBody =
+                new EmailBodyBuilder(_emailBody)
+                .SetTemplateItem(EmailBody.EmailTemplate.LoginSuccessed)
+                .SetUserName(userprofile.UserName)
+                .SetUserEmail(userprofile.EMail)
+                .Build();
+
+                var emailData = _emailFactory.GetEmailToCustomer(
+                    emailBody.UserEmail,
+                    _emailFactory.GetEmailTitle(EmailBody.EmailTemplate.LoginSuccessed),
+                    await emailBody.GetViewRenderString());
+
+                _mailService?.SendMailAsync(emailData, default);
             }
 
             return Json(new { result = true, message = Url.Action("ListToStampIndex", "ContractConsole") });
@@ -71,6 +107,8 @@ namespace ContractHome.Controllers
                 ModelState.AddModelError("PID", msg);
                 return View("~/Views/Account/Login.cshtml");
             }
+
+            //wait to do...甲方的公司ContactEmail&&UserEmail登入成功通知信
 
             viewModel.ReturnUrl = viewModel.ReturnUrl.GetEfficientString();
             return Redirect(viewModel.ReturnUrl ?? msg ?? "~/Account/Login");
@@ -128,7 +166,7 @@ namespace ContractHome.Controllers
                 {
 
                     //設定字型
-                    using (Font font = new Font("Courier New", 16, FontStyle.Bold))
+                    using (System.Drawing.Font font = new System.Drawing.Font("Courier New", 16, FontStyle.Bold))
                     {
 
                         //設定圖片背景

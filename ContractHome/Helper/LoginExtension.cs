@@ -15,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using ContractHome.Helper.Security.MembershipManagement;
+using System.Data.Linq.SqlClient;
 
 namespace ContractHome.Helper
 {
