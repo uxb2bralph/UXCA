@@ -151,7 +151,7 @@
                 </div>
               </div>
               <div>
-                <div class="dropdown">
+                <div :id="`dropdown_${index}`" class="dropdown">
                   <button class="btn btn-sm fs-6" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown"
                     aria-expanded="false">
                     <i class="far fa-ellipsis-h"></i>
@@ -198,7 +198,7 @@
             </div>
             <div class="divider pb-2"></div>
             <!-- 用印流程 -->
-            <div class="progresses__wrapper">
+            <div :id="`progresses_${index}`" class="progresses__wrapper">
               <!-- 起約方 -->
               <div class="progresses__companyGroup">
                 <div class="progresses__company">
@@ -759,10 +759,10 @@
     },
     mounted() {
       // 若為第一次登入，顯示歡迎視窗並進入導覽流程
-      if (!sessionStorage.getItem("isContractTour")) {
+      if (!localStorage.getItem("isContractTour")) {
         setTimeout(() => {
           $("#welcomModal").modal('show');
-          sessionStorage.setItem("isContractTour", true);
+          localStorage.setItem("isContractTour", true);
         }, 100);
       }
 
@@ -875,31 +875,36 @@
             content: '點選按鈕並上傳合約以建立一個新的合約簽署流程'
           },
           {
-            selector: '#contractNo-0',
+            selector: '#pills-tab',
             step: 2,
-            title: '合約資訊',
-            content: '包含：<ul><li>合約建立日期</li><li>合約編號</li><li>合約標題</li><li>起約人 (甲方)</li><li>簽約人 (乙方)</li></ul>點選「合約編號」可以檢視該合約的 PDF 檔'
+            title: '查詢項目',
+            content: '可查詢當前與使用者相關待處理的案件'
           },
           {
-            selector: '#stamp-0',
+            selector: '#contractNo-0',
             step: 3,
-            title: '合約用印流程',
-            content: '合約上傳後，起約人和簽約人依順序進行用印或簽名的流程，<br>雙方用印的狀態會即時顯示在列表中。<ul><li>顯示綠色：代表可以點選按鈕進行用印的流程。</li><li>顯示灰色：代表目前流程尚未開始。</li><li>顯示藍色文字：代表流程已完成。</li></ul>'
+            title: '合約資訊',
+            content: '包含：<ul><li>合約建立日期</li><li>合約編號</li><li>合約標題</li><li>起約人 (甲方)</li><li>簽約人 (乙方)</li></ul>點選「合約標題」可以檢視該合約的 PDF 檔'
           },
           {
-            selector: '#sign-0',
+            selector: '#dropdown_0',
             step: 4,
-            title: '合約簽署流程',
-            content: '用印後，起約人和簽約人可繼續進行數位簽章的流程，<br>雙方簽署的狀態會即時顯示在列表中。<ul><li>顯示橘色：代表可以點選按鈕進行簽署的流程。</li><li>顯示灰色：代表目前流程尚未開始。</li><li>顯示藍色文字：代表流程已完成。</li></ul>'
+            title: '相關操作介面',
+            content: `顯示合約相關的操作介面，包含：<br><br><img src="/images/options.png"><ul><li>簽署者狀態：顯示當前起約人和簽約人的用印和簽章流程狀態。</li><li>稽核軌跡：顯示合約關係人所有的網頁操作軌跡紀錄。</li><li>下載檔案：下載合約。</li><li>終止合約：合約效力的中止。</li></ul>`
           },
           {
-            selector: '#operation-0',
+            selector: '#progresses_0',
             step: 5,
-            title: '相關操作介面',
-            content: '顯示合約相關的操作介面，包含：<ul><li>簽署者狀態：顯示當前起約人和簽約人的用印和簽章流程狀態。</li><li>稽核軌跡：顯示合約關係人所有的網頁操作軌跡紀錄。</li><li>下載檔案：下載合約。</li><li>終止合約：合約效力的中止。</li></ul>'
+            title: '合約用印及電子簽章流程',
+            content: '合約上傳後，起約人和簽約人依順序進行用印或簽名的流程，<br>雙方操作的狀態會即時顯示在列表中。<ul><li>顯示灰色：<div style="display:flex;align-items:center"><img src="/images/pending.png" style="margin-right:5px"><img src="/images/pending-s.png" style="margin-right:10px">代表目前流程尚未開始。</div></li><li>顯示藍色：<div style="display:flex;align-items:center"><img src="/images/stamp.png" style="margin-right:10px">代表可以點選按鈕進行用印的流程。</div><div style="display:flex;align-items:center"><img src="/images/sign.png" style="margin-right:10px"> 代表可以點選按鈕進行電子簽章的流程。</div></li><li>顯示綠色：<div style="display:flex;align-items:center"><img src="/images/complete.png" style="margin-right:10px">代表流程已完成。</div></li></ul > '
           },
         ];
-        const tourguide = new Tourguide({ steps: this.contractList.length > 0 ? steps : stepOnly });
+        const tourguide = new Tourguide({
+          steps: this.contractList.length > 0 ? steps : stepOnly,
+          colors: {
+            fontSize: "15px",
+          }
+        });
         tourguide.start();
       },
       initContract() {

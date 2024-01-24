@@ -89,7 +89,7 @@
   const infoAlert = document.querySelector('#infoAlert');
   const agreement = document.querySelector('#agreement');
   window.addEventListener('load', () => {
-    if (!sessionStorage.getItem("isAgreement")) {
+    if (!localStorage.getItem("isAgreement")) {
       infoAlert.classList.add('show');
     } else {
       infoAlert.classList.remove('show');
@@ -97,9 +97,9 @@
   });
 
   agreement.addEventListener('click', () => {
-    if (!sessionStorage.getItem("isAgreement")) {
+    if (!localStorage.getItem("isAgreement")) {
       infoAlert.classList.add('show');
-      sessionStorage.setItem("isAgreement", true);
+      localStorage.setItem("isAgreement", true);
     } else {
       infoAlert.classList.remove('show');
     }
