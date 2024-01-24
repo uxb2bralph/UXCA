@@ -31,39 +31,35 @@
     <div class="container-lg pt-3">
       <div class="row d-flex align-items-center">
         <div class="col-12 col-md-6 pt-2 order-2 order-md-1">
-          <ul class="nav nav-pills nav--tab" id="pills-tab" role="tablist">
+          <ul class="nav nav-pills nav--tab pt-1" id="pills-tab" role="tablist">
             <li class="nav-item flex-grow-1 flex-md-grow-0" role="presentation">
               <button class="nav-link rounded-0 px-4 w-100 active" data-bs-toggle="pill" type="button" role="tab"
                 aria-selected="true" v-on:click="queryHandler(3)">
-                <span class="fs-13 fw-bolder">20</span><br>
-                <span class="fs-14 fw-bolder">待自己用印</span>
+                <span class="fs-6 fw-bolder">待自己用印</span>
               </button>
             </li>
             <li class="nav-item flex-grow-1 flex-md-grow-0" role="presentation">
               <button class="nav-link rounded-0 px-4 w-100" data-bs-toggle="pill" type="button" role="tab"
                 aria-selected="false" v-on:click="queryHandler(5)">
-                <span class="fs-13 fw-bolder">20</span><br>
-                <span class="fs-14 fw-bolder">待自己簽署</span>
+                <span class="fs-6 fw-bolder">待自己簽署</span>
               </button>
             </li>
             <li class="nav-item flex-grow-1 flex-md-grow-0" role="presentation">
               <button class="nav-link rounded-0 px-4 w-100" data-bs-toggle="pill" type="button" role="tab"
                 aria-selected="true" v-on:click="queryHandler(2)">
-                <span class="fs-13 fw-bolder">20</span><br>
-                <span class="fs-14 fw-bolder">待他人用印</span>
+                <span class="fs-6 fw-bolder">待他人用印</span>
               </button>
             </li>
             <li class="nav-item flex-grow-1 flex-md-grow-0" role="presentation">
               <button class="nav-link rounded-0 px-4 w-100" data-bs-toggle="pill" type="button" role="tab"
                 aria-selected="false" v-on:click="queryHandler(4)">
-                <span class="fs-13 fw-bolder">20</span><br>
-                <span class="fs-14 fw-bolder">待他人簽署</span>
+                <span class="fs-6 fw-bolder">待他人簽署</span>
               </button>
             </li>
           </ul>
         </div>
         <div
-          class="col-12 col-md-6 pt-2 order-1 order-md-2 d-flex align-items-center justify-content-center justify-content-md-end">
+          class="col-12 col-md-6 pb-2 order-1 order-md-2 d-flex align-items-center justify-content-center justify-content-md-end">
           <div id="tourbutton" class="tooltip__wrapper">
             <button type="button" class="px-1 btn btn-lg btn-warning rounded-pill opacity-75" style="width: 48px;"
               v-on:click="tourHandler">
@@ -89,9 +85,9 @@
   </div>
   <div class="container-lg listToStamp__container">
     <!-- 排序項目 -->
-    <div v-if="contractListAll.length > 0" class="row my-0 pt-3">
-      <div class="col-12 col-md-2">
-        <div class="input-group input-group-sm">
+    <div v-if="contractListAll.length > 0" class="d-flex align-items-center justify-content-between my-0 pt-3">
+      <div class="d-flex align-items-center">
+        <div class="input-group input-group-sm pe-3">
           <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
             aria-expanded="false">{{ currentSortName }}</button>
           <ul class="dropdown-menu shadow">
@@ -111,6 +107,18 @@
             <i class="fas fa-sort-amount-down-alt"></i>
           </button>
         </div>
+        <span class="fs-13 text-black-50 fw-bolder text-nowrap">
+          待處理合約：{{ totalRecordCount }} 筆
+        </span>
+      </div>
+      <div class="text-end">
+        <span class="fs-12 text-black-50 fw-bolder">說明：</span>
+        <span class="progresses__name bg-lightBlue mr-2">
+          起約方
+        </span>
+        <span class="progresses__name bg-warning opacity-75 text-dark">
+          簽約方
+        </span>
       </div>
     </div>
     <!-- 合約資料列表 -->
@@ -143,7 +151,7 @@
                 </div>
               </div>
               <div>
-                <div class="dropdown">
+                <div :id="`dropdown_${index}`" class="dropdown">
                   <button class="btn btn-sm fs-6" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown"
                     aria-expanded="false">
                     <i class="far fa-ellipsis-h"></i>
@@ -190,7 +198,7 @@
             </div>
             <div class="divider pb-2"></div>
             <!-- 用印流程 -->
-            <div class="progresses__wrapper">
+            <div :id="`progresses_${index}`" class="progresses__wrapper">
               <!-- 起約方 -->
               <div class="progresses__companyGroup">
                 <div class="progresses__company">
@@ -478,7 +486,7 @@
                   </div>
                   <div class="fs-12 text-black-50">
                     <span>建立：{{ signerStatusData.Initiator?.StampDate }}</span>
-                    <span class="ps-3">最近修改：{{ signerStatusData.CurrentEditDate }}</span>
+                    <!--span class="ps-3">最近修改：{{ signerStatusData.CurrentEditDate }}</span-->
                   </div>
                 </div>
               </div>
@@ -548,7 +556,7 @@
                   <div class="fs-12 text-black-50">
                     建立：{{ historyData.Initiator?.StampDate }}
                     <br>
-                    最近修改：{{ historyData.CurrentEditDate }}
+                    <!--最近修改：{{ historyData.CurrentEditDate }}-->
                   </div>
                 </div>
               </div>
@@ -751,10 +759,10 @@
     },
     mounted() {
       // 若為第一次登入，顯示歡迎視窗並進入導覽流程
-      if (!sessionStorage.getItem("isContractTour")) {
+      if (!localStorage.getItem("isContractTour")) {
         setTimeout(() => {
           $("#welcomModal").modal('show');
-          sessionStorage.setItem("isContractTour", true);
+          localStorage.setItem("isContractTour", true);
         }, 100);
       }
 
@@ -867,31 +875,36 @@
             content: '點選按鈕並上傳合約以建立一個新的合約簽署流程'
           },
           {
-            selector: '#contractNo-0',
+            selector: '#pills-tab',
             step: 2,
-            title: '合約資訊',
-            content: '包含：<ul><li>合約建立日期</li><li>合約編號</li><li>合約標題</li><li>起約人 (甲方)</li><li>簽約人 (乙方)</li></ul>點選「合約編號」可以檢視該合約的 PDF 檔'
+            title: '查詢項目',
+            content: '可查詢當前與使用者相關待處理的案件'
           },
           {
-            selector: '#stamp-0',
+            selector: '#contractNo-0',
             step: 3,
-            title: '合約用印流程',
-            content: '合約上傳後，起約人和簽約人依順序進行用印或簽名的流程，<br>雙方用印的狀態會即時顯示在列表中。<ul><li>顯示綠色：代表可以點選按鈕進行用印的流程。</li><li>顯示灰色：代表目前流程尚未開始。</li><li>顯示藍色文字：代表流程已完成。</li></ul>'
+            title: '合約資訊',
+            content: '包含：<ul><li>合約建立日期</li><li>合約編號</li><li>合約標題</li><li>起約人 (甲方)</li><li>簽約人 (乙方)</li></ul>點選「合約標題」可以檢視該合約的 PDF 檔'
           },
           {
-            selector: '#sign-0',
+            selector: '#dropdown_0',
             step: 4,
-            title: '合約簽署流程',
-            content: '用印後，起約人和簽約人可繼續進行數位簽章的流程，<br>雙方簽署的狀態會即時顯示在列表中。<ul><li>顯示橘色：代表可以點選按鈕進行簽署的流程。</li><li>顯示灰色：代表目前流程尚未開始。</li><li>顯示藍色文字：代表流程已完成。</li></ul>'
+            title: '相關操作介面',
+            content: `顯示合約相關的操作介面，包含：<br><br><img src="/images/options.png"><ul><li>簽署者狀態：顯示當前起約人和簽約人的用印和簽章流程狀態。</li><li>稽核軌跡：顯示合約關係人所有的網頁操作軌跡紀錄。</li><li>下載檔案：下載合約。</li><li>終止合約：合約效力的中止。</li></ul>`
           },
           {
-            selector: '#operation-0',
+            selector: '#progresses_0',
             step: 5,
-            title: '相關操作介面',
-            content: '顯示合約相關的操作介面，包含：<ul><li>簽署者狀態：顯示當前起約人和簽約人的用印和簽章流程狀態。</li><li>稽核軌跡：顯示合約關係人所有的網頁操作軌跡紀錄。</li><li>下載檔案：下載合約。</li><li>終止合約：合約效力的中止。</li></ul>'
+            title: '合約用印及電子簽章流程',
+            content: '合約上傳後，起約人和簽約人依順序進行用印或簽名的流程，<br>雙方操作的狀態會即時顯示在列表中。<ul><li>顯示灰色：<div style="display:flex;align-items:center"><img src="/images/pending.png" style="margin-right:5px"><img src="/images/pending-s.png" style="margin-right:10px">代表目前流程尚未開始。</div></li><li>顯示藍色：<div style="display:flex;align-items:center"><img src="/images/stamp.png" style="margin-right:10px">代表可以點選按鈕進行用印的流程。</div><div style="display:flex;align-items:center"><img src="/images/sign.png" style="margin-right:10px"> 代表可以點選按鈕進行電子簽章的流程。</div></li><li>顯示綠色：<div style="display:flex;align-items:center"><img src="/images/complete.png" style="margin-right:10px">代表流程已完成。</div></li></ul > '
           },
         ];
-        const tourguide = new Tourguide({ steps: this.contractList.length > 0 ? steps : stepOnly });
+        const tourguide = new Tourguide({
+          steps: this.contractList.length > 0 ? steps : stepOnly,
+          colors: {
+            fontSize: "15px",
+          }
+        });
         tourguide.start();
       },
       initContract() {
