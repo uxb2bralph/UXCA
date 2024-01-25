@@ -1257,7 +1257,9 @@
           const currentId = this.currentSeal.Id;
           if (currentId) {
             const currentNote = document.querySelector(`#${currentId}`);
-            currentNote.remove();
+            if (currentNote) {
+              currentNote.remove();
+            }
           }
 
           const textInput = document.querySelector(`#note-${uuid}-text`);
@@ -1826,7 +1828,9 @@
       const currentId = app.$data.currentSeal.Id;
       if (currentId) {
         const currentSeal = document.querySelector(`#${currentId}`);
-        currentSeal.remove();
+        if (currentSeal) {
+          currentSeal.remove();
+        }
       }
 
       // 取得圖片類型 (用印 / 簽名)
