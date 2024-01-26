@@ -106,259 +106,292 @@
     </section>
 
     <!-- 標題 -->
-    <h4 class="mb-2 fw-bolder">合約列表</h4>
+    <h4 class="mb-2 fw-bolder pb-2 border-bottom border-1">合約列表</h4>
+    <!-- 排序項目 -->
+    <div v-if="contractListAll.length > 0" class="row my-0 pt-2"
+      :style="{ 'padding-bottom': !isLayoutCard ? `12px` : null }">
+      <div class="col-12 col-md-6 d-flex align-items-center">
+        <div class="input-group input-group-sm pe-3" style="width: auto;">
+          <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+            aria-expanded="false">{{ currentSortName }}</button>
+          <ul class="dropdown-menu shadow">
+            <template v-for="(item, index) in SortList">
+              <li :key="index">
+                <a class="dropdown-item fs-12" href="#" v-on:click="changeSortItem(item)">
+                  {{ item.text }}
+                </a>
+              </li>
+            </template>
+          </ul>
+          <button v-if="isSortNo" class="btn btn-outline-secondary" type="button"
+            v-on:click="sortHandler('isSortNo', true)">
+            <i class="fas fa-sort-amount-down"></i>
+          </button>
+          <button v-else class="btn btn-outline-secondary" type="button" v-on:click="sortHandler('isSortNo', false)">
+            <i class="fas fa-sort-amount-down-alt"></i>
+          </button>
+        </div>
+        <span class="fs-13 text-black-50 fw-bolder text-nowrap">
+          待處理合約：{{ totalRecordCount }} 筆
+        </span>
+      </div>
+      <div class="col-12 col-md-6 text-end">
+        <span class="fs-12 text-black-50 fw-bolder">說明：</span>
+        <span class="progresses__name bg-lightBlue mr-2">
+          起約方
+        </span>
+        <span class="progresses__name bg-warning opacity-75 text-dark">
+          簽約方
+        </span>
+        <div class="btn-group btn-group-sm ms-3" role="group" aria-label="Basic radio toggle button group">
+          <input v-model="isLayoutCard" type="radio" class="btn-check active" name="layout" id="btnradio1"
+            autocomplete="off" v-on:change="layoutHandler(false)">
+          <label class="btn btn-outline-primary d-flex align-items-center fs-6 py-2"
+            :class="{ 'active': !isLayoutCard }" for="btnradio1">
+            <i class="fas fa-th-list"></i>
+          </label>
+
+          <input v-model="isLayoutCard" type="radio" class="btn-check" name="layout" id="btnradio2" autocomplete="off"
+            v-on:change="layoutHandler(true)">
+          <label class="btn btn-outline-primary d-flex align-items-center fs-6 py-2" :class="{ 'active': isLayoutCard }"
+            for="btnradio2">
+            <i class="fas fa-th"></i>
+          </label>
+        </div>
+      </div>
+    </div>
     <section id="queryArea">
-      <div class="row my-0 pt-3 border-top border-1">
-        <!-- 排序項目 -->
-        <div class="col col-12 col-md-2">
-          <div v-if="contractListAll.length > 0" class="input-group input-group-sm">
-            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
-              aria-expanded="false">{{ currentSortName }}</button>
-            <ul class="dropdown-menu shadow">
-              <template v-for="(item, index) in SortList">
-                <li :key="index">
-                  <a class="dropdown-item fs-12" href="#" v-on:click="changeSortItem(item)">
-                    {{ item.text }}
-                  </a>
-                </li>
-              </template>
-            </ul>
-            <button v-if="isSortNo" class="btn btn-outline-secondary" type="button"
-              v-on:click="sortHandler('isSortNo', true)">
-              <i class="fas fa-sort-amount-down"></i>
-            </button>
-            <button v-else class="btn btn-outline-secondary" type="button" v-on:click="sortHandler('isSortNo', false)">
-              <i class="fas fa-sort-amount-down-alt"></i>
-            </button>
-          </div>
-        </div>
-        <!-- 合約資料查詢列表 -->
-        <div v-if="contractListAll.length === 0" class="card shadow-ms p-3 text-center">
-          <span class="text-primary opacity-75" style="font-size: 50px;">
-            <i class="fad fa-folder-open"></i>
-          </span>
-          <span class="text-primary opacity-75 fw-bolder">目前尚無合約資料</span>
-        </div>
-        <div v-else class="row g-3 my-0 pb-3">
-          <div class="col-12 col-sm-6 col-lg-4" v-for="(contract, index) in contractListAll" :key="`c_${index}`">
-            <div :id="`contractNo-${index}`" class="card justify-content-between p-2 pb-1 h-100 shadow-sm">
-              <div class="d-flex justify-content-between">
-                <div class="d-flex">
-                  <div class="fs-1 px-2 text-secondary opacity-50">
-                    <i class="fad fa-file-contract fa-lg"></i>
-                  </div>
-                  <div>
-                    <div class="fs-12">
-                      <span class="text-black-50 opacity-75">{{ contract.Initiator?.StampDate }}</span>
-                      <span class="px-1 text-black-50 opacity-75">/</span>
-                      <span class="text-black-50 fw-bolder">{{ contract.ContractNo }}</span>
-                    </div>
-                    <div class="fs-13 fw-bolder">
-                      <a :href="`javascript:showContract('${contract.KeyID}');`">
-                        {{ contract.Title }}
-                      </a>
-                    </div>
-                  </div>
+      <!-- 合約資料查詢列表 -->
+      <div v-if="contractListAll.length === 0" class="card shadow-ms p-3 text-center">
+        <span class="text-primary opacity-75" style="font-size: 50px;">
+          <i class="fad fa-folder-open"></i>
+        </span>
+        <span class="text-primary opacity-75 fw-bolder">目前尚無合約資料</span>
+      </div>
+      <div v-else class="row my-0 pb-3" :class="[ isLayoutCard ? 'g-3' : 'g-1' ]">
+        <div v-for="(contract, index) in contractListAll" :key="`c_${index}`" class="col-12"
+          :class="{ 'col-sm-6 col-lg-4' : isLayoutCard }">
+          <div :id="`contractNo-${index}`" class="card justify-content-between p-2 pb-1 h-100 shadow-sm"
+            :class="{ 'd-flex flex-row' : !isLayoutCard }">
+            <div class="d-flex justify-content-between" :class="{ 'col-4' : !isLayoutCard }">
+              <div class="d-flex">
+                <div class="fs-1 px-2 text-secondary opacity-50">
+                  <i class="fad fa-file-contract fa-lg"></i>
                 </div>
                 <div>
-                  <div class="dropdown">
-                    <button class="btn btn-sm fs-6" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown"
-                      aria-expanded="false">
-                      <i class="far fa-ellipsis-h"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownMenuButton1">
-                      <li>
-                        <button class="dropdown-item d-flex align-items-center fs-13"
-                          v-on:click="openSignerStatusModal(contract)">
-                          <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
-                            <i class="fas fa-info text-info"></i>
-                          </span>
-                          簽署者狀態
-                        </button>
-                      </li>
-                      <li>
-                        <button class="dropdown-item d-flex align-items-center fs-13"
-                          v-on:click="openHistoryModal(contract)">
-                          <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
-                            <i class="fas fa-shoe-prints text-info"></i>
-                          </span>
-                          稽核軌跡
-                        </button>
-                      </li>
-                      <li>
-                        <button class="dropdown-item d-flex align-items-center fs-13"
-                          v-on:click="downloadPdf(contract)">
-                          <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
-                            <i class="far fa-download text-info"></i>
-                          </span>
-                          下載檔案
-                        </button>
-                      </li>
-                      <li v-if="!contract.isContractor">
-                        <button class="dropdown-item d-flex align-items-center fs-13"
-                          v-on:click="openStopContractModal(contract)">
-                          <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
-                            <i class="fas fa-ban text-danger opacity-75"></i>
-                          </span>
-                          終止合約
-                        </button>
-                      </li>
-                    </ul>
+                  <div class="fs-12">
+                    <span class="text-black-50 opacity-75">{{ contract.Initiator?.StampDate }}</span>
+                    <span class="px-1 text-black-50 opacity-75">/</span>
+                    <span class="text-black-50 fw-bolder">{{ contract.ContractNo }}</span>
+                  </div>
+                  <div class="fs-13 fw-bolder">
+                    <a :href="`javascript:showContract('${contract.KeyID}');`">
+                      {{ contract.Title }}
+                    </a>
                   </div>
                 </div>
               </div>
-              <div class="divider pb-2"></div>
-              <!-- 用印流程 -->
-              <div class="progresses__wrapper">
-                <!-- 起約方 -->
+              <!-- 選單 -->
+              <div>
+                <div class="dropdown">
+                  <button class="btn btn-sm fs-6" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                    <i class="far fa-ellipsis-h"></i>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownMenuButton1">
+                    <li>
+                      <button class="dropdown-item d-flex align-items-center fs-13"
+                        v-on:click="openSignerStatusModal(contract)">
+                        <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
+                          <i class="fas fa-info text-info"></i>
+                        </span>
+                        簽署者狀態
+                      </button>
+                    </li>
+                    <li>
+                      <button class="dropdown-item d-flex align-items-center fs-13"
+                        v-on:click="openHistoryModal(contract)">
+                        <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
+                          <i class="fas fa-shoe-prints text-info"></i>
+                        </span>
+                        稽核軌跡
+                      </button>
+                    </li>
+                    <li>
+                      <button class="dropdown-item d-flex align-items-center fs-13" v-on:click="downloadPdf(contract)">
+                        <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
+                          <i class="far fa-download text-info"></i>
+                        </span>
+                        下載檔案
+                      </button>
+                    </li>
+                    <li v-if="!contract.isContractor">
+                      <button class="dropdown-item d-flex align-items-center fs-13"
+                        v-on:click="openStopContractModal(contract)">
+                        <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
+                          <i class="fas fa-ban text-danger opacity-75"></i>
+                        </span>
+                        終止合約
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div v-if="isLayoutCard" class="divider pb-2"></div>
+            <div v-else class="d-flex" style="height: 100%;">
+              <div class="vr"></div>
+            </div>
+            <!-- 用印流程 -->
+            <div class="progresses__wrapper pb-2" :class="{ 'col-8' : !isLayoutCard }">
+              <!-- 起約方 -->
+              <div class="progresses__companyGroup">
+                <div class="progresses__company">
+                  <span v-if="!contract.Initiator?.StampDate" class="fw-bolder text-primary opacity-75">
+                    待用印
+                  </span>
+                  <span v-if="!!contract.Initiator?.StampDate && !contract.Initiator?.SignerDate"
+                    class="fw-bolder text-primary opacity-75">
+                    待簽署
+                  </span>
+                  <span v-if="!!contract.Initiator?.StampDate && !! contract.Initiator?.SignerDate"
+                    class="fw-bolder text-success opacity-75">
+                    已完成
+                  </span>
+                </div>
+                <!-- 已完成 -->
+                <button v-if="!!contract.Initiator?.StampDate && !!contract.Initiator?.SignerDate" type="button"
+                  class="btn progresses__steps progresses__steps--done disabled">
+                  <i class="fas fa-circle"></i>
+                </button>
+
+                <!-- 待用印 -->
+                <button v-if="!contract.Initiator?.StampDate" type="button" class="btn progresses__steps disabled"
+                  :class="{ 'progresses__steps--actived': contract.Initiator?.IsCurrentUserCompany }">
+                  <i class="fas fa-stamp"></i>
+                </button>
+
+                <!-- 待簽署 -->
+                <button v-if="!!contract.Initiator?.StampDate && !contract.Initiator?.SignerDate" type="button"
+                  class="btn progresses__steps disabled"
+                  :class="{ 'progresses__steps--actived': contract.Initiator?.IsCurrentUserCompany }">
+                  <i class="fas fa-signature"></i>
+                </button>
+                <div class="progresses__company">
+                  <span class=" progresses__name" :class="{ 'bg-lightBlue': contract.Initiator?.IsCurrentUserCompany }">
+                    {{ formatName(contract.Initiator?.Name) }}
+                  </span>
+                </div>
+              </div>
+              <!-- 簽約方 -->
+              <div v-for="(item, index) in contract.Contractor" :key="index" class="progresses__stepGroup">
+                <!-- 待用印 -->
+                <span v-if="item.StampDate" class="progresses__line"
+                  :class="{'progresses__line--done': contract.ContractorStampDate }"></span>
+                <!-- 待簽署 -->
+                <span v-if="item.SignerDate" class="progresses__line progresses__line--sign"
+                  :class="{'progresses__line--done': contract.ContractorStampDate }"></span>
                 <div class="progresses__companyGroup">
                   <div class="progresses__company">
-                    <span v-if="!contract.Initiator?.StampDate" class="fw-bolder text-primary opacity-75">
+                    <span v-if="!item.StampDate" class="fw-bolder text-primary opacity-75">
                       待用印
                     </span>
-                    <span v-if="!!contract.Initiator?.StampDate && !contract.Initiator?.SignerDate"
-                      class="fw-bolder text-primary opacity-75">
+                    <span v-if="!!item.StampDate && !item.SignerDate" class="fw-bolder text-primary opacity-75">
                       待簽署
                     </span>
-                    <span v-if="!!contract.Initiator?.StampDate && !! contract.Initiator?.SignerDate"
-                      class="fw-bolder text-success opacity-75">
+                    <span v-if="!!item.StampDate && !!item.SignerDate" class="fw-bolder text-success opacity-75">
                       已完成
                     </span>
                   </div>
-                  <!-- 已完成 -->
-                  <button v-if="!!contract.Initiator?.StampDate && !!contract.Initiator?.SignerDate" type="button"
-                    class="btn progresses__steps progresses__steps--done disabled">
-                    <i class="fas fa-circle"></i>
-                  </button>
+                  <div class="progresses__btn">
 
-                  <!-- 待用印 -->
-                  <button v-if="!contract.Initiator?.StampDate" type="button" class="btn progresses__steps disabled"
-                    :class="{ 'progresses__steps--actived': contract.Initiator?.IsCurrentUserCompany }">
-                    <i class="fas fa-stamp"></i>
-                  </button>
+                    <!-- 已完成 -->
+                    <button v-if="!!item.StampDate && !!item.SignerDate" type="button"
+                      class="btn progresses__steps progresses__steps--done disabled">
+                      <i class="fas fa-circle"></i>
+                    </button>
 
-                  <!-- 待簽署 -->
-                  <button v-if="!!contract.Initiator?.StampDate && !contract.Initiator?.SignerDate" type="button"
-                    class="btn progresses__steps disabled"
-                    :class="{ 'progresses__steps--actived': contract.Initiator?.IsCurrentUserCompany }">
-                    <i class="fas fa-signature"></i>
-                  </button>
+                    <!-- 待用印 -->
+                    <button v-if="!item.StampDate" type="button" class="btn progresses__steps disabled"
+                      :class="{ 'progresses__steps--actived': item.IsCurrentUserCompany }">
+                      <i class="fas fa-stamp"></i>
+                    </button>
+
+                    <!-- 待簽署 -->
+                    <button v-if="!!item.StampDate && !item.SignerDate" type="button"
+                      class="btn progresses__steps disabled"
+                      :class="{ 'progresses__steps--actived': item.IsCurrentUserCompany }">
+                      <i class="fas fa-signature"></i>
+                    </button>
+                  </div>
                   <div class="progresses__company">
                     <span class=" progresses__name"
-                      :class="{ 'bg-lightBlue': contract.Initiator?.IsCurrentUserCompany }">
-                      {{ formatName(contract.Initiator?.Name) }}
+                      :class="{ 'bg-warning opacity-75 text-dark': item.IsCurrentUserCompany }">
+                      {{ formatName(item.Name) }}
                     </span>
                   </div>
                 </div>
-                <!-- 簽約方 -->
-                <div v-for="(item, index) in contract.Contractor" :key="index" class="progresses__stepGroup">
-                  <!-- 待用印 -->
-                  <span v-if="item.StampDate" class="progresses__line"
-                    :class="{'progresses__line--done': contract.ContractorStampDate }"></span>
-                  <!-- 待簽署 -->
-                  <span v-if="item.SignerDate" class="progresses__line progresses__line--sign"
-                    :class="{'progresses__line--done': contract.ContractorStampDate }"></span>
-                  <div class="progresses__companyGroup">
-                    <div class="progresses__company">
-                      <span v-if="!item.StampDate" class="fw-bolder text-primary opacity-75">
-                        待用印
-                      </span>
-                      <span v-if="!!item.StampDate && !item.SignerDate" class="fw-bolder text-primary opacity-75">
-                        待簽署
-                      </span>
-                      <span v-if="!!item.StampDate && !!item.SignerDate" class="fw-bolder text-success opacity-75">
-                        已完成
-                      </span>
-                    </div>
-                    <div class="progresses__btn">
-
-                      <!-- 已完成 -->
-                      <button v-if="!!item.StampDate && !!item.SignerDate" type="button"
-                        class="btn progresses__steps progresses__steps--done disabled">
-                        <i class="fas fa-circle"></i>
-                      </button>
-
-                      <!-- 待用印 -->
-                      <button v-if="!item.StampDate" type="button" class="btn progresses__steps disabled"
-                        :class="{ 'progresses__steps--actived': item.IsCurrentUserCompany }">
-                        <i class="fas fa-stamp"></i>
-                      </button>
-
-                      <!-- 待簽署 -->
-                      <button v-if="!!item.StampDate && !item.SignerDate" type="button"
-                        class="btn progresses__steps disabled"
-                        :class="{ 'progresses__steps--actived': item.IsCurrentUserCompany }">
-                        <i class="fas fa-signature"></i>
-                      </button>
-                    </div>
-                    <div class="progresses__company">
-                      <span class=" progresses__name"
-                        :class="{ 'bg-warning opacity-75 text-dark': item.IsCurrentUserCompany }">
-                        {{ formatName(item.Name) }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
         </div>
-        <!-- 分頁模組 -->
-        <div v-if="contractListAll.length > 0" class="row pb-4 align-items-center justify-content-between">
-          <div class="col-auto">
-            <nav aria-label="Page navigation">
-              <ul class="pagination justify-content-center mb-0">
-                <!-- 第一頁 -->
-                <li class=" page-item" :class="{'disabled' : page === 1}">
-                  <a class="page-link" v-on:click="firstPage">
-                    <i class="far fa-step-backward"></i>
-                  </a>
-                </li>
-                <!-- 前一頁 -->
-                <li class=" page-item" :class="{'disabled' : page === 1}">
-                  <a class="page-link" v-on:click="previousPage">
-                    <i class="fal fa-chevron-left"></i>
-                  </a>
-                </li>
-                <!-- 頁面列表 -->
-                <li v-for="n in totalPages" :key="n" :v-model="page" class="page-item" :class="{'active' : page === n}">
-                  <a class="page-link" v-on:click="changePage(n)">{{ n }}</a>
-                </li>
-                <!-- 下一頁 -->
-                <li class="page-item" :class="{'disabled' : page === totalPages}">
-                  <a class="page-link" v-on:click="nextPage">
-                    <i class="fal fa-chevron-right"></i>
-                  </a>
-                </li>
-                <!-- 最後一頁 -->
-                <li class="page-item" :class="{'disabled' : page === totalPages}">
-                  <a class="page-link" v-on:click="lastPage">
-                    <i class="far fa-step-forward"></i>
-                  </a>
-                </li>
-              </ul>
-            </nav>
-          </div>
-          <div class="col-auto">
-            <div class="row g-3 align-items-center">
-              <div class="col-auto fs-13">
-                <label for="PageSize">每頁筆數：</label>
-              </div>
-              <div class="col-auto">
-                <select v-model="pageSize" class="form-select form-control-sm" name="PageSize" id="PageSize"
-                  v-on:change="resetPageSize">
-                  <option>12</option>
-                  <option>36</option>
-                  <option>60</option>
-                  <option>100</option>
-                </select>
-              </div>
-              <div class="col-auto fs-13">
-                共 {{ totalPages }} 頁，{{ totalRecordCount }} 筆
-              </div>
+      </div>
+      <!-- 分頁模組 -->
+      <div v-if="contractListAll.length > 0" class="row pb-4 align-items-center justify-content-between">
+        <div class="col-auto">
+          <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mb-0">
+              <!-- 第一頁 -->
+              <li class=" page-item" :class="{'disabled' : page === 1}">
+                <a class="page-link" v-on:click="firstPage">
+                  <i class="far fa-step-backward"></i>
+                </a>
+              </li>
+              <!-- 前一頁 -->
+              <li class=" page-item" :class="{'disabled' : page === 1}">
+                <a class="page-link" v-on:click="previousPage">
+                  <i class="fal fa-chevron-left"></i>
+                </a>
+              </li>
+              <!-- 頁面列表 -->
+              <li v-for="n in totalPages" :key="n" :v-model="page" class="page-item" :class="{'active' : page === n}">
+                <a class="page-link" v-on:click="changePage(n)">{{ n }}</a>
+              </li>
+              <!-- 下一頁 -->
+              <li class="page-item" :class="{'disabled' : page === totalPages}">
+                <a class="page-link" v-on:click="nextPage">
+                  <i class="fal fa-chevron-right"></i>
+                </a>
+              </li>
+              <!-- 最後一頁 -->
+              <li class="page-item" :class="{'disabled' : page === totalPages}">
+                <a class="page-link" v-on:click="lastPage">
+                  <i class="far fa-step-forward"></i>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        <div class="col-auto">
+          <div class="row g-3 align-items-center">
+            <div class="col-auto fs-13">
+              <label for="PageSize">每頁筆數：</label>
+            </div>
+            <div class="col-auto">
+              <select v-model="pageSize" class="form-select form-control-sm" name="PageSize" id="PageSize"
+                v-on:change="resetPageSize">
+                <option>12</option>
+                <option>36</option>
+                <option>60</option>
+                <option>100</option>
+              </select>
+            </div>
+            <div class="col-auto fs-13">
+              共 {{ totalPages }} 頁，{{ totalRecordCount }} 筆
             </div>
           </div>
         </div>
+      </div>
     </section>
     <!-- 簽署者狀態 Dialog -->
     <div class="modal fade" id="signerStatusModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
@@ -600,7 +633,8 @@
       currentlyCounter: -1,
       signerStatusData: {},
       historyData: {},
-      stopContractData: {}
+      stopContractData: {},
+      isLayoutCard: false
     },
     watch: {
       // 檢查公司名稱輸入框的值，並執行Autocomplate
@@ -918,6 +952,10 @@
             this.isContractorOptionsOpen = false;
           }
         })
+      },
+
+      layoutHandler(value) {
+        this.isLayoutCard = value;
       }
     }
   });

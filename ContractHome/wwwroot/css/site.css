@@ -229,7 +229,6 @@ html, body {
 }
 
 .progresses__wrapper {
-  height: 110px;
   display: inline-flex;
   align-items: start;
   overflow: hidden;
