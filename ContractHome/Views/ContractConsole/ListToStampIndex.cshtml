@@ -148,7 +148,7 @@
       <div v-else class="row my-0 pb-3 listToStamp__queryList" :class="[ isLayoutCard ? 'g-3' : 'g-1' ]">
         <div v-for="(contract, index) in contractListAll" :key="`c_${index}`" class="col-12"
           :class="{ 'col-sm-6 col-lg-4' : isLayoutCard }">
-          <div :id="`contractNo-${index}`" class="card justify-content-start p-2 pb-1 h-100 shadow-sm"
+          <div :id="`contractNo-${index}`" class="card justify-content-start p-2 pb-2 h-100 shadow-sm"
             :class="{ 'd-flex flex-row' : !isLayoutCard }">
             <div class="d-flex justify-content-between" :class="{ 'col-4' : !isLayoutCard }">
               <div class="d-flex">
@@ -215,10 +215,12 @@
                 </div>
               </div>
             </div>
+            <!--
             <div v-if="isLayoutCard" class="divider pb-2"></div>
             <div v-else class="d-flex" style="height: 100%;">
               <div class="vr"></div>
             </div>
+            -->
             <!-- 用印流程 -->
             <div :id="`progresses_${index}`" class="progresses__wrapper pb-2" :class="{ 'col-8' : !isLayoutCard }">
               <!-- 起約方 -->

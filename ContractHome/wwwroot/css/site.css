@@ -229,10 +229,14 @@ html, body {
 }
 
 .progresses__wrapper {
+  padding: 5px 5px 0;
   display: inline-flex;
   align-items: start;
   overflow: hidden;
   overflow-x: auto;
+  border: 1px solid #dbf0ff;
+  border-radius: 5px;
+  background-color: #f3faff;
 }
 .progresses__stepGroup {
   display: flex;

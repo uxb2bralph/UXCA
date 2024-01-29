@@ -307,10 +307,14 @@ html, body {
 .progresses {
   &__wrapper {
     //height: 110px;
+    padding: 5px 5px 0;
     display: inline-flex;
     align-items: start;
     overflow: hidden;
     overflow-x: auto;
+    border: 1px solid #dbf0ff;
+    border-radius: 5px;
+    background-color: #f3faff;
   }
 
   &__stepGroup {
