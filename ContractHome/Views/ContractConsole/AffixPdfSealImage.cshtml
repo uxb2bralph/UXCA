@@ -331,7 +331,7 @@
                             <button id="btnGroupDrop1" type="button"
                               class="btn btn-outline-secondary d-flex align-items-center justify-content-between opacity-75 dropdown-toggle"
                               data-bs-toggle="dropdown" aria-expanded="false" v-on:click="initContractor">
-                              {{ item.text || '請選擇簽署方公司名稱' }}
+                              {{ formatText(item.text) || '請選擇簽署方公司名稱' }}
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
                               <li class="px-2 pb-2">
@@ -518,7 +518,7 @@
   // 起約人資料清單
   const dataInitiator = @Html.Raw(userOrgItems.Select(u => new { id = u.CompanyID.EncryptKey(), text = u.Organization.CompanyName }).ToArray().JsonStringify());
   // 簽署人資料清單
-  const contractorAllList = @Html.Raw(models.GetTable<Organization>().Where(o => !userOrgItems.Any(u => u.CompanyID == o.CompanyID)).Select(u => new { id = u.CompanyID.EncryptKey(), text = u.CompanyName }).ToArray().JsonStringify());
+  const contractorAllList = @Html.Raw(models.GetTable<Organization>().Where(o => !userOrgItems.Any(u => u.CompanyID == o.CompanyID)).Select(u => new { id = u.CompanyID.EncryptKey(), companyName = u.CompanyName, receiptNo = u.ReceiptNo }).ToArray().JsonStringify());
   // 取得上傳 PDF 總頁數
   @* const pageCount = @(pageCount); *@
   const { IsJointContracting, KeyID: contractID, PageCount, Parties } = @Html.Raw(contractRefsJson);
@@ -610,9 +610,10 @@
         this.form.EncUID = getCookie('userID');
         this.form.Initiator = this.dataInitiator[0].id;
         this.form.Contractors = [];
-        this.contractorList = [...this.contractorAllList];
+        //this.contractorList = [...this.contractorAllList];
         this.contractorMag = null;
         this.alertActived = false;
+        this.getContractorList();
         this.getDate();
 
         // 若為第一次登入，顯示歡迎視窗並進入導覽流程
@@ -624,6 +625,20 @@
         //     localStorage.setItem("isEditTour", true);
         //   }
         // });
+      },
+
+      // 取得合併資料後的簽署人清單
+      getContractorList() {
+        this.contractorList = this.contractorAllList.map(item => {
+          item.text = `${item.companyName} (${item.receiptNo})`;
+          return item;
+        });
+      },
+
+      // 格式化字串
+      formatText(string) {
+        const stringLength = string && string.length;
+        return stringLength > 10 ? `${string.substring(0, 12)}...` : string;
       },
 
       // 卷軸滾動高度
@@ -709,14 +724,15 @@
 
       // Filter 簽約方資料
       searchCompany(string) {
-        console.log({ string })
+        //console.log({ string })
         this.contractorList = this.contractorAllList.filter(item => item.text.includes(string));
       },
 
       // 初始化簽約方名單
       initContractor() {
         this.inputSearchCompany = '';
-        this.contractorList = [...this.contractorAllList];
+        //this.contractorList = [...this.contractorAllList];
+        //this.getContractorList();
       },
 
       // 新增簽署單位資料
