@@ -364,6 +364,13 @@ html, body {
         background-color: #3c68c9 !important;
       }
     }
+    &--signActived {
+      background-color: #f06755;
+
+      &:hover {
+        background-color: #d42f2f !important;
+      }
+    }
 
     &:hover {
       color: #ffffff;
