@@ -23,6 +23,29 @@ namespace ContractHome.Models.Email
                 return @"[安心簽]通知信";
 
         }
+
+        public async Task<MailData> GetEmailToCustomer(EmailBody emailBody)
+        {
+            List<string> emailList = new List<string>
+            {
+                emailBody.UserEmail
+            };
+            var emailBodyString = await emailBody.GetViewRenderString();
+
+            return new MailData(
+                to: emailList,
+                subject: GetEmailTitle(emailBody.TemplateItem),
+                body: emailBodyString,
+                from: _mailSettings.From,
+                displayName: _mailSettings.DisplayName,
+                replyTo: null,
+                replyToName: null,
+                bcc: null,
+                cc: null
+                );
+
+        }
+
         public MailData GetEmailToCustomer(string email, string subject, string body)
         {
             List<string> emailList = new List<string>

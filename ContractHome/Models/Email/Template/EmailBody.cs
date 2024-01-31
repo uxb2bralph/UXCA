@@ -23,7 +23,7 @@ namespace ContractHome.Models.Email.Template
         public string ContractLink { get; set; }
         public string VerifyLink { get; set; }
         [DefaultValue(EmailTemplate.Undefined)]
-        public EmailTemplate _templateItem { get; set; }
+        public EmailTemplate TemplateItem { get; set; }
 
         public enum EmailTemplate
         {
@@ -34,7 +34,8 @@ namespace ContractHome.Models.Email.Template
             LoginFailed = 9,
             LoginSuccessed = 10,
             PasswordReseted = 13,
-            PasswordUpdated = 14
+            PasswordUpdated = 14,
+            ApplyPassword = 20
         }
 
         public void SetContractNo(string contractno)
@@ -78,17 +79,17 @@ namespace ContractHome.Models.Email.Template
 
         public void SetTemplateItem(EmailTemplate emailTemplate)
         {
-            this._templateItem = emailTemplate;
+            this.TemplateItem = emailTemplate;
         }
 
         public string GetTemplateView()
         {
-            if (this._templateItem== EmailTemplate.Undefined) 
+            if (this.TemplateItem== EmailTemplate.Undefined) 
             { 
                 return string.Empty;
             }
 
-            return @$"~/Views/Shared/EmailTemplate/{this._templateItem}.cshtml";
+            return @$"~/Views/Shared/EmailTemplate/{this.TemplateItem}.cshtml";
         }
 
         public async Task<string> GetViewRenderString()

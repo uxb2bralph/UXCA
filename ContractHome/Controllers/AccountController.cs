@@ -12,6 +12,11 @@ using CommonLib.Utility;
 using Color = System.Drawing.Color;
 using ContractHome.Models.Email.Template;
 using ContractHome.Models.Email;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.Caching.Memory;
+using static ContractHome.Helper.JwtTokenGenerator;
+using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Drawing;
 
 namespace ContractHome.Controllers
 {
@@ -21,13 +26,14 @@ namespace ContractHome.Controllers
         private readonly IMailService _mailService;
         private readonly EmailBody _emailBody;
         private readonly EmailFactory _emailFactory;
-
+        private readonly IMemoryCache _memCache;
         public AccountController(ILogger<HomeController> logger, IServiceProvider serviceProvider) : base(serviceProvider)
         {
             _logger = logger;
             _mailService = ServiceProvider.GetRequiredService<IMailService>();
             _emailFactory = serviceProvider.GetRequiredService<EmailFactory>();
             _emailBody = serviceProvider.GetRequiredService<EmailBody>();
+            _memCache = serviceProvider.GetRequiredService<IMemoryCache>();
         }
 
         [HttpPost]
@@ -56,12 +62,9 @@ namespace ContractHome.Controllers
                         .SetUserEmail(userprofile.EMail)
                     .Build();
 
-                    var emailData = _emailFactory.GetEmailToCustomer(
-                        emailBody.UserEmail,
-                        _emailFactory.GetEmailTitle(EmailBody.EmailTemplate.LoginFailed),
-                        await emailBody.GetViewRenderString());
+                    var emailData = _emailFactory.GetEmailToCustomer(emailBody);
 
-                    _mailService?.SendMailAsync(emailData, default);
+                    _mailService?.SendMailAsync(await emailData, default);
                 }
 
                 return Json(new { result = false, message = ModelState.ErrorMessage() });
@@ -70,18 +73,15 @@ namespace ContractHome.Controllers
             if (userOrg != null && userOrg.CanCreateContract == true)
             {
                 var emailBody =
-                new EmailBodyBuilder(_emailBody)
-                .SetTemplateItem(EmailBody.EmailTemplate.LoginSuccessed)
-                .SetUserName(userprofile.UserName)
-                .SetUserEmail(userprofile.EMail)
-                .Build();
+                    new EmailBodyBuilder(_emailBody)
+                    .SetTemplateItem(EmailBody.EmailTemplate.LoginSuccessed)
+                    .SetUserName(userprofile.UserName)
+                    .SetUserEmail(userprofile.EMail)
+                    .Build();
 
-                var emailData = _emailFactory.GetEmailToCustomer(
-                    emailBody.UserEmail,
-                    _emailFactory.GetEmailTitle(EmailBody.EmailTemplate.LoginSuccessed),
-                    await emailBody.GetViewRenderString());
+                var emailData = _emailFactory.GetEmailToCustomer(emailBody);
 
-                _mailService?.SendMailAsync(emailData, default);
+                _mailService?.SendMailAsync(await emailData, default);
             }
 
             return Json(new { result = true, message = Url.Action("ListToStampIndex", "ContractConsole") });
@@ -107,8 +107,6 @@ namespace ContractHome.Controllers
                 ModelState.AddModelError("PID", msg);
                 return View("~/Views/Account/Login.cshtml");
             }
-
-            //wait to do...甲方的公司ContactEmail&&UserEmail登入成功通知信
 
             viewModel.ReturnUrl = viewModel.ReturnUrl.GetEfficientString();
             return Redirect(viewModel.ReturnUrl ?? msg ?? "~/Account/Login");
@@ -214,6 +212,192 @@ namespace ContractHome.Controllers
             }
 
             return new EmptyResult();
+        }
+
+        public class PasswordResetViewModel
+        {
+            public string Token { get; set; }
+            public string Password { get; set; }
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<BaseResponse> PasswordResetView([FromQuery] string token)
+        {
+
+            token = token.GetEfficientString();
+
+            (BaseResponse resp, JwtToken jwtTokenObj) = TokenValidate(token);
+            if (resp.HasError) { return resp; }
+
+            UserProfile userProfile
+                = models.GetTable<UserProfile>()
+                    .Where(x => x.EMail.Equals(jwtTokenObj.payloadObj.email))
+                    .Where(x => x.UID.Equals(jwtTokenObj.payloadObj.id))
+                    .FirstOrDefault();
+
+            if (userProfile == null)
+            {
+                return new BaseResponse(true, "驗證資料有誤.");
+            }
+
+            //wait to do:redirect to PasswordReset
+            return new BaseResponse(false, "");
+
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<BaseResponse> PasswordReset([FromBody] PasswordResetViewModel viewModel)
+        {
+
+            var token = viewModel.Token.GetEfficientString();
+            var password = viewModel.Password.GetEfficientString();
+
+            (BaseResponse resp, JwtToken jwtTokenObj) = TokenValidate(token);
+            if (resp.HasError) { return resp; }
+
+            UserProfile userProfile
+                = models.GetTable<UserProfile>()
+                    .Where(x => x.EMail.Equals(jwtTokenObj.payloadObj.email))
+                    .Where(x => x.UID.Equals(jwtTokenObj.payloadObj.id))
+                    .FirstOrDefault();
+
+            if (userProfile == null)
+            {
+                return new BaseResponse(true, "驗證資料有誤.");
+            }
+
+            //wait to do...//[RegularExpression(@"^(?=.*\d)(?=.*[a-zA-Z])(?=.*\W).{8,30}$",ErrorMessage = "新密碼格式有誤，請確認")]
+            userProfile.Password = null;
+            userProfile.Password2 = password.HashPassword();
+
+            models.SubmitChanges();
+            //wait to do...連線（Session/cookie)失效
+
+            //wait to do...email通知密碼變更
+
+            return new BaseResponse(false, "密碼更新完成.");
+
+        }
+
+        [AllowAnonymous]
+        public (BaseResponse, JwtToken) TokenValidate(string token)
+        {
+            token = token.GetEfficientString();
+
+            if (string.IsNullOrEmpty(token))
+            {
+                return (new BaseResponse(true, "驗證資料為空值."), null);
+            }
+
+            if (!JwtTokenValidator.ValidateJwtToken(token, JwtTokenGenerator.secretKey))
+            {
+                return (new BaseResponse(true, "Token已失效, 請重新申請."), null);
+            }
+
+            var jwtTokenObj = JwtTokenValidator.DecodeJwtToken(token);
+            if (jwtTokenObj == null)
+            {
+                return (new BaseResponse(true, "Token已失效, 請重新申請."), null);
+            }
+
+            if (_memCache.TryGetValue($"{jwtTokenObj.signature}", out string uid))
+            {
+                return (new BaseResponse(true, $"Token已失效, 請重新申請."), null);
+            }
+
+            return (new BaseResponse(false, ""), jwtTokenObj);
+
+        }
+
+
+
+        [AllowAnonymous]
+        public async Task<BaseResponse> PasswordApply(string email)
+        {
+            int reSendEmailMins = 1;
+            email = email.GetEfficientString();
+            if (string.IsNullOrEmpty(email))
+            {
+                return new BaseResponse(true, "驗證資料有誤.");
+            }
+
+            UserProfile userProfile
+                = models.GetTable<UserProfile>().Where(x => x.EMail.Equals(email)).FirstOrDefault();
+            if (userProfile == null)
+            {
+                return new BaseResponse(true, "驗證資料有誤.");
+            }
+
+            if (_memCache.TryGetValue($"PasswordApply.{email}", out string uid))
+            {
+                return new BaseResponse(true, $"通知信已寄發, 請查看電子信箱, 或{reSendEmailMins}分鐘後重新申請.");
+            }
+
+
+            DateTimeOffset now = DateTime.Now;
+            JwtPayload payload = new JwtPayload()
+            {
+                id = userProfile.UID.ToString(),
+                email = email,
+                iat = now.Ticks,
+                exp = now.AddMinutes(60).Ticks,
+                ticket = JwtTokenGenerator.GetTicket(
+                    JwtTokenGenerator.OneTimeUse.ApplyPassword.ToString(),
+                    userProfile.Password2)
+
+            };
+
+            var jwtToken = JwtTokenGenerator.GenerateJwtToken(payload, JwtTokenGenerator.secretKey);
+
+            var request = HttpContext.Request;
+            var uri = string.Concat(request.Scheme, "://",
+                                    request.Host.ToUriComponent(),
+                                    request.PathBase.ToUriComponent());
+            var clickLink = $"{uri}/Account/PasswordResetView?token={jwtToken}";
+
+            var emailBody =
+                new EmailBodyBuilder(_emailBody)
+                .SetTemplateItem(EmailBody.EmailTemplate.ApplyPassword)
+                .SetUserName(userProfile.UserName)
+                .SetUserEmail(userProfile.EMail)
+                .SetVerifyLink(clickLink)
+                .Build();
+
+            var emailData = await _emailFactory.GetEmailToCustomer(emailBody);
+
+            _mailService?.SendMailAsync(emailData, default);
+
+            //wait to do:新token產生後, 設定舊token為失效
+            SetValueToCache($"PasswordApply.{email}", $"{userProfile.UID}", expirateionMin: reSendEmailMins);
+
+            //wait to do: redirect to login
+            return new BaseResponse(false, $"");
+
+        }
+
+        private void SetValueToCache(string cacheItem, string cacheValue, int expirateionMin = 5, int slidingExpirateionMin = 5)
+        {
+            var cacheExpiryOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpiration = DateTime.Now.AddMinutes(expirateionMin),
+                //SlidingExpiration = TimeSpan.FromMinutes(slidingExpirateionMin),
+                Priority = CacheItemPriority.Low
+            };
+            _memCache.Set(cacheItem, cacheValue, cacheExpiryOptions);
+        }
+
+        public class BaseResponse
+        {
+            public bool HasError { get; set; }
+            public string Message { get; set; }
+
+            public BaseResponse(bool hasError, string error)
+            {
+                HasError = hasError;
+                Message = error;
+            }
         }
 
     }

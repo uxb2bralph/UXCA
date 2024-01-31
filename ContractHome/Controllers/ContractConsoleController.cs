@@ -27,7 +27,6 @@ namespace ContractHome.Controllers
     public class ContractConsoleController : SampleController
     {
         private readonly ILogger<HomeController> _logger;
-        private UserRepository? _userProfileRepository;
         private ContractServices? _contractServices;
         private readonly IMailService _mailService;
         public ContractConsoleController(ILogger<HomeController> logger,
@@ -517,9 +516,10 @@ namespace ContractHome.Controllers
             #endregion
             viewModel.RecordCount = items?.Count();
 
-            UserRepository userRepository = 
-                new UserRepository(models: models, pid: profile.PID);
-            ViewBag.CanCreateContract = userRepository.CanCreateContract;
+            var userprofile = models.GetTable<UserProfile>().Where(x => x.PID == profile.PID).FirstOrDefault();
+            var userOrg = userprofile?.OrganizationUser.Organization ?? null;
+
+            ViewBag.CanCreateContract = userOrg?.CanCreateContract??false;
 
             if (viewModel.PageIndex.HasValue)
             {

@@ -234,6 +234,8 @@ namespace ContractHome.Controllers
 
                 models.SubmitChanges();
 
+                //wait to do...變更email通知
+                //wait to do...連線（Session/cookie)失效
             }
             catch (Exception ex)
             {
