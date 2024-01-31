@@ -62,9 +62,7 @@ namespace ContractHome.Controllers
                         .SetUserEmail(userprofile.EMail)
                     .Build();
 
-                    var emailData = _emailFactory.GetEmailToCustomer(emailBody);
-
-                    _mailService?.SendMailAsync(await emailData, default);
+                    _mailService?.SendMailAsync(await _emailFactory.GetEmailToCustomer(emailBody), default);
                 }
 
                 return Json(new { result = false, message = ModelState.ErrorMessage() });
@@ -79,9 +77,7 @@ namespace ContractHome.Controllers
                     .SetUserEmail(userprofile.EMail)
                     .Build();
 
-                var emailData = _emailFactory.GetEmailToCustomer(emailBody);
-
-                _mailService?.SendMailAsync(await emailData, default);
+                _mailService?.SendMailAsync(await _emailFactory.GetEmailToCustomer(emailBody), default);
             }
 
             return Json(new { result = true, message = Url.Action("ListToStampIndex", "ContractConsole") });
@@ -273,10 +269,17 @@ namespace ContractHome.Controllers
             userProfile.Password2 = password.HashPassword();
 
             models.SubmitChanges();
-            //wait to do...連線（Session/cookie)失效
 
-            //wait to do...email通知密碼變更
+            var emailBody =
+                new EmailBodyBuilder(_emailBody)
+                .SetTemplateItem(EmailBody.EmailTemplate.PasswordUpdated)
+                .SetUserName(userProfile.UserName)
+                .SetUserEmail(userProfile.EMail)
+            .Build();
 
+            _mailService?.SendMailAsync(await _emailFactory.GetEmailToCustomer(emailBody), default);
+
+            Logout();
             return new BaseResponse(false, "密碼更新完成.");
 
         }
@@ -342,11 +345,7 @@ namespace ContractHome.Controllers
                 id = userProfile.UID.ToString(),
                 email = email,
                 iat = now.Ticks,
-                exp = now.AddMinutes(60).Ticks,
-                ticket = JwtTokenGenerator.GetTicket(
-                    JwtTokenGenerator.OneTimeUse.ApplyPassword.ToString(),
-                    userProfile.Password2)
-
+                exp = now.AddMinutes(60).Ticks
             };
 
             var jwtToken = JwtTokenGenerator.GenerateJwtToken(payload, JwtTokenGenerator.secretKey);

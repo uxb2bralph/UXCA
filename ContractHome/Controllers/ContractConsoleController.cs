@@ -23,7 +23,7 @@ using static ContractHome.Models.DataEntity.CDS_Document;
 namespace ContractHome.Controllers
 {
     //remark for testing by postman
-    //[Authorize]
+    [Authorize]
     public class ContractConsoleController : SampleController
     {
         private readonly ILogger<HomeController> _logger;

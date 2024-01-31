@@ -33,9 +33,8 @@ namespace ContractHome.Models.Email.Template
             FinishContract =8,
             LoginFailed = 9,
             LoginSuccessed = 10,
-            PasswordReseted = 13,
-            PasswordUpdated = 14,
-            ApplyPassword = 20
+            PasswordUpdated = 14,   //密碼變更
+            ApplyPassword = 20      //密碼重置Token申請
         }
 
         public void SetContractNo(string contractno)

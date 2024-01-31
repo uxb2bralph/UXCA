@@ -30,7 +30,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ContractHome.Controllers
 {
-  //[AuthorizedSysAdmin]
+  [AuthorizedSysAdmin]
   public class UserProfileController : SampleController
   {
     private readonly ILogger<UserProfileController> _logger;

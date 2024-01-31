@@ -28,7 +28,6 @@ namespace ContractHome.Helper
             public long exp { get; set; }
             public long iat { get; set; }
             public string id { get; set; }
-            public string ticket { get; set; }
             public string email { get; set; }
         }
 
