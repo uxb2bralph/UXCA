@@ -306,11 +306,15 @@ html, body {
 // 進度條
 .progresses {
   &__wrapper {
-    height: 110px;
+    //height: 110px;
+    padding: 5px 5px 0;
     display: inline-flex;
     align-items: start;
     overflow: hidden;
     overflow-x: auto;
+    border: 1px solid #dbf0ff;
+    border-radius: 5px;
+    background-color: #f3faff;
   }
 
   &__stepGroup {
@@ -358,6 +362,13 @@ html, body {
 
       &:hover {
         background-color: #3c68c9 !important;
+      }
+    }
+    &--signActived {
+      background-color: #f06755;
+
+      &:hover {
+        background-color: #d42f2f !important;
       }
     }
 

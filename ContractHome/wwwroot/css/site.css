@@ -229,11 +229,14 @@ html, body {
 }
 
 .progresses__wrapper {
-  height: 110px;
+  padding: 5px 5px 0;
   display: inline-flex;
   align-items: start;
   overflow: hidden;
   overflow-x: auto;
+  border: 1px solid #dbf0ff;
+  border-radius: 5px;
+  background-color: #f3faff;
 }
 .progresses__stepGroup {
   display: flex;
@@ -278,6 +281,12 @@ html, body {
 }
 .progresses__steps--actived:hover {
   background-color: #3c68c9 !important;
+}
+.progresses__steps--signActived {
+  background-color: #f06755;
+}
+.progresses__steps--signActived:hover {
+  background-color: #d42f2f !important;
 }
 .progresses__steps:hover {
   color: #ffffff;

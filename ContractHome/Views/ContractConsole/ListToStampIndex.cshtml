@@ -85,9 +85,10 @@
   </div>
   <div class="container-lg listToStamp__container">
     <!-- 排序項目 -->
-    <div v-if="contractListAll.length > 0" class="d-flex align-items-center justify-content-between my-0 pt-3">
-      <div class="d-flex align-items-center">
-        <div class="input-group input-group-sm pe-3">
+    <div v-if="contractListAll.length > 0" class="row my-0 pt-3"
+      :style="{ 'padding-bottom': !isLayoutCard ? `12px` : null }">
+      <div class="col-12 col-md-6 d-flex align-items-center">
+        <div class="input-group input-group-sm pe-3" style="width: auto;">
           <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
             aria-expanded="false">{{ currentSortName }}</button>
           <ul class="dropdown-menu shadow">
@@ -111,7 +112,7 @@
           待處理合約：{{ totalRecordCount }} 筆
         </span>
       </div>
-      <div class="text-end">
+      <div class="col-12 col-md-6 text-end">
         <span class="fs-12 text-black-50 fw-bolder">說明：</span>
         <span class="progresses__name bg-lightBlue mr-2">
           起約方
@@ -119,6 +120,21 @@
         <span class="progresses__name bg-warning opacity-75 text-dark">
           簽約方
         </span>
+        <div class="btn-group btn-group-sm ms-3" role="group" aria-label="Basic radio toggle button group">
+          <input v-model="isLayoutCard" type="radio" class="btn-check active" name="layout" id="btnradio1"
+            autocomplete="off" v-on:change="layoutHandler(false)">
+          <label class="btn btn-outline-primary d-flex align-items-center fs-6 py-2"
+            :class="{ 'active': !isLayoutCard }" for="btnradio1">
+            <i class="fas fa-th-list"></i>
+          </label>
+
+          <input v-model="isLayoutCard" type="radio" class="btn-check" name="layout" id="btnradio2" autocomplete="off"
+            v-on:change="layoutHandler(true)">
+          <label class="btn btn-outline-primary d-flex align-items-center fs-6 py-2" :class="{ 'active': isLayoutCard }"
+            for="btnradio2">
+            <i class="fas fa-th"></i>
+          </label>
+        </div>
       </div>
     </div>
     <!-- 合約資料列表 -->
@@ -129,10 +145,12 @@
         </span>
         <span class="text-primary opacity-75 fw-bolder">目前尚無合約資料</span>
       </div>
-      <div v-else class="row g-3 my-0 pb-3 listToStamp__queryList">
-        <div class="col-12 col-sm-6 col-lg-4" v-for="(contract, index) in contractListAll" :key="`c_${index}`">
-          <div :id="`contractNo-${index}`" class="card justify-content-between p-2 pb-1 h-100 shadow-sm">
-            <div class="d-flex justify-content-between">
+      <div v-else class="row my-0 pb-3 listToStamp__queryList" :class="[ isLayoutCard ? 'g-3' : 'g-1' ]">
+        <div v-for="(contract, index) in contractListAll" :key="`c_${index}`" class="col-12"
+          :class="{ 'col-sm-6 col-lg-4' : isLayoutCard }">
+          <div :id="`contractNo-${index}`" class="card justify-content-start p-2 pb-2 h-100 shadow-sm"
+            :class="{ 'd-flex flex-row' : !isLayoutCard }">
+            <div class="d-flex justify-content-between" :class="{ 'col-4' : !isLayoutCard }">
               <div class="d-flex">
                 <div class="fs-1 px-2 text-secondary opacity-75">
                   <i class="fad fa-file-contract fa-lg"></i>
@@ -150,6 +168,7 @@
                   </div>
                 </div>
               </div>
+              <!-- 選單 -->
               <div>
                 <div :id="`dropdown_${index}`" class="dropdown">
                   <button class="btn btn-sm fs-6" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown"
@@ -196,9 +215,14 @@
                 </div>
               </div>
             </div>
-            <div class="divider pb-2"></div>
+            <!--
+            <div v-if="isLayoutCard" class="divider pb-2"></div>
+            <div v-else class="d-flex" style="height: 100%;">
+              <div class="vr"></div>
+            </div>
+            -->
             <!-- 用印流程 -->
-            <div :id="`progresses_${index}`" class="progresses__wrapper">
+            <div :id="`progresses_${index}`" class="progresses__wrapper pb-2" :class="{ 'col-8' : !isLayoutCard }">
               <!-- 起約方 -->
               <div class="progresses__companyGroup">
                 <div class="progresses__company">
@@ -230,7 +254,7 @@
                 <!-- 待簽署 -->
                 <button v-if="!!contract.Initiator.StampDate && !contract.Initiator.SignerDate"
                   class="btn progresses__steps"
-                  :class="[contract.canSigner && contract.Initiator.IsCurrentUserCompany ? 'progresses__steps--actived' : 'disabled']"
+                  :class="[contract.canSigner && contract.Initiator.IsCurrentUserCompany ? 'progresses__steps--signActived' : 'disabled']"
                   v-on:click="signerHandler(contract.KeyID, contract.Initiator?.Name, contract.ContractNo, contract.Title)">
                   <i class="fas fa-signature"></i>
                 </button>
@@ -277,7 +301,7 @@
 
                     <!-- 待簽署 -->
                     <button v-if="!!item.StampDate && !item.SignerDate" type="button" class="btn progresses__steps"
-                      :class="[contract.canSigner && item.IsCurrentUserCompany ? 'progresses__steps--actived' : 'disabled']"
+                      :class="[contract.canSigner && item.IsCurrentUserCompany ? 'progresses__steps--signActived' : 'disabled']"
                       v-on:click="signerHandler(contract.KeyID, item.Name, contract.ContractNo, contract.Title)">
                       <i class="fas fa-signature"></i>
                     </button>
@@ -455,6 +479,20 @@
             </div>
             <div class="text-center h5 fw-bolder">
               您將代表 <span class="text-primary opacity-75">" {{ signerMessage }} "</span> 對此合約進行數位簽章
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+              <symbol id="info-fill" fill="currentColor" viewBox="0 0 16 16">
+                <path
+                  d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" />
+              </symbol>
+            </svg>
+            <div class="alert alert-danger d-flex align-items-center mt-4" role="alert">
+              <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:">
+                <use xlink:href="#info-fill" />
+              </svg>
+              <div class="fs-14 fw-bolder">
+                簽章成功後，本合約即具有正式法律效力，系統會向起約方收取相關手續費用。
+              </div>
             </div>
           </div>
           <div class="modal-footer border-top-0 justify-content-center">
@@ -746,7 +784,8 @@
           7: '已終止',
           8: '合約完成',
         },
-        searchStatus: 3
+        searchStatus: 3,
+        isLayoutCard: false
       };
     },
     computed: {
@@ -927,7 +966,7 @@
       },
 
       fetchAPI() {
-        console.log(this.searchStatus)
+        // console.log(this.searchStatus)
         // 執行查詢合約列表
         const viewModel = {
           ContractQueryStep: this.searchStatus,
@@ -1184,6 +1223,10 @@
       welcomeHandler() {
         $("#welcomModal").modal('hide');
         this.tourHandler();
+      },
+
+      layoutHandler(value) {
+        this.isLayoutCard = value;
       }
     }
   });
