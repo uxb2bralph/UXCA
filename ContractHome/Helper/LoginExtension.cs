@@ -172,5 +172,12 @@ namespace ContractHome.Helper
             return profile != null && (profile.UserRole.Any(r => r.RoleID == (int)UserRoleDefinition.RoleEnum.User));
         }
 
+        public static bool CanCreateContract(this UserProfile profile)
+        {
+            if (profile?.OrganizationUser == null) return false;
+            if (profile?.OrganizationUser.Organization == null) return false;
+            if (profile?.OrganizationUser.Organization.CanCreateContract==true) return true;
+            return false;
+        }
     }
 }

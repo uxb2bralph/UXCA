@@ -49,13 +49,11 @@ namespace ContractHome.Controllers
             }
 
             var userprofile = models.GetTable<UserProfile>().Where(x => x.PID == viewModel.PID).FirstOrDefault();
-            var userOrg = userprofile?.OrganizationUser.Organization ?? null;
 
             if (!ModelState.IsValid)
             {
                 //wait to do...甲方的公司UserEmail登入失敗通知信
-
-                if (userOrg != null && userOrg.CanCreateContract == true)
+                if (userprofile.CanCreateContract())
                 {
                     var emailBody =
                         new EmailBodyBuilder(_emailBody)
@@ -70,7 +68,7 @@ namespace ContractHome.Controllers
                 return Json(new { result = false, message = ModelState.ErrorMessage() });
             }
 
-            if (userOrg != null && userOrg.CanCreateContract == true)
+            if (userprofile.CanCreateContract())
             {
                 var emailBody =
                     new EmailBodyBuilder(_emailBody)

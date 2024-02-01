@@ -517,9 +517,9 @@ namespace ContractHome.Controllers
             viewModel.RecordCount = items?.Count();
 
             var userprofile = models.GetTable<UserProfile>().Where(x => x.PID == profile.PID).FirstOrDefault();
-            var userOrg = userprofile?.OrganizationUser.Organization ?? null;
+            //var userOrg = userprofile?.OrganizationUser.Organization ?? null;
 
-            ViewBag.CanCreateContract = userOrg?.CanCreateContract??false;
+            ViewBag.CanCreateContract = userprofile.CanCreateContract();
 
             if (viewModel.PageIndex.HasValue)
             {
