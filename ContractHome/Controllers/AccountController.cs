@@ -215,13 +215,13 @@ namespace ContractHome.Controllers
             public string Token { get; set; }
             public string Password { get; set; }
             public string Email { get; set; }
+            public string PID { get; set; }
         }
 
         [AllowAnonymous]
         [HttpGet]
         public ActionResult PasswordResetView([FromQuery] string token)
         {
-
             token = token.GetEfficientString();
 
             (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile) = TokenValidate(token);
@@ -242,22 +242,39 @@ namespace ContractHome.Controllers
 
             var token = viewModel.Token.GetEfficientString();
             var password = viewModel.Password.GetEfficientString();
+            var pid = viewModel.PID.GetEfficientString();
 
-            (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile) = TokenValidate(token);
+            (BaseResponse resp, JwtToken jwtTokenObj, UserProfile tokenUserProfile) = TokenValidate(token);
             if (resp.HasError) { return resp; }
+
+            var viewModelUserProfile
+                = models.GetTable<UserProfile>()
+                    .Where(x => x.EMail.Equals(jwtTokenObj.payloadObj.email))
+                    .Where(x => x.PID.Equals(pid))
+                    .FirstOrDefault();
+
+            if (viewModelUserProfile == null)
+            {
+                return new BaseResponse(true, "驗證資料有誤.");
+            }
+
+            if (!viewModelUserProfile.UID.Equals(viewModelUserProfile.UID))
+            {
+                return new BaseResponse(true, "驗證資料有誤.");
+            }
 
             SetValueToCache($"{jwtTokenObj.signature}", $"{jwtTokenObj.payloadObj.id}", expirateionMin: 60);
             //wait to do...//[RegularExpression(@"^(?=.*\d)(?=.*[a-zA-Z])(?=.*\W).{8,30}$",ErrorMessage = "新密碼格式有誤，請確認")]
-            userProfile.Password = null;
-            userProfile.Password2 = password.HashPassword();
+            tokenUserProfile.Password = null;
+            tokenUserProfile.Password2 = password.HashPassword();
 
             models.SubmitChanges();
 
             var emailBody =
                 new EmailBodyBuilder(_emailBody)
                 .SetTemplateItem(EmailBody.EmailTemplate.PasswordUpdated)
-                .SetUserName(userProfile.UserName)
-                .SetUserEmail(userProfile.EMail)
+                .SetUserName(tokenUserProfile.UserName)
+                .SetUserEmail(tokenUserProfile.EMail)
             .Build();
 
             _mailService?.SendMailAsync(await _emailFactory.GetEmailToCustomer(emailBody), default);
@@ -312,7 +329,6 @@ namespace ContractHome.Controllers
         [HttpGet]
         public Task<BaseResponse> GetPasswordApply(string email)
         {
-            //return RedirectToAction("PasswordApply", "Account", JsonConvert.SerializeObject(new PasswordResetViewModel() { Email = email }));
             return PasswordApply(new PasswordResetViewModel() { Email = email });
         }
 
@@ -320,8 +336,6 @@ namespace ContractHome.Controllers
         [HttpPost]
         public async Task<BaseResponse> PasswordApply([FromBody] PasswordResetViewModel viewModel)
         {
-
-        //忘記密碼流程: 點[忘記密碼]link後, 應先...
             int reSendEmailMins = 1;
             var email = viewModel.Email.GetEfficientString();
             if (string.IsNullOrEmpty(email))
@@ -373,8 +387,8 @@ namespace ContractHome.Controllers
 
             //wait to do:新token產生後, 設定舊token為失效
             SetValueToCache($"PasswordApply.{email}", $"{userProfile.UID}", expirateionMin: reSendEmailMins);
-            FileLogger.Logger.Error($"PasswordApply={jwtToken.ToString()}");
-            return new BaseResponse(false, $"");
+
+            return new BaseResponse(false, "");
 
         }
 
