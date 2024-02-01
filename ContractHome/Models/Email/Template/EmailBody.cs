@@ -34,6 +34,7 @@ namespace ContractHome.Models.Email.Template
             LoginFailed = 9,
             LoginSuccessed = 10,
             PasswordUpdated = 14,   //密碼變更
+            WelcomeUser = 15,      //帳號建立密碼Token申請
             ApplyPassword = 20      //密碼重置Token申請
         }
 

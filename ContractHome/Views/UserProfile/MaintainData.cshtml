@@ -21,6 +21,30 @@
   var profile = await Context.GetUserAsync();
   _viewModel.UrlAction = Url.Action("InquireData", "UserProfile");
 }
+<script>
+    // ajax 送出表單
+    function sendApplyPassword(emailString) {
+        showLoading();
+        aaa = {
+            "Email": emailString,
+            "Item": "createPassword"
+        },
+            $.ajax({
+                url: '@(Url.Action("PasswordApply", "Account"))',
+                contentType: "application/json;charset=utf-8",
+                type: "Post",
+                data: JSON.stringify(aaa),
+                success: function (data) {
+                    if (data.hasError) { alertModal(data.message); return; }
+                    else { alertModal('已發送email'); hideLoading(); }
+                },
+                error: function (xhr) {
+
+                }
+            });
+    }
+</script>
+
 <div id="userProdile" class="container-lg py-4">
   <section class="queryform">
     <!-- Section title -->
@@ -185,6 +209,12 @@
                   </button>
                   <div class="tooltip__text">刪除</div>
                 </span>
+                                <!-- 發送密碼修改通知 -->
+                                <span>
+                                    <button type="button" id="ApplyPassword" onclick="sendApplyPassword('chris@uxb2b.com')">
+                                    </button>
+                                    <div class="tooltip__text">發送密碼修改通知</div>
+                                 </span>
               </td>
             </tr>
           </tbody>
@@ -438,6 +468,7 @@
 
 </div>
 <script>
+
   // 角色選單
   const roleList = [
     {
