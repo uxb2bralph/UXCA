@@ -33,26 +33,6 @@ namespace ContractHome.Helper
 
         public static bool ValidateJwtToken(string jwtToken, string secretKey)
         {
-            //var tokenParts = jwtToken.Split('.');
-
-            //// Step 1: Decode the Header and Payload
-            //var encodedHeader = tokenParts[0];
-            //var encodedPayload = tokenParts[1];
-
-            //var header = Encoding.UTF8.GetString(Base64UrlDecode(encodedHeader));
-            //var payload = Encoding.UTF8.GetString(Base64UrlDecode(encodedPayload));
-
-            //// Step 2: Verify the Signature
-            //var signature = Base64UrlDecode(tokenParts[2]);
-
-            //var secretKeyBytes = Encoding.UTF8.GetBytes(secretKey);
-            //var input = $"{encodedHeader}.{encodedPayload}";
-
-            //var isValidSignature = VerifyTokenSignature(input, signature, secretKeyBytes);
-
-            //// Step 3: Check Token Expiration (if applicable)
-            //var isTokenExpired = CheckTokenExpiration(payload);
-
             JwtToken jwtTokenObj = DecodeJwtToken(jwtToken);
 
             var secretKeyBytes = Encoding.UTF8.GetBytes(secretKey);

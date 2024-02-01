@@ -17,6 +17,8 @@ using Microsoft.Extensions.Caching.Memory;
 using static ContractHome.Helper.JwtTokenGenerator;
 using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentFormat.OpenXml.Drawing;
+using Newtonsoft.Json;
+using CommonLib.Core.Utility;
 
 namespace ContractHome.Controllers
 {
@@ -214,31 +216,24 @@ namespace ContractHome.Controllers
         {
             public string Token { get; set; }
             public string Password { get; set; }
+            public string Email { get; set; }
         }
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<BaseResponse> PasswordResetView([FromQuery] string token)
+        public ActionResult PasswordResetView([FromQuery] string token)
         {
 
             token = token.GetEfficientString();
 
-            (BaseResponse resp, JwtToken jwtTokenObj) = TokenValidate(token);
-            if (resp.HasError) { return resp; }
-
-            UserProfile userProfile
-                = models.GetTable<UserProfile>()
-                    .Where(x => x.EMail.Equals(jwtTokenObj.payloadObj.email))
-                    .Where(x => x.UID.Equals(jwtTokenObj.payloadObj.id))
-                    .FirstOrDefault();
-
-            if (userProfile == null)
+            (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile) = TokenValidate(token);
+            if (resp.HasError)
             {
-                return new BaseResponse(true, "驗證資料有誤.");
+                TempData["message"] = resp.Message;
             }
 
-            //wait to do:redirect to PasswordReset
-            return new BaseResponse(false, "");
+            PasswordResetViewModel passwordResetViewModel = new PasswordResetViewModel() { Token = token };
+            return View("PasswordReset", passwordResetViewModel);
 
         }
 
@@ -250,20 +245,10 @@ namespace ContractHome.Controllers
             var token = viewModel.Token.GetEfficientString();
             var password = viewModel.Password.GetEfficientString();
 
-            (BaseResponse resp, JwtToken jwtTokenObj) = TokenValidate(token);
+            (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile) = TokenValidate(token);
             if (resp.HasError) { return resp; }
 
-            UserProfile userProfile
-                = models.GetTable<UserProfile>()
-                    .Where(x => x.EMail.Equals(jwtTokenObj.payloadObj.email))
-                    .Where(x => x.UID.Equals(jwtTokenObj.payloadObj.id))
-                    .FirstOrDefault();
-
-            if (userProfile == null)
-            {
-                return new BaseResponse(true, "驗證資料有誤.");
-            }
-
+            SetValueToCache($"{jwtTokenObj.signature}", $"{jwtTokenObj.payloadObj.id}", expirateionMin: 60);
             //wait to do...//[RegularExpression(@"^(?=.*\d)(?=.*[a-zA-Z])(?=.*\W).{8,30}$",ErrorMessage = "新密碼格式有誤，請確認")]
             userProfile.Password = null;
             userProfile.Password2 = password.HashPassword();
@@ -285,42 +270,62 @@ namespace ContractHome.Controllers
         }
 
         [AllowAnonymous]
-        public (BaseResponse, JwtToken) TokenValidate(string token)
+        public (BaseResponse, JwtToken, UserProfile) TokenValidate(string token)
         {
             token = token.GetEfficientString();
 
             if (string.IsNullOrEmpty(token))
             {
-                return (new BaseResponse(true, "驗證資料為空值."), null);
+                return (new BaseResponse(true, "驗證資料為空值."), null, null);
             }
 
             if (!JwtTokenValidator.ValidateJwtToken(token, JwtTokenGenerator.secretKey))
             {
-                return (new BaseResponse(true, "Token已失效, 請重新申請."), null);
+                return (new BaseResponse(true, "Token已失效, 請重新申請."), null, null);
             }
 
             var jwtTokenObj = JwtTokenValidator.DecodeJwtToken(token);
             if (jwtTokenObj == null)
             {
-                return (new BaseResponse(true, "Token已失效, 請重新申請."), null);
+                return (new BaseResponse(true, "Token已失效, 請重新申請."), null, null);
             }
 
             if (_memCache.TryGetValue($"{jwtTokenObj.signature}", out string uid))
             {
-                return (new BaseResponse(true, $"Token已失效, 請重新申請."), null);
+                return (new BaseResponse(true, $"Token已失效, 請重新申請."), null, null);
             }
 
-            return (new BaseResponse(false, ""), jwtTokenObj);
+            UserProfile userProfile
+                = models.GetTable<UserProfile>()
+                    .Where(x => x.EMail.Equals(jwtTokenObj.payloadObj.email))
+                    .Where(x => x.UID.Equals(jwtTokenObj.payloadObj.id))
+                    .FirstOrDefault();
+
+            if (userProfile == null)
+            {
+                return (new BaseResponse(true, "驗證資料有誤."), jwtTokenObj, userProfile);
+            }
+
+            return (new BaseResponse(false, ""), jwtTokenObj, userProfile);
 
         }
 
-
+        [AllowAnonymous]
+        [HttpGet]
+        public Task<BaseResponse> GetPasswordApply(string email)
+        {
+            //return RedirectToAction("PasswordApply", "Account", JsonConvert.SerializeObject(new PasswordResetViewModel() { Email = email }));
+            return PasswordApply(new PasswordResetViewModel() { Email = email });
+        }
 
         [AllowAnonymous]
-        public async Task<BaseResponse> PasswordApply(string email)
+        [HttpPost]
+        public async Task<BaseResponse> PasswordApply([FromBody] PasswordResetViewModel viewModel)
         {
+
+        //忘記密碼流程: 點[忘記密碼]link後, 應先...
             int reSendEmailMins = 1;
-            email = email.GetEfficientString();
+            var email = viewModel.Email.GetEfficientString();
             if (string.IsNullOrEmpty(email))
             {
                 return new BaseResponse(true, "驗證資料有誤.");
@@ -370,8 +375,7 @@ namespace ContractHome.Controllers
 
             //wait to do:新token產生後, 設定舊token為失效
             SetValueToCache($"PasswordApply.{email}", $"{userProfile.UID}", expirateionMin: reSendEmailMins);
-
-            //wait to do: redirect to login
+            FileLogger.Logger.Error($"PasswordApply={jwtToken.ToString()}");
             return new BaseResponse(false, $"");
 
         }
