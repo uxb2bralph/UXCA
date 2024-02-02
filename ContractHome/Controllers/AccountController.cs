@@ -29,6 +29,8 @@ namespace ContractHome.Controllers
         private readonly EmailBody _emailBody;
         private readonly EmailFactory _emailFactory;
         private readonly IMemoryCache _memCache;
+        private static readonly int tokenTTLMins=10;
+        private static readonly int reSendEmailMins = 3;
         public AccountController(ILogger<HomeController> logger, IServiceProvider serviceProvider) : base(serviceProvider)
         {
             _logger = logger;
@@ -210,15 +212,6 @@ namespace ContractHome.Controllers
             return new EmptyResult();
         }
 
-        public class PasswordResetViewModel
-        {
-            public string Token { get; set; }
-            public string Password { get; set; }
-            public string Email { get; set; }
-            public string PID { get; set; }
-            public string Item { get; set; }    
-        }
-
         [AllowAnonymous]
         [HttpGet]
         public ActionResult PasswordResetView([FromQuery] string token)
@@ -264,7 +257,7 @@ namespace ContractHome.Controllers
                 return new BaseResponse(true, "驗證資料有誤.");
             }
 
-            SetValueToCache($"{jwtTokenObj.signature}", $"{jwtTokenObj.payloadObj.id}", expirateionMin: 60);
+            SetValueToCache($"{token}", $"{jwtTokenObj.payloadObj.id}", expirateionMin: tokenTTLMins);
             //wait to do...//[RegularExpression(@"^(?=.*\d)(?=.*[a-zA-Z])(?=.*\W).{8,30}$",ErrorMessage = "新密碼格式有誤，請確認")]
             tokenUserProfile.Password = null;
             tokenUserProfile.Password2 = password.HashPassword();
@@ -306,9 +299,9 @@ namespace ContractHome.Controllers
                 return (new BaseResponse(true, "Token已失效, 請重新申請."), null, null);
             }
 
-            if (_memCache.TryGetValue($"{jwtTokenObj.signature}", out string uid))
+            if (_memCache.TryGetValue($"{token}", out string uid))
             {
-                return (new BaseResponse(true, $"Token已失效, 請重新申請."), null, null);
+                return (new BaseResponse(true, $"Token已失效, 請重新申請."), null, null); 
             }
 
             UserProfile userProfile
@@ -337,7 +330,7 @@ namespace ContractHome.Controllers
         [HttpPost]
         public async Task<BaseResponse> PasswordApply([FromBody] PasswordResetViewModel viewModel)
         {
-            int reSendEmailMins = 1;
+
             var email = viewModel.Email.GetEfficientString();
             if (string.IsNullOrEmpty(email))
             {
@@ -363,7 +356,7 @@ namespace ContractHome.Controllers
                 id = userProfile.UID.ToString(),
                 email = email,
                 iat = now.Ticks,
-                exp = now.AddMinutes(60).Ticks
+                exp = now.AddMinutes(tokenTTLMins).Ticks
             };
 
             var jwtToken = JwtTokenGenerator.GenerateJwtToken(payload, JwtTokenGenerator.secretKey);
