@@ -80,9 +80,10 @@
   const pathName = location.pathname;
   // 登入首頁
   const isHomePage = pathName === '/' || pathName === '/Home';
+  const isForgetPassWord = pathName === '/Account/ForgetPassword';
   const mainNavBar = document.querySelector('#mainNavBar');
   if (mainNavBar) {
-    mainNavBar.style.display = isHomePage ? 'none' : null;
+    mainNavBar.style.display = isHomePage || isForgetPassWord ? 'none' : null;
   }
 
   // 初始化 網頁導覽
