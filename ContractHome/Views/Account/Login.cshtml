@@ -18,11 +18,11 @@
   QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
   DateTime today = DateTime.Now;
 
-    String _validCode;
-    String _encryptedCode;
+  String _validCode;
+  String _encryptedCode;
 
-    _validCode = 6.CreateRandomStringCode();
-    _encryptedCode = _validCode.EncryptData();
+  _validCode = 6.CreateRandomStringCode();
+  _encryptedCode = _validCode.EncryptData();
 }
 <main id="login" class="login__wrapper bg-secondary">
   <div class="login__signin">
@@ -59,15 +59,18 @@
                 </div>
                 <div class="col-xl-12 col-lg-6 col-md-12 input__loginHeight">
                   <label for="ValidCode" class="fw-bolder">請輸入驗證碼</label>
-                  <div class="d-flex">                  
+                  <div class="d-flex justify-content-between">
                     <div class="col-7">
-                      <input v-model="formData.validCode" type="text" id="ValidCode" class="form-control form-control-sm" placeholder="" name="ValidCode" required>
+                      <input v-model="formData.validCode" type="text" id="ValidCode"
+                        class="form-control form-control-sm" placeholder="" name="ValidCode" required>
                       <div class="invalid-feedback">
-                          請輸入驗證碼
+                        請輸入驗證碼
                       </div>
                     </div>
-                    <div class="col-5 text-end">
-                      <img id="imgNum" src="@Html.Raw(Url.Action("CaptchaImg", "Account", new { code = _encryptedCode }))" />
+                    <div class="col captchaImg"
+                      style="background-image: url('@Html.Raw(Url.Action("CaptchaImg", "Account", new { code = _encryptedCode }))')">
+                      @* <img id="imgNum" src="@Html.Raw(Url.Action("CaptchaImg", "Account", new { code = _encryptedCode
+                      }))" /> *@
                     </div>
                   </div>
                 </div>
