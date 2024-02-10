@@ -609,15 +609,27 @@ namespace ContractHome.Controllers
                 queryByDocument = true;
             }
 
-            if (viewModel.ContractDateFrom.HasValue)
+            if (!string.IsNullOrEmpty(viewModel.ContractDateFrom))
             {
-                documents = documents.Where(d => d.DocDate >= viewModel.ContractDateFrom);
-                queryByDocument = true;
+                DateTime _date;
+                DateTime.TryParseExact(viewModel.ContractDateFrom, "yyyy/MM/dd", null,
+                    System.Globalization.DateTimeStyles.None, out _date);
+                if (_date!=null)
+                {
+                    documents = documents.Where(d => d.DocDate >= _date);
+                    queryByDocument = true;
+                }
             }
-            if (viewModel.ContractDateTo.HasValue)
+            if (!string.IsNullOrEmpty(viewModel.ContractDateTo))
             {
-                documents = documents.Where(d => d.DocDate < viewModel.ContractDateTo.Value.AddDays(1));
-                queryByDocument = true;
+                DateTime _date;
+                DateTime.TryParseExact(viewModel.ContractDateTo, "yyyy/MM/dd", null, 
+                    System.Globalization.DateTimeStyles.None, out _date);
+                if (_date != null)
+                {
+                    documents = documents.Where(d => d.DocDate < _date.AddDays(1));
+                    queryByDocument = true;
+                }
             }
             if (queryByDocument)
             {
