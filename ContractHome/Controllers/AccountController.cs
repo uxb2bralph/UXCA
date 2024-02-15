@@ -362,10 +362,7 @@ namespace ContractHome.Controllers
             var jwtToken = JwtTokenGenerator.GenerateJwtToken(payload, JwtTokenGenerator.secretKey);
 
             var request = HttpContext.Request;
-            var uri = string.Concat(request.Scheme, "://",
-                                    request.Host.ToUriComponent(),
-                                    request.PathBase.ToUriComponent());
-            var clickLink = $"{uri}/Account/PasswordResetView?token={jwtToken}";
+            var clickLink = $"{Settings.Default.WebAppDomain}/Account/PasswordResetView?token={jwtToken}";
 
             var emailTemp = EmailBody.EmailTemplate.WelcomeUser;
             if (viewModel.Item.Equals("forgetPassword") ) { emailTemp = EmailBody.EmailTemplate.ApplyPassword; }
