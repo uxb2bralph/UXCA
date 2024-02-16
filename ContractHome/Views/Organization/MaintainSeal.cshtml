@@ -120,9 +120,6 @@
     },
     methods: {
       addHandler(event) {
-  @*(sealImg = URL.createObjectURL(event.target.files[0]);
-          this.sealList.push(sealImg);*@
-          console.log(event.target.files[0]);
         var viewModel = {
           ...$global.viewModel
         };
@@ -170,25 +167,12 @@
         console.log(this.currentSaleData);
 
         $("#deleteModal").modal('hide');
-
-  @*showLoading();
-          setTimeout(() => {
-          // 模擬假資料被刪除
-          this.sealList.splice(this.currentSaleData.index, 1);
-
-          this.currentSaleData = null;
-
-          hideLoading();
-          // 開啟訊息視窗
-          this.infoMsg = '印鑑已刪除';
+        commitToDeletSeal(this.currentSaleData.seal.KeyID, function () {
+          app.sealList.splice(app.currentSaleData.index, 1);
+          app.currentSaleData = null;
+          app.infoMsg = '印鑑已刪除';
           $('#infoModal').modal('show');
-          }, 2000);*@
-          commitToDeletSeal(this.currentSaleData.seal.KeyID, function () {
-            app.sealList.splice(app.currentSaleData.index, 1);
-            app.currentSaleData = null;
-            app.infoMsg = '印鑑已刪除';
-            $('#infoModal').modal('show');
-          });
+        });
       },
     }
   });
