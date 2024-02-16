@@ -118,8 +118,8 @@ namespace ContractHome.Models.ViewModel
 
     public class ContractQueryViewModel : SignContractViewModel
   {
-    public DateTime? ContractDateFrom { get; set; }
-    public DateTime? ContractDateTo { get; set; }
+    public string? ContractDateFrom { get; set; }
+    public string? ContractDateTo { get; set; }
     public CDS_Document.StepEnum[]? QueryStep { get; set; }
   }
 

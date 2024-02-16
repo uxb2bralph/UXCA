@@ -518,7 +518,7 @@
   // 起約人資料清單
   const dataInitiator = @Html.Raw(userOrgItems.Select(u => new { id = u.CompanyID.EncryptKey(), text = u.Organization.CompanyName }).ToArray().JsonStringify());
   // 簽署人資料清單
-  const contractorAllList = @Html.Raw(models.GetTable<Organization>().Where(o => !userOrgItems.Any(u => u.CompanyID == o.CompanyID)).Select(u => new { id = u.CompanyID.EncryptKey(), companyName = u.CompanyName, receiptNo = u.ReceiptNo }).ToArray().JsonStringify());
+  const contractorAllList = @Html.Raw(models.GetTable<Organization>().Where(o => userOrgItems.Any(u => u.CompanyID == o.CompanyBelongTo)).Select(u => new { id = u.CompanyID.EncryptKey(), companyName = u.CompanyName, receiptNo = u.ReceiptNo }).ToArray().JsonStringify());
   // 取得上傳 PDF 總頁數
   @* const pageCount = @(pageCount); *@
   const { IsJointContracting, KeyID: contractID, PageCount, Parties } = @Html.Raw(contractRefsJson);
