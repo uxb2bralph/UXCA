@@ -10,113 +10,113 @@ using System.Web;
 
 namespace ContractHome.Models.ViewModel
 {
-    public partial class QueryViewModel
+  public partial class QueryViewModel
+  {
+    public int? PageSize { get; set; } = 10;
+    public int? PageIndex { get; set; }
+    public int? PageOffset { get; set; } = 0;
+    public string[]? SortName { get; set; }
+    public int?[]? SortType { get; set; }
+    public bool? Paging { get; set; }
+    public String? KeyID { get; set; }
+    public String? FileDownloadToken { get; set; }
+    public String? PageMainTitle { get; set; }
+    public int? RecordCount { get; set; }
+    public String[]? KeyItems { get; set; }
+    [JsonIgnore]
+    public bool? InitQuery { get; set; }
+    public String? Message { get; set; }
+    public String? UrlAction { get; set; }
+    [JsonIgnore]
+    public String? AlertMessage { get; set; }
+    public String? EncodedAlertMessage
     {
-        public int? PageSize { get; set; } = 10;
-        public int? PageIndex { get; set; }
-        public int? PageOffset { get; set; } = 0;
-        public string[]? SortName { get; set; }
-        public int?[]? SortType { get; set; }
-        public bool? Paging { get; set; }
-        public String? KeyID { get; set; }
-        public String? FileDownloadToken { get; set; }
-        public String? PageMainTitle { get; set; }
-        public int? RecordCount { get; set; }
-        public String[]? KeyItems { get; set; }
-        [JsonIgnore]
-        public bool? InitQuery { get; set; }
-        public String? Message { get; set; }
-        public String? UrlAction { get; set; }
-        [JsonIgnore]
-        public String? AlertMessage { get; set; }
-        public String? EncodedAlertMessage
+      get => AlertMessage != null ? Convert.ToBase64String(Encoding.Default.GetBytes(AlertMessage)) : null;
+      set
+      {
+        if (value != null)
         {
-            get => AlertMessage != null ? Convert.ToBase64String(Encoding.Default.GetBytes(AlertMessage)) : null;
-            set
-            {
-                if (value != null)
-                {
-                    AlertMessage = Encoding.Default.GetString(Convert.FromBase64String(value));
-                }
-            }
+          AlertMessage = Encoding.Default.GetString(Convert.FromBase64String(value));
         }
-
-        public String? AlertTitle { get; set; }
-        public String? DialogID { get; set; }
-        public bool? ReuseModal { get; set; }
-        public DataTableColumn[]? KeyItem { get; set; }
-        public String? EncKeyItem { get; set; }
-        public DataTableColumn[]? DataItem { get; set; }
-        public String? Term { get; set; }
-        public DataResultMode? ResultMode { get; set; }
-
+      }
     }
 
-    public enum DataResultMode
-    {
-        Display = 0,
-        Print = 1,
-        Download = 2,
-        DataContent = 3,
-        ForExcel = 4,
-    }
+    public String? AlertTitle { get; set; }
+    public String? DialogID { get; set; }
+    public bool? ReuseModal { get; set; }
+    public DataTableColumn[]? KeyItem { get; set; }
+    public String? EncKeyItem { get; set; }
+    public DataTableColumn[]? DataItem { get; set; }
+    public String? Term { get; set; }
+    public DataResultMode? ResultMode { get; set; }
 
-    public partial class SignContractViewModel : QueryViewModel
-    {
-        public String? SignDate { get; set; }
-        public String? BuyerIdNo { get; set; }
-        public String? BuyerAddress { get; set; }
-        public String? BuyerName { get; set; }
-        public String? PayWeekDate { get; set; }
-        public String? EndDate { get; set; }
-        public String? CreditDate { get; set; }
-        public String? Amount { get; set; }
-        public String? ContractNo { get; set; }
-        public String? BuyerSeal { get; set; }
-        public String? SellerSeal { get; set; }
-        public bool? UseTemplate { get; set; }
-        public int? ContractID { get; set; }
-        public int? InitiatorID => (string.IsNullOrEmpty(Initiator)) ? null : Initiator.DecryptKeyValue();
-        public String? Initiator { get; set; }
-        public int? InitiatorIntent { get; set; }
-        public int? ContractorID => (string.IsNullOrEmpty(Contractor)) ? null : Contractor.DecryptKeyValue();
-        //public String[]? MultiContractor { get; set; }
-        public String? Contractor { get; set; }
-        public int? ContractorIntent { get; set; }
-        public bool? Preview { get; set; }
-        public String? Title { get; set; }
-        public bool? IgnoreSeal { get; set; }
-        public bool? IsJointContracting { get; set; }
+  }
 
-        //public ContractorSignaturePosition[]? SignaturePositions { get; set; }
-        public ContractorObj[]? Contractors { get; set; }
-        public string? EncUID { get; set; }
-        //public int? UID => Int32.Parse(HttpUtility.UrlDecode(this.EncUID!.).DecryptData());
-        //public string? EncContractorID { get; set; }
-        public int? ContractQueryStep { get; set; }
+  public enum DataResultMode
+  {
+    Display = 0,
+    Print = 1,
+    Download = 2,
+    DataContent = 3,
+    ForExcel = 4,
+  }
 
-    }
+  public partial class SignContractViewModel : QueryViewModel
+  {
+    public String? SignDate { get; set; }
+    public String? BuyerIdNo { get; set; }
+    public String? BuyerAddress { get; set; }
+    public String? BuyerName { get; set; }
+    public String? PayWeekDate { get; set; }
+    public String? EndDate { get; set; }
+    public String? CreditDate { get; set; }
+    public String? Amount { get; set; }
+    public String? ContractNo { get; set; }
+    public String? BuyerSeal { get; set; }
+    public String? SellerSeal { get; set; }
+    public bool? UseTemplate { get; set; }
+    public int? ContractID { get; set; }
+    public int? InitiatorID => (string.IsNullOrEmpty(Initiator)) ? null : Initiator.DecryptKeyValue();
+    public String? Initiator { get; set; }
+    public int? InitiatorIntent { get; set; }
+    public int? ContractorID => (string.IsNullOrEmpty(Contractor)) ? null : Contractor.DecryptKeyValue();
+    //public String[]? MultiContractor { get; set; }
+    public String? Contractor { get; set; }
+    public int? ContractorIntent { get; set; }
+    public bool? Preview { get; set; }
+    public String? Title { get; set; }
+    public bool? IgnoreSeal { get; set; }
+    public bool? IsJointContracting { get; set; }
 
-    public class ContractorObj
-    {
-        public string? Contractor { get; set; }
-        public int? ContractorID => (string.IsNullOrEmpty(this.Contractor))?null:this.Contractor?.DecryptKeyValue();
-        public SignaturePosition[]? SignaturePositions { get; set; }
-    }
+    //public ContractorSignaturePosition[]? SignaturePositions { get; set; }
+    public ContractorObj[]? Contractors { get; set; }
+    public string? EncUID { get; set; }
+    //public int? UID => Int32.Parse(HttpUtility.UrlDecode(this.EncUID!.).DecryptData());
+    //public string? EncContractorID { get; set; }
+    public int? ContractQueryStep { get; set; }
 
-    public class SignaturePosition
-    {
-        public string ID { get; set; }
-        public double ScaleWidth { get; set; }
-        public double ScaleHeight { get; set; }
-        public double MarginTop { get; set; }
-        public double MarginLeft { get; set; }
-        public int PageIndex { get; set; }
-        //0:簽章 1:文字
-        public int Type { get; set; } 
-    }
+  }
 
-    public class ContractQueryViewModel : SignContractViewModel
+  public class ContractorObj
+  {
+    public string? Contractor { get; set; }
+    public int? ContractorID => (string.IsNullOrEmpty(this.Contractor)) ? null : this.Contractor?.DecryptKeyValue();
+    public SignaturePosition[]? SignaturePositions { get; set; }
+  }
+
+  public class SignaturePosition
+  {
+    public string ID { get; set; }
+    public double ScaleWidth { get; set; }
+    public double ScaleHeight { get; set; }
+    public double MarginTop { get; set; }
+    public double MarginLeft { get; set; }
+    public int PageIndex { get; set; }
+    //0:簽章 1:文字
+    public int Type { get; set; }
+  }
+
+  public class ContractQueryViewModel : SignContractViewModel
   {
     public string? ContractDateFrom { get; set; }
     public string? ContractDateTo { get; set; }
@@ -181,7 +181,7 @@ namespace ContractHome.Models.ViewModel
     public String? ReturnUrl { get; set; }
 
     [Display(Name = "ValidCode")]
-    [CaptchaValidation("EncryptedCode", ErrorMessage = "驗證碼錯誤!!")]
+    [CaptchaValidation("EncryptedCode", ErrorMessage = "驗證碼錯誤！")]
     public string? ValidCode { get; set; }
 
     [Display(Name = "EncryptedCode")]
@@ -257,11 +257,11 @@ namespace ContractHome.Models.ViewModel
     public string PID => HttpUtility.UrlDecode(this.EncPID);
   }
 
-    public class GetContractorsViewModel : QueryViewModel
-    {
-        [Required]
-        public string EncPID { get; set; }
-        [JsonIgnore]
-        public string PID => HttpUtility.UrlDecode(this.EncPID);
-    }
+  public class GetContractorsViewModel : QueryViewModel
+  {
+    [Required]
+    public string EncPID { get; set; }
+    [JsonIgnore]
+    public string PID => HttpUtility.UrlDecode(this.EncPID);
+  }
 }

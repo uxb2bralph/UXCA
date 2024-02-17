@@ -202,6 +202,7 @@
                         下載檔案
                       </button>
                     </li>
+                    <!--
                     <li v-if="!contract.isContractor">
                       <button class="dropdown-item d-flex align-items-center fs-13"
                         v-on:click="openStopContractModal(contract)">
@@ -211,6 +212,7 @@
                         終止合約
                       </button>
                     </li>
+                    -->
                   </ul>
                 </div>
               </div>
@@ -414,7 +416,7 @@
                     <label for="Title" class="form-label fw-bolder text-primary">合約名稱</label>
                     <input v-model="formData.Title" type="text" class="form-control" :class="{'is-invalid': !isTitle}"
                       id="Title" v-on:keyup="checkTitle(formData.Title)">
-                    <div class="invalid-feedback">
+                    <div class="invalid-feedback text-end">
                       請輸入合約名稱
                     </div>
                   </div>
@@ -423,7 +425,7 @@
                     <input v-model="formData.ContractNo" type="text" class=" form-control"
                       :class="{'is-invalid': !isContractNo}" id="ContractNo"
                       v-on:keyup="checkContractNo(formData.ContractNo)">
-                    <div class="invalid-feedback">
+                    <div class="invalid-feedback text-end">
                       請輸入合約編號
                     </div>
                   </div>

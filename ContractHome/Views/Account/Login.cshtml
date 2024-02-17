@@ -26,8 +26,8 @@
 }
 <main id="login" class="login__wrapper bg-secondary">
   <div class="login__signin">
-    <form ref="form" v-on:submit.prevent id="loginForm" class="needs-validation" :class="{'was-validated': isValidate}"
-      novalidate accept-charset="UTF-8" role="form" method="post" autocomplete="off">
+    <form ref="form" v-on:submit.prevent id="loginForm" novalidate accept-charset="UTF-8" role="form" method="post"
+      autocomplete="off">
       <div class="card border-0 mb-3 shadow">
         <div class="row g-0">
           <div class="col-xl-8 p-5 login__intro bg-secondary bg-opacity-10">
@@ -43,17 +43,18 @@
                 </div>
                 <div class="col-xl-12 col-lg-6 col-md-12 input__loginHeight">
                   <label for="userAccount" class="fw-bolder">帳號</label>
-                  <input v-model="formData.pid" type="text" id="userAccount" class="form-control form-control-sm"
-                    placeholder="" name="PID" required autofocus>
-                  <div class="invalid-feedback">
+                  <input v-model.trim="formData.pid" type="text" id="userAccount" class="form-control form-control-sm"
+                    :class="{'is-invalid': !isPid}" name="userAccount" required autofocus v-on:keyup="checkPid">
+                  <div class="invalid-feedback text-end">
                     請輸入帳號
                   </div>
                 </div>
                 <div class="col-xl-12 col-lg-6 col-md-12 input__loginHeight">
                   <label for="userPwd" class="fw-bolder">密碼</label>
-                  <input v-model="formData.password" type="password" id="userPwd" class="form-control form-control-sm"
-                    placeholder="" name="Password" required>
-                  <div class="invalid-feedback">
+                  <input v-model.trim="formData.password" type="password" id="userPwd"
+                    class="form-control form-control-sm" :class="{'is-invalid': !isPassword}"
+                    v-on:keyup="checkPassword()" name="Password">
+                  <div class="invalid-feedback text-end">
                     請輸入密碼
                   </div>
                 </div>
@@ -62,13 +63,14 @@
                   <div class="d-flex justify-content-between">
                     <div class="col-7">
                       <input v-model="formData.validCode" type="text" id="ValidCode"
-                        class="form-control form-control-sm" placeholder="" name="ValidCode" required>
-                      <div class="invalid-feedback">
+                        class="form-control form-control-sm" :class="{'is-invalid': !isValidCode}" name="ValidCode"
+                        v-on:keyup="checkValidCode">
+                      <div class="invalid-feedback text-end">
                         請輸入驗證碼
                       </div>
                     </div>
                     <div class="col captchaImg"
-                      style="background-image: url('@Html.Raw(Url.Action("CaptchaImg", "Account", new { code = _encryptedCode }))')">
+                      style="max-height:31px;background-image: url('@Html.Raw(Url.Action("CaptchaImg", "Account", new { code = _encryptedCode }))')">
                     </div>
                   </div>
                 </div>
@@ -80,12 +82,6 @@
                       記住帳號
                     </label>
                   </div>
-                  <!--
-                  <div class="ms-auto">
-                    <a class="fs-6" href="@(Url.Action("ForgetPassword", "Account"))">註冊</a>
-                  </div>
-                  <div class="vr"></div>
-                  -->
                   <div class="ms-auto">
                     <a class="fs-6" href="@(Url.Action("ForgetPassword","Account"))">忘記密碼</a>
                   </div>
@@ -114,6 +110,20 @@
         <a class=" navbar-brand" href="@Url.Action("Gdpr", "Home")">GDPR 聲明</a>
       </div>
     </form>
+    <!-- 訊息 Dialog -->
+    <div class="modal fade" id="infoModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+      aria-labelledby="infoModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-body text-center h5 fw-bolder pt-5">
+            <div v-html="infoMsg"></div>
+          </div>
+          <div class="modal-footer border-top-0 justify-content-center">
+            <button type="button" class="btn btn-secondary" v-on:click="closeInfo">關閉</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </main>
 <script>
@@ -127,34 +137,54 @@
         rememberAccount: false,
         validCode: null,
         encryptedCode: '@Html.Raw(_encryptedCode)',
-      }
+      },
+      isPid: true,
+      isPassword: true,
+      isValidCode: true,
+      infoMsg: null,
     },
     methods: {
+      checkPid() {
+        // 帳號輸入檢核
+        this.isPid = this.formData.pid && this.formData.pid.length > 0;
+      },
+
+      checkPassword() {
+        // password輸入檢核
+        this.isPassword = this.formData.password && this.formData.password.length > 0;
+      },
+
+      checkValidCode() {
+        // 驗證碼輸入檢核
+        this.isValidCode = this.formData.validCode && this.formData.validCode.length > 0;
+      },
+
       loginHandler() {
-        const isPid = !!this.formData.pid;
-        const isPassword = !!this.formData.password;
-        // 帳號及密碼輸入檢核
-        if (!isPid || !isPassword) {
-          return this.isValidate = true;
-        }
+        const self = this;
+        // 帳號及Password輸入檢核
+        this.isPid = !!this.formData.pid;
+        this.isPassword = !!this.formData.password;
+        this.isValidCode = !!this.formData.validCode;
+        if (!this.isPid || !this.isPassword || !this.isValidCode) return;
 
         // ajax 送出表單
         showLoading();
         $.ajax({
-          type: 'POST',
+          type: 'post',
           url: '@(Url.Action("CheckLogin", "Account"))',
           data: JSON.stringify(this.formData),
-          type: "POST",
-          //dataType: "json",
           contentType: "application/json;charset=utf-8",
           success: function (data) {
             hideLoading();
             if ($.isPlainObject(data)) {
               if (data.result) {
                 showLoading();
+                // 成功導頁
                 window.location.href = data.message;
               } else {
-                alertModal(data.message);
+                // 失敗
+                self.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;
+                $("#infoModal").modal("show");
               }
             } else {
               $(data).appendTo($('body')).remove();
@@ -166,6 +196,10 @@
             console.log(thrownError);
           }
         });
+      },
+
+      closeInfo() {
+        $("#infoModal").modal("hide");
       }
     }
   });
