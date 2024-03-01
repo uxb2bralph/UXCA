@@ -42,10 +42,10 @@
     public class CHTSigningService
     {
         public int SystemTokenID { get; set; } = 1;
-        public String AP_SignPDF_Encrypt { get; set; } = "https://eguitest.uxifs.com/CryptoKeyManageCVS2API/3partypdfencsign/GRA_TPSSC_IV_CVS2_AP.do";
-        public String AP_SignPDF { get; set; } = "https://eguitest.uxifs.com/CryptoKeyManageCVS2API/3partypdfsign/GRA_TPSSC_IV_CVS2_AP.do";
-        public String User_SignPDF_Encrypt { get; set; } = "https://eguitest.uxifs.com/CryptoKeyManageCVS2API/3partypdfencsign/GRA_TPSSC_IV_CVS2.do";
-        public String User_SignPDF { get; set; } = "https://eguitest.uxifs.com/CryptoKeyManageCVS2API/3partypdfsign/GRA_TPSSC_IV_CVS2.do";
+        public String AP_SignPDF_Encrypt { get; set; } =    "https://eguitest.uxifs.com/CryptoKeyManageCVS2API/3partypdfencsign/GRA_TPSSC_IV_CVS2_AP.do";
+        public String AP_SignPDF { get; set; } =            "https://eguitest.uxifs.com/CryptoKeyManageCVS2API/3partypdfsign/GRA_TPSSC_IV_CVS2_AP.do";
+        public String User_SignPDF_Encrypt { get; set; } =  "https://eguitest.uxifs.com/CryptoKeyManageCVS2API/3partypdfencsign/GRA_TPSSC_IV_CVS2.do";
+        public String User_SignPDF { get; set; } =          "https://eguitest.uxifs.com/CryptoKeyManageCVS2API/3partypdfsign/GRA_TPSSC_IV_CVS2.do";
         public String UserRequestTicket { get; set; } = "https://graapplywebtest.azurewebsites.net/aatl/v1/ticket/user";
         public String AuthorizeUserTicket { get; set; } = "https://graapplywebtest.azurewebsites.net/aatl/V2/SignVerify?authToken=";
         public String RequireIssue { get; set; } = "https://graapplywebtest.azurewebsites.net/aatl/v1/certificate/partner/issue";

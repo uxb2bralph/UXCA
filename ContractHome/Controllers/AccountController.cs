@@ -19,6 +19,7 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentFormat.OpenXml.Drawing;
 using Newtonsoft.Json;
 using CommonLib.Core.Utility;
+using ContractHome.Models.Dto;
 
 namespace ContractHome.Controllers
 {
@@ -400,19 +401,7 @@ namespace ContractHome.Controllers
       _memCache.Set(cacheItem, cacheValue, cacheExpiryOptions);
     }
 
-    public class BaseResponse
-    {
-      public bool HasError { get; set; }
-      public string Message { get; set; }
-
-      public BaseResponse(bool hasError, string error)
-      {
-        HasError = hasError;
-        Message = error;
-      }
     }
-
-  }
 
 
 }

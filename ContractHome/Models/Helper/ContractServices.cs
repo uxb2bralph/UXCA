@@ -9,6 +9,12 @@ using ContractHome.Models.ViewModel;
 using DocumentFormat.OpenXml.Office.CustomUI;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Newtonsoft.Json;
+using static ContractHome.Models.Dto.GetFieldSettingRequest;
+using ContractHome.Models.Dto;
+using MimeKit.Text;
+using Microsoft.EntityFrameworkCore;
+using static ContractHome.Models.Dto.PostFieldSettingRequest;
+using Grpc.Core.Logging;
 
 namespace ContractHome.Models.Helper
 {
@@ -38,6 +44,24 @@ namespace ContractHome.Models.Helper
             return _models.GetTable<Contract>()
                     .Where(c => c.ContractID == contractID)
                     .FirstOrDefault();
+        }
+
+        //wait to do...replace by Contract.EntitySet<Organization>
+        public Organization? GetOrganization(Contract contract)
+        {
+            return _models?.GetTable<Organization>()
+                .Where(c => c.CompanyID == contract.CompanyID)
+                .FirstOrDefault();
+        }
+
+        public IEnumerable<Organization>? GetAvailableSignatories(int companyID)
+        {
+            return _models.GetTable<Organization>().Where(x => x.CompanyBelongTo == companyID);
+        }
+
+        public bool IsContractHasCompany(Contract contract, int? companyID)
+        {
+            return contract.ContractingParty.Where(x=>x.CompanyID == companyID).Any();
         }
 
         //利用原有合約資料新增合約, for非聯合承攬用, 各別成立合約用
@@ -74,6 +98,90 @@ namespace ContractHome.Models.Helper
                 throw;
             }
         }
+
+        public Contract SetConfig(Contract contract, PostConfigRequest req)
+        {
+            contract.ContractNo = req.ContractNo;
+            contract.Title = req.Title;
+            req.Signatories.ForEach(x => { 
+                AddParty(contract, x.DecryptKeyValue()); 
+            });
+
+            return contract;
+        }
+
+        public Contract AddParty(Contract contract, int CompanyID)
+        {
+
+            if (contract.ContractingParty.Where(p => p.CompanyID == CompanyID).Any()) 
+            {
+                return contract;
+            }
+
+            contract.ContractingParty.Add(new ContractingParty
+            {
+                CompanyID = CompanyID,
+                IntentID = (contract.CompanyID.Equals(CompanyID))?1:2,
+                IsInitiator = (contract.CompanyID.Equals(CompanyID)),
+            });
+
+            if (!contract.ContractSignatureRequest.Any(r => r.CompanyID == CompanyID))
+            {
+                contract.ContractSignatureRequest.Add(new ContractSignatureRequest
+                {
+                    CompanyID = CompanyID,
+                    StampDate = null,
+                });
+            }
+
+            return contract;
+        }
+
+        public class FeildSetting
+        {
+            public int CompanyID { get; set; }
+            public string ID { get; set; }
+            public double ScaleWidth { get; set; }
+            public double ScaleHeight { get; set; }
+            public double MarginTop { get; set; }
+            public double MarginLeft { get; set; }
+            public int PageIndex { get; set; }
+            //0:default 1:文字 2.地址 3.電話 4.日期 5.公司Title 6.印章 7.簽名 8.圖片 ... 擴充?
+            public int Type { get; set; }
+        }
+
+        public Contract UpdateFieldSetting(Contract contract, IEnumerable<PostFieldSettingRequestFields> feildSettings)
+        {
+            _models.DeleteAll<ContractSignaturePositionRequest>(x => x.ContractID == contract.ContractID);
+
+            foreach (var pos in feildSettings)
+            {
+                int ttt = pos.CompanyID.DecryptKeyValue();
+                if (!contract.ContractSignaturePositionRequest
+                    .Where(p => p.ContractID == contract.ContractID)
+                    .Where(p => p.ContractorID == pos.CompanyID.DecryptKeyValue())
+                    .Where(p => p.PositionID == pos.ID)
+                .Any())
+                {
+                    contract.ContractSignaturePositionRequest.Add(new ContractSignaturePositionRequest
+                    {
+                        ContractID = contract.ContractID,
+                        ContractorID = pos.CompanyID.DecryptKeyValue(),
+                        PositionID = pos.ID,
+                        ScaleWidth = pos.ScaleWidth,
+                        ScaleHeight = pos.ScaleHeight,
+                        MarginTop = pos.MarginTop,
+                        MarginLeft = pos.MarginLeft,
+                        Type = pos.Type,
+                        PageIndex = pos.PageIndex
+                    });
+                }
+
+            }
+
+            return contract;
+        }
+
 
         public Contract CreateAndSaveParty(int initiatorID, 
             int contractorID, 
@@ -171,9 +279,11 @@ namespace ContractHome.Models.Helper
 
         public IQueryable<UserProfile>? GetUsersbyCompanyID(int companyID)
         {
-            return _models.GetTable<OrganizationUser>()
+            if (companyID.Equals(0)) { return null; }
+            var ttt = _models.GetTable<OrganizationUser>()
                 .Where(x => x.CompanyID == companyID)
                 .Select(y => y.UserProfile);
+            return ttt;
         }
 
         public async IAsyncEnumerable<MailData> GetAllContractUsersNotifyEmailAsync(
@@ -211,10 +321,97 @@ namespace ContractHome.Models.Helper
             yield break;
         }
 
+        //public enum NotifyFlagEnum
+        //{
+        //    None = 0,  // 無通知
+        //    Signature = 1,   // 用印簽署通知
+        //    Finish = 2,   // 完成通知
+        //}
+
+        //public NotifyFlagEnum GetNotifyFlagAsync(Contract contract)
+        //{
+
+        //    //items = items.Where(d => !d.CDS_Document.CurrentStep.HasValue
+        //    //    || CDS_Document.PendingState.Contains((CDS_Document.StepEnum)d.CDS_Document.CurrentStep!));
+        //    //CDS_Document.StepEnum
+
+        //}
+
+        public IEnumerable<UserProfile>? GetNotifyEmailListAsync(Contract contract)
+        {
+            EmailBody.EmailTemplate template = EmailBody.EmailTemplate.NotifySeal;
+
+            if ((contract.CDS_Document.CurrentStep.Equals((int)CDS_Document.StepEnum.Establish)||
+                (contract.CDS_Document.CurrentStep.Equals((int)CDS_Document.StepEnum.DigitalSigning))))
+            {
+                var ttt = contract.ContractSignatureRequest
+                    .Where(x=>x.StampDate==null);
+                var aaa = ttt.Where(x => x.CompanyID != contract.CompanyID).FirstOrDefault();
+                var bbb = ttt.Where(x => x.CompanyID == contract.CompanyID).FirstOrDefault();
+                if (aaa!=null)
+                {
+                    return GetUsersbyCompanyID(aaa.CompanyID);
+                }
+                else if (bbb!=null)
+                {
+                    return GetUsersbyCompanyID(bbb.CompanyID);
+                }
+            }
+
+            //if (contract.CDS_Document.CurrentStep.Equals((int)CDS_Document.StepEnum.DigitalSigned))
+            //{
+
+            //}
+
+            //if (contract.CDS_Document.CurrentStep.Equals((int)CDS_Document.StepEnum.Committed))
+            //{
+
+            //}
+
+            return null;
+
+        }
+
+        public async IAsyncEnumerable<MailData> GetNotifyEmailBodyAsync(
+            Contract contract,
+            IEnumerable<UserProfile> userProfiles,
+            EmailBody.EmailTemplate emailTemplate)
+        {
+            var initiatorOrg = GetOrganization(contract);
+            //var signatories = contract.ContractingParty;
+            //var contractorUsers = signatories.SelectMany(x => x.GetUsers(_models));
+
+            if (initiatorOrg != null)
+            {
+                foreach (var user in userProfiles)
+                {
+                    var emailBody =
+                        new EmailBodyBuilder(_emailBody)
+                        .SetTemplateItem(emailTemplate)
+                        .SetContractNo(contract.ContractNo)
+                        .SetTitle(contract.Title)
+                        .SetUserName(initiatorOrg.CompanyName)
+                        .SetRecipientUserName(user.UserName)
+                        .SetRecipientUserEmail(user.EMail)
+                        .Build();
+
+                    yield return _emailFactory.GetEmailToCustomer(
+                        emailBody.RecipientUserEmail,
+                        _emailFactory.GetEmailTitle(emailTemplate),
+                        await emailBody.GetViewRenderString());
+
+                }
+                yield break;
+            }
+
+
+        }
+
         public async IAsyncEnumerable<MailData> GetContractorNotifyEmailAsync(
             List<Contract> contracts,
             EmailBody.EmailTemplate emailTemplate)
         {
+
             foreach (var contract in contracts)
             {
                 var initiatorOrg = contract.GetInitiator()?.GetOrganization(_models);

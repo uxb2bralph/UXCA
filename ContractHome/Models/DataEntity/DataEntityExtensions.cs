@@ -2,6 +2,7 @@
 using ContractHome.Properties;
 using CommonLib.Utility;
 using System.Collections;
+using BitMiracle.LibTiff.Classic;
 
 namespace ContractHome.Models.DataEntity
 {
@@ -96,14 +97,17 @@ namespace ContractHome.Models.DataEntity
         public enum StepEnum
         {
             Initial = 0,
-            Revoked = 1,
-            Sealing = 2,
-            Sealed = 3,
-            DigitalSigning = 4,
-            DigitalSigned = 5,
-            Browsed = 6,
-            Terminated = 7,
-            Committed = 8,
+            Config = 1,
+            Establish = 2,
+            FieldSet = 4,
+            Sealing = 6,
+            Sealed = 7,
+            DigitalSigning = 10,
+            DigitalSigned = 11,
+            Browsed = 16,
+            Terminated = 17,
+            Committed = 18,
+            Revoked = 19,
         }
 
         public static readonly String[] StepNaming =
@@ -122,6 +126,7 @@ namespace ContractHome.Models.DataEntity
         public static StepEnum[] PendingState =
         {
             StepEnum.Initial,
+            StepEnum.FieldSet,
             StepEnum.Sealing,
             StepEnum.Sealed,
             StepEnum.DigitalSigning,

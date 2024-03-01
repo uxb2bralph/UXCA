@@ -561,6 +561,7 @@ namespace ContractHome.Models.DataEntity
 		private System.Nullable<bool> _IsJointContracting;
 		
         private System.Nullable<bool> _InProgress;
+        private int _CompanyID;
 
         private System.Data.Linq.Binary _ContractContent;
 		
@@ -600,6 +601,9 @@ namespace ContractHome.Models.DataEntity
 
         partial void OnInProgressChanging(System.Nullable<bool> value);
         partial void OnInProgressChanged();
+
+        partial void OnCompanyIDChanging(int value);
+        partial void OnCompanyIDChanged();
         #endregion
 
         public Contract()
@@ -865,6 +869,27 @@ namespace ContractHome.Models.DataEntity
                     this._InProgress = value;
                     this.SendPropertyChanged("Disabled");
                     this.OnInProgressChanged();
+                }
+            }
+        }
+
+        [global::System.Data.Linq.Mapping.ColumnAttribute(Storage = "_CompanyID", DbType = "Int NOT NULL")]
+        [global::System.Runtime.Serialization.DataMemberAttribute(Order = 15)]
+        public int CompanyID
+        {
+            get
+            {
+                return this._CompanyID;
+            }
+            set
+            {
+                if ((this._CompanyID != value))
+                {
+                    this.OnCompanyIDChanging(value);
+                    this.SendPropertyChanging();
+                    this._CompanyID = value;
+                    this.SendPropertyChanged("Disabled");
+                    this.OnCompanyIDChanged();
                 }
             }
         }
@@ -1232,7 +1257,7 @@ namespace ContractHome.Models.DataEntity
 		
 		private int _CompanyID;
 		
-		private int _IntentID;
+		private int? _IntentID;
 
         private System.Nullable<bool> _IsInitiator;
 		
@@ -1250,7 +1275,7 @@ namespace ContractHome.Models.DataEntity
     partial void OnContractIDChanged();
     partial void OnCompanyIDChanging(int value);
     partial void OnCompanyIDChanged();
-    partial void OnIntentIDChanging(int value);
+    partial void OnIntentIDChanging(int? value);
     partial void OnIntentIDChanged();
     partial void OnIsInitiatorChanging(System.Nullable<bool> value);
     partial void OnIsInitiatorChanged();
@@ -1311,9 +1336,9 @@ namespace ContractHome.Models.DataEntity
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_IntentID", DbType="Int NOT NULL", IsPrimaryKey=true)]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_IntentID", IsPrimaryKey=false)]
 		[global::System.Runtime.Serialization.DataMemberAttribute(Order=3)]
-		public int IntentID
+		public int? IntentID
 		{
 			get
 			{

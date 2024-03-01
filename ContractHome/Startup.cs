@@ -9,6 +9,9 @@ using ContractHome.Models.Email.Template;
 using CommonLib.DataAccess;
 using ContractHome.Models.DataEntity;
 using ContractHome.Models.Helper;
+using FluentValidation.AspNetCore;
+using FluentValidation;
+using ContractHome.Models.ViewModel;
 
 namespace WebHome
 {
@@ -57,13 +60,15 @@ namespace WebHome
             {
                 config.Filters.Add(new SampleResultFilter());
                 config.Filters.Add(new ExceptionFilter());
+                config.Filters.Add(new ModelStateFilter());
             }).ConfigureApiBehaviorOptions(options =>
             {
                 options.SuppressMapClientErrors = true;
                 options.SuppressModelStateInvalidFilter = true;
             })
             .AddRazorRuntimeCompilation();
-                
+
+            services.AddFluentValidation(validation => validation.RegisterValidatorsFromAssemblyContaining<Startup>());
             //services.AddDbContext<BFDataContext>(options =>
             //    {
             //        options
@@ -100,9 +105,8 @@ namespace WebHome
             services.AddScoped<EmailFactory>();
             services.AddScoped<EmailBody>();
             services.AddScoped<ContractServices>();
-            //services.AddSingleton<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
-            //services.AddSingleton<GenericManager<DCDataContext>>();
-            //services.AddScoped<ContractRepository>();
+
+           
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
