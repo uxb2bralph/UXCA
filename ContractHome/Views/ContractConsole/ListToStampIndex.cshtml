@@ -25,7 +25,7 @@
 @{
   await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgent.cshtml");
   await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
-  <script src="https://www.itxst.com/package/vue/vue.min.js"></script>
+  // vue draggable 套件
   <script src="https://www.itxst.com/package/sortable/Sortable.min.js"></script>
   <script src="https://www.itxst.com/package/vuedraggable/vuedraggable.umd.min.js"></script>
   <script src="~/js/api.js"></script>
@@ -527,7 +527,7 @@
                           </div>
                         </template>
                       </draggable>
-                      <!--<per>{{selectedContractor}}</per>-->
+                      <pre>{{selectedContractor}}</pre>
                     </div>
                   </div>
                   <!--
@@ -833,7 +833,7 @@
   var app = new Vue({
     el: '#listToStamp',
     components: {
-      vuedraggable: window.vuedraggable, //当前页面注册组件
+      vuedraggable: window.vuedraggable,
     },
     data() {
       return {
@@ -900,7 +900,6 @@
         alertActived: false,
         selectedContractor: [
           {
-            id: '0',
             text: null,
             isDuplicate: false
           }
@@ -970,6 +969,9 @@
                 if (data.result) {
                   self.formData.KeyID = data.message;
                 }
+                console.log('self.formData', self.formData)
+                // 可簽署對象查詢
+                self.getAvailableSignatories();
               }
             });
             this.on("addedfile", function (file) {
@@ -1075,6 +1077,27 @@
       },
       initContract() {
         this.formData = JSON.parse(JSON.stringify(this.initialFormData));
+      },
+
+      // 可簽署對象查詢
+      getAvailableSignatories() {
+        const { KeyID } = this.formData;
+        const payload = { ContractID: KeyID };
+        console.log({ KeyID });
+        const self = this;
+        postData('@(Url.Action("AvailableSignatories", "ContractConsole"))', payload)
+          .then((data) => {
+            console.log({ data })
+            //this.changeStatus = data.result;
+            //if ($.isPlainObject(data) && data.result) {
+            //  // 成功
+            //} else {
+            //  // 失敗            
+            //  this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;
+            //  $("#infoModal").modal("show");
+            //}
+
+          })
       },
 
       // 查詢文件列表
@@ -1366,7 +1389,6 @@
       // 新增簽署單位資料
       addContractor() {
         this.selectedContractor.push({
-          //id: '0',
           text: null,
           isDuplicate: false
         });
