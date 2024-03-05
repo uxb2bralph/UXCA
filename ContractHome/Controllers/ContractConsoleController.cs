@@ -1566,25 +1566,25 @@ namespace ContractHome.Controllers
         {
             var profile = await HttpContext.GetUserAsync();
             #region add for postman test
-            if (profile == null && req.EncUID!=null)
+            if (profile == null && req.EncUID != null)
             {
                 profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
             }
             #endregion
-            if (profile == null || profile.OrganizationUser == null)
+            if (profile == null)
             {
                 return Json(new BaseResponse(true, "請重新登入"));
             }
 
             _contractServices.SetModels(models);
             Contract contract = _contractServices.GetContractByID(contractID: req.ContractID.DecryptKeyValue());
-            if (contract == null || contract.CompanyID != profile.OrganizationUser.CompanyID)
+            if (contract == null)
             {
                 return Json(new BaseResponse(true, "無此權限"));
             }
 
-            IEnumerable<Organization> signatories
-                = _contractServices.GetAvailableSignatories(profile.OrganizationUser.CompanyID);
+            IEnumerable <Organization> signatories
+                = _contractServices.GetAvailableSignatories(contract.CompanyID);
 
             baseResponse.Data = signatories.Select(x =>
                 new
