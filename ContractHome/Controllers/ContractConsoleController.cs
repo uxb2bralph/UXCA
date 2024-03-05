@@ -1566,7 +1566,7 @@ namespace ContractHome.Controllers
         {
             var profile = await HttpContext.GetUserAsync();
             #region add for postman test
-            if (profile == null && req.EncUID.Length > 0)
+            if (profile == null && req.EncUID!=null)
             {
                 profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
             }
