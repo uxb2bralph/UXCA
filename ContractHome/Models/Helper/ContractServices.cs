@@ -15,6 +15,8 @@ using MimeKit.Text;
 using Microsoft.EntityFrameworkCore;
 using static ContractHome.Models.Dto.PostFieldSettingRequest;
 using Grpc.Core.Logging;
+using static ContractHome.Helper.JwtTokenGenerator;
+using System.Diagnostics;
 
 namespace ContractHome.Models.Helper
 {
@@ -24,6 +26,7 @@ namespace ContractHome.Models.Helper
         //protected internal Contract? _contract;
         private readonly EmailFactory _emailFactory;
         private readonly EmailBody _emailBody;
+        
         public ContractServices(EmailBody emailBody,
             EmailFactory emailFactory) 
         {
@@ -337,13 +340,14 @@ namespace ContractHome.Models.Helper
 
         //}
 
-        public IEnumerable<UserProfile>? GetNotifyEmailListAsync(Contract contract)
+        public IEnumerable<UserProfile>? GetNotifyUsersAsync(Contract contract)
         {
             EmailBody.EmailTemplate template = EmailBody.EmailTemplate.NotifySeal;
 
             if ((contract.CDS_Document.CurrentStep.Equals((int)CDS_Document.StepEnum.Establish)||
                 (contract.CDS_Document.CurrentStep.Equals((int)CDS_Document.StepEnum.DigitalSigning))))
             {
+                //wait to do...新增簽署人時新增簽署順序,並記錄在ContractSignatureRequest
                 var ttt = contract.ContractSignatureRequest
                     .Where(x=>x.StampDate==null);
                 var aaa = ttt.Where(x => x.CompanyID != contract.CompanyID).FirstOrDefault();
@@ -375,16 +379,24 @@ namespace ContractHome.Models.Helper
         public async IAsyncEnumerable<MailData> GetNotifyEmailBodyAsync(
             Contract contract,
             IEnumerable<UserProfile> userProfiles,
-            EmailBody.EmailTemplate emailTemplate)
+            EmailBody.EmailTemplate emailTemplate,
+            string defaultUri)
         {
             var initiatorOrg = GetOrganization(contract);
-            //var signatories = contract.ContractingParty;
-            //var contractorUsers = signatories.SelectMany(x => x.GetUsers(_models));
 
             if (initiatorOrg != null)
             {
                 foreach (var user in userProfiles)
                 {
+
+                    JwtPayload jwtPayload = JwtTokenGenerator.GetJwtPayload(
+                        uid: user.UID.ToString(),
+                        email: user.EMail,
+                        contractId: contract.ContractID.ToString(),
+                        4320);
+                    var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayload);
+                    var clickLink = $"{defaultUri}/Account/SignatureTrust?token={jwtToken}";
+
                     var emailBody =
                         new EmailBodyBuilder(_emailBody)
                         .SetTemplateItem(emailTemplate)
@@ -393,6 +405,7 @@ namespace ContractHome.Models.Helper
                         .SetUserName(initiatorOrg.CompanyName)
                         .SetRecipientUserName(user.UserName)
                         .SetRecipientUserEmail(user.EMail)
+                        .SetContractLink(clickLink)
                         .Build();
 
                     yield return _emailFactory.GetEmailToCustomer(

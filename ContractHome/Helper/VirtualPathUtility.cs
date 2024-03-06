@@ -11,6 +11,13 @@ namespace ContractHome.Helper
         {
             return path.Replace("~", Properties.Settings.Default.ApplicationPath);
         }
+
+        public static string DefaultWebUri(this HttpContext httpContext)
+        {      
+            return string.Concat(httpContext.Request.Scheme, "://",
+                              httpContext.Request.Host.ToUriComponent(),
+                              httpContext.Request.PathBase.ToUriComponent()); 
+        }
     }
 
     

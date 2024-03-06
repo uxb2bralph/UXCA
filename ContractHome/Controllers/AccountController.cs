@@ -351,24 +351,14 @@ namespace ContractHome.Controllers
       }
 
 
-      DateTimeOffset now = DateTime.Now;
-      JwtPayload payload = new JwtPayload()
-      {
-        id = userProfile.UID.ToString(),
-        email = email,
-        iat = now.Ticks,
-        exp = now.AddMinutes(tokenTTLMins).Ticks
-      };
+            JwtPayload jwtPayload = JwtTokenGenerator.GetJwtPayload(
+                uid: userProfile.UID.ToString(),
+                email: email,
+                string.Empty);
+            var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayload);
+            var clickLink = $"{HttpContext.DefaultWebUri()}/Account/PasswordResetView?token={jwtToken}";
 
-      var jwtToken = JwtTokenGenerator.GenerateJwtToken(payload, JwtTokenGenerator.secretKey);
-
-      var request = HttpContext.Request;
-      var uri = string.Concat(request.Scheme, "://",
-                              request.Host.ToUriComponent(),
-                              request.PathBase.ToUriComponent());
-      var clickLink = $"{uri}/Account/PasswordResetView?token={jwtToken}";
-
-      var emailTemp = EmailBody.EmailTemplate.WelcomeUser;
+            var emailTemp = EmailBody.EmailTemplate.WelcomeUser;
       if (viewModel.Item.Equals("forgetPassword")) { emailTemp = EmailBody.EmailTemplate.ApplyPassword; }
 
       var emailBody =
@@ -400,6 +390,28 @@ namespace ContractHome.Controllers
       };
       _memCache.Set(cacheItem, cacheValue, cacheExpiryOptions);
     }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<IActionResult> SignatureTrust(string token)
+        {
+            (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile)
+                    = TokenValidate(token);
+            if (resp.HasError)
+            {
+                return View(resp);
+            }
+            //wait to do:Trust進來可能沒有正常user權限,
+            //但因為controller都有用var profile = await HttpContext.GetUserAsync();, 暫時先用
+            HttpContext.SignOnAsync(userProfile);
+
+            return RedirectToAction("AffixPdfSealForTrust", "ContractConsole"
+                , new
+                {
+                    KeyID = Int32.Parse(jwtTokenObj.payloadObj.contractId).EncryptKey(),
+                    UID = jwtTokenObj.payloadObj.id
+                });
+        }
 
     }
 

@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using ContractHome.Models.DataEntity;
+using DocumentFormat.OpenXml.Spreadsheet;
+using Newtonsoft.Json;
+using System.Data.Linq.SqlClient;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -6,7 +9,8 @@ namespace ContractHome.Helper
 {
     public class JwtTokenGenerator
     {
-        internal static string secretKey = "XulpspCzuyL1fmCWxfw9g2o8qyMKHAUl";
+        internal readonly static string secretKey = "XulpspCzuyL1fmCWxfw9g2o8qyMKHAUl";
+        internal readonly static int tokenTTLMins = 10;
         public class JwtToken
         {
             public JwtHeader headerObj { get; set; }
@@ -29,6 +33,7 @@ namespace ContractHome.Helper
             public long iat { get; set; }
             public string id { get; set; }
             public string email { get; set; }
+            public string contractId { get; set; }
         }
 
         public static string GetTicket(string data, string key)
@@ -52,7 +57,7 @@ namespace ContractHome.Helper
             }
         }
 
-        public static string GenerateJwtToken(object payload, string secretKey)
+        public static string GenerateJwtToken(object payload)
         {
             var header = new { alg = "HS256", typ = "JWT" };
             var encodedHeader = Base64UrlEncode(Encoding.UTF8.GetBytes(Newtonsoft.Json.JsonConvert.SerializeObject(header)));
@@ -83,6 +88,19 @@ namespace ContractHome.Helper
             var base64 = Convert.ToBase64String(input);
             var base64Url = base64.Replace("+", "-").Replace("/", "_").TrimEnd('=');
             return base64Url;
+        }
+
+        public static JwtPayload GetJwtPayload(string uid, string email, string contractId, int tokenTTLMins=10)
+        {
+            DateTimeOffset now = DateTime.Now;
+            return new JwtPayload()
+            {
+                id = uid,
+                email = email,
+                contractId = contractId,
+                iat = now.Ticks,
+                exp = now.AddMinutes(tokenTTLMins).Ticks
+            };
         }
 
     }
