@@ -27,6 +27,9 @@ using DocumentFormat.OpenXml.InkML;
 using ContractHome.Helper.Security.MembershipManagement;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
+using ContractHome.Models.Dto;
+using ContractHome.Helper.DataQuery;
+using Org.BouncyCastle.Ocsp;
 
 namespace ContractHome.Controllers
 {
@@ -623,6 +626,28 @@ namespace ContractHome.Controllers
 
     }
 
+        [UserAuthorize]
+        [HttpGet]
+        [AutoValidateAntiforgeryToken]
+        public async Task<ActionResult> GetUserAsync()
+        {
+            var profile = (await HttpContext.GetUserAsync()).LoadInstance(models);
+            if (profile == null)
+            {
+                return Json(new BaseResponse(true, "驗證失敗"));
+            }
+            ClientUserInfo userResponse = new()
+            {
+                CompanyName = profile.OrganizationUser.Organization.CompanyName,
+                IsMemberAdmin = profile.IsMemberAdmin(),
+                IsSysAdmin = profile.IsSysAdmin(),
+                PID = profile.PID
+            };
 
-  }
+            return Json(new BaseResponse() { Data= userResponse });
+
+        }
+
+
+    }
 }
