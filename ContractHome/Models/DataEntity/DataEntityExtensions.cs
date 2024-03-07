@@ -112,15 +112,26 @@ namespace ContractHome.Models.DataEntity
 
         public static readonly String[] StepNaming =
             {
-                "合約文件上傳",
-                "已退回",
+                "開始",
+                "設定",
+                "建立",
+                "",
+                "欄位設定",
+                "",
                 "用印中",
                 "用印完成",
+                "",
+                "",
                 "簽章中",
                 "簽章完成",
+                "",
+                "",
+                "",
+                "",
                 "瀏覽",
                 "已終止",
-                "合約完成"
+                "完成",
+                "撤銷"
             };
 
         public static StepEnum[] PendingState =
