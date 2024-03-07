@@ -936,23 +936,26 @@ a {
   border-radius: 50%;
   color: #FFFFFF;
 }
+.signator--colorDefault {
+  background-color: #b5b5b5;
+}
 .signator--color0 {
   background-color: #4e90f1;
 }
 .signator--color1 {
-  background-color: #f09b3a;
+  background-color: #f9a657;
 }
 .signator--color2 {
   background-color: #35b451;
 }
 .signator--color3 {
-  background-color: #e653fa;
+  background-color: #fa73e7;
 }
 .signator--color4 {
-  background-color: #674ef1;
+  background-color: #a696ff;
 }
 .signator--color5 {
-  background-color: #cc7d59;
+  background-color: #df9b7d;
 }
 .signator__mover {
   cursor: move;

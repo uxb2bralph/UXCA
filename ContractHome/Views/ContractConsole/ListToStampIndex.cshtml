@@ -26,8 +26,9 @@
   await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgent.cshtml");
   await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
   // vue draggable 套件
-  <script src="https://www.itxst.com/package/sortable/Sortable.min.js"></script>
-  <script src="https://www.itxst.com/package/vuedraggable/vuedraggable.umd.min.js"></script>
+  <script src="~/js/sortable/Sortable.min.js"></script>
+  <script src="~/js/vuedraggable/vuedraggable.umd.min.js"></script>
+  <script src="~/js/moment.min.js"></script>
   <script src="~/js/api.js"></script>
 }
 <div id="listToStamp" class="listToStamp__wrapper">
@@ -407,7 +408,7 @@
     <!-- 新增 Project Dialog -->
     <div class="modal fade" id="addProjectModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
       aria-labelledby="addNewModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title fw-bolder" id="staticBackdropLabel">準備文件</h5>
@@ -417,31 +418,50 @@
             <div class="container">
               <form novalidate>
                 <div class="row g-3">
-                  <div class="col-md-12">
-                    <label for="Title" class="form-label fw-bolder text-primary">專案名稱</label>
-                    <input v-model="formData.Title" type="text" class="form-control" :class="{'is-invalid': !isTitle}"
-                      id="Title" v-on:keyup="checkTitle(formData.Title)">
+                  <div class="col-12">
+                    <label for="Title" class="form-label fw-bolder text-primary mb-0">專案名稱</label>
+                    <br>
+                    <span class="fs-12 text-black-50">檔名：{{ configFormData.FileTitle }} ( {{ (configFormData.Size / 1024000).toFixed(2) }} M )</span>
+                    <input v-model="configFormData.Title" type="text" class="form-control" :class="{'is-invalid': !isTitle}"
+                      id="Title" v-on:keyup="checkTitle(configFormData.Title)">
                     <div class="invalid-feedback text-end">
                       請輸入專案名稱
                     </div>
                   </div>
-                  <div class="col-md-6">
+                  <div class="col-12">
                     <label for="ContractNo" class="form-label fw-bolder text-primary">專案編號</label>
-                    <input v-model="formData.ContractNo" type="text" class=" form-control"
+                    <input v-model="configFormData.ContractNo" type="text" class=" form-control"
                       :class="{'is-invalid': !isContractNo}" id="ContractNo"
-                      v-on:keyup="checkContractNo(formData.ContractNo)">
+                      v-on:keyup="checkContractNo(configFormData.ContractNo)">
                     <div class="invalid-feedback text-end">
                       請輸入專案編號
                     </div>
                   </div>
-                  <div class="col-md-6">
-                    <label for="ContractNo" class="form-label fw-bolder text-primary">檔案名稱</label>
-                    <div class="py-0">
-                      <span class="pe-3 fs-13">{{ formData.FileTitle }}</span>
-                      <span class="text-muted fs-13">( {{ (formData.Size / 1024000).toFixed(2) }} M )</span>
-                    </div>
+                  <div class="col-12">
+                    <label for="Title" class="form-label fw-bolder text-primary mb-0">設置簽署期限</label>
                   </div>
-                  <div class="dropdown-divider mt-3"></div>
+                  <div class="col-md-4 mt-0 d-flex align-items-center">
+                    <input v-model="selectDeadline" type="radio" class="form-check-input mt-0 me-2" id="sevenDay" name="deadline" :value="7" />
+                    <label class="form-check-label fw-bolder" for="sevenDay">
+                      7 天後
+                    </label>
+                  </div>
+                  <div class="col-md-4 mt-0 d-flex align-items-center">
+                    <input v-model="selectDeadline" type="radio" class="form-check-input mt-0 me-2" id="sevenDay" name="deadline" :value="14" />
+                    <label class="form-check-label fw-bolder" for="sevenDay">
+                      14 天後
+                    </label>
+                  </div>                  
+                  <div class="col-md-4 mt-0 d-flex align-items-center">
+                    <input v-model="selectDeadline" type="radio" class="form-check-input mt-0 me-2" id="selfSetting" name="deadline" :value="0" />
+                    <label class="form-check-label fw-bolder" for="selfSetting">
+                      <input v-model="deadlineString" type="text" class="form-control" :class="{' disabled': selectDeadline !== 2}" name="selfSetting" id="selfSetting" placeholder="YYYY/MM/DD" v-on:keyup="checkDeadlineString($event)" />
+                      <div class="invalid-feedback text-end">
+                        {{ '請確認日期格式是否正確' }}
+                      </div>
+                    </label>
+                  </div>
+                  <div class="dropdown-divider mt-4"></div>
                   <div class="col-md-6 mt-2 pt-2">
                     <label for="ContractNo" class="form-label fw-bolder text-primary mb-0">管理簽署人</label>
                   </div>
@@ -474,7 +494,7 @@
                         </div>
                       </div>
                       <!-- 尚未開放功能
-                      <div class="col-md-12 mt-0">
+                      <div v-if="selectedContractor.length > 1" class="col-md-12 mt-0">
                         <input v-model="isDraggable" type="checkbox" class="form-check-input me-1" id="isDraggable"
                           name="isDraggable" :true-value="true" :false-value="false" />
                         <label class="form-check-label fw-bolder" for="isDraggable">
@@ -482,57 +502,61 @@
                         </label>
                       </div>
                       -->
-                      <draggable v-model="selectedContractor" chosen-class="chosen" force-fallback="true"
-                        group="company" animation="300" :disabled="!isDraggable" v-on:start="onStart" v-on:end="onEnd"
-                        handle=".signator__mover">
-                        <template v-for="(item, index) in selectedContractor">
-                          <div class="my-0 col-md-12 input__height">
-                            <div :key="index" :id="`company_${index}`" class="input-group w-100">
-                              <span class="input-group-text">
-                                <span class="fs-12 signator" :class="`signator--color${index}`">
-                                  <span v-if="isDraggable">{{ index + 1 }}</span>
+                      <div class="alert alert-warning" role="alert">
+                        <draggable v-model="selectedContractor" chosen-class="chosen" force-fallback="true"
+                          group="company" animation="300" :disabled="!isDraggable" v-on:start="onStart" v-on:end="onEnd"
+                          handle=".signator__mover">
+                          <template v-for="(item, index) in selectedContractor">
+                            <div class="my-0 col-md-12">
+                              <span class="fs-12 text-muted opacity-75">{{ index === 0 ? '起約人' : '簽約人' }}</span>
+                              <div :key="index" :id="`company_${index}`" class="input-group w-100 bg-white">
+                                <span class="input-group-text">
+                                  <span class="fs-12 signator" :class="signatorColor(index)">
+                                    <span v-if="index !== 0 && isDraggable">{{ index }}</span>
+                                  </span>
                                 </span>
-                              </span>
-                              <span class="tooltip__wrapper">
-                                <button type="button" class="btn btn-outline-secondary opacity-75 rounded-0"
-                                  v-on:click="deleteContractor(item, index)">
-                                  <i class="fas fa-trash-alt"></i>
+                                <span class="tooltip__wrapper bg-white">
+                                  <button type="button" class="btn btn-outline-danger opacity-75 rounded-0"
+                                    v-on:click="deleteContractor(item, index)">
+                                    <i class="fas fa-trash-alt"></i>
+                                  </button>
+                                  <div class="tooltip__text">刪除</div>
+                                </span>
+                                <button
+                                  class="btn btn-outline-secondary d-flex align-items-center justify-content-between opacity-75 dropdown-toggle flex-fill"
+                                  data-bs-toggle="dropdown" aria-expanded="false">
+                                  {{ item.text || '請選擇簽署人' }}
                                 </button>
-                                <div class="tooltip__text">刪除</div>
-                              </span>
-                              <button
-                                class="btn btn-outline-secondary d-flex align-items-center justify-content-between opacity-75 dropdown-toggle flex-fill"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                                {{ item.text || '請選擇簽署方公司名稱' }}
-                              </button>
-                              <ul class="dropdown-menu">
-                                <li class="px-2 pb-2">
-                                  <input v-model="inputSearchCompany" type="text" class="form-control" placeholder=""
-                                    aria-label="Companyname" aria-describedby="basic-addon1"
-                                    v-on:keyup="searchCompany($event.target.value)">
-                                </li>
-                                <li v-for="(item, idx) in contractorList" :key="idx">
-                                  <a class="dropdown-item" v-on:click="selectCompany(index, item)">{{ item.text }}</a>
-                                </li>
-                              </ul>
-                              <span v-if="isDraggable" class="input-group-text signator__mover">
-                                <span class="fs-14 text-muted opacity-75">
-                                  <i class="fas fa-grip-lines-vertical"></i>
+                                <ul class="dropdown-menu">
+                                  <li class="px-2 pb-2">
+                                    <input v-model="inputSearchCompany" type="text" class="form-control" placeholder=""
+                                      aria-label="Companyname" aria-describedby="basic-addon1"
+                                      v-on:keyup="searchCompany($event.target.value)">
+                                  </li>
+                                  <li v-for="(item, idx) in contractorList" :key="idx">
+                                    <a class="dropdown-item" v-on:click="selectCompany(index, item)">{{ item.text }}</a>
+                                  </li>
+                                </ul>
+                                <span v-if="index !== 0 && isDraggable" class="input-group-text signator__mover">
+                                  <span class="fs-14 text-muted opacity-75">
+                                    <i class="fas fa-grip-lines-vertical"></i>
+                                  </span>
                                 </span>
-                              </span>
+                              </div>
+                              <div class="invalid-feedback text-end">
+                                {{ item.isDuplicate ? '簽署人重複，請檢查' : '請選擇簽署人' }}
+                              </div>
+                              <div v-if="index === 0 && selectedContractor.length > 1" class="dropdown-divider mt-4"></div>
                             </div>
-                            <div class="invalid-feedback text-end">
-                              {{ item.isDuplicate ? '簽署方公司名稱重複，請檢查' : '請選擇簽署方公司名稱' }}
-                            </div>
-                          </div>
-                        </template>
-                      </draggable>
-                      <pre>{{selectedContractor}}</pre>
+                          </template>
+                        </draggable>
+                      </div>
+                      <!--<pre>{{selectedContractor}}</pre>-->
                     </div>
                   </div>
                   <!--
                   <div class="col-md-12 mt-0">
-                    <input v-model="formData.IsJointContracting" type="checkbox" class="form-check-input me-1"
+                    <input v-model="configFormData.IsJointContracting" type="checkbox" class="form-check-input me-1"
                       id="isInitiatorStamp" name="IgnoreSeal" />
                     <label class="form-check-label fw-bolder" for="isInitiatorStamp">
                       多人簽署同一份文件
@@ -799,12 +823,6 @@
   </div>
 </div>
 <script>
-  @{
-    // 取得人員資料
-    var userOrgItems = models.GetTable<OrganizationUser>().Where(u => u.UID == profile.UID);
-  }
-  // 簽署人資料清單
-  const contractorAllList = @Html.Raw(models.GetTable<Organization>().Where(o => userOrgItems.Any(u => u.CompanyID == o.CompanyBelongTo)).Select(u => new { id = u.CompanyID.EncryptKey(), companyName = u.CompanyName, receiptNo = u.ReceiptNo }).ToArray().JsonStringify());
   /**
     * 文件列表
     * @@param {string} uuid 
@@ -829,7 +847,7 @@
         8: Committed - 文件完成
     */
   // 註冊元件
-  Vue.component('vuedraggable', window.vuedraggable)
+  Vue.component('vuedraggable', window.vuedraggable);
   var app = new Vue({
     el: '#listToStamp',
     components: {
@@ -845,13 +863,23 @@
         * @@param {array} Signatories 簽署人
         */
         initialFormData: {
-          ContractID: null,
+          //ContractID: null,
           ContractNo: null,
           Title: null,
-          Signatories: []
+          Signatories: [],
+          deadline: null
           //IsJointContracting: true, //是否多人簽屬同一份文件
         },
-        formData: {},
+        selectedContractor: [
+          {
+            text: null,
+            isDuplicate: false
+          }
+        ],
+        inputSearchCompany: '',
+        selectDeadline: 7,
+        deadlineString: null,
+        configFormData: {},
         /** 分頁 options
         * totalRecordCount: 總筆數
         * pageSize: 每頁筆數
@@ -898,14 +926,7 @@
         searchStatus: 3,
         isLayoutCard: false,
         alertActived: false,
-        selectedContractor: [
-          {
-            text: null,
-            isDuplicate: false
-          }
-        ],
-        contractorAllList,
-        inputSearchCompany: '',
+        contractorAllList: [],
         contractorList: [],
         drag: false,
         isDraggable: false
@@ -917,6 +938,14 @@
         const totalCount = Number.parseInt(this.totalRecordCount, 10);
         const pageSize = Number.parseInt(this.pageSize, 10);
         return Math.ceil(totalCount / pageSize);
+      },
+    },
+    watch: {
+      selectDeadline: {
+        handler: function(newValue) {
+          this.initialFormData.deadline = newValue === 0 ? this.deadlineString : this.getSevenDate(newValue);
+        },
+        immediate: true,
       }
     },
     mounted() {
@@ -926,10 +955,7 @@
           $("#welcomModal").modal('show');
           localStorage.setItem("isContractTour", true);
         }, 100);
-      }
-
-      // 取得合併資料後的簽署人清單
-      this.getContractorList();
+      };
 
       // 初始化新增文件表單
       this.initContract();
@@ -964,12 +990,12 @@
             var myDropzone = this;
             this.on("success", function (file, data) {
               // 文件上傳成功後的處理
-              delete self.formData.KeyID;
+              delete self.configFormData.KeyID;
               if ($.isPlainObject(data)) {
                 if (data.result) {
-                  self.formData.KeyID = data.message;
+                  self.configFormData.KeyID = data.message;
                 }
-                console.log('self.formData', self.formData)
+                //console.log('self.configFormData', self.configFormData)
                 // 可簽署對象查詢
                 self.getAvailableSignatories();
               }
@@ -989,8 +1015,8 @@
 
                 const projectName = file.name.split('.');
                 self.isUpload = false;
-                self.formData = {
-                  ...self.formData,
+                self.configFormData = {
+                  ...self.configFormData,
                   Size: file.size,
                   Type: file.type,
                   FileTitle: file.name,
@@ -1005,8 +1031,8 @@
                   */
                 const projectName = file.name.split('.');
                 self.isUpload = false;
-                self.formData = {
-                  ...self.formData,
+                self.configFormData = {
+                  ...self.configFormData,
                   Size: file.size,
                   Type: file.type,
                   FileTitle: file.name,
@@ -1076,36 +1102,36 @@
         tourguide.start();
       },
       initContract() {
-        this.formData = JSON.parse(JSON.stringify(this.initialFormData));
+        this.configFormData = JSON.parse(JSON.stringify(this.initialFormData));
       },
 
       // 可簽署對象查詢
       getAvailableSignatories() {
-        const { KeyID } = this.formData;
+        const { KeyID } = this.configFormData;
         const payload = { ContractID: KeyID };
-        console.log({ KeyID });
-        const self = this;
         postData('@(Url.Action("AvailableSignatories", "ContractConsole"))', payload)
-          .then((data) => {
-            console.log({ data })
-            //this.changeStatus = data.result;
-            //if ($.isPlainObject(data) && data.result) {
-            //  // 成功
-            //} else {
-            //  // 失敗            
-            //  this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;
-            //  $("#infoModal").modal("show");
-            //}
+          .then((res) => {
+            const { data, hasError, message } = res;
+            console.log({ data, hasError, message })
 
+            if (!hasError) {
+              // 成功
+              console.log('hasError',hasError)
+              this.contractorAllList = data.map(item => {
+                item.text = `${item.companyName} (${item.receiptNo})`;
+                item.value = item.id;
+                return item;
+              });
+              // 取得轉換後的簽署人清單
+              this.contractorList = this.contractorAllList;
+            } else {
+              // 失敗
+              console.log('error')
+              this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${message.replace(/、/g, '<br>')} </div>`;
+              $("#infoModal").modal("show");
+            }
           })
       },
-
-      // 查詢文件列表
-      //inquireData() {
-      //  // 執行查詢文件列表
-      //  this.page = 1;
-      //  this.fetchAPI({ ContractQueryStep: 0 });
-      //},
 
       // 查詢-文件列表
       queryHandler(value) {
@@ -1116,7 +1142,6 @@
       },
 
       fetchAPI() {
-        // console.log(this.searchStatus)
         // 執行查詢文件列表
         const viewModel = {
           ContractQueryStep: this.searchStatus,
@@ -1132,7 +1157,6 @@
           url: '@(Url.Action("VueListToStamp", "ContractConsole"))',
           data: JSON.stringify(viewModel),
           type: "POST",
-          //dataType: "json",
           contentType: "application/json;charset=utf-8",
           success: function (data) {
             hideLoading();
@@ -1192,33 +1216,50 @@
         this.isContractNo = contractNo && contractNo.length > 0;
       },
 
-      // 儲存文件編號
+      // 
+      checkSignatories(selectedContractor) {
+        const isEmpty = selectedContractor.map(item => item.text).some(item => !item);
+        if (isEmpty) {
+          this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> 管理簽署人填寫不完全<br>請確認！ </div>`;
+          $("#infoModal").modal("show");
+        }
+        return isEmpty;
+      },
+
+      // 儲存文件設定
       saveContractNo() {
         // 檢核欄位
-        this.checkTitle(this.formData.Title);
-        this.checkContractNo(this.formData.ContractNo);
-        if (!this.formData.Title) return;
-        if (!this.formData.ContractNo) return;
-
-        const { ContractNo, KeyID, Title, IsJointContracting } = this.formData;
-        const payload = { ContractNo, KeyID, Title, IsJointContracting };
+        this.checkTitle(this.configFormData.Title);
+        this.checkContractNo(this.configFormData.ContractNo);
+        if (!this.configFormData.Title) return;
+        if (!this.configFormData.ContractNo) return;
+        if(this.checkSignatories(this.selectedContractor)) return;
+        const { ContractNo, KeyID, Title, deadline } = this.configFormData;
+        const ContractID = KeyID;
+        const Signatories = this.selectedContractor.map(item => item.id);
+        const payload = { ContractNo, ContractID, Title, Signatories, deadline };
         const self = this;
 
-        showLoading();
-        postData('@(Url.Action("VueApplyContract", "ContractConsole"))', payload)
-          .then((data) => {
-            this.changeStatus = data.result;
-            if ($.isPlainObject(data) && data.result) {
-              // 成功
-              hideLoading();
-              $('#addProjectModal').modal('hide');
-              affixPdfSeal(payload.KeyID);
-            } else {
-              // 失敗            
-              this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;
-              $("#infoModal").modal("show");
-            }
+        console.log({payload})
 
+        showLoading();
+        postData('@(Url.Action("Config", "ContractConsole"))', payload)
+          .then((res) => {
+            console.log({res})
+            const { hasError, data, message } = res;
+            if (!hasError) {
+              // 成功
+              $('#addProjectModal').modal('hide');
+            } else {
+              // 失敗
+              const { ContractID, Signatories } = message;
+              const contractIDString = ContractID ? ContractID.join(', ') : '資料有誤';
+              const signatoriesString = Signatories ? Signatories[0].join(', ') : '資料有誤';
+              this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${contractIDString} <br> ${signatoriesString} </div>`;
+              $("#infoModal").modal("show");
+              
+            }
+            hideLoading();
           })
       },
 
@@ -1382,16 +1423,19 @@
       // 初始化簽約方名單
       initContractor() {
         this.inputSearchCompany = '';
-        //this.contractorList = [...this.contractorAllList];
-        //this.getContractorList();
       },
 
       // 新增簽署單位資料
       addContractor() {
-        this.selectedContractor.push({
-          text: null,
-          isDuplicate: false
-        });
+        if (this.selectedContractor.length < 6) {
+          this.selectedContractor.push({
+            text: null,
+            isDuplicate: false
+          });
+        } else {
+          this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> 簽署人數設定已達上限！ </div>`;
+          $("#infoModal").modal("show");
+        }
       },
 
       // 選擇簽約方
@@ -1427,7 +1471,6 @@
 
       // Filter 簽約方資料
       searchCompany(string) {
-        //console.log({ string })
         this.contractorList = this.contractorAllList.filter(item => item.text.includes(string));
       },
 
@@ -1446,25 +1489,70 @@
         this.contractorMag = null;
       },
 
-      // 取得合併資料後的簽署人清單
-      getContractorList() {
-        this.contractorList = this.contractorAllList.map(item => {
-          item.text = `${item.companyName} (${item.receiptNo})`;
-          return item;
-        });
-      },
-
       // 格式化字串
       formatText(string) {
         const stringLength = string && string.length;
         return stringLength > 15 ? `${string.substring(0, 17)}...` : string;
       },
 
+      // vuedraggable 拖曳排序
       onStart() {
         this.drag = true;
       },
       onEnd() {
         this.drag = false;
+      },
+
+      // 取得簽署人顏色設定
+      signatorColor(idx) {
+        if(idx < 6) {
+          return `signator--color${idx}`;
+        } else {
+          return 'signator--colorDefault';
+        }
+      },
+
+      // 取得7天後的日期
+      getSevenDate(day) {
+        // 計算到期日
+        const currentDate = moment();
+        const newDate = currentDate.add(day, 'days');
+        return newDate.format('YYYY/MM/DD');
+      },
+
+      // 檢核日期欄位
+      checkDeadlineString(event) {
+        console.log({event})
+        const currentItem = event.target;
+        if (this.selectDeadline === 2) {
+          let isDate = false;
+          // 使用正則表達式檢查日期格式
+          const datePattern = /^\d{4}\/\d{2}\/\d{2}$/;
+
+          // 分割日期字串，並檢查年、月、日的有效範圍
+          const [year, month, day] = this.deadlineString.split('/');
+          const numericYear = parseInt(year, 10);
+          const numericMonth = parseInt(month, 10);
+          const numericDay = parseInt(day, 10);
+          
+          if (!datePattern.test(this.deadlineString)) {
+            isDate = false;            
+          } else if (numericYear < 1000 || numericYear > 9999) {
+            isDate = false; // 年份不在有效範圍內
+          } else if (numericMonth < 1 || numericMonth > 12) {
+            isDate = false; // 月份不在有效範圍內
+          } else if (numericDay < 1 || numericDay > 31) {
+            isDate = false; // 日期不在有效範圍內
+          } else {
+            isDate = true;
+          }
+
+          if (!isDate) {
+            currentItem.classList.add('is-invalid');
+          } else {
+            currentItem.classList.remove('is-invalid');
+          }
+        } 
       }
     }
   });

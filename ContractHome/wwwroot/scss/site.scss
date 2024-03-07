@@ -1134,23 +1134,26 @@ a {
   width: 20px;
   border-radius: 50%;
   color: #FFFFFF;
+  &--colorDefault {
+    background-color: #b5b5b5;
+  }
   &--color0 {
     background-color: #4e90f1;
   }
   &--color1 {
-    background-color: #f09b3a;
+    background-color: #f9a657;
   }
   &--color2 {
     background-color: #35b451;
   }
   &--color3 {
-    background-color: #e653fa;
+    background-color: #fa73e7;
   }
   &--color4 {
-    background-color: #674ef1;
+    background-color: #a696ff;
   }
   &--color5 {
-    background-color: #cc7d59;
+    background-color: #df9b7d;
   }
   &__mover {
     cursor: move;
