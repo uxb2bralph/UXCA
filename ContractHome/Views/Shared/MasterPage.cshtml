@@ -79,8 +79,8 @@
   /** 設定不顯示 MainNavBar 的頁面*/
   const pathName = location.pathname;
   // 登入首頁
-  const isHomePage = pathName === '/' || pathName === '/Home';
-  const isForgetPassWord = pathName === '/Account/ForgetPassword';
+  const isHomePage = pathName === '/' || pathName === '/Home' || pathName === '/ContractHome' || pathName === '/ContractHome/Home';
+  const isForgetPassWord = pathName === '/Account/ForgetPassword' || pathName === '/ContractHome/Account/ForgetPassword';
   const mainNavBar = document.querySelector('#mainNavBar');
   if (mainNavBar) {
     mainNavBar.style.display = isHomePage || isForgetPassWord ? 'none' : null;

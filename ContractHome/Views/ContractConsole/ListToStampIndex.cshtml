@@ -421,9 +421,10 @@
                   <div class="col-12">
                     <label for="Title" class="form-label fw-bolder text-primary mb-0">專案名稱</label>
                     <br>
-                    <span class="fs-12 text-black-50">檔名：{{ configFormData.FileTitle }} ( {{ (configFormData.Size / 1024000).toFixed(2) }} M )</span>
-                    <input v-model="configFormData.Title" type="text" class="form-control" :class="{'is-invalid': !isTitle}"
-                      id="Title" v-on:keyup="checkTitle(configFormData.Title)">
+                    <span class="fs-12 text-black-50">檔名：{{ configFormData.FileTitle }} ( {{ (configFormData.Size /
+                      1024000).toFixed(2) }} M )</span>
+                    <input v-model="configFormData.Title" type="text" class="form-control"
+                      :class="{'is-invalid': !isTitle}" id="Title" v-on:keyup="checkTitle(configFormData.Title)">
                     <div class="invalid-feedback text-end">
                       請輸入專案名稱
                     </div>
@@ -441,24 +442,38 @@
                     <label for="Title" class="form-label fw-bolder text-primary mb-0">設置簽署期限</label>
                   </div>
                   <div class="col-md-4 mt-0 d-flex align-items-center">
-                    <input v-model="selectDeadline" type="radio" class="form-check-input mt-0 me-2" id="sevenDay" name="deadline" :value="7" />
+                    <input v-model="selectDeadline" type="radio" class="form-check-input mt-0 me-2" id="sevenDay"
+                      name="deadline" :value="7" />
                     <label class="form-check-label fw-bolder" for="sevenDay">
                       7 天後
                     </label>
                   </div>
                   <div class="col-md-4 mt-0 d-flex align-items-center">
-                    <input v-model="selectDeadline" type="radio" class="form-check-input mt-0 me-2" id="sevenDay" name="deadline" :value="14" />
+                    <input v-model="selectDeadline" type="radio" class="form-check-input mt-0 me-2" id="sevenDay"
+                      name="deadline" :value="14" />
                     <label class="form-check-label fw-bolder" for="sevenDay">
                       14 天後
                     </label>
-                  </div>                  
+                  </div>
                   <div class="col-md-4 mt-0 d-flex align-items-center">
-                    <input v-model="selectDeadline" type="radio" class="form-check-input mt-0 me-2" id="selfSetting" name="deadline" :value="0" />
+                    <input v-model="selectDeadline" type="radio" class="form-check-input mt-0 me-2" id="selfSetting"
+                      name="deadline" :value="0" />
                     <label class="form-check-label fw-bolder" for="selfSetting">
-                      <input v-model="deadlineString" type="text" class="form-control" :class="{' disabled': selectDeadline !== 2}" name="selfSetting" id="selfSetting" placeholder="YYYY/MM/DD" v-on:keyup="checkDeadlineString($event)" />
+                      <input v-model="deadlineString" type="text" class="form-control"
+                        :class="{' disabled': selectDeadline !== 2}" name="selfSetting" id="selfSetting"
+                        placeholder="YYYY/MM/DD" v-on:keyup="checkDeadlineString($event)" />
                       <div class="invalid-feedback text-end">
                         {{ '請確認日期格式是否正確' }}
                       </div>
+                    </label>
+                  </div>
+                  <div class="col-12">
+                    <label for="Title" class="form-label fw-bolder text-primary">簽署方式</label>
+                    <br>
+                    <input v-model="configFormData.IsInBulk" type="checkbox" class="form-check-input me-1" id="IsInBulk"
+                      name="IsInBulk" :true-value="true" :false-value="false" />
+                    <label class="form-check-label fw-bolder" for="IsInBulk">
+                      個別簽署
                     </label>
                   </div>
                   <div class="dropdown-divider mt-4"></div>
@@ -507,8 +522,10 @@
                           group="company" animation="300" :disabled="!isDraggable" v-on:start="onStart" v-on:end="onEnd"
                           handle=".signator__mover">
                           <template v-for="(item, index) in selectedContractor">
-                            <div class="my-0 col-md-12">
+                            <div class="my-0 col-md-12 input__height">
+                              <!--
                               <span class="fs-12 text-muted opacity-75">{{ index === 0 ? '起約人' : '簽約人' }}</span>
+                              -->
                               <div :key="index" :id="`company_${index}`" class="input-group w-100 bg-white">
                                 <span class="input-group-text">
                                   <span class="fs-12 signator" :class="signatorColor(index)">
@@ -546,7 +563,9 @@
                               <div class="invalid-feedback text-end">
                                 {{ item.isDuplicate ? '簽署人重複，請檢查' : '請選擇簽署人' }}
                               </div>
+                              <!--
                               <div v-if="index === 0 && selectedContractor.length > 1" class="dropdown-divider mt-4"></div>
+                              -->
                             </div>
                           </template>
                         </draggable>
@@ -556,10 +575,10 @@
                   </div>
                   <!--
                   <div class="col-md-12 mt-0">
-                    <input v-model="configFormData.IsJointContracting" type="checkbox" class="form-check-input me-1"
+                    <input v-model="configFormData.IsInBulk" type="checkbox" class="form-check-input me-1"
                       id="isInitiatorStamp" name="IgnoreSeal" />
                     <label class="form-check-label fw-bolder" for="isInitiatorStamp">
-                      多人簽署同一份文件
+                      個別簽署
                     </label>
                   </div>
                   -->
@@ -855,25 +874,28 @@
     },
     data() {
       return {
+        currentUserInfo: {},
         /**
         * 文件表單
         * @@param {string} ContractNo 文件號碼
-        * @@param {string} KeyID 文件號碼(加密)
+        * @@param {string} ContractID 文件號碼(加密)
         * @@param {string} Title 文件標題
         * @@param {array} Signatories 簽署人
+        * @@param {string} deadline 簽署期限
+        * @@param {boolean} IsInBulk 共同簽署
         */
         initialFormData: {
-          //ContractID: null,
           ContractNo: null,
           Title: null,
           Signatories: [],
-          deadline: null
-          //IsJointContracting: true, //是否多人簽屬同一份文件
+          deadline: null,
+          IsInBulk: false,
         },
         selectedContractor: [
           {
-            text: null,
-            isDuplicate: false
+            id: null,
+            isDuplicate: false,
+            text: null
           }
         ],
         inputSearchCompany: '',
@@ -942,13 +964,16 @@
     },
     watch: {
       selectDeadline: {
-        handler: function(newValue) {
+        handler: function (newValue) {
           this.initialFormData.deadline = newValue === 0 ? this.deadlineString : this.getSevenDate(newValue);
         },
         immediate: true,
       }
     },
     mounted() {
+      // 取得當前使用者資料
+      this.getCurrentUserInfo();      
+
       // 若為第一次登入，顯示歡迎視窗並進入導覽流程
       if (!localStorage.getItem("isContractTour")) {
         setTimeout(() => {
@@ -1101,6 +1126,27 @@
         });
         tourguide.start();
       },
+
+      // 取得當前使用者資料
+      getCurrentUserInfo() {
+        getData('@(Url.Action("GetUser", "UserProfile"))')
+          .then((res) => {
+            const { data, hasError, message } = res;
+            //console.log({ data, hasError, message })
+            if (!hasError) {
+              // 成功
+              //const { companyName, isMemberAdmin, isSysAdmin, pid } = data;
+              this.currentUserInfo = data;
+            } else {
+              // 失敗
+              console.log('error')
+              this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${message.replace(/、/g, '<br>')} </div>`;
+              $("#infoModal").modal("show");
+            }
+          })
+      },
+
+      // 初始化簽署人設定表單
       initContract() {
         this.configFormData = JSON.parse(JSON.stringify(this.initialFormData));
       },
@@ -1112,11 +1158,10 @@
         postData('@(Url.Action("AvailableSignatories", "ContractConsole"))', payload)
           .then((res) => {
             const { data, hasError, message } = res;
-            console.log({ data, hasError, message })
+            //console.log({ data, hasError, message })
 
             if (!hasError) {
               // 成功
-              console.log('hasError',hasError)
               this.contractorAllList = data.map(item => {
                 item.text = `${item.companyName} (${item.receiptNo})`;
                 item.value = item.id;
@@ -1124,6 +1169,9 @@
               });
               // 取得轉換後的簽署人清單
               this.contractorList = this.contractorAllList;
+              
+              // 管理簽署人預設為當前使用者
+              this.setSignator(this.currentUserInfo.companyName);
             } else {
               // 失敗
               console.log('error')
@@ -1131,6 +1179,16 @@
               $("#infoModal").modal("show");
             }
           })
+      },
+
+      // 管理簽署人預設為當前使用者
+      setSignator(companyName) {
+        const currentUser = this.contractorList.filter(item => item.companyName === companyName)[0];
+        if (currentUser) {
+          const { id, text } = currentUser;
+          this.selectedContractor[0].id = id;
+          this.selectedContractor[0].text = text;
+        }
       },
 
       // 查詢-文件列表
@@ -1233,23 +1291,30 @@
         this.checkContractNo(this.configFormData.ContractNo);
         if (!this.configFormData.Title) return;
         if (!this.configFormData.ContractNo) return;
-        if(this.checkSignatories(this.selectedContractor)) return;
-        const { ContractNo, KeyID, Title, deadline } = this.configFormData;
+        if (this.checkSignatories(this.selectedContractor)) return;
+        const { ContractNo, KeyID, Title, deadline, IsInBulk } = this.configFormData;
         const ContractID = KeyID;
         const Signatories = this.selectedContractor.map(item => item.id);
-        const payload = { ContractNo, ContractID, Title, Signatories, deadline };
+        const payload = { ContractNo, ContractID, Title, Signatories, deadline, IsInBulk };
         const self = this;
 
-        console.log({payload})
+        console.log({ payload })
 
         showLoading();
         postData('@(Url.Action("Config", "ContractConsole"))', payload)
           .then((res) => {
-            console.log({res})
             const { hasError, data, message } = res;
             if (!hasError) {
               // 成功
+              // 初始化簽署人表單
+              this.initContract();
+              this.selectedContractor = [{
+                id: null,
+                isDuplicate: false,
+                text: null
+              }];
               $('#addProjectModal').modal('hide');
+              affixPdfSeal(ContractID);
             } else {
               // 失敗
               const { ContractID, Signatories } = message;
@@ -1257,7 +1322,7 @@
               const signatoriesString = Signatories ? Signatories[0].join(', ') : '資料有誤';
               this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${contractIDString} <br> ${signatoriesString} </div>`;
               $("#infoModal").modal("show");
-              
+
             }
             hideLoading();
           })
@@ -1429,8 +1494,9 @@
       addContractor() {
         if (this.selectedContractor.length < 6) {
           this.selectedContractor.push({
-            text: null,
-            isDuplicate: false
+            id: null,
+            isDuplicate: false,
+            text: null
           });
         } else {
           this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> 簽署人數設定已達上限！ </div>`;
@@ -1505,7 +1571,7 @@
 
       // 取得簽署人顏色設定
       signatorColor(idx) {
-        if(idx < 6) {
+        if (idx < 6) {
           return `signator--color${idx}`;
         } else {
           return 'signator--colorDefault';
@@ -1522,7 +1588,7 @@
 
       // 檢核日期欄位
       checkDeadlineString(event) {
-        console.log({event})
+        console.log({ event })
         const currentItem = event.target;
         if (this.selectDeadline === 2) {
           let isDate = false;
@@ -1534,9 +1600,9 @@
           const numericYear = parseInt(year, 10);
           const numericMonth = parseInt(month, 10);
           const numericDay = parseInt(day, 10);
-          
+
           if (!datePattern.test(this.deadlineString)) {
-            isDate = false;            
+            isDate = false;
           } else if (numericYear < 1000 || numericYear > 9999) {
             isDate = false; // 年份不在有效範圍內
           } else if (numericMonth < 1 || numericMonth > 12) {
@@ -1552,7 +1618,7 @@
           } else {
             currentItem.classList.remove('is-invalid');
           }
-        } 
+        }
       }
     }
   });
