@@ -3,6 +3,7 @@ using ContractHome.Helper.Validation;
 using ContractHome.Models.ViewModel;
 using FluentValidation;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 
 namespace ContractHome.Models.Dto
 {
@@ -11,22 +12,28 @@ namespace ContractHome.Models.Dto
         public string ContractID { get; set; }
         public string Title { get; set; }
         public string ContractNo { get; set; }
+        public string ExpiryDateTime { get; set; }
+        public bool IsPassStamp { get; set; }
         public IEnumerable<string> Signatories { get; set; }
         public string? EncUID { get; set; }
 
 
-        public PostConfigRequest(string contractID, string title, string contractNo, 
+        public PostConfigRequest(string contractID, string title, string contractNo, string expiryDateTime,
+            bool isPassStamp,
             IEnumerable<string> signatories)
         {
             ContractID = contractID;
             Title = title;
             ContractNo = contractNo;
+            ExpiryDateTime = expiryDateTime;
+            IsPassStamp = isPassStamp;
             Signatories = signatories;
         }
 
 
         public class Validator:AbstractValidator<PostConfigRequest>
         {
+
             public Validator() 
             {
                 this.RuleFor(x => x.ContractID)
@@ -42,6 +49,15 @@ namespace ContractHome.Models.Dto
                 this.RuleForEach(x => x.Signatories)
                     .NotEmpty()
                     .Must(y => GeneralValidator.TryDecryptKeyValue(y));
+
+                this.RuleFor(x => x.ExpiryDateTime)
+                    .NotNull()
+                    .Must(y => DateTime.TryParseExact(y, "yyyy/MM/dd", null,
+                            DateTimeStyles.None, out DateTime result))
+                    .Must(y => GeneralValidator.MustAfterOrIsToday(y));
+
+                this.RuleFor(x => x.IsPassStamp)
+                    .NotNull();
             }
         }
     }

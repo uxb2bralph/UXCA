@@ -66,5 +66,10 @@ namespace ContractHome.Helper
                 action(item);
         }
 
+        public static string ReportDateTimeString(this DateTime date)
+        {
+            return $"{date:yyyy/MM/dd HH:mm:ss}";
+        }
+
     }
 }

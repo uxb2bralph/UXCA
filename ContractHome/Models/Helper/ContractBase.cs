@@ -19,7 +19,7 @@ namespace ContractHome.Models.Helper
             ContractID = contract.ContractID;
             ID = contractingParty.CompanyID;
             KeyID = contractingParty.CompanyID.EncryptKey();
-            Name = contractingParty.Organization.CompanyName;
+            Name = $"{contractingParty.Organization.CompanyName} ({contractingParty.Organization.ReceiptNo})";
             StampDate = string.Empty;
             SignerDate = string.Empty;
             SignerID = string.Empty;
@@ -149,8 +149,10 @@ namespace ContractHome.Models.Helper
         public string ContractNo { get; set; }
         [JsonProperty]
         public string Title { get; set; }
+        //[JsonProperty]
+        //public bool? IsJointContracting { get; set; }
         [JsonProperty]
-        public bool? IsJointContracting { get; set; }
+        public string CreatedDateTime { get; set; }
         [JsonProperty]
         public int? CurrentStep { get; set; }
         [JsonProperty]
@@ -162,14 +164,16 @@ namespace ContractHome.Models.Helper
             KeyID = contract.ContractID.EncryptKey();
             ContractNo = contract.ContractNo;
             Title = contract.Title;
-            IsJointContracting = contract.IsJointContracting ?? false;
+            //IsJointContracting = contract.IsJointContracting ?? false;
+            CreatedDateTime = contract.CDS_Document.DocDate.ReportDateTimeString();
             PageCount = contract.GetPdfPageCount();
             CurrentStep = contract.CDS_Document.CurrentStep;
+            
             if (queryItem.Equals("ProcessLog"))
             {
                 ProcessLogs = contract.CDS_Document.DocumentProcessLog.Select(l =>
                     new ProcessLog(
-                        time: $"{l.LogDate:yyyy/MM/dd HH:mm:ss}",
+                        time: l.LogDate.ReportDateTimeString(),
                         action: CDS_Document.StepNaming[l.StepID],
                         role: l.UserProfile?.UserName
                     ));

@@ -1,5 +1,6 @@
 ﻿using ContractHome.Controllers;
 using ContractHome.Helper;
+using DocumentFormat.OpenXml;
 
 namespace ContractHome.Models.Dto
 {
@@ -17,6 +18,12 @@ namespace ContractHome.Models.Dto
             {
                 return false;
             }
+        }
+
+        public static bool MustAfterOrIsToday(string dateTimeString)
+        {
+            return DateTime.TryParse(dateTimeString, out DateTime dateValue)
+                && (dateValue.CompareTo(DateTime.Now)>=0);
         }
     }
 }
