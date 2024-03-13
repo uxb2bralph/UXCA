@@ -26,10 +26,10 @@
   await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgent.cshtml");
   await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
   // vue draggable 套件
-  <script src="~/js/sortable/Sortable.min.js"></script>
-  <script src="~/js/vuedraggable/vuedraggable.umd.min.js"></script>
-  <script src="~/js/moment.min.js"></script>
-  <script src="~/js/api.js"></script>
+    <script src="~/js/sortable/Sortable.min.js"></script>
+    <script src="~/js/vuedraggable/vuedraggable.umd.min.js"></script>
+    <script src="~/js/moment.min.js"></script>
+    <script src="~/js/api.js"></script>
 }
 <div id="listToStamp" class="listToStamp__wrapper">
   <!-- Tab -->
@@ -76,13 +76,13 @@
           @{
             if (ViewBag.CanCreateContract)
             {
-              <span class="px-3 text-black-50"> | </span>
-              <div id="addContract" class="tooltip__wrapper">
-                <button type="button" class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="addHandler">
-                  <i class="fal fa-file-plus"></i>
-                </button>
-                <div class="tooltip__text">新增文件</div>
-              </div>
+                  <span class="px-3 text-black-50"> | </span>
+                  <div id="addContract" class="tooltip__wrapper">
+                    <button type="button" class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="addHandler">
+                      <i class="fal fa-file-plus"></i>
+                    </button>
+                    <div class="tooltip__text">新增文件</div>
+                  </div>
             }
           }
         </div>
@@ -442,26 +442,26 @@
                     <label for="Title" class="form-label fw-bolder text-primary mb-0">設置簽署期限</label>
                   </div>
                   <div class="col-md-4 mt-0 d-flex align-items-center">
-                    <input v-model="selectDeadline" type="radio" class="form-check-input mt-0 me-2" id="sevenDay"
-                      name="deadline" :value="7" />
-                    <label class="form-check-label fw-bolder" for="sevenDay">
+                    <input v-model="selectExpiryDateTime" type="radio" class="form-check-input mt-0 me-2" id="day_7"
+                      name="ExpiryDateTime" :value="7" />
+                    <label class="form-check-label fw-bolder" for="day_7">
                       7 天後
                     </label>
                   </div>
                   <div class="col-md-4 mt-0 d-flex align-items-center">
-                    <input v-model="selectDeadline" type="radio" class="form-check-input mt-0 me-2" id="sevenDay"
-                      name="deadline" :value="14" />
-                    <label class="form-check-label fw-bolder" for="sevenDay">
+                    <input v-model="selectExpiryDateTime" type="radio" class="form-check-input mt-0 me-2" id="day_14"
+                      name="ExpiryDateTime" :value="14" />
+                    <label class="form-check-label fw-bolder" for="day_14">
                       14 天後
                     </label>
                   </div>
                   <div class="col-md-4 mt-0 d-flex align-items-center">
-                    <input v-model="selectDeadline" type="radio" class="form-check-input mt-0 me-2" id="selfSetting"
-                      name="deadline" :value="0" />
+                    <input v-model="selectExpiryDateTime" type="radio" class="form-check-input mt-0 me-2"
+                      name="ExpiryDateTime" :value="0" />
                     <label class="form-check-label fw-bolder" for="selfSetting">
-                      <input v-model="deadlineString" type="text" class="form-control"
-                        :class="{' disabled': selectDeadline !== 2}" name="selfSetting" id="selfSetting"
-                        placeholder="YYYY/MM/DD" v-on:keyup="checkDeadlineString($event)" />
+                      <input v-model="expiryDateTimeString" type="text" class="form-control"
+                        :class="{' disabled': selectExpiryDateTime !== 0}" name="selfSetting" id="selfSetting"
+                        placeholder="YYYY/MM/DD" v-on:keyup="checkExpiryDateTimeString($event)" />
                       <div class="invalid-feedback text-end">
                         {{ '請確認日期格式是否正確' }}
                       </div>
@@ -469,11 +469,21 @@
                   </div>
                   <div class="col-12">
                     <label for="Title" class="form-label fw-bolder text-primary">簽署方式</label>
-                    <br>
+                  </div>
+                  <!--
+                  <div class="col-md-6 mt-0">
                     <input v-model="configFormData.IsInBulk" type="checkbox" class="form-check-input me-1" id="IsInBulk"
                       name="IsInBulk" :true-value="true" :false-value="false" />
                     <label class="form-check-label fw-bolder" for="IsInBulk">
                       個別簽署
+                    </label>
+                  </div>
+                  -->
+                  <div class="col-md-6 mt-0">
+                    <input v-model="configFormData.IsPassStamp" type="checkbox" class="form-check-input me-1"
+                      name="IsPassStamp" :true-value="true" :false-value="false" />
+                    <label class="form-check-label fw-bolder" for="IsPassStamp">
+                      文件已填寫並用印完畢
                     </label>
                   </div>
                   <div class="dropdown-divider mt-4"></div>
@@ -573,16 +583,6 @@
                       <!--<pre>{{selectedContractor}}</pre>-->
                     </div>
                   </div>
-                  <!--
-                  <div class="col-md-12 mt-0">
-                    <input v-model="configFormData.IsInBulk" type="checkbox" class="form-check-input me-1"
-                      id="isInitiatorStamp" name="IgnoreSeal" />
-                    <label class="form-check-label fw-bolder" for="isInitiatorStamp">
-                      個別簽署
-                    </label>
-                  </div>
-                  -->
-
                 </div>
               </form>
             </div>
@@ -881,15 +881,17 @@
         * @@param {string} ContractID 文件號碼(加密)
         * @@param {string} Title 文件標題
         * @@param {array} Signatories 簽署人
-        * @@param {string} deadline 簽署期限
+        * @@param {string} ExpiryDateTime 簽署期限
         * @@param {boolean} IsInBulk 共同簽署
+        * @@param {boolean} IsPassStamp 文件已簽章
         */
         initialFormData: {
           ContractNo: null,
           Title: null,
           Signatories: [],
-          deadline: null,
-          IsInBulk: false,
+          ExpiryDateTime: null,
+          //IsInBulk: false,
+          IsPassStamp: false,
         },
         selectedContractor: [
           {
@@ -899,8 +901,8 @@
           }
         ],
         inputSearchCompany: '',
-        selectDeadline: 7,
-        deadlineString: null,
+        selectExpiryDateTime: 7,
+        expiryDateTimeString: null,
         configFormData: {},
         /** 分頁 options
         * totalRecordCount: 總筆數
@@ -963,16 +965,16 @@
       },
     },
     watch: {
-      selectDeadline: {
+      selectExpiryDateTime: {
         handler: function (newValue) {
-          this.initialFormData.deadline = newValue === 0 ? this.deadlineString : this.getSevenDate(newValue);
+          this.configFormData.ExpiryDateTime = newValue === 0 ? this.expiryDateTimeString : this.getExpiryDateTime(newValue);
         },
         immediate: true,
       }
     },
     mounted() {
       // 取得當前使用者資料
-      this.getCurrentUserInfo();      
+      this.getCurrentUserInfo();
 
       // 若為第一次登入，顯示歡迎視窗並進入導覽流程
       if (!localStorage.getItem("isContractTour")) {
@@ -1020,7 +1022,6 @@
                 if (data.result) {
                   self.configFormData.KeyID = data.message;
                 }
-                //console.log('self.configFormData', self.configFormData)
                 // 可簽署對象查詢
                 self.getAvailableSignatories();
               }
@@ -1149,6 +1150,7 @@
       // 初始化簽署人設定表單
       initContract() {
         this.configFormData = JSON.parse(JSON.stringify(this.initialFormData));
+        this.configFormData.ExpiryDateTime = this.getExpiryDateTime(7);
       },
 
       // 可簽署對象查詢
@@ -1169,7 +1171,7 @@
               });
               // 取得轉換後的簽署人清單
               this.contractorList = this.contractorAllList;
-              
+
               // 管理簽署人預設為當前使用者
               this.setSignator(this.currentUserInfo.companyName);
             } else {
@@ -1292,13 +1294,10 @@
         if (!this.configFormData.Title) return;
         if (!this.configFormData.ContractNo) return;
         if (this.checkSignatories(this.selectedContractor)) return;
-        const { ContractNo, KeyID, Title, deadline, IsInBulk } = this.configFormData;
+        const { ContractNo, KeyID, Title, ExpiryDateTime, IsPassStamp } = this.configFormData;
         const ContractID = KeyID;
         const Signatories = this.selectedContractor.map(item => item.id);
-        const payload = { ContractNo, ContractID, Title, Signatories, deadline, IsInBulk };
-        const self = this;
-
-        console.log({ payload })
+        const payload = { ContractNo, ContractID, Title, Signatories, ExpiryDateTime, IsPassStamp };
 
         showLoading();
         postData('@(Url.Action("Config", "ContractConsole"))', payload)
@@ -1314,7 +1313,12 @@
                 text: null
               }];
               $('#addProjectModal').modal('hide');
-              affixPdfSeal(ContractID);
+              if (IsPassStamp) {
+                // 文件已填寫並用印完畢則建立合約
+                this.established(ContractID);
+              } else {
+                affixPdfSeal(ContractID);
+              }
             } else {
               // 失敗
               const { ContractID, Signatories } = message;
@@ -1325,6 +1329,31 @@
 
             }
             hideLoading();
+          })
+      },
+
+      // 建立合約(文件)
+      established(ContractID) {
+        console.log({ ContractID })
+        const payload = { ContractID };
+
+        showLoading();
+        postData('@(Url.Action("Establish", "ContractConsole"))', payload)
+          .then((res) => {
+            const { hasError, data, message } = res;
+            if (!hasError) {
+              // 成功
+              $('#addProjectModal').modal('hide');
+              // 開啟訊息視窗
+              self.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base">文件已建立。</div>`;
+            } else {
+              // 失敗
+              const { ContractID } = message;
+              const contractIDString = ContractID ? ContractID.join(', ') : '資料有誤';
+              this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${contractIDString} </div>`;
+            }
+            hideLoading();
+            $("#infoModal").modal("show");
           })
       },
 
@@ -1578,8 +1607,8 @@
         }
       },
 
-      // 取得7天後的日期
-      getSevenDate(day) {
+      // 取得 N 天後的日期
+      getExpiryDateTime(day) {
         // 計算到期日
         const currentDate = moment();
         const newDate = currentDate.add(day, 'days');
@@ -1587,21 +1616,21 @@
       },
 
       // 檢核日期欄位
-      checkDeadlineString(event) {
+      checkExpiryDateTimeString(event) {
         console.log({ event })
         const currentItem = event.target;
-        if (this.selectDeadline === 2) {
+        if (this.selectExpiryDateTime === 0) {
           let isDate = false;
           // 使用正則表達式檢查日期格式
           const datePattern = /^\d{4}\/\d{2}\/\d{2}$/;
 
           // 分割日期字串，並檢查年、月、日的有效範圍
-          const [year, month, day] = this.deadlineString.split('/');
+          const [year, month, day] = this.expiryDateTimeString.split('/');
           const numericYear = parseInt(year, 10);
           const numericMonth = parseInt(month, 10);
           const numericDay = parseInt(day, 10);
 
-          if (!datePattern.test(this.deadlineString)) {
+          if (!datePattern.test(this.expiryDateTimeString)) {
             isDate = false;
           } else if (numericYear < 1000 || numericYear > 9999) {
             isDate = false; // 年份不在有效範圍內

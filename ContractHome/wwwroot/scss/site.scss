@@ -715,16 +715,16 @@ html, body {
     }
   }
 
-  &__list {
-    max-height: 145px;
-    overflow: hidden;
-    overflow-y: auto;
-  }
+  //&__list {
+  //  max-height: 145px;
+  //  overflow: hidden;
+  //  overflow-y: auto;
+  //}
 }
 
 .options {
   &__wrapper {
-    width: 300px;
+    width: 400px;
     height: 100%;
     overflow: hidden;
     overflow-y: auto;
@@ -852,16 +852,28 @@ html, body {
     position: absolute;
     cursor: move;    
     &--bg00 {
-      border: 2px dashed #0d6efd;
+      border: 2px dashed #4e90f1;
       background: rgba(132, 181, 253, .5);
     }
     &--bg01 {
-      border: 2px dashed #fdad0d;
+      border: 2px dashed #f9a657;
       background: rgba(253, 227, 132, 0.584);
     }
     &--bg02 {
-      border: 2px dashed #13e232;
-      background: rgba(142, 253, 132, 0.5);
+      border: 2px dashed #35b451;
+      background: rgba(160, 228, 154, 0.5);
+    }
+    &--bg03 {
+      border: 2px dashed #fa73e7;
+      background: rgba(243, 160, 225, 0.5);
+    }
+    &--bg04 {
+      border: 2px dashed #a696ff;
+      background: rgba(216, 182, 243, 0.5);
+    }
+    &--bg05 {
+      border: 2px dashed #df9b7d;
+      background: rgba(224, 210, 197, 0.5);
     }
   }
   &__compantEdit {
