@@ -12,6 +12,14 @@ using ContractHome.Models.Helper;
 using FluentValidation.AspNetCore;
 using FluentValidation;
 using ContractHome.Models.ViewModel;
+using Hangfire;
+using Microsoft.Extensions.DependencyInjection;
+using ContractHome.Services;
+using System.Web.Services.Description;
+using Hangfire.MemoryStorage;
+using System;
+using ContractHome.Services.Jobs;
+using Hangfire.Dashboard;
 
 namespace WebHome
 {
@@ -106,7 +114,13 @@ namespace WebHome
             services.AddScoped<EmailBody>();
             services.AddScoped<ContractServices>();
 
-           
+            #region Hangfire
+            services.AddJobManager()
+                    .AddrecurringJob<TestJob>();
+
+            #endregion
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -154,6 +168,15 @@ namespace WebHome
 
             });
 
+            #region Hangfire
+            app.UseHangfireDashboard("/dashboard", options: new DashboardOptions
+            {
+                IsReadOnlyFunc = (DashboardContext context) =>
+                    DashboardAccessAuthFilter.IsReadOnly(context),
+                Authorization = new[] { new DashboardAccessAuthFilter() }
+            });
+            app.StartRecurringJobs();
+            #endregion
 
             //call ConfigureLogger in a centralized place in the code
             ApplicationLogging.ConfigureLogger(loggerFactory);
