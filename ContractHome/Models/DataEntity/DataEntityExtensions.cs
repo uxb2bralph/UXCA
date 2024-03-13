@@ -98,8 +98,8 @@ namespace ContractHome.Models.DataEntity
         {
             Initial = 0,
             Config = 1,
-            Establish = 2,
-            FieldSet = 4,
+            FieldSet = 3,
+            Establish = 5,
             Sealing = 6,
             Sealed = 7,
             DigitalSigning = 10,
@@ -114,10 +114,10 @@ namespace ContractHome.Models.DataEntity
             {
                 "開始",
                 "設定",
-                "建立",
                 "",
                 "欄位設定",
                 "",
+                "建立",
                 "用印中",
                 "用印完成",
                 "",
@@ -134,10 +134,12 @@ namespace ContractHome.Models.DataEntity
                 "撤銷"
             };
 
+        public bool IsPendingState() => (this.CurrentStep==null) ? 
+                false:PendingState.Contains((CDS_Document.StepEnum)this.CurrentStep!); 
+       
         public static StepEnum[] PendingState =
         {
-            StepEnum.Initial,
-            StepEnum.FieldSet,
+            StepEnum.Establish,
             StepEnum.Sealing,
             StepEnum.Sealed,
             StepEnum.DigitalSigning,
