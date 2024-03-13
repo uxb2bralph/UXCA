@@ -395,6 +395,21 @@
   const { CurrentStep, KeyID: contractID, PageCount, Parties } = @Html.Raw(contractRefsJson);
   @* const contractInfo = @Html.Raw(contractRefsJson); *@
 
+  /**
+   * param {Number} StepEnum 文件狀態
+    * 0: Initial - 開始,
+    * 1: Config - 設定,
+    * 3: FieldSet - 欄位設定,
+    * 5: Establish - 建立,
+    * 6: Sealing - 用印中,
+    * 7: Sealed - 用印完成,
+    * 10: DigitalSigning - 簽章中,
+    * 11: DigitalSigned - 簽章完成,
+    * 16: Browsed - 瀏覽,
+    * 17: Terminated - 已終止,
+    * 18: Committed - 完成,
+    * 19: Revoked - 撤銷,
+   */
   var app = new Vue({
     el: '#AffixPdfSealImage',
     data() {
