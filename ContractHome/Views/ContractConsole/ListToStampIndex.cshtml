@@ -861,16 +861,19 @@
     * @@param {array} Parties 甲乙雙方人員資料
     * @@param {array} ProcessLogs 歷程記錄
     * @@param {string} contractorName 文件名稱
-    * @@param {Number} CurrentStep 文件狀態
-        0: Initial - 文件文件上傳
-        1: Revoked - 已退回
-        2: Sealing - 用印中
-        3: Sealed - 用印完成
-        4: DigitalSigning - 簽章中
-        5: DigitalSigned - 簽章完成
-        6: Browsed - 瀏覽
-        7: Terminated - 已終止
-        8: Committed - 文件完成
+    * @@* param {Number} StepEnum 文件狀態
+     * 0: Initial - 開始,
+     * 1: Config - 設定,
+     * 3: FieldSet - 欄位設定,
+     * 5: Establish - 建立,
+     * 6: Sealing - 用印中,
+     * 7: Sealed - 用印完成,
+     * 10: DigitalSigning - 簽章中,
+     * 11: DigitalSigned - 簽章完成,
+     * 16: Browsed - 瀏覽,
+     * 17: Terminated - 已終止,
+     * 18: Committed - 完成,
+     * 19: Revoked - 撤銷,
     */
   // 註冊元件
   Vue.component('vuedraggable', window.vuedraggable);
