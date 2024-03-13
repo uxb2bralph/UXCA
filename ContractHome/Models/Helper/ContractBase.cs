@@ -149,8 +149,8 @@ namespace ContractHome.Models.Helper
         public string ContractNo { get; set; }
         [JsonProperty]
         public string Title { get; set; }
-        //[JsonProperty]
-        //public bool? IsJointContracting { get; set; }
+        [JsonProperty]
+        public bool? IsPassStamp { get; set; }
         [JsonProperty]
         public string CreatedDateTime { get; set; }
         [JsonProperty]
@@ -164,7 +164,7 @@ namespace ContractHome.Models.Helper
             KeyID = contract.ContractID.EncryptKey();
             ContractNo = contract.ContractNo;
             Title = contract.Title;
-            //IsJointContracting = contract.IsJointContracting ?? false;
+            IsPassStamp = contract.IsPassStamp ?? false;
             CreatedDateTime = contract.CDS_Document.DocDate.ReportDateTimeString();
             PageCount = contract.GetPdfPageCount();
             CurrentStep = contract.CDS_Document.CurrentStep;

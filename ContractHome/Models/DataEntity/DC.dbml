@@ -18,7 +18,7 @@
       <Column Name="ContractNo" Type="System.String" DbType="NVarChar(64) NOT NULL" CanBeNull="false" />
       <Column Name="Title" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
       <Column Name="ContractContent" Type="System.Data.Linq.Binary" DbType="VarBinary(MAX)" CanBeNull="true" UpdateCheck="Never" />
-      <Column Name="IsJointContracting" Type="System.Boolean" DbType="Bit" CanBeNull="false" />
+      <Column Name="IsPassStamp" Type="System.Boolean" DbType="Bit" CanBeNull="false" />
       <Association Name="Contract_ContractingParty" Member="ContractingParty" ThisKey="ContractID" OtherKey="ContractID" Type="ContractingParty" />
       <Association Name="Contract_ContractSignature" Member="ContractSignature" ThisKey="ContractID" OtherKey="ContractID" Type="ContractSignature" Cardinality="One" />
       <Association Name="Contract_ContractSignatureRequest" Member="ContractSignatureRequest" ThisKey="ContractID" OtherKey="ContractID" Type="ContractSignatureRequest" />

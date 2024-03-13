@@ -270,30 +270,30 @@ namespace ContractHome.Controllers
                     {
                         var contractorID = viewModel.Contractors[i].ContractorID;
                         var initiatorID = viewModel.InitiatorID!.Value;
+                        //wait to do..個別簽署暫關閉待調整
+                        //if ((contract.IsJointContracting == true) || (i == 0))
+                        //{
+                        //    _contractServices?.CreateAndSaveParty(
+                        //        initiatorID: initiatorID,
+                        //        contractorID: contractorID ?? 0,
+                        //        contract: contract,
+                        //        viewModel.Contractors[i].SignaturePositions,
+                        //        uid ?? 0);
 
-                        if ((contract.IsJointContracting == true) || (i == 0))
-                        {
-                            _contractServices?.CreateAndSaveParty(
-                                initiatorID: initiatorID,
-                                contractorID: contractorID ?? 0,
-                                contract: contract,
-                                viewModel.Contractors[i].SignaturePositions,
-                                uid ?? 0);
+                        //}
+                        //else
+                        //{
+                        //    var newContract = _contractServices.CreateAndSaveContractByOld(contract);
 
-                        }
-                        else
-                        {
-                            var newContract = _contractServices.CreateAndSaveContractByOld(contract);
-
-                            _contractServices.CreateAndSaveParty(
-                                initiatorID: initiatorID,
-                                contractorID: contractorID ?? 0,
-                                contract: newContract,
-                                viewModel.Contractors[i].SignaturePositions,
-                                uid ?? 0
-                            );
-                            notifyList.Add(newContract);
-                        }
+                        //    _contractServices.CreateAndSaveParty(
+                        //        initiatorID: initiatorID,
+                        //        contractorID: contractorID ?? 0,
+                        //        contract: newContract,
+                        //        viewModel.Contractors[i].SignaturePositions,
+                        //        uid ?? 0
+                        //    );
+                        //    notifyList.Add(newContract);
+                        //}
 
                     }
                 }
@@ -593,7 +593,7 @@ namespace ContractHome.Controllers
 
             item.ContractNo = viewModel.ContractNo;
             item.Title = viewModel.Title;
-            item.IsJointContracting = viewModel.IsJointContracting;
+            //item.IsJointContracting = viewModel.IsJointContracting;
             //新增簽署對象
             models.SubmitChanges();
 
@@ -1636,6 +1636,11 @@ namespace ContractHome.Controllers
             _contractServices.SetModels(models);
             var contractID = req.ContractID.DecryptKeyValue();
             Contract contract = _contractServices.GetContractByID(contractID: contractID);
+            //wait to do...獨立控管每項作業可執行step
+            if (contract.CDS_Document.CurrentStep >= 5)
+            {
+                return Json(new BaseResponse(true, "合約已進行中,無法修改資料"));
+            }
             //wait to do..contract business 物件
             foreach (var tt in req.FieldSettings)
             {
@@ -1663,15 +1668,25 @@ namespace ContractHome.Controllers
             #endregion
             _contractServices?.SetModels(models: models);
             var contract = _contractServices?.GetContractByID(req.ContractID.DecryptKeyValue());
-
+            //wait to do...獨立控管每項作業可執行step
+            if (contract.CDS_Document.CurrentStep >= 5)
+            {
+                return Json(new BaseResponse(true, "合約已進行中,無法修改資料"));
+            }
             if (contract?.FilePath == null || !System.IO.File.Exists(contract.FilePath))
             {
-                return Json(new { result = false, message = "合約資料錯誤!!" });
+                return Json(new BaseResponse(true, "合約資料錯誤!!"));
             }
             contract.ContractContent = new Binary(System.IO.File.ReadAllBytes(contract.FilePath));
-            models.SubmitChanges();
             contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Establish);
+            
+            if (contract.IsPassStamp==true)
+            {
+                contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Sealed);
+            }
+
             models.SubmitChanges();
+
             //2.如果是大量發送, 複製合約
             //var newContract = _contractServices.CreateAndSaveContractByOld(contract);
 
@@ -1684,17 +1699,12 @@ namespace ContractHome.Controllers
             //);
 
             //3.發送通知(one by one)
-            IEnumerable<UserProfile>? users =
-                _contractServices?.GetNotifyEmailListAsync(contract: contract);
-
-            if (users != null)
-            {
-                await foreach (var mailData in
-                    _contractServices?.GetNotifyEmailBodyAsync(contract, users, EmailBody.EmailTemplate.NotifySeal))
+            await foreach (var mailData in
+                    _contractServices?.GetContractNotifyEmailAsync(contract, 
+                        (contract.IsPassStamp == true)?EmailBody.EmailTemplate.NotifySign:EmailBody.EmailTemplate.NotifySeal))
                 {
                     _mailService.SendMailAsync(mailData, default);
                 }
-            }
             return Json(baseResponse);
         }
 

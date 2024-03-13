@@ -558,7 +558,7 @@ namespace ContractHome.Models.DataEntity
 		
 		private string _Title;
 
-		private System.Nullable<bool> _IsJointContracting;
+		private System.Nullable<bool> _IsPassStamp;
 		
         private System.Nullable<bool> _InProgress;
         private int _CompanyID;
@@ -596,8 +596,8 @@ namespace ContractHome.Models.DataEntity
     partial void OnContractContentChanging(System.Data.Linq.Binary value);
     partial void OnContractContentChanged();
 
-    partial void OnIsJointContractingChanging(System.Nullable<bool> value);
-    partial void OnIsJointContractingChanged();
+    partial void OnIsPassStampChanging(System.Nullable<bool> value);
+    partial void OnIsPassStampChanged();
 
         partial void OnInProgressChanging(System.Nullable<bool> value);
         partial void OnInProgressChanged();
@@ -831,23 +831,23 @@ namespace ContractHome.Models.DataEntity
 			}
 		}
 
-        [global::System.Data.Linq.Mapping.ColumnAttribute(Storage = "_IsJointContracting", DbType = "Bit")]
+        [global::System.Data.Linq.Mapping.ColumnAttribute(Storage = "_IsPassStamp", DbType = "Bit")]
         [global::System.Runtime.Serialization.DataMemberAttribute(Order = 12)]
-        public System.Nullable<bool> IsJointContracting
+        public System.Nullable<bool> IsPassStamp
         {
             get
             {
-                return this._IsJointContracting;
+                return this._IsPassStamp;
             }
             set
             {
-                if ((this._IsJointContracting != value))
+                if ((this._IsPassStamp != value))
                 {
-                    this.OnIsJointContractingChanging(value);
+                    this.OnIsPassStampChanging(value);
                     this.SendPropertyChanging();
-                    this._IsJointContracting = value;
+                    this._IsPassStamp = value;
                     this.SendPropertyChanged("Disabled");
-                    this.OnIsJointContractingChanged();
+                    this.OnIsPassStampChanged();
                 }
             }
         }

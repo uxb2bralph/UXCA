@@ -103,6 +103,7 @@ namespace ContractHome.Models.Helper
         {
             contract.ContractNo = req.ContractNo;
             contract.Title = req.Title;
+            contract.IsPassStamp = req.IsPassStamp;
             req.Signatories.ForEach(x => { 
                 AddParty(contract, x.DecryptKeyValue()); 
             });
@@ -130,7 +131,7 @@ namespace ContractHome.Models.Helper
                 contract.ContractSignatureRequest.Add(new ContractSignatureRequest
                 {
                     CompanyID = CompanyID,
-                    StampDate = null,
+                    StampDate = (contract.IsPassStamp==true)?DateTime.Now:null,
                 });
             }
 
@@ -286,6 +287,13 @@ namespace ContractHome.Models.Helper
             return ttt;
         }
 
+        public IQueryable<UserProfile>? GetUsersbyContract(Contract contract)
+        {
+            return _models.GetTable<OrganizationUser>()
+                .Where(x => contract.ContractingParty.Select(x=>x.CompanyID).Contains(x.CompanyID))
+                .Select(y => y.UserProfile);
+        }
+
         public async IAsyncEnumerable<MailData> GetAllContractUsersNotifyEmailAsync(
             List<Contract> contracts,
             EmailBody.EmailTemplate emailTemplate)
@@ -339,7 +347,7 @@ namespace ContractHome.Models.Helper
 
         public IEnumerable<UserProfile>? GetNotifyEmailListAsync(Contract contract)
         {
-            EmailBody.EmailTemplate template = EmailBody.EmailTemplate.NotifySeal;
+            //EmailBody.EmailTemplate template = EmailBody.EmailTemplate.NotifySeal;
 
             if ((contract.CDS_Document.CurrentStep.Equals((int)CDS_Document.StepEnum.Establish)||
                 (contract.CDS_Document.CurrentStep.Equals((int)CDS_Document.StepEnum.DigitalSigning))))
@@ -372,14 +380,13 @@ namespace ContractHome.Models.Helper
 
         }
 
-        public async IAsyncEnumerable<MailData> GetNotifyEmailBodyAsync(
+        public async IAsyncEnumerable<MailData> GetContractNotifyEmailAsync(
             Contract contract,
-            IEnumerable<UserProfile> userProfiles,
+            //IEnumerable<UserProfile> userProfiles,
             EmailBody.EmailTemplate emailTemplate)
         {
             var initiatorOrg = GetOrganization(contract);
-            //var signatories = contract.ContractingParty;
-            //var contractorUsers = signatories.SelectMany(x => x.GetUsers(_models));
+            var userProfiles = GetUsersbyContract(contract);
 
             if (initiatorOrg != null)
             {
