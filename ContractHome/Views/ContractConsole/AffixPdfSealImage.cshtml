@@ -50,7 +50,7 @@
         </h4>
         <div v-if="getSignaturePage()" class="alert alert-success ms-3 mb-0 py-2 px-3" role="alert">
           <i class="fas fa-info-circle pe-2"></i>
-          您有第 <span class="text-danger">{{ getSignaturePage() }}</span> 頁需要進行簽署。
+          您有第 <span class="text-danger">{{ getSignaturePage() }}</span> 頁需要進行簽署或用印。
         </div>
       </div>
       <!--
@@ -580,24 +580,51 @@
       // 合約簽署設定查詢
       // 取出當前簽署人簽署區塊資料
       getContractor() {
-        // 初始化
-        this.contractSignaturePositions = [];
-        this.contractSignaturePositionsTemp = [];
-        const getSignaturePositions = this.Parties
-          .filter(item => !item.isInitiator && item.IsCurrentUserCompany)
-          .map(item => {
-            return item.SignaturePositions;
+        const currentUser = this.Parties.filter(item => item.IsCurrentUserCompany)[0];
+        const companyID = currentUser.KeyID;
+        this.getFeildSetting(contractID, companyID);
+      },
+
+      // 取得用印範圍資訊
+      getFeildSetting(ContractID, CompanyID) {
+        console.log({ ContractID, CompanyID });
+        const payload = { ContractID, CompanyID };
+        showLoading();
+        postData('@(Url.Action("FeildSettings", "ContractConsole"))', payload)
+          .then((res) => {
+            const { hasError, data, message } = res;
+            if (!hasError) {
+              // 成功
+              // 初始化
+              this.contractSignaturePositions = [];
+              this.contractSignaturePositionsTemp = [];
+              const getSignaturePositions = data.map(item => {
+                const { positionID, companyID, marginLeft, marginTop, pageIndex, requestID, scaleHeight, scaleWidth, type } = item;
+                return {
+                  ID: positionID,
+                  CompanyID: companyID,
+                  MarginLeft: marginLeft,
+                  MarginTop: marginTop,
+                  PageIndex: pageIndex,
+                  RequestID: requestID,
+                  ScaleHeight: scaleHeight,
+                  ScaleWidth: scaleWidth,
+                  Type: type,
+                  ItemClass: `vmBox__wrapper--bg00`
+                };
+              });
+              this.contractSignaturePositions = [...getSignaturePositions];
+              this.contractSignaturePositionsTemp = [...getSignaturePositions];
+              this.loadPageItem(this.selectedPage - 1);
+            } else {
+              // 失敗
+              const { ContractID } = message;
+              const contractIDString = ContractID ? ContractID.join(', ') : '資料有誤';
+              this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${contractIDString} </div>`;
+              $("#infoModal").modal("show");
+            }
+            hideLoading();
           })
-          .reduce((acc, cur) => {
-            return acc.concat(cur);
-          }, [])
-          .map(item => {
-            item.ItemClass = `vmBox__wrapper--bg00`;
-            return item;
-          });
-        this.contractSignaturePositions = [...getSignaturePositions];
-        this.contractSignaturePositionsTemp = [...getSignaturePositions];
-        this.loadPageItem(this.selectedPage - 1);
       },
 
       // 開啟 簽署人設定 Modal
@@ -750,7 +777,9 @@
       // 載入頁面元件
       loadPageItem(pageIndex) {
         const contractArea = document.querySelector("#contractImg");
-        contractArea.innerHTML = '';
+        if (contractArea) {
+          contractArea.innerHTML = '';
+        }
         if (this.isEdit) {
           const pageitem = this.signaturePositionsTemp.filter(item => item.PageIndex === this.selectedPage - 1);
           if (pageitem.length > 0) {
@@ -1042,7 +1071,7 @@
               SCALEWIDTH: ScaleWidth,
               SCALEHEIGHT: ScaleHeight,
               MARGINLEFT: MarginLeft,
-              MARGINYOP: MarginTop,
+              MARGINTOP: MarginTop,
               SEALSCALE: SealScale,
             }
           });
@@ -1070,7 +1099,7 @@
             });
             // 去重複
             signaturePage = [...new Set(signaturePage)].sort((a, b) => a - b).join('、 ');
-            this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base">請檢查第 ${signaturePage} 頁尚未簽暑完成</div>`;
+            this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base">請檢查第 ${signaturePage} 頁尚未簽署完成</div>`;
             $("#infoModal").modal("show");
             return;
           };
@@ -1450,6 +1479,10 @@
         // 阻止冒泡,避免縮放時觸發移動事件
         oEvent.stopPropagation();
         oEvent.preventDefault();
+        // 調整最後顯示位置
+        noteData.MarginTop = Number(noteData.MarginTop) + 0.2;
+        noteData.MarginLeft = Number(noteData.MarginLeft) + 0.2;
+
         // 套用文字區塊
         this.commitNote(noteData, status);
 
