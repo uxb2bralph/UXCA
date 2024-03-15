@@ -193,14 +193,24 @@
               </div>
             </div>
             <div v-else class="row g-2 my-0">
-              <div class="col py-1">
+              <div class="col-md-6 py-1">
                 <button type="button" class="btn btn-secondary opacity-50 w-100" v-on:click="resetSignature">
                   <i class="fas fa-eraser"></i> 清除用印
                 </button>
               </div>
-              <div class="col py-1">
+              <div class="col-md-6 py-1">
                 <button type="button" class="btn btn-danger opacity-75 w-100" v-on:click="abortHandler">
                   <i class="fas fa-share"></i> 退回合約
+                </button>
+              </div>
+              <div class="col-md-5 py-1">
+                <button type="button" class="btn btn-secondary opacity-50 w-100" v-on:click="backSearch">
+                  返回文件列表
+                </button>
+              </div>
+              <div class="col py-1">
+                <button type="button" class="btn btn-primary opacity-75 w-100 fw-bolder" v-on:click="commitContract()">
+                  送出合約
                 </button>
               </div>
             </div>
@@ -214,21 +224,21 @@
               </div>
             </div>
             -->
+            <!--
             <div v-if="!isEdit" class="row g-2 my-0">
               <div class="col-12 py-1 mb-2">
                 <button type="button" class="btn btn-primary opacity-75 w-100 fw-bolder" v-on:click="commitContract()">
                   送出合約
                 </button>
               </div>
-              <!--
               <div class="divider "></div>
               <div class="col-12 py-1">
                 <button type="button" class="btn btn-light w-100" v-on:click="backSearch">
                   <span class="text-black-50">返回合約查詢</span>
                 </button>
               </div>
-              -->
             </div>
+              -->
           </form>
         </div>
       </div>
@@ -1831,7 +1841,7 @@
         };
       },
 
-      // 返回合約查詢
+      // 返回文件查詢
       backSearch() {
         window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
       }
