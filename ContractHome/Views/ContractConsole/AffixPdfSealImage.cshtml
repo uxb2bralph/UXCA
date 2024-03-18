@@ -187,7 +187,7 @@
                 </button>
               </div>
               <div class="col py-1">
-                <button type="button" class="btn btn-primary opacity-75 w-100 fw-bolder" v-on:click="commitContract()">
+                <button type="button" class="btn btn-primary opacity-75 w-100 fw-bolder" v-on:click="commitContract">
                   送出合約
                 </button>
               </div>
@@ -209,7 +209,7 @@
                 </button>
               </div>
               <div class="col py-1">
-                <button type="button" class="btn btn-primary opacity-75 w-100 fw-bolder" v-on:click="commitContract()">
+                <button type="button" class="btn btn-primary opacity-75 w-100 fw-bolder" v-on:click="commitContract">
                   送出合約
                 </button>
               </div>
@@ -227,7 +227,7 @@
             <!--
             <div v-if="!isEdit" class="row g-2 my-0">
               <div class="col-12 py-1 mb-2">
-                <button type="button" class="btn btn-primary opacity-75 w-100 fw-bolder" v-on:click="commitContract()">
+                <button type="button" class="btn btn-primary opacity-75 w-100 fw-bolder" v-on:click="commitContract">
                   送出合約
                 </button>
               </div>
@@ -1088,13 +1088,6 @@
         }
 
         if (this.isEdit) {
-          // 檢查起約人是否有用印
-          //if (!this.form.usedStamp && !hasStamp) {
-          //  this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base">請檢查文件是否已用印</div>`;
-          //  $("#infoModal").modal("show");
-          //  return;
-          //};
-
           if (!hasVm) {
             this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base">請設定簽署人簽章區域</div>`;
             $("#infoModal").modal("show");
@@ -1156,7 +1149,7 @@
                 this.established(ContractID);
               } else {
                 // 失敗
-                this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;
+                this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${message.replace(/、/g, '<br>')} </div>`;
               }
               hideLoading();
               $("#infoModal").modal("show");
@@ -1164,15 +1157,15 @@
         } else {
           postData('@(Url.Action("AcceptContract", "ContractConsole"))', payload)
             .then((res) => {
-              console.log({ hasError, data, message })
-              const { hasError, data, message } = res;
-              if (!hasError) {
+              const { HasError, Data, Message } = res;
+              console.log({ HasError, Data, Message })
+              if (!HasError) {
                 // 成功
-                this.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"> ${"合約已用印"} (${data.dataItem.contractNo})</div>`;
+                this.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"> ${"合約已用印"} (${Data.dataItem.contractNo})</div>`;
                 this.isCreate = true;
               } else {
                 // 失敗
-                this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;
+                this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> 資料有誤 </div>`;
               }
               hideLoading();
               $("#infoModal").modal("show");
