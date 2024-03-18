@@ -260,7 +260,7 @@
 
                   <!-- 待簽署 -->
                   <button v-if="!!item.StampDate && !item.SignerDate" class="btn progresses__steps"
-                    :class="[contract.canSigner && item.IsCurrentUserCompany ? 'progresses__steps--signActived' : 'disabled']"
+                    :class="[canSigner(contract) && item.IsCurrentUserCompany ? 'progresses__steps--signActived' : 'disabled']"
                     v-on:click="signerHandler(contract.KeyID, item.Name, contract.ContractNo, contract.Title)">
                     <i class="fas fa-signature"></i>
                   </button>
@@ -307,7 +307,7 @@
 
                       <!-- 待簽署 -->
                       <button v-if="!!item.StampDate && !item.SignerDate" type="button" class="btn progresses__steps"
-                        :class="[contract.canSigner && item.IsCurrentUserCompany ? 'progresses__steps--signActived' : 'disabled']"
+                        :class="[canSigner(contract) && item.IsCurrentUserCompany ? 'progresses__steps--signActived' : 'disabled']"
                         v-on:click="signerHandler(contract.KeyID, item.Name, contract.ContractNo, contract.Title)">
                         <i class="fas fa-signature"></i>
                       </button>
@@ -942,17 +942,6 @@
         isTitle: true,
         isContractNo: true,
         ViewModel: {},
-        contractStatus: {
-          0: '文件文件上傳',
-          1: '已退回',
-          2: '用印中',
-          3: '用印完成',
-          4: '簽章中',
-          5: '簽章完成',
-          6: '瀏覽',
-          7: '已終止',
-          8: '文件完成',
-        },
         searchStatus: 3,
         isLayoutCard: false,
         alertActived: false,
@@ -1222,14 +1211,10 @@
           data: JSON.stringify(viewModel),
           type: "POST",
           contentType: "application/json;charset=utf-8",
-          success: function (data) {
+          success: async function (data) {
             // 執行 data 中的 function 後，立即移除 function
-            $(data).appendTo($('body')).remove();
+            await $(data).appendTo($('body')).remove();
 
-            setTimeout(() => {
-              self.processContract();
-            }, 200);
-            //}
             hideLoading();
           },
           error: function (xhr, ajaxOptions, thrownError) {
@@ -1240,17 +1225,12 @@
         });
       },
 
-      // 處理文件列表資料
-      processContract() {
-        // 1.取出文件標題
-        this.contractList.forEach(item => {
-          const contractorName = item.Parties.filter(item => !item.isInitiator)
-            .map(item => item.Name)
-            .join('、');
-          const canSigner = item.Parties.filter(item => !item.StampDate).length === 0;
-          item.contractorName = contractorName;
-          item.canSigner = canSigner;
-        })
+      // 是否可簽署
+      canSigner(contract) {
+        console.log({ contract })
+        //const canSigner = parties.filter(item => !item.StampDate).length === 0;
+        const { CurrentStep } = contract;
+        return CurrentStep === 7 || CurrentStep === 10;
       },
 
       // 新增文件 Modal

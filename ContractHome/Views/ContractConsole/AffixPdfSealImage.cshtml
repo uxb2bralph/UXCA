@@ -390,20 +390,8 @@
 
 </div>
 <script>
-  @{
-      // 取得人員資料
-    //var userOrgItems = models.GetTable<OrganizationUser>().Where(u => u.UID == profile.UID);
-  }
-    // 取得公司(乙方) ID 加密
-  @* const companyID = '@Html.Raw(party?.CompanyID.EncryptKey())'; *@
-    // 起約人資料清單
-  @* const dataInitiator = @Html.Raw(userOrgItems.Select(u => new { id = u.CompanyID.EncryptKey(), text = u.Organization.CompanyName }).ToArray().JsonStringify()); *@
-    // 簽署人資料清單
-  @* const contractorAllList = @Html.Raw(models.GetTable<Organization>().Where(o => userOrgItems.Any(u => u.CompanyID == o.CompanyBelongTo)).Select(u => new { id = u.CompanyID.EncryptKey(), companyName = u.CompanyName, receiptNo = u.ReceiptNo }).ToArray().JsonStringify()); *@
-    // 取得上傳 PDF 總頁數
-  @* const pageCount = @(pageCount); *@
+  // 取得上傳 PDF 總頁數
   const { CurrentStep, KeyID: contractID, PageCount, Parties } = @Html.Raw(contractRefsJson);
-  @* const contractInfo = @Html.Raw(contractRefsJson); *@
 
   /**
    * param {Number} StepEnum 文件狀態
@@ -424,19 +412,10 @@
     el: '#AffixPdfSealImage',
     data() {
       return {
-        //contractInfo,
         CurrentStep,
-        //currentUserInfo: {},
-        //editStep: '1',
-        //dataInitiator,
-        //contractorAllList,
-        //contractorList: [],
-        //inputSearchCompany: '',
-        //IsJointContracting,
         PageCount,
         Parties,
         contractID,
-        //companyID,
         selectedPage: 1,
         noteItem: null, // 輸入的文字
         isNoteEmpty: true, // 輸入文字欄位狀態
@@ -452,15 +431,10 @@
         signatories: [],
         form: {
           ContractID: null,
-          //EncUID: null,
-          //Initiator: null,
-          //Contractors: [],
+          EncUID: null,
           FieldSettings: [],
-          //usedStamp: false,
         },
         currentSignator: {},
-        //alertActived: false,
-        //contractorMag: null,
         currentCompany: {},
         signaturePositionsTemp: [], // 設定簽屬區域列表
         contractSignaturePositions: [],
@@ -519,16 +493,9 @@
         });
 
         this.form.ContractID = this.contractID;
-        //this.form.EncUID = getCookie('userID');
-        //this.form.Initiator = this.dataInitiator[0].id;
-        //this.form.Contractors = [];
-        //this.contractorList = [...this.contractorAllList];
-        //this.contractorMag = null;
-        //this.alertActived = false;
         this.signatories = signatoriesMap;
         // 簽署人選單預帶第一筆
         this.selectCompany(signatoriesMap[0]);
-        //this.getContractorList();
         this.getDate();
 
         // 若為第一次登入，顯示歡迎視窗並進入導覽流程
@@ -551,20 +518,6 @@
         }
       },
 
-      // 取得合併資料後的簽署人清單
-      //getContractorList() {
-      //  this.contractorList = this.contractorAllList.map(item => {
-      //    item.text = `${item.companyName} (${item.receiptNo})`;
-      //    return item;
-      //  });
-      //},
-
-      // 格式化字串
-      //formatText(string) {
-      //  const stringLength = string && string.length;
-      //  return stringLength > 10 ? `${string.substring(0, 12)}...` : string;
-      //},
-
       // 卷軸滾動高度
       scrollHeight() {
         const pdfWrapper = document.querySelector("#pdf__wrapper");
@@ -582,11 +535,6 @@
         this.rocYear = this.year - 1911;
       },
 
-      // 簽署步驟
-      //editStepHandler(step) {
-      //  this.editStep = step;
-      //},
-
       // 合約簽署設定查詢
       // 取出當前簽署人簽署區塊資料
       getContractor() {
@@ -597,7 +545,7 @@
 
       // 取得用印範圍資訊
       getFeildSetting(ContractID, CompanyID) {
-        console.log({ ContractID, CompanyID });
+        //console.log({ ContractID, CompanyID });
         const payload = { ContractID, CompanyID };
         showLoading();
         postData('@(Url.Action("FeildSettings", "ContractConsole"))', payload)
@@ -637,131 +585,10 @@
           })
       },
 
-      // 開啟 簽署人設定 Modal
-      //openContractorModal() {
-      //  $('#addContractorModal').modal('show');
-      //},
-
       // 選擇簽約方
       selectCompany(signator) {
         this.currentSignator = signator;
       },
-
-      // 檢查是否重複
-      //hasDuplicateValues() {
-      //  const source = this.selectedContractor;
-      //  let items = [];
-      //  const sourceMap = source.map(sourceItem => {
-      //    sourceItem.isDuplicate = sourceItem.id !== '0' && items.includes(sourceItem.id);
-      //    items.push(sourceItem.id);
-      //    return sourceItem;
-      //  })
-      //
-      //  sourceMap.forEach((item, index) => {
-      //    const currentItem = document.querySelector(`#company_${index}`);
-      //    if (item.isDuplicate) {
-      //      this.hasDuplicateContractor = item.isDuplicate;
-      //      currentItem.classList.add('is-invalid');
-      //    } else {
-      //      this.hasDuplicateContractor = item.isDuplicate;
-      //      currentItem.classList.remove('is-invalid');
-      //    }
-      //  })
-      //},
-
-      // Filter 簽約方資料
-      //searchCompany(string) {
-      //console.log({ string })
-      //this.contractorList = this.contractorAllList.filter(item => item.text.includes(string));
-      //},
-
-      // 初始化簽約方名單
-      //initContractor() {
-      //this.inputSearchCompany = '';
-      //this.contractorList = [...this.contractorAllList];
-      //this.getContractorList();
-      //},
-
-      // 新增簽署單位資料
-      //addContractor() {
-      //  this.selectedContractor.push({
-      //    id: '0',
-      //    text: null,
-      //    isDuplicate: false
-      //  });
-      //},
-
-      // 刪除簽署單位資料
-      //deleteContractor(obj, index) {
-      //  if (this.selectedContractor.length === 1) {
-      //    this.contractorMag = '簽署單位至少要填一筆資料。';
-      //    this.alertActived = true;
-      //    return
-      //  }
-      //  this.selectedContractor.splice(index, 1);
-      //},
-
-      //closeAlert() {
-      //  this.alertActived = !this.alertActived;
-      //  this.contractorMag = null;
-      //},
-
-      // 選擇簽署人
-      //contractorHandler() {
-      // 檢查簽約方資料有無填寫
-      //const selectedItem = [...this.selectedContractor];
-      //selectedItem.forEach((item, index) => {
-      //  const currentItem = document.querySelector(`#company_${index}`);
-      //  const isEmpty = item.id === '0';
-      //  const isDuplicate = item.isDuplicate;
-      //  // 顯示 UI 狀態
-      //  if (isEmpty || isDuplicate) {
-      //    currentItem.classList.add('is-invalid');
-      //  } else {
-      //    currentItem.classList.remove('is-invalid');
-      //  }
-      //});
-
-      //const hasEmpty = selectedItem.filter(item => item.id === '0').length > 0;
-      //const hasDuplicate = selectedItem.filter(item => item.isDuplicate).length > 0;
-
-      // 簽署單位未選取不給過
-      //if (hasEmpty) {
-      //  this.contractorMag = '簽署單位有未選取簽署人，請檢查。';
-      //  this.alertActived = true;
-      //  return;
-      //};
-
-      // 簽署單位重複選取不給過
-      //if (hasDuplicate) return;
-
-      //const contractorArray = this.selectedContractor.map(item => item.id);
-      //const contractorFilter = this.contractorAllList
-      //  .filter(item => {
-      //    return contractorArray.includes(item.id)
-      //  })
-      //  .map((item, index) => {
-      //    return {
-      //      ...item,
-      //      btnClass: `bd-0${index}`,
-      //      ItemClass: `vmBox__wrapper--bg0${index}`
-      //    }
-      //  });
-      //this.companyList = [...contractorFilter];
-      //this.form.Contractors = [];
-      //contractorFilter.forEach((item, index) => {
-      //  this.form.Contractors.push({ Contractor: item.id, Text: item.text });
-      //});
-
-      // 多人簽署時重新送出表單後會檢查簽數人是否有更動，並調整已圈選的元件
-      //let signaturePositions = this.signaturePositionsTemp;
-      //if (this.IsJointContracting && signaturePositions.length > 0) {
-
-      //  this.signaturePositionsTemp = signaturePositions.filter(item => contractorArray.includes(item.UserId));
-      //  this.loadPageItem(this.selectedPage - 1);
-      //}
-      //$('#addContractorModal').modal('hide');
-      //},
 
       // 編輯欄 選擇頁碼
       pageHandler() {
@@ -1066,8 +893,7 @@
       commitContract() {
         const self = this;
         const { ContractID } = this.form;
-        const payload = { ContractID };
-        //const hasStamp = this.sealTempList.length > 0;
+        const payload = {};
         const hasVm = this.signaturePositionsTemp.length > 0;
         let positionsMap = [];
         if (hasVm) {
@@ -1107,34 +933,15 @@
             return;
           };
         }
-        /** 
-         * 多人簽署時，圈選框各自存回簽署人資料列
-         * 非多人簽署時，相同圈選框複製到簽署人資料列
-         */
-        //if (this.IsJointContracting) {
-        //payload.Signatories
-        //  .map(item => {
-        //    const filterList = this.signaturePositionsTemp.filter(spItem => {
-        //      return spItem.UserId === item.KeyID;
-        //    });
-        //    item.SignaturePositions = filterList;
-        //  });
-        //} else {
-        //  payload.Contractors
-        //    .map(item => {
-        //      const { Contractor } = item
-        //      const filterList = this.signaturePositionsTemp.map(spItem => {
-        //        return {
-        //          ...spItem,
-        //          UserId: Contractor
-        //        }
-        //      });
-        //      item.SignaturePositions = filterList;
-        //    });
-        //}
-        payload.FieldSettings = positionsMap;
+
+        if (this.isEdit) {
+          payload.ContractID = ContractID;
+          payload.FieldSettings = positionsMap;
+        } else {
+          payload.KeyID = ContractID;
+        }
         console.log({ payload });
-        //return;
+        // return;
 
         showLoading();
         if (this.isEdit) {
@@ -1143,8 +950,6 @@
               const { hasError, data, message } = res;
               console.log({ hasError, data, message })
               if (!hasError) {
-                // 成功
-                //this.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"> ${"已建立新合約"} (${data.dataItem.contractNo})</div>`;
                 // 文件已填寫並用印完畢則建立合約
                 this.established(ContractID);
               } else {
@@ -1157,11 +962,11 @@
         } else {
           postData('@(Url.Action("AcceptContract", "ContractConsole"))', payload)
             .then((res) => {
-              const { HasError, Data, Message } = res;
-              console.log({ HasError, Data, Message })
-              if (!HasError) {
+              const { result, dataItem, HasError, Data, Message } = res;
+              console.log({ result, dataItem, HasError, Data, Message })
+              if (!!result || !HasError) {
                 // 成功
-                this.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"> ${"合約已用印"} (${Data.dataItem.contractNo})</div>`;
+                this.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"> ${dataItem.title} <br> (${dataItem.contractNo}) <br> 合約已用印 </div>`;
                 this.isCreate = true;
               } else {
                 // 失敗
@@ -1557,13 +1362,6 @@
         const contractArea = document.querySelector("#contractImg");
         const pdfWrapper = document.querySelector("#pdf__wrapper");
 
-        //if (this.IsJointContracting && !this.currentCompany.id) {
-        //  this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base">1.請先邀請簽署人。<br>2.指定簽署人後再設定簽署位置。</div>`;
-
-        //  $("#infoModal").modal("show");
-        //  return;
-        //}
-
         // 產生一個虛擬 textBox
         const textBox = document.createElement("div");
         // id 動態產生
@@ -1814,12 +1612,6 @@
           self.unBinding(contractArea);
         }
       },
-
-      // 簽署人設定區塊
-      //signatorSetHandler(company) {
-      //  this.currentCompany = this.companyList.filter(item => item.id
-      //    === company.id)[0];
-      //},
 
       // 關閉訊息Modal後的導頁
       isCloseHandler() {
