@@ -1212,14 +1212,16 @@ namespace ContractHome.Controllers
                 return result;
             }
 
-            if (contract.InProgress ?? false)
-            {
-                return Json(new { result = false });
-            }
+            #region 測試後再打開
+            //if (contract.InProgress ?? false)
+            //{
+            //    return Json(new { result = false });
+            //}
 
-            contract.InProgress = true;
-            models.SubmitChanges();
-
+            //contract.InProgress = true;
+            //models.SubmitChanges();
+            #endregion
+            
             UserProfile profile = (UserProfile)ViewBag.Profile;
             if (!item.SignerID.HasValue)
             {
