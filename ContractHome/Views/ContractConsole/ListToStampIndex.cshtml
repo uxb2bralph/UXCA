@@ -1227,8 +1227,6 @@
 
       // 是否可簽署
       canSigner(contract) {
-        console.log({ contract })
-        //const canSigner = parties.filter(item => !item.StampDate).length === 0;
         const { CurrentStep } = contract;
         return CurrentStep === 7 || CurrentStep === 10;
       },

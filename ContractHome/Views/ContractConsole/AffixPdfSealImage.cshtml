@@ -893,9 +893,12 @@
       commitContract() {
         const self = this;
         const { ContractID } = this.form;
-        const payload = {};
         const hasVm = this.signaturePositionsTemp.length > 0;
+        const signerInfo = this.Parties.map(({ Name, KeyID }) => ({ Name, KeyID }));
+        const signerIdArray = this.Parties.map(({ Name, KeyID }) => KeyID);
+        const payload = {};
         let positionsMap = [];
+       
         if (hasVm) {
           positionsMap = this.signaturePositionsTemp.map(item => {
             const { Id, UserId, MarginTop, MarginLeft, ScaleWidth, ScaleHeight, SealScale, PageIndex, Type } = item;
@@ -914,11 +917,21 @@
         }
 
         if (this.isEdit) {
+          const signCompanyId = this.signaturePositionsTemp.filter(item => signerIdArray.includes(item.UserId)).map(({UserId}) => UserId);
+          const notSignCompany = signerInfo.filter(item => !signCompanyId.includes(item.KeyID)).map(item => item.Name);
+          // 全部沒圈選
           if (!hasVm) {
             this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base">請設定簽署人簽章區域</div>`;
             $("#infoModal").modal("show");
             return;
           };
+
+          // 部分沒圈選
+          if (notSignCompany.length > 0) {
+            this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base">${notSignCompany.join('、')} 請設定簽署人簽章區域</div>`;
+            $("#infoModal").modal("show");
+            return;
+          }
         } else {
           // 簽暑人送出合約前，先檢查是否有漏填的簽章
           const signatureCount = this.contractSignaturePositions.length;
@@ -933,6 +946,7 @@
             return;
           };
         }
+        return;
 
         if (this.isEdit) {
           payload.ContractID = ContractID;
