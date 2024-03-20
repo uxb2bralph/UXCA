@@ -343,20 +343,82 @@
           <nav aria-label="Page navigation">
             <ul class="pagination justify-content-center mb-0">
               <!-- 第一頁 -->
+              <!--
               <li class=" page-item" :class="{'disabled' : page === 1}">
                 <a class="page-link" v-on:click="firstPage">
                   <i class="far fa-step-backward"></i>
                 </a>
               </li>
+              -->
               <!-- 前一頁 -->
               <li class=" page-item" :class="{'disabled' : page === 1}">
                 <a class="page-link" v-on:click="previousPage">
                   <i class="fal fa-chevron-left"></i>
                 </a>
               </li>
+              <li v-if="totalPages >= 8 && page >= 5" :v-model="page" class="page-item" :class="{'active' : page === 1}">
+                <a class="page-link" v-on:click="changePage(1)">{{ 1 }}</a>
+              </li>
+              <li v-if="totalPages >= 8 && page >= 5" class="px-2 d-flex align-items-center">
+                <i class="far fa-ellipsis-h"></i>
+              </li>
               <!-- 頁面列表 -->
-              <li v-for="n in totalPages" :key="n" :v-model="page" class="page-item" :class="{'active' : page === n}">
-                <a class="page-link" v-on:click="changePage(n)">{{ n }}</a>
+              <!-- 總頁數 < 8 -->
+              <template v-if="totalPages < 8">
+                <li v-for="n in totalPages" :key="n" :v-model="page" class="page-item" :class="{'active' : page === n}">
+                  <a class="page-link" v-on:click="changePage(n)">{{ n }}</a>
+                </li>
+              </template>
+              <!-- 總頁數 >= 8，當前頁數 < 5 -->
+              <template v-if="totalPages >= 8 && page < 5">
+                <li v-for="n in 5" :key="n" :v-model="page" class="page-item" :class="{'active' : page === n}">
+                  <a class="page-link" v-on:click="changePage(n)">{{ n }}</a>
+                </li>
+              </template>
+              <!-- 總頁數 >= 8，當前頁數 >= 5 ，當前頁數 < 總頁數 - 5 -->
+              <template v-if="totalPages >= 8 && page >= 5 && page < totalPages - 5">
+                <li :v-model="page" class="page-item" :class="{'active' : page === page - 2}">
+                  <a class="page-link" v-on:click="changePage(page - 2)">{{ page - 2 }}</a>
+                </li>
+                <li :v-model="page" class="page-item" :class="{'active' : page === page - 1}">
+                  <a class="page-link" v-on:click="changePage(page - 1)">{{ page - 1 }}</a>
+                </li>
+                <li :v-model="page" class="page-item" :class="{'active' : page === page}">
+                  <a class="page-link" v-on:click="changePage(page)">{{ page }}</a>
+                </li>
+                <li :v-model="page" class="page-item" :class="{'active' : page === page + 1}">
+                  <a class="page-link" v-on:click="changePage(page + 1)">{{ page + 1 }}</a>
+                </li>
+                <li :v-model="page" class="page-item" :class="{'active' : page === page + 2}">
+                  <a class="page-link" v-on:click="changePage(page + 2)">{{ page + 2 }}</a>
+                </li>
+              </template>
+              <!-- 當前頁數 >= 總頁數 - 6 -->
+              <template v-if="totalPages >= 8 && page >= totalPages - 5">
+                <li :v-model="page" class="page-item" :class="{'active' : page === totalPages - 5}">
+                  <a class="page-link" v-on:click="changePage(totalPages - 5)">{{ totalPages - 5 }}</a>
+                </li>
+                <li :v-model="page" class="page-item" :class="{'active' : page === totalPages - 4}">
+                  <a class="page-link" v-on:click="changePage(totalPages - 4)">{{ totalPages - 4 }}</a>
+                </li>
+                <li :v-model="page" class="page-item" :class="{'active' : page === totalPages - 3}">
+                  <a class="page-link" v-on:click="changePage(totalPages - 3)">{{ totalPages - 3 }}</a>
+                </li>
+                <li :v-model="page" class="page-item" :class="{'active' : page === totalPages - 2}">
+                  <a class="page-link" v-on:click="changePage(totalPages - 2)">{{ totalPages - 2 }}</a>
+                </li>
+                <li :v-model="page" class="page-item" :class="{'active' : page === totalPages - 1}">
+                  <a class="page-link" v-on:click="changePage(totalPages - 1)">{{ totalPages - 1 }}</a>
+                </li>
+                <li :v-model="page" class="page-item" :class="{'active' : page === totalPages}">
+                  <a class="page-link" v-on:click="changePage(totalPages)">{{ totalPages }}</a>
+                </li>
+              </template>
+              <li v-if="totalPages >= 8 && page < totalPages - 5" class="px-2 d-flex align-items-center">
+                <i class="far fa-ellipsis-h"></i>
+              </li>
+              <li v-if="totalPages >= 8 && page < totalPages - 5" :v-model="page" class="page-item" :class="{'active' : page === totalPages}">
+                <a class="page-link" v-on:click="changePage(totalPages)">{{ totalPages }}</a>
               </li>
               <!-- 下一頁 -->
               <li class="page-item" :class="{'disabled' : page === totalPages}">
@@ -365,11 +427,13 @@
                 </a>
               </li>
               <!-- 最後一頁 -->
+              <!--
               <li class="page-item" :class="{'disabled' : page === totalPages}">
                 <a class="page-link" v-on:click="lastPage">
                   <i class="far fa-step-forward"></i>
                 </a>
               </li>
+              -->
             </ul>
           </nav>
         </div>
