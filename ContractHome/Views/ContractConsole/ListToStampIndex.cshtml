@@ -1211,9 +1211,9 @@
           data: JSON.stringify(viewModel),
           type: "POST",
           contentType: "application/json;charset=utf-8",
-          success: async function (data) {
+          success: function (data) {
             // 執行 data 中的 function 後，立即移除 function
-            await $(data).appendTo($('body')).remove();
+            $(data).appendTo($('body')).remove();
 
             hideLoading();
           },
