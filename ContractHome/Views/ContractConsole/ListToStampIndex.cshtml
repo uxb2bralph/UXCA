@@ -66,6 +66,8 @@
         </div>
         <div
           class="col-12 col-md-6 pb-2 order-1 order-md-2 d-flex align-items-center justify-content-center justify-content-md-end">
+          <button type="button" class="btn btn-sm btn-primary" v-on:click="openUserCertDialog">測試憑證</button>
+          <span class="px-3 text-black-50"> | </span>
           <div id="tourbutton" class="tooltip__wrapper">
             <button type="button" class="px-1 btn btn-lg btn-warning rounded-pill opacity-75" style="width: 48px;"
               v-on:click="tourHandler">
@@ -345,7 +347,8 @@
                   <i class="fal fa-chevron-left"></i>
                 </a>
               </li>
-              <li v-if="totalPages >= 8 && page >= 5" :v-model="page" class="page-item" :class="{'active' : page === 1}">
+              <li v-if="totalPages >= 8 && page >= 5" :v-model="page" class="page-item"
+                :class="{'active' : page === 1}">
                 <a class="page-link" v-on:click="changePage(1)">{{ 1 }}</a>
               </li>
               <li v-if="totalPages >= 8 && page >= 5" class="px-2 d-flex align-items-center">
@@ -406,7 +409,8 @@
               <li v-if="totalPages >= 8 && page < totalPages - 5" class="px-2 d-flex align-items-center">
                 <i class="far fa-ellipsis-h"></i>
               </li>
-              <li v-if="totalPages >= 8 && page < totalPages - 5" :v-model="page" class="page-item" :class="{'active' : page === totalPages}">
+              <li v-if="totalPages >= 8 && page < totalPages - 5" :v-model="page" class="page-item"
+                :class="{'active' : page === totalPages}">
                 <a class="page-link" v-on:click="changePage(totalPages)">{{ totalPages }}</a>
               </li>
               <!-- 下一頁 -->
@@ -867,6 +871,93 @@
       </div>
     </div>
 
+    <!-- 開啟憑證檢查 Dialog -->
+    <div class="modal fade" id="userCertModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+      aria-labelledby="userCertModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title fw-bolder" id="staticBackdropLabel">憑證綁定</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+              <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
+                <path
+                  d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
+              </symbol>
+              <symbol id="info-fill" fill="currentColor" viewBox="0 0 16 16">
+                <path
+                  d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" />
+              </symbol>
+              <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
+                <path
+                  d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+              </symbol>
+            </svg>
+            <div class="alert alert-primary d-flex align-items-center" role="alert">
+              <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:">
+                <use xlink:href="#info-fill" />
+              </svg>
+              <div>
+                請準備好讀卡機及工商憑證 / 自然人憑證以進行身分綁定。
+                <br>
+                請先安裝
+                <a title="https://api-hisecurecdn.cdn.hinet.net/HiCOS_Client.zip"
+                  href="https://api-hisecurecdn.cdn.hinet.net/HiCOS_Client.zip" class="alert-link">HiCOS卡片管理工具(ZIP)</a>
+                ，可協助檢查用戶IC卡與讀卡機驅動程式是否安裝成功，IC卡能否讀取，並提供PIN碼驗證，簽章驗章與加解密功能檢測。
+                <a title="HICOS卡片管理工具使用說明(PDF)" href="http://moica.nat.gov.tw/download/File/HiCOS.pdf"
+                  class="alert-link">HICOS卡片管理工具使用說明(PDF)</a>
+              </div>
+            </div>
+            <div class="container">
+              <div class="row pt-3 pb-3 mb-3 border-bottom border-1">
+                <div class="col input__height">
+                  <div class="row">
+                    <label for="Pin" class="col-sm-12 col-md-2 col-form-label fs-14 fw-bolder">PIN碼</label>
+                    <div class="col-sm-12 col-md-10">
+                      <input ref="pin" v-model="signature.pin" type="password" class="form-control" name="Pin"
+                        id="Pin" />
+                      <div class="invalid-feedback text-end">
+                        {{ '請輸入卡片PIN碼' }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-if="signatureInfo.message || signatureInfo.message2">
+              <div class="alert alert-danger d-flex align-items-center" role="alert">
+                <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:">
+                  <use xlink:href="#exclamation-triangle-fill" />
+                </svg>
+                <div>
+                  {{ signatureInfo.message }} <br> {{ signatureInfo.message2 }}
+                </div>
+              </div>
+            </div>
+            <div v-if="signatureInfo.ret_code === 0" class="alert alert-success" role="alert">
+              <dl class="row">
+                <dt class="col-md-3">cardSN (卡號)：</dt>
+                <dd class="col-md-9">{{signatureInfo.cardSN}}</dd>
+                <dt class="col-md-3">ret_code (結果)：</dt>
+                <dd class="col-md-9">{{signatureInfo.ret_code}}</dd>
+                <dt class="col-md-3">signature (簽章值)：</dt>
+                <dd class="col-md-9 text-break">{{signatureInfo.signature}}</dd>
+                <dt class="col-md-3">certb64 (憑證)：</dt>
+                <dd class="col-md-9 text-break">{{signatureInfo.certb64}}</dd>
+              </dl>
+            </div>
+          </div>
+          <div class="modal-footer border-top-0 justify-content-center">
+            <button type="button" class="btn btn-secondary opacity-50" data-bs-dismiss="modal">取消</button>
+            <button type="button" class="btn btn-primary" v-on:click="getUserCert()">讀取憑證</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
     <!-- 訊息 Dialog -->
     <div class="modal fade" id="infoModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
       aria-labelledby="infoModalLabel" aria-hidden="true">
@@ -1012,7 +1103,29 @@
         contractorAllList: [],
         contractorList: [],
         drag: false,
-        isDraggable: false
+        isDraggable: false,
+        // 憑證簽章
+        signature: {
+          type: 'PKCS1',
+          tbs: 'uxb2b',
+          tbsEncoding: 'none',
+          pin: '',
+          hashAlgorithm: 'SHA256',
+          nonce: '',
+          withCardSN: 'false'
+        },
+        // 取得簽章資訊
+        signatureInfoInit: {
+          cardSN: null,
+          ret_code: null,
+          signature: null,
+          certb64: null,
+          last_error: null,
+          message: null,
+          message2: null,
+        },
+        signatureInfo: {},
+        certInfo: null
       };
     },
     computed: {
@@ -1034,6 +1147,10 @@
     mounted() {
       // 取得當前使用者資料
       this.getCurrentUserInfo();
+
+      // 憑證通道
+      const self = this;
+      window.addEventListener("message", receiveMessage, false);
 
       // 若為第一次登入，顯示歡迎視窗並進入導覽流程
       if (!localStorage.getItem("isContractTour")) {
@@ -1650,7 +1767,7 @@
 
       // 檢核日期欄位
       checkExpiryDateTimeString(event) {
-        console.log({ event })
+        //console.log({ event })
         const currentItem = event.target;
         if (this.selectExpiryDateTime === 0) {
           let isDate = false;
@@ -1681,7 +1798,37 @@
             currentItem.classList.remove('is-invalid');
           }
         }
-      }
+      },
+
+      // 開啟憑證檢查 Dialog
+      openUserCertDialog() {
+        this.signature.pin = '';
+        this.signatureInfo = { ...this.signatureInfoInit };
+        $("#userCertModal").modal("show");
+      },
+
+      // 讀取憑證
+      getUserCert() {
+        const isPin = !!this.signature.pin;
+        // 檢核是否有輸入卡片 PIN 碼
+        if (!isPin) {
+          this.$refs.pin.classList.add('is-invalid');
+          return;
+        } else {
+          this.$refs.pin.classList.remove('is-invalid');
+        }
+
+        popupForm = window.open(
+          "http://localhost:61161/popupForm",
+          "popupForm",
+          "height=175, width=80, left=100, top=20"
+        );
+        popupForm.postMessage("hello there!", "http://localhost:61161");
+        timeout = setTimeout(() => {
+          popupForm.close();
+          alert("尚未安裝元件");
+        }, 5000);
+      },
     }
   });
 
@@ -1734,5 +1881,41 @@
         $(data).appendTo($('body'));
       }
     });
+  }
+
+  let popupForm;
+  let timeout;
+
+  function receiveMessage(event) {
+    if (event.origin !== "http://localhost:61161") return;
+
+    let ret = JSON.parse(event.data);
+    if (ret.func === "getTbs") {
+      clearTimeout(timeout);
+
+      // 進行數位簽章
+      const tbsData = {
+        func: "MakeSignature",
+        signatureType: app.$data.signature.type,
+        tbs: app.$data.signature.tbs,
+        tbsEncoding: app.$data.signature.tbsEncoding,
+        pin: app.$data.signature.pin,
+        hashAlgorithm: app.$data.signature.hashAlgorithm,
+        nonce: app.$data.signature.nonce,
+        withCardSN: app.$data.signature.withCardSN,
+      };
+      popupForm.postMessage(JSON.stringify(tbsData), "*");
+    } else {
+      // 將簽章結果寫入欄位
+      const result = JSON.parse(event.data);
+      console.log('event:', result);
+      app.$data.signatureInfo.cardSN = result.cardSN;
+      app.$data.signatureInfo.ret_code = result.ret_code;
+      app.$data.signatureInfo.signature = result.signature;
+      app.$data.signatureInfo.certb64 = result.certb64;
+      app.$data.signatureInfo.last_error = result.last_error;
+      app.$data.signatureInfo.message = result.message || null;
+      app.$data.signatureInfo.message2 = result.message2 || null;
+    }
   }
 </script>

@@ -898,7 +898,7 @@
         const signerIdArray = this.Parties.map(({ Name, KeyID }) => KeyID);
         const payload = {};
         let positionsMap = [];
-       
+
         if (hasVm) {
           positionsMap = this.signaturePositionsTemp.map(item => {
             const { Id, UserId, MarginTop, MarginLeft, ScaleWidth, ScaleHeight, SealScale, PageIndex, Type } = item;
@@ -917,7 +917,7 @@
         }
 
         if (this.isEdit) {
-          const signCompanyId = this.signaturePositionsTemp.filter(item => signerIdArray.includes(item.UserId)).map(({UserId}) => UserId);
+          const signCompanyId = this.signaturePositionsTemp.filter(item => signerIdArray.includes(item.UserId)).map(({ UserId }) => UserId);
           const notSignCompany = signerInfo.filter(item => !signCompanyId.includes(item.KeyID)).map(item => item.Name);
           // 全部沒圈選
           if (!hasVm) {
@@ -946,7 +946,6 @@
             return;
           };
         }
-        return;
 
         if (this.isEdit) {
           payload.ContractID = ContractID;
