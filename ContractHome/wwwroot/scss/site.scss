@@ -841,8 +841,8 @@ html, body {
   &__wrapper {
     padding: 2px;
     display: flex;
-    height: 50px;
-    width: 220px;
+    height: 120px;
+    width: 120px;
     align-items: center;
     justify-content: center;
     border: 2px dashed #0d6efd;
@@ -890,14 +890,21 @@ html, body {
     }
   }
   &__note {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
     color: #FFFFFF;
     font-weight: 700;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+    overflow: hidden;
+    white-space: nowrap;
   }
   &__subtext {
     position: absolute;
     bottom: -22px;
-    left: 0;
+    //left: 0;
     white-space: nowrap;
     font-size: 13px;
     color: #666666;

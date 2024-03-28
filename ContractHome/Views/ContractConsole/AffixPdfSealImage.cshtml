@@ -1381,7 +1381,7 @@
         const uuid = ui_uuid8();
         textBox.id = uuid;
         textBox.setAttribute('class', 'vmBox__wrapper');
-        textBox.setAttribute('style', `top: calc(${(contractArea.offsetTop + Number(self.scrolly))}px); left: calc(${(contractArea.offsetWidth - 170) / 2}px);`);
+        textBox.setAttribute('style', `top: calc(${(contractArea.offsetTop + Number(self.scrolly))}px); left: calc(${(contractArea.offsetWidth - 120) / 2}px);`);
 
         const typeText = this.inputType.filter(item => item.value === type)[0].text;
 
@@ -1408,9 +1408,9 @@
           Type: type,
           PageIndex: this.selectedPage - 1,
           SealScale: 100,
-          ScaleWidth: 170,
-          ScaleHeight: 50,
-          MarginLeft: ((contractArea.offsetWidth - 170) / 2).toFixed(2),
+          ScaleWidth: 120,
+          ScaleHeight: 120,
+          MarginLeft: ((contractArea.offsetWidth - 120) / 2).toFixed(2),
           MarginTop: (contractArea.offsetTop + Number(self.scrolly)).toFixed(2),
           canEdit: true,
           UserId: this.currentSignator.KeyID || null,
@@ -1523,8 +1523,8 @@
         contractArea.onmousemove = function (ev) {
           ev.preventDefault();
           // 設置區塊的最小縮放為100*30
-          let w = Math.max(160, ev.clientX - pos.x + pos.w);
-          let h = Math.max(30, ev.clientY - pos.y + pos.h);
+          let w = Math.max(35, ev.clientX - pos.x + pos.w);
+          let h = Math.max(35, ev.clientY - pos.y + pos.h);
 
           // 設置區塊的最大寬高
           textBox.style.width = w + 'px';
