@@ -356,7 +356,8 @@
                   <i class="fal fa-chevron-left"></i>
                 </a>
               </li>
-              <li v-if="totalPages >= 8 && page >= 5" :v-model="page" class="page-item" :class="{'active' : page === 1}">
+              <li v-if="totalPages >= 8 && page >= 5" :v-model="page" class="page-item"
+                :class="{'active' : page === 1}">
                 <a class="page-link" v-on:click="changePage(1)">{{ 1 }}</a>
               </li>
               <li v-if="totalPages >= 8 && page >= 5" class="px-2 d-flex align-items-center">
@@ -417,7 +418,8 @@
               <li v-if="totalPages >= 8 && page < totalPages - 5" class="px-2 d-flex align-items-center">
                 <i class="far fa-ellipsis-h"></i>
               </li>
-              <li v-if="totalPages >= 8 && page < totalPages - 5" :v-model="page" class="page-item" :class="{'active' : page === totalPages}">
+              <li v-if="totalPages >= 8 && page < totalPages - 5" :v-model="page" class="page-item"
+                :class="{'active' : page === totalPages}">
                 <a class="page-link" v-on:click="changePage(totalPages)">{{ totalPages }}</a>
               </li>
               <!-- 下一頁 -->
@@ -474,53 +476,39 @@
                   <i class="fad fa-file-contract fa-lg"></i>
                 </div>
                 <div>
+                  <div class="fs-12 text-black-50">
+                    <span>建立：{{ signerStatusData.CreatedDateTime }}</span>
+                  </div>
                   <div class="fw-bolder">
                     {{ signerStatusData.Title }}
-                  </div>
-                  <div class="fs-12 text-black-50">
-                    <span>建立：{{ signerStatusData.Initiator?.StampDate }}</span>
-                    <!--span class="ps-3">最近修改：{{ signerStatusData.CurrentEditDate }}</span-->
                   </div>
                 </div>
               </div>
             </div>
             <!-- 用印流程 -->
             <div class="card p-2 my-2">
-              <!-- 起約人 -->
-              <div class="d-flex align-items-center">
-                <div class="col d-flex align-items-center">
-                  <div class="progresses__steps"
-                    :class="{'progresses__steps--done': signerStatusData.Initiator?.StampDate && signerStatusData.Initiator?.SignerDate }">
-                    <span><i class="fas"
-                        :class="[!signerStatusData.Initiator?.StampDate ? 'fa-stamp': !signerStatusData.Initiator?.SignerDate ? 'fa-signature': 'fa-circle']"></i></span>
+              <template v-for="(item, index) in signerStatusData.Parties">
+                <div class="d-flex align-items-center" :key="index">
+                  <div class="col d-flex align-items-center">
+                    <div class="progresses__steps"
+                      :class="{'progresses__steps--done': item.StampDate && item.SignerDate }">
+                      <span>
+                        <i class="fas"
+                          :class="[!item.StampDate ? 'fa-stamp': !item.SignerDate ? 'fa-signature': 'fa-circle']"></i>
+                      </span>
+                    </div>
+                    <div class="ps-2">
+                      <!-- 起約人 -->
+                      <span v-if="item.isInitiator" class="badge bg-primary opacity-75">{{ item.Name }}</span>
+                      <!-- 簽約人 -->
+                      <span v-else class="badge bg-warning text-dark opacity-75">{{ item.Name }}</span>
+                    </div>
                   </div>
-                  <div class="ps-2">
-                    <span class="badge bg-primary opacity-75">{{ signerStatusData.Initiator?.Name }}</span>
-                  </div>
+                  <div class="col fw-bolder text-end text-primary opacity-75 fs-13 pe-3"
+                    :class="{'text-success': item.StampDate && item.SignerDate}">
+                    {{ StepEnum[item.Step] }}</div>
                 </div>
-                <div class="col fw-bolder text-center text-primary opacity-75 fs-13"
-                  :class="{'text-success': signerStatusData.Initiator?.StampDate && signerStatusData.Initiator?.SignerDate}">
-                  {{ !signerStatusData.Initiator?.StampDate ? '待用印': !signerStatusData.Initiator?.SignerDate ?
-                  '待簽署': '已完成' }}</div>
-              </div>
-              <!-- 簽約人 -->
-              <div v-for="(item, index) in signerStatusData.Contractor" :key="index" class="d-flex align-items-center">
-                <div class="col d-flex align-items-center">
-                  <div class="progresses__steps"
-                    :class="{'progresses__steps--done': item.StampDate && item.SignerDate }">
-                    <span><i class="fas"
-                        :class="[!item.StampDate ? 'fa-stamp': !item.SignerDate ? 'fa-signature': 'fa-circle']"></i></span>
-                  </div>
-                  <div class="ps-2">
-                    <span class="badge bg-warning text-dark opacity-75">{{ item.Name }}</span>
-                  </div>
-                </div>
-                <div class="col fw-bolder text-center text-primary opacity-75 fs-13"
-                  :class="{'text-success': item.StampDate && item.SignerDate }">
-                  {{ !item.StampDate ? '待用印': !item.SignerDate ?
-                  '待簽署': '已完成' }}
-                </div>
-              </div>
+              </template>
             </div>
           </div>
         </div>
@@ -547,21 +535,19 @@
                     {{ historyData.Title }}
                   </div>
                   <div class="fs-12 text-black-50">
-                    建立：{{ historyData.Initiator?.StampDate }}
-                    <br>
-                    <!-- 最近修改：{{ historyData.CurrentEditDate }} -->
+                    建立：{{ historyData.CreatedDateTime }}
                   </div>
                 </div>
               </div>
               <div class="w-50">
-                <div class="py-1 d-flex align-items-start">
-                  <span class="badge bg-primary opacity-75">起約人</span>：
-                  <span class="fs-13">{{ historyData.Initiator?.Name }}</span>
-                </div>
-                <div class="d-flex align-items-start">
-                  <span class="badge bg-warning text-dark opacity-75">簽約人</span>：
-                  <span class="fs-13">{{ historyData.contractorName }}</span>
-                </div>
+                <template v-for="(item, index) in historyData.Parties">
+                  <div class="d-flex align-items-start" :class="{'py-1': index === 0}" :key="index">
+                    <span v-if="index === 0" class="badge bg-primary opacity-75">起約人</span>
+                    <span v-else class="badge bg-warning text-dark opacity-75">簽約人</span>
+                    ：
+                    <span class="fs-13">{{ item.Name }}</span>
+                  </div>
+                </template>
               </div>
             </div>
             <!-- 稽核軌跡 -->
@@ -698,7 +684,22 @@
       signerStatusData: {},
       historyData: {},
       stopContractData: {},
-      isLayoutCard: false
+      isLayoutCard: false,
+      // 文件狀態
+      StepEnum: {
+        0: '開始',
+        1: '設定',
+        3: '欄位設定',
+        5: '建立',
+        6: '用印中',
+        7: '用印完成',
+        10: '簽章中',
+        11: '簽章完成',
+        16: '瀏覽',
+        17: '已終止',
+        18: '完成',
+        19: '撤銷',
+      }
     },
     watch: {
       // 檢查公司名稱輸入框的值，並執行Autocomplate

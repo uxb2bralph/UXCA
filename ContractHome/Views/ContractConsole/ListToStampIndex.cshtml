@@ -731,7 +731,6 @@
                 <div>
                   <div class="fs-12 text-black-50">
                     <span>{{ signerStatusData.CreatedDateTime }}</span>
-                    <!--span class="ps-3">最近修改：{{ signerStatusData.CurrentEditDate }}</span-->
                   </div>
                   <div class="fw-bolder">
                     {{ signerStatusData.Title }}
@@ -742,40 +741,25 @@
             <!-- 用印流程 -->
             <div class="card p-2 my-2">
               <template v-for="(item, index) in signerStatusData.Parties">
-                <!-- 起約人 -->
-                <div v-if="index === 0" class="d-flex align-items-center" :key="index">
+                <div class="d-flex align-items-center" :key="index">
                   <div class="col d-flex align-items-center">
                     <div class="progresses__steps"
                       :class="{'progresses__steps--done': item.StampDate && item.SignerDate }">
-                      <span><i class="fas"
-                          :class="[!item.StampDate ? 'fa-stamp': !item.SignerDate ? 'fa-signature': 'fa-circle']"></i></span>
+                      <span>
+                        <i class="fas"
+                          :class="[!item.StampDate ? 'fa-stamp': !item.SignerDate ? 'fa-signature': 'fa-circle']"></i>
+                      </span>
                     </div>
                     <div class="ps-2">
-                      <span class="badge bg-primary opacity-75">{{ item.Name }}</span>
+                      <!-- 起約人 -->
+                      <span v-if="item.isInitiator" class="badge bg-primary opacity-75">{{ item.Name }}</span>
+                      <!-- 簽約人 -->
+                      <span v-else class="badge bg-warning text-dark opacity-75">{{ item.Name }}</span>
                     </div>
                   </div>
                   <div class="col fw-bolder text-end text-primary opacity-75 fs-13 pe-3"
                     :class="{'text-success': item.StampDate && item.SignerDate}">
-                    {{ !item.StampDate ? '待用印': !item.SignerDate ?
-                    '待簽署': '已完成' }}</div>
-                </div>
-                <!-- 簽約人 -->
-                <div v-else class="d-flex align-items-center" :key="index">
-                  <div class="col d-flex align-items-center">
-                    <div class="progresses__steps"
-                      :class="{'progresses__steps--done': item.StampDate && item.SignerDate }">
-                      <span><i class="fas"
-                          :class="[!item.StampDate ? 'fa-stamp': !item.SignerDate ? 'fa-signature': 'fa-circle']"></i></span>
-                    </div>
-                    <div class="ps-2">
-                      <span class="badge bg-warning text-dark opacity-75">{{ item.Name }}</span>
-                    </div>
-                  </div>
-                  <div class="col fw-bolder text-end text-primary opacity-75 fs-13 pe-3"
-                    :class="{'text-success': item.StampDate && item.SignerDate }">
-                    {{ !item.StampDate ? '待用印': !item.SignerDate ?
-                    '待簽署': '已完成' }}
-                  </div>
+                    {{ StepEnum[item.Step] }}</div>
                 </div>
               </template>
             </div>
@@ -802,8 +786,6 @@
                 <div>
                   <div class="fs-12 text-black-50">
                     {{ historyData.CreatedDateTime }}
-                    <!--<br>
-                    最近修改：{{ historyData.CurrentEditDate }}-->
                   </div>
                   <div class="fw-bolder">
                     {{ historyData.Title }}
@@ -812,12 +794,10 @@
               </div>
               <div class="w-50">
                 <template v-for="(item, index) in historyData.Parties">
-                  <div v-if="index === 0" class="py-1 d-flex align-items-start" :key="index">
-                    <span class="badge bg-primary opacity-75">起約人</span>：
-                    <span class="fs-13">{{ item.Name }}</span>
-                  </div>
-                  <div v-else class="d-flex align-items-start" :key="index">
-                    <span class="badge bg-warning text-dark opacity-75">簽約人</span>：
+                  <div class="d-flex align-items-start" :class="{'py-1': item.isInitiator}" :key="index">
+                    <span v-if="item.isInitiator" class="badge bg-primary opacity-75">起約人</span>
+                    <span v-else class="badge bg-warning text-dark opacity-75">簽約人</span>
+                    ：
                     <span class="fs-13">{{ item.Name }}</span>
                   </div>
                 </template>
@@ -1125,7 +1105,22 @@
           message2: null,
         },
         signatureInfo: {},
-        certInfo: null
+        certInfo: null,
+        // 文件狀態
+        StepEnum: {
+          0: '開始',
+          1: '設定',
+          3: '欄位設定',
+          5: '建立',
+          6: '用印中',
+          7: '用印完成',
+          10: '簽章中',
+          11: '簽章完成',
+          16: '瀏覽',
+          17: '已終止',
+          18: '完成',
+          19: '撤銷',
+        }
       };
     },
     computed: {
