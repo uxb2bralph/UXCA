@@ -54,7 +54,7 @@ namespace ContractHome.Controllers
 
             if (ModelState.IsValid)
             {
-                if (!identityCertHelper.IsSignatureValid(profile.PID, req.Signature))
+                if (!identityCertHelper.IsSignatureValid(req.EUID, req.Signature))
                 {
                     ModelState.AddModelError("Signature", "驗章失敗");
                 }

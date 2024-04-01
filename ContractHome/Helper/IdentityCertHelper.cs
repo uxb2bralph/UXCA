@@ -38,8 +38,6 @@ namespace ContractHome.Helper
             if (!GeneralValidator.TryFromBase64String(Signature)) return false;
             try
             {
-                //for test
-                tbs = "abc";
                 RSA rsa = X509Cert.GetRSAPublicKey();
                 string sha256Oid = CryptoConfig.MapNameToOID(nameof(SHA256));
                 byte[] bytePKCS1Signature = Convert.FromBase64String(Signature);
