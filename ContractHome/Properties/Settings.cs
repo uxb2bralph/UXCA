@@ -31,12 +31,14 @@
         public double? SealImageDPI { get; set; }
         public String StoreRoot { get; set; } = "WebStore";
         public String DefaultUILanguage { get; set;} = "zh-TW";
+        public bool IsIdentityCertCheck { get; set; } = true;
         public String[][] ConnectionList { get; set; } =
             new[]
             {
                 new [] { "電子簽章", "Integrated Security=SSPI;Persist Security Info=False;Initial Catalog=DigitalContract;Data Source=192.168.200.70" }
             };
         public CHTSigningService CHTSigning { get; set; } = new CHTSigningService();
+
     }
 
     public class CHTSigningService

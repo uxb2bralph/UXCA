@@ -1,6 +1,5 @@
-﻿
-
-using ContractHome.Helper;
+﻿using ContractHome.Helper;
+using ContractHome.Helper.DataQuery;
 using ContractHome.Models.DataEntity;
 using ContractHome.Models.Dto;
 using ContractHome.Models.Helper;
@@ -39,7 +38,7 @@ namespace ContractHome.Controllers
         public async Task<ActionResult> Post([FromBody] PostIdentityCertRequest req)
         {
             if (!ModelState.IsValid) { return BadRequest(); }
-            var profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EUID.DecryptKeyValue()).FirstOrDefault();
+            var profile = await HttpContext.GetUserAsync();
             if (profile==null)
             {
                 ModelState.AddModelError("EUID", "身份驗證失敗");
@@ -54,7 +53,7 @@ namespace ContractHome.Controllers
 
             if (ModelState.IsValid)
             {
-                if (!identityCertHelper.IsSignatureValid(req.EUID, req.Signature))
+                if (!identityCertHelper.IsSignatureValid(profile.PID, req.Signature))
                 {
                     ModelState.AddModelError("Signature", "驗章失敗");
                 }
@@ -66,7 +65,7 @@ namespace ContractHome.Controllers
                 identityCertRepo = new(models);
             var existedIdentityCert = identityCertRepo.Get(
                 x509String: identityCertHelper.X509PemString
-                , uid: req.EUID.DecryptKeyValue()).FirstOrDefault();
+                , uid: profile.UID);
             if (existedIdentityCert != null)
             {
                 ModelState.AddModelError("B64Cert", "憑證已註冊");
@@ -91,7 +90,7 @@ namespace ContractHome.Controllers
         public async Task<ActionResult> Validate([FromBody] ValidateIdentityCertRequest req)
         {
             if (!ModelState.IsValid) { return BadRequest(); }
-            var profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EUID.DecryptKeyValue()).FirstOrDefault();
+            var profile = await HttpContext.GetUserAsync();
             if (profile == null)
             {
                 ModelState.AddModelError("EUID", "身份驗證失敗");
@@ -102,7 +101,7 @@ namespace ContractHome.Controllers
             var identityCert = identityCertRepo.GetByUid(profile.UID).FirstOrDefault();
             var existedIdentityCert = identityCertRepo.Get(
                 x509String: identityCert.X509Certificate
-                , uid: req.EUID.DecryptKeyValue()).FirstOrDefault();
+                , uid: profile.UID).FirstOrDefault();
 
             identityCertHelper = new(x509PemString: existedIdentityCert.X509Certificate);
             if (!identityCertHelper.IsSignatureValid(profile.PID, req.Signature))
@@ -125,7 +124,7 @@ namespace ContractHome.Controllers
             var existedIdentityCert = identityCertRepo.GetBySeqNo(seqNo:req.ESeqNo.DecryptKeyValue());
             if (existedIdentityCert == null)
             {
-                ModelState.AddModelError("SeqNo", "憑證註冊資料不存在");
+                ModelState.AddModelError("SeqNo", "資料錯誤");
             }
 
             if (!ModelState.IsValid) { return BadRequest(); }

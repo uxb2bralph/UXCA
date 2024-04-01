@@ -149,7 +149,8 @@ namespace ContractHome.Models.ViewModel
     public int? CompanyID { get; set; }
     public String? Note { get; set; }
     public bool? DoAllPages { get; set; }
-  }
+        public string? Signature { get; set; }
+    }
 
   public class TemplateResourceViewModel : QueryViewModel
   {

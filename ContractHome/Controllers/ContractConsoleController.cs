@@ -1236,6 +1236,24 @@ namespace ContractHome.Controllers
                 }
                 else
                 {
+                    if (Properties.Settings.Default.IsIdentityCertCheck)
+                    {
+                        IdentityCertRepo identityCertRepo = new(models);
+                        var identityCert = identityCertRepo.GetByUid(profile.UID).FirstOrDefault();
+                        if (identityCert == null)
+                        {
+                            ModelState.AddModelError("Signature", "使用者未註冊憑證");
+                            return BadRequest();
+                        }
+
+                        IdentityCertHelper identityCertHelper = new(x509PemString: identityCert.X509Certificate);
+                        if (!identityCertHelper.IsSignatureValid(profile.PID, viewModel.Signature))
+                        {
+                            ModelState.AddModelError("Signature", "驗章失敗");
+                            return BadRequest();
+                        }
+                    }
+
                     ViewBag.DataItem = item;
                     var content = profile.CHT_UserRequestTicket();
                     var tid = ((String)content["tid"]).GetEfficientString();
@@ -1318,9 +1336,7 @@ namespace ContractHome.Controllers
                         models.SubmitChanges();
                     }
 
-                    return Json(new { result = true });
-                }
-            }
+                    return Ok();
 
 
             if (contract.InProgress != null && contract.InProgress == true)
@@ -1328,8 +1344,7 @@ namespace ContractHome.Controllers
                 contract.InProgress = null;
                 models.SubmitChanges();
             }
-
-            return Json(new { result = false });
+            return BadRequest();
 
         }
 
