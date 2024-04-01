@@ -8,16 +8,20 @@ using System.Net;
 
 namespace ContractHome.Controllers.Filters
 {
-    public class ModelStateFilter : IActionFilter
+    public class ModelStateResultFilter : IResultFilter
     {
-        public void OnActionExecuting(ActionExecutingContext context)
+        public void OnResultExecuted(ResultExecutedContext context)
         {
+            //throw new NotImplementedException();
+        }
+
+        public void OnResultExecuting(ResultExecutingContext context)
+        {
+
             if (!context.ModelState.IsValid)
             {
-                IDictionary<string, string[]> errorMess = context.ModelState.ToDictionary(
-                    k => k.Key,
-                    v => v.Value.Errors.Select(x => x.ErrorMessage).ToArray());
-                BaseResponse baseResponse = new BaseResponse(true, errorMess);
+                SerializableError errors = new SerializableError(context.ModelState);
+                BaseResponse baseResponse = new BaseResponse(true, errors);
 
                 context.Result = new ContentResult
                 {
@@ -25,10 +29,9 @@ namespace ContractHome.Controllers.Filters
                     ContentType = "application/json",
                     StatusCode = (int?)HttpStatusCode.BadRequest
                 };
-
             }
-        }
-        public void OnActionExecuted(ActionExecutedContext context) { }
 
+
+        }
     }
 }

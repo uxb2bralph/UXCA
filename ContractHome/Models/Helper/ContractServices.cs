@@ -173,7 +173,7 @@ namespace ContractHome.Models.Helper
                         ScaleHeight = pos.ScaleHeight,
                         MarginTop = pos.MarginTop,
                         MarginLeft = pos.MarginLeft,
-                        Type = pos.Type,
+                        Type = (short)pos.Type,
                         PageIndex = pos.PageIndex
                     });
                 }
@@ -242,7 +242,7 @@ namespace ContractHome.Models.Helper
                         ScaleHeight = pos.ScaleHeight,
                         MarginTop = pos.MarginTop,
                         MarginLeft = pos.MarginLeft,
-                        Type = pos.Type,
+                        Type = (short)pos.Type,
                         PageIndex = pos.PageIndex
                     });
                 }

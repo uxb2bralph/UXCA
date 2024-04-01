@@ -60,7 +60,7 @@ namespace WebHome
             {
                 config.Filters.Add(new SampleResultFilter());
                 config.Filters.Add(new ExceptionFilter());
-                config.Filters.Add(new ModelStateFilter());
+                config.Filters.Add(new ModelStateResultFilter());
             }).ConfigureApiBehaviorOptions(options =>
             {
                 options.SuppressMapClientErrors = true;

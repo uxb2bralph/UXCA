@@ -3,6 +3,8 @@ using ContractHome.Properties;
 using CommonLib.Utility;
 using System.Collections;
 using BitMiracle.LibTiff.Classic;
+using System.Security.Cryptography.X509Certificates;
+using System.Data.Linq.SqlClient;
 
 namespace ContractHome.Models.DataEntity
 {

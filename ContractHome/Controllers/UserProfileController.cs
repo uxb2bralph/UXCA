@@ -641,7 +641,8 @@ namespace ContractHome.Controllers
                 CompanyName = profile.OrganizationUser.Organization.CompanyName,
                 IsMemberAdmin = profile.IsMemberAdmin(),
                 IsSysAdmin = profile.IsSysAdmin(),
-                PID = profile.PID
+                UserName = profile.PID,
+                EUID = profile.UID.EncryptKey()
             };
 
             return Json(new BaseResponse() { Data= userResponse });
