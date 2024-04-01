@@ -1338,11 +1338,7 @@ namespace ContractHome.Controllers
 
                     return Ok();
 
-
-            if (contract.InProgress != null && contract.InProgress == true)
-            {
-                contract.InProgress = null;
-                models.SubmitChanges();
+                }
             }
             return BadRequest();
 
