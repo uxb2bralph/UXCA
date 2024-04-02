@@ -31,7 +31,7 @@
 
   var contractRefs = new ContractRefs(_model, "SignaturePositions", party?.CompanyID);
 
-  var contractData = @Html.Raw(_model.JsonStringify());
+  //var contractData = @Html.Raw(_model.JsonStringify());
   //var partyData = @Html.Raw(party.JsonStringify());
   // var pageCount = _model.GetPdfPageCount();
   var contractRefsJson = @Html.Raw(contractRefs.JsonStringify());
