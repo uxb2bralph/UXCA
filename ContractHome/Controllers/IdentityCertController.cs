@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Org.BouncyCastle.Ocsp;
 using System.Diagnostics.Contracts;
+using System.Text.Json;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ContractHome.Controllers
@@ -47,26 +48,25 @@ namespace ContractHome.Controllers
             //#endregion
             if (profile==null)
             {
-                ModelState.AddModelError("EUID", "身份驗證失敗");
+                ModelState.AddModelError("eUID", "身份驗證失敗");
             }
 
 
             identityCertHelper = new($"{begin}{req.B64Cert}{end}");
             if (identityCertHelper==null)
             {
-                ModelState.AddModelError("B64Cert", "格式有誤");
+                ModelState.AddModelError("b64Cert", "格式有誤");
             }
 
             if (ModelState.IsValid)
             {
                 if (!identityCertHelper.IsSignatureValid(profile.PID, req.Signature))
                 {
-                    ModelState.AddModelError("Signature", "驗章失敗");
+                    ModelState.AddModelError("signature", "驗章失敗");
                 }
             }
 
-            if (!ModelState.IsValid)
-            { return BadRequest(); }
+            if (!ModelState.IsValid) { return BadRequest(); }
 
                 identityCertRepo = new(models);
             var existedIdentityCert = identityCertRepo.Get(
@@ -74,7 +74,7 @@ namespace ContractHome.Controllers
                 , uid: profile.UID).FirstOrDefault();
             if (existedIdentityCert != null)
             {
-                ModelState.AddModelError("B64Cert", "憑證已註冊");
+                ModelState.AddModelError("b64Cert", "憑證已註冊");
             }
 
             if (ModelState.IsValid)
@@ -83,10 +83,9 @@ namespace ContractHome.Controllers
                 identityCert.X509Certificate = identityCertHelper.X509PemString;
                 identityCert.BindingUID = profile.UID;
                 identityCert.CertificateType = identityCertHelper.GetCertType();
-                //identityCert.GRABindingEmail = req.BindingEmail;
                 identityCertRepo.AddSubmitChanges(identityCert);
 
-                return Ok(new BaseResponse(data: new { ESeqNo=identityCert.SeqNo.EncryptKey()}));
+                return Json(new BaseResponse(data: new { eSeqNo = identityCert.SeqNo.EncryptKey() }));
             }
 
             return BadRequest();
@@ -105,12 +104,17 @@ namespace ContractHome.Controllers
             //#endregion
             if (profile == null)
             {
-                ModelState.AddModelError("EUID", "身份驗證失敗");
+                ModelState.AddModelError("eUID", "身份驗證失敗");
                 return BadRequest();
             }
 
             identityCertRepo = new(models);
             var identityCert = identityCertRepo.GetByUid(profile.UID).FirstOrDefault();
+            if (identityCert == null)
+            {
+                ModelState.AddModelError("identityCert", "使用者未註冊憑證");
+                return BadRequest();
+            }
             var existedIdentityCert = identityCertRepo.Get(
                 x509String: identityCert.X509Certificate
                 , uid: profile.UID).FirstOrDefault();
@@ -118,7 +122,7 @@ namespace ContractHome.Controllers
             identityCertHelper = new(x509PemString: existedIdentityCert.X509Certificate);
             if (!identityCertHelper.IsSignatureValid(profile.PID, req.Signature))
             {
-                ModelState.AddModelError("Signature", "驗章失敗");
+                ModelState.AddModelError("signature", "驗章失敗");
             }
 
             if (ModelState.IsValid) 
@@ -136,7 +140,7 @@ namespace ContractHome.Controllers
             var existedIdentityCert = identityCertRepo.GetBySeqNo(seqNo:req.ESeqNo.DecryptKeyValue());
             if (existedIdentityCert == null)
             {
-                ModelState.AddModelError("SeqNo", "資料錯誤");
+                ModelState.AddModelError("seqNo", "資料錯誤");
             }
 
             if (!ModelState.IsValid) { return BadRequest(); }

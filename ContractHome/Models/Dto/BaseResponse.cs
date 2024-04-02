@@ -1,9 +1,14 @@
-﻿namespace ContractHome.Models.Dto
+﻿using System.Text.Json.Serialization;
+
+namespace ContractHome.Models.Dto
 {
     public class BaseResponse
     {
+        [JsonPropertyName("hasError")]
         public bool HasError { get; set; }
+        [JsonPropertyName("data")]
         public dynamic Data { get; set; }
+        [JsonPropertyName("message")]
         public dynamic Message { get; set; }
 
 
