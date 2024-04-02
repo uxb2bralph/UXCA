@@ -66,7 +66,8 @@
         </div>
         <div
           class="col-12 col-md-6 pb-2 order-1 order-md-2 d-flex align-items-center justify-content-center justify-content-md-end">
-          <button type="button" class="btn btn-sm btn-primary" v-on:click="openUserCertDialog">測試憑證</button>
+          <button type="button" class="btn btn-sm btn-primary" v-on:click="openUserCertDialog('register')">憑證註冊</button>
+          <!--
           <span class="px-3 text-black-50"> | </span>
           <div id="tourbutton" class="tooltip__wrapper">
             <button type="button" class="px-1 btn btn-lg btn-warning rounded-pill opacity-75" style="width: 48px;"
@@ -75,6 +76,7 @@
             </button>
             <div class="tooltip__text">導覽小幫手</div>
           </div>
+          -->
           @{
             if (ViewBag.CanCreateContract)
             {
@@ -857,10 +859,14 @@
       <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title fw-bolder" id="staticBackdropLabel">憑證綁定</h5>
+            <h5 class="modal-title fw-bolder" id="staticBackdropLabel">
+              {{ certStatus === 'certValidate' ? '憑證驗證' : '憑證註冊' }}
+            </h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
+            <div v-if="certStatus === 'certValidate'" class="pb-3">為確保簽署憑證的有效性及正確性，將進行憑證驗證。</div>
+            <div v-else class="pb-3">為確保簽署憑證的有效性及正確性，將進行憑證註冊。</div>
             <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
               <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
                 <path
@@ -917,6 +923,8 @@
                 </div>
               </div>
             </div>
+            <!-- 卡片簽章資訊，除錯時用 -->
+            <!--
             <div v-if="signatureInfo.ret_code === 0" class="alert alert-success" role="alert">
               <dl class="row">
                 <dt class="col-md-3">cardSN (卡號)：</dt>
@@ -929,14 +937,37 @@
                 <dd class="col-md-9 text-break">{{signatureInfo.certb64}}</dd>
               </dl>
             </div>
+            -->{{certStatus}}
           </div>
           <div class="modal-footer border-top-0 justify-content-center">
             <button type="button" class="btn btn-secondary opacity-50" data-bs-dismiss="modal">取消</button>
-            <button type="button" class="btn btn-primary" v-on:click="getUserCert()">讀取憑證</button>
+            <button type="button" class="btn btn-primary" v-on:click="getUserCert">
+              {{ certStatus === 'certValidate' ? '憑證驗證' : '憑證註冊' }}
+            </button>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- 憑證驗證 Dialog -->
+    <!--
+    <div class="modal fade" id="certModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+      aria-labelledby="certModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-body text-center h5 fw-bolder pt-5">
+            <div>
+
+            </div>
+          </div>
+          <div class="modal-footer border-top-0 justify-content-center">
+            <button type="button" class="btn btn-secondary opacity-50" data-bs-dismiss="modal">取消</button>
+            <button type="button" class="btn btn-primary" v-on:click="openUserCertDialog('certValidate')">憑證驗證</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    -->
 
 
     <!-- 訊息 Dialog -->
@@ -1088,7 +1119,7 @@
         // 憑證簽章
         signature: {
           type: 'PKCS1',
-          tbs: 'uxb2b',
+          tbs: '',
           tbsEncoding: 'none',
           pin: '',
           hashAlgorithm: 'SHA256',
@@ -1105,6 +1136,7 @@
           message: null,
           message2: null,
         },
+        certStatus: null,
         signatureInfo: {},
         certInfo: null,
         // 文件狀態
@@ -1308,6 +1340,7 @@
             if (!hasError) {
               // 成功
               this.currentUserInfo = data;
+              this.signature.tbs = data.userName;
             } else {
               // 失敗
               console.log('error')
@@ -1513,7 +1546,10 @@
         this.signerMessage = Name;
         this.currentCompanyData = { KeyID, Name, ContractNo, Title };
 
-        $('#signModal').modal('show');
+        // 憑證檢驗
+        this.openUserCertDialog('certValidate');
+
+        //$('#signModal').modal('show');
       },
 
       // 簽署
@@ -1797,7 +1833,8 @@
       },
 
       // 開啟憑證檢查 Dialog
-      openUserCertDialog() {
+      openUserCertDialog(status) {
+        this.certStatus = status;
         this.signature.pin = '';
         this.signatureInfo = { ...this.signatureInfoInit };
         $("#userCertModal").modal("show");
@@ -1817,7 +1854,7 @@
         popupForm = window.open(
           "http://localhost:61161/popupForm",
           "popupForm",
-          "height=175, width=80, left=100, top=20"
+          "height=200, width=80, left=100, top=20"
         );
         popupForm.postMessage("hello there!", "http://localhost:61161");
         timeout = setTimeout(() => {
@@ -1825,6 +1862,65 @@
           alert("尚未安裝元件");
         }, 5000);
       },
+
+      // 憑證綁定
+      certRegister() {
+        const { certb64, signature } = this.signatureInfo;
+        const payload = {
+          B64Cert: certb64,
+          Signature: signature,
+        }
+        console.log('payload', payload);
+        showLoading();
+        postData('@(Url.Action("Post", "IdentityCert"))', payload)
+          .then((res) => {
+            const { HasError, Data, Message } = res;
+            console.log({ HasError, Data, Message })
+            if (!HasError) {
+              // 成功
+              $('#addProjectModal').modal('hide');
+              // 開啟訊息視窗
+              self.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base">註冊成功，憑證已綁定。</div>`;
+            } else {
+              // 失敗
+              const { EUID, Signature, B64Cert } = Message;
+              const signatureString = EUID ? EUID.join(', ') : Signature ? Signature.join(', ') : B64Cert ? B64Cert.join(', ') : '資料有誤';
+              this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${signatureString} </div>`;
+            }
+            hideLoading();
+            $("#infoModal").modal("show");
+          })
+      },
+
+      // 憑證驗證
+      certValidate() {
+        // $("#certModal").modal("show");
+        const { signature } = this.signatureInfo;
+        const payload = {
+          Signature: signature,
+        }
+        console.log('payload', payload);
+        showLoading();
+        postData('@(Url.Action("Validate", "IdentityCert"))', payload)
+          .then((res) => {
+            const { HasError, Data, Message } = res;
+            console.log({ HasError, Data, Message })
+            if (!HasError) {
+              // 成功
+              $('#addProjectModal').modal('hide');
+              // 開啟訊息視窗
+              self.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base">註冊成功，憑證已綁定。</div>`;
+            } else {
+              // 失敗
+              const { EUID, Signature, B64Cert } = Message;
+              const signatureString = EUID ? EUID.join(', ') : Signature ? Signature.join(', ') : B64Cert ? B64Cert.join(', ') : '資料有誤';
+              this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${signatureString} </div>`;
+            }
+            hideLoading();
+            $("#infoModal").modal("show");
+          })
+
+      }
     }
   });
 
@@ -1904,7 +2000,7 @@
     } else {
       // 將簽章結果寫入欄位
       const result = JSON.parse(event.data);
-      console.log('event:', result);
+      console.log('app:', app);
       app.$data.signatureInfo.cardSN = result.cardSN;
       app.$data.signatureInfo.ret_code = result.ret_code;
       app.$data.signatureInfo.signature = result.signature;
@@ -1912,6 +2008,11 @@
       app.$data.signatureInfo.last_error = result.last_error;
       app.$data.signatureInfo.message = result.message || null;
       app.$data.signatureInfo.message2 = result.message2 || null;
+      if (app.$data.certStatus === 'certValidate') {
+        app.certValidate();
+      } else {
+        app.certRegister();
+      }
     }
   }
 </script>
