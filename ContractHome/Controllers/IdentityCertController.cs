@@ -39,6 +39,12 @@ namespace ContractHome.Controllers
         {
             if (!ModelState.IsValid) { return BadRequest(); }
             var profile = await HttpContext.GetUserAsync();
+            //#region add for postman test
+            //if (profile == null)
+            //{
+            //    profile = models.GetTable<UserProfile>().Where(x => x.UID == 4).FirstOrDefault();
+            //}
+            //#endregion
             if (profile==null)
             {
                 ModelState.AddModelError("EUID", "身份驗證失敗");
@@ -65,7 +71,7 @@ namespace ContractHome.Controllers
                 identityCertRepo = new(models);
             var existedIdentityCert = identityCertRepo.Get(
                 x509String: identityCertHelper.X509PemString
-                , uid: profile.UID);
+                , uid: profile.UID).FirstOrDefault();
             if (existedIdentityCert != null)
             {
                 ModelState.AddModelError("B64Cert", "憑證已註冊");
@@ -91,6 +97,12 @@ namespace ContractHome.Controllers
         {
             if (!ModelState.IsValid) { return BadRequest(); }
             var profile = await HttpContext.GetUserAsync();
+            //#region add for postman test
+            //if (profile == null)
+            //{
+            //    profile = models.GetTable<UserProfile>().Where(x => x.UID == 4).FirstOrDefault();
+            //}
+            //#endregion
             if (profile == null)
             {
                 ModelState.AddModelError("EUID", "身份驗證失敗");
