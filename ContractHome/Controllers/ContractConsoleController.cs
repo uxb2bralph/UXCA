@@ -1242,14 +1242,14 @@ namespace ContractHome.Controllers
                         var identityCert = identityCertRepo.GetByUid(profile.UID).FirstOrDefault();
                         if (identityCert == null)
                         {
-                            ModelState.AddModelError("signature", "使用者未註冊憑證");
+                            ModelState.AddModelError("Signature", "使用者未註冊憑證");
                             return BadRequest();
                         }
 
                         IdentityCertHelper identityCertHelper = new(x509PemString: identityCert.X509Certificate);
                         if (!identityCertHelper.IsSignatureValid(profile.PID, viewModel.Signature))
                         {
-                            ModelState.AddModelError("signature", "驗章失敗");
+                            ModelState.AddModelError("Signature", "驗章失敗");
                             return BadRequest();
                         }
                     }

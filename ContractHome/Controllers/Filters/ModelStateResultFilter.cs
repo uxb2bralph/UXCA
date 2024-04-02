@@ -25,7 +25,8 @@ namespace ContractHome.Controllers.Filters
 
                 context.Result = new ContentResult
                 {
-                    Content = System.Text.Json.JsonSerializer.Serialize(baseResponse),
+                    //Content = System.Text.Json.JsonSerializer.Serialize(baseResponse),
+                    Content = baseResponse.JsonStringify(),
                     ContentType = "application/json",
                     StatusCode = (int?)HttpStatusCode.BadRequest
                 };
