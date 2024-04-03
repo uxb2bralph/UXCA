@@ -690,6 +690,7 @@
               </div>
             </div>
             <div class="text-center h5 fw-bolder">
+              驗證成功。<br>
               您將代表 <span class="text-primary opacity-75">" {{ signerMessage }} "</span> 對此文件進行數位簽章
             </div>
             <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
@@ -709,7 +710,7 @@
           </div>
           <div class="modal-footer border-top-0 justify-content-center">
             <button type="button" class="btn btn-secondary opacity-50" data-bs-dismiss="modal">取消</button>
-            <button type="button" class="btn btn-primary" v-on:click="confirmSign(currentCompanyData)">確定</button>
+            <button type="button" class="btn btn-primary" v-on:click="confirmSign">確定</button>
           </div>
         </div>
       </div>
@@ -1553,10 +1554,39 @@
       },
 
       // 簽署
-      confirmSign(currentCompanyData) {
-        const payload = currentCompanyData;
+      confirmSign() {
+        //const { KeyID } = currentCompanyData;
         $('#signModal').modal('hide');
-        commitDigitalSignature(currentCompanyData.KeyID);
+        this.commitDigitalSignature();
+      },
+
+      commitDigitalSignature() {
+        const self = this;
+        const payload = {
+          'KeyID': this.currentCompanyData.KeyID,
+          'Signature': this.signatureInfo.signature
+        };
+        console.log({ payload })
+        showLoading();
+        $.post('@Html.Raw(Url.Action("CommitDigitalSignature", "ContractConsole"))', {
+          'KeyID': self.currentCompanyData.KeyID,
+          'Signature': self.signatureInfo.signature
+        }, function (data) {
+          hideLoading();
+          console.log({ data });
+          if ($.isPlainObject(data)) {
+            if (data.result) {
+              alertModal('簽章完成!!');
+              setTimeout(() => {
+                window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+              }, 3000);
+            } else {
+              alertModal(data.message);
+            }
+          } else {
+            $(data).appendTo($('body'));
+          }
+        });
       },
 
       // 取得排序項目，目前只有單選
@@ -1865,25 +1895,29 @@
 
       // 憑證綁定
       certRegister() {
+        this.infoMsg = null;
         const { certb64, signature } = this.signatureInfo;
         const payload = {
           B64Cert: certb64,
           Signature: signature,
         }
-        console.log('payload', payload);
+        // console.log('payload', payload);
         showLoading();
         postData('@(Url.Action("Post", "IdentityCert"))', payload)
           .then((res) => {
-            const { HasError, Data, Message } = res;
-            console.log({ HasError, Data, Message })
-            if (!HasError) {
+            const { HasError, Data, Message, hasError, data, message } = res;
+            const HASERROR = HasError || hasError;
+            const DATA = Data || data;
+            const MESSAGE = Message || message;
+            console.log({ HASERROR, DATA, MESSAGE })
+            if (!HASERROR) {
               // 成功
-              $('#addProjectModal').modal('hide');
+              $("#userCertModal").modal("hide");
               // 開啟訊息視窗
-              self.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base">註冊成功，憑證已綁定。</div>`;
+              this.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base">註冊成功，憑證已綁定。</div>`;
             } else {
               // 失敗
-              const { EUID, Signature, B64Cert } = Message;
+              const { EUID, Signature, B64Cert } = MESSAGE;
               const signatureString = EUID ? EUID.join(', ') : Signature ? Signature.join(', ') : B64Cert ? B64Cert.join(', ') : '資料有誤';
               this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${signatureString} </div>`;
             }
@@ -1895,29 +1929,35 @@
       // 憑證驗證
       certValidate() {
         // $("#certModal").modal("show");
+        this.infoMsg = null;
         const { signature } = this.signatureInfo;
+        if (!signature) return;
         const payload = {
           Signature: signature,
         }
-        console.log('payload', payload);
+        // console.log('payload', payload);
         showLoading();
         postData('@(Url.Action("Validate", "IdentityCert"))', payload)
           .then((res) => {
-            const { HasError, Data, Message } = res;
-            console.log({ HasError, Data, Message })
-            if (!HasError) {
+            const { HasError, Data, Message, hasError, data, message } = res;
+            const HASERROR = HasError || hasError;
+            const DATA = Data || data;
+            const MESSAGE = Message || message;
+            console.log({ HASERROR, DATA, MESSAGE })
+            if (!HASERROR) {
               // 成功
-              $('#addProjectModal').modal('hide');
+              $("#userCertModal").modal("hide");
               // 開啟訊息視窗
-              self.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base">註冊成功，憑證已綁定。</div>`;
+              //this.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base">驗證成功</div>`;
+              $('#signModal').modal('show');
             } else {
               // 失敗
-              const { EUID, Signature, B64Cert } = Message;
+              const { EUID, Signature, B64Cert } = MESSAGE;
               const signatureString = EUID ? EUID.join(', ') : Signature ? Signature.join(', ') : B64Cert ? B64Cert.join(', ') : '資料有誤';
               this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${signatureString} </div>`;
+              $("#infoModal").modal("show");
             }
             hideLoading();
-            $("#infoModal").modal("show");
           })
 
       }
@@ -1935,25 +1975,6 @@
 
   function affixPdfSeal(keyID) {
     $('').launchDownload('@Html.Raw(Url.Action("AffixPdfSeal", "ContractConsole"))', { 'KeyID': keyID });
-  }
-
-  function commitDigitalSignature(keyID) {
-    showLoading();
-    $.post('@Html.Raw(Url.Action("CommitDigitalSignature", "ContractConsole"))', { 'KeyID': keyID }, function (data) {
-      hideLoading();
-      if ($.isPlainObject(data)) {
-        if (data.result) {
-          alertModal('簽章完成!!');
-          setTimeout(() => {
-            window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
-          }, 3000);
-        } else {
-          alertModal(data.message);
-        }
-      } else {
-        $(data).appendTo($('body'));
-      }
-    });
   }
 
   function terminateContract(keyID) {

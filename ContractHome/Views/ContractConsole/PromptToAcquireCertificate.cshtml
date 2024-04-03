@@ -11,44 +11,40 @@
 @using Newtonsoft.Json
 @using Newtonsoft.Json.Linq;
 @{
-    Layout = "~/Views/Shared/Module/CenterModalTemplate.cshtml";
+  Layout = "~/Views/Shared/Module/CenterModalTemplate.cshtml";
 
-    ModelStateDictionary _modelState;
-    ModelSource? models;
-    JObject _model = (JObject)this.Model;
-    ContractSignatureRequest? _item = ViewBag.DataItem as ContractSignatureRequest;
+  ModelStateDictionary _modelState;
+  ModelSource? models;
+  JObject _model = (JObject)this.Model;
+  ContractSignatureRequest? _item = ViewBag.DataItem as ContractSignatureRequest;
 
-    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
-    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+  models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+  _modelState = (ModelStateDictionary)ViewBag.ModelState;
 
-    SignatureRequestViewModel _viewModel = (SignatureRequestViewModel)ViewBag.ViewModel;
-    _viewModel.DialogID = $"sign{DateTime.Now.Ticks}";
+  SignatureRequestViewModel _viewModel = (SignatureRequestViewModel)ViewBag.ViewModel;
+  _viewModel.DialogID = $"sign{DateTime.Now.Ticks}";
 
-    var profile = await Context.GetUserAsync();
+  var profile = await Context.GetUserAsync();
 
 }
 
 @section ModalHeader
 {
-    <h5 class="modal-title">合約數位簽章</h5>
+  <h5 class="modal-title fw-bolder">合約數位簽章</h5>
 }
 
-<div class="card">
-    <div class="card-body">
-        <h5 class="card-title">合約編號：@(_item?.Contract.ContractNo)</h5>
-        <p class="card-text">您尚未具備有效的文件簽署雲端憑證，請先備好工商憑證點擊下方連結申請。</p>
-        <p class="card-text">申請人電子郵件信箱：@(profile.EMail)</p>
-    </div>
+<div class="card p-3 mb-4">
+  <div class="h5 fw-bolder">合約編號：@(_item?.Contract.ContractNo)</div>
+  <div class="h6">您尚未具備有效的文件簽署雲端憑證，請先備好工商憑證點擊下方連結申請。</div>
+  <div class="h6">申請人電子郵件信箱：@(profile.EMail)</div>
 </div>
 
 @section ModalFooter
 {
-    <a href="@Html.Raw(_model["url"])" class="btn btn-primary btn-auth">申請簽章憑證</a>
-    <script nonce="Y2hiY29kZQ==">
-        $(function () {
-            var $currentModal = $('#@(_viewModel.DialogID)');
-        });
-    </script>
+  <a href="@Html.Raw(_model["url"])" class="btn btn-primary btn-auth">申請簽章憑證</a>
+  <script nonce="Y2hiY29kZQ==">
+    $(function () {
+      var $currentModal = $('#@(_viewModel.DialogID)');
+    });
+  </script>
 }
-
-

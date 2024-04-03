@@ -10,32 +10,33 @@
 @using Newtonsoft.Json
 @{
 
-    ModelStateDictionary _modelState;
-    ModelSource? models;
+  ModelStateDictionary _modelState;
+  ModelSource? models;
 
-    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
-    _modelState = (ModelStateDictionary)ViewBag.ModelState;
-    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+  models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+  _modelState = (ModelStateDictionary)ViewBag.ModelState;
+  QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
 
-    String _dialogID = _viewModel.DialogID ?? $"msg{DateTime.Now.Ticks}";
+  String _dialogID = _viewModel.DialogID ?? $"msg{DateTime.Now.Ticks}";
 }
 
-<div class="modal fade" id="@(_dialogID)" tabindex="-1" role="dialog" aria-labelledby="myCenterModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                @RenderSection("ModalHeader",false)
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="$('#@(_dialogID)').modal('hide');">×</button>
-            </div>
-            <div class="modal-body">
-                @RenderBody()
-            </div>
-            <div class="modal-footer">
-                @RenderSection("ModalFooter",false)
-            </div>
-        </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
+<div class="modal fade" id="@(_dialogID)" tabindex="-1" role="dialog" aria-labelledby="myCenterModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-bottom-0">
+        @RenderSection("ModalHeader", false)
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        @RenderBody()
+      </div>
+      <div class="modal-footer border-top-0 justify-content-center">
+        @RenderSection("ModalFooter", false)
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
 </div>
 @{
-    await Html.RenderPartialAsync("~/Views/Shared/BSModalScript.cshtml", _dialogID);
+  await Html.RenderPartialAsync("~/Views/Shared/BSModalScript.cshtml", _dialogID);
 }
