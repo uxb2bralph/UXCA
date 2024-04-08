@@ -24,6 +24,7 @@ using static ContractHome.Controllers.AccountController;
 using ContractHome.Models.Dto;
 using FluentValidation;
 using Org.BouncyCastle.Ocsp;
+using ContractHome.Models;
 
 namespace ContractHome.Controllers
 {
@@ -34,7 +35,7 @@ namespace ContractHome.Controllers
         private readonly ILogger<HomeController> _logger;
         private ContractServices? _contractServices;
         private readonly IMailService _mailService;
-        private BaseResponse baseResponse = new BaseResponse(false, "");
+        private BaseResponse baseResponse = new BaseResponse();
 
         public ContractConsoleController(ILogger<HomeController> logger,
             IServiceProvider serviceProvider) : base(serviceProvider)
@@ -1537,7 +1538,7 @@ namespace ContractHome.Controllers
 
         [HttpPost]
         //是否有Contract產製修改權限ContractHome.Security.Authorization
-        public async Task<BaseResponse> ConfigAsync([FromBody] PostConfigRequest req)
+        public async Task<ActionResult> ConfigAsync([FromBody] PostConfigRequest req)
         {
             var profile = await HttpContext.GetUserAsync();
             #region add for postman test
@@ -1553,23 +1554,28 @@ namespace ContractHome.Controllers
                 Contract contract = _contractServices.GetContractByID(contractID: contractID);
                 if (contract == null)
                 {
-                    return new BaseResponse(true, "合約不存在");
+                    ModelState.AddModelError("", "合約不存在");
+                    return BadRequest();
                 }
                 //wait to do...獨立控管每項作業可執行step
                 if (contract.CDS_Document.CurrentStep >= 2)
                 {
-                    return new BaseResponse(true, "合約已進行中,無法修改資料");
+                    ModelState.AddModelError("", "合約已進行中,無法修改資料");
+                    return BadRequest();
                 }
                 _contractServices.SetConfig(contract, req);
-                contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Config);
+                var clientIp = HttpContext?.Connection?.RemoteIpAddress?.MapToIPv4().ToString();
+                //var clientDevice = Utilites.GetUserPlatform(HttpContext);
+                var clientDevice = "";
+                contract.CDS_Document.TransitStepTest(models, profile!.UID, CDS_Document.StepEnum.Config, ClientIP:clientIp, ClientDevice:clientDevice);
                 //wait to do...createtime updatetime..加在table或是在DocumentProcessLog?
                 models.SubmitChanges();
-                return baseResponse;
+                return Content(baseResponse.JsonStringify());
             }
             catch (Exception ex)
             {
                 FileLogger.Logger.Error($"{req.ToString()} {ex.ToString()}");
-                return new BaseResponse(true, "");
+                return Content(new BaseResponse(true, "").JsonStringify());
             }
 
         }
