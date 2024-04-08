@@ -702,7 +702,6 @@ html, body {
 }
 .vmBox__compantEdit {
   align-items: start;
-  justify-content: start;
   border-style: solid;
   cursor: default;
 }
@@ -724,6 +723,11 @@ html, body {
   font-size: 1.4rem;
   overflow: hidden;
   white-space: nowrap;
+}
+.vmBox__text {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 .vmBox__subtext {
   position: absolute;
