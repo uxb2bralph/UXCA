@@ -1,5 +1,8 @@
 ﻿using ContractHome.Models.ViewModel;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.Collections;
 using System.Text;
+using System.Text.Json;
 
 namespace ContractHome.Helper
 {
@@ -71,5 +74,11 @@ namespace ContractHome.Helper
             return $"{date:yyyy/MM/dd HH:mm:ss}";
         }
 
+        public static string ToSerializedDictionary(this ModelStateDictionary modelState)
+        {
+            return string.Join(";", modelState.Select(
+                        pair => string.Format("{0}-{1};", pair.Key,
+                            string.Join(" ", pair.Value.Errors.Select(x => x.ErrorMessage).ToArray()))));
+        }
     }
 }

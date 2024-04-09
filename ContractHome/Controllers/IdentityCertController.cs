@@ -88,7 +88,7 @@ namespace ContractHome.Controllers
                 identityCertRepo.AddSubmitChanges(identityCert);
 
                 var resp = new BaseResponse(data: new { ESeqNo = identityCert.SeqNo.EncryptKey() });
-                return Content(resp.JsonStringify());
+                return Ok(resp);
             }
 
             return BadRequest();

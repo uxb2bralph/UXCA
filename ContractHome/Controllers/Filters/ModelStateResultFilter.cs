@@ -1,10 +1,14 @@
 ﻿using CommonLib.Utility;
+using ContractHome.Helper;
 using ContractHome.Models.Dto;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Newtonsoft.Json;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Net;
+using System.Text.Json;
 
 namespace ContractHome.Controllers.Filters
 {
@@ -20,13 +24,16 @@ namespace ContractHome.Controllers.Filters
 
             if (!context.ModelState.IsValid)
             {
-                SerializableError errors = new SerializableError(context.ModelState);
-                BaseResponse baseResponse = new BaseResponse(true, errors);
-
+                string modelStateString = context.ModelState.ToSerializedDictionary();
+                BaseResponse baseResponse = new BaseResponse(true, modelStateString);
+                var serializeOptions = new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    WriteIndented = true
+                };
                 context.Result = new ContentResult
                 {
-                    //Content = System.Text.Json.JsonSerializer.Serialize(baseResponse),
-                    Content = baseResponse.JsonStringify(),
+                    Content = System.Text.Json.JsonSerializer.Serialize(baseResponse, serializeOptions),
                     ContentType = "application/json",
                     StatusCode = (int?)HttpStatusCode.BadRequest
                 };

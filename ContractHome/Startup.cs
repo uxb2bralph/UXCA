@@ -12,6 +12,8 @@ using ContractHome.Models.Helper;
 using FluentValidation.AspNetCore;
 using FluentValidation;
 using ContractHome.Models.ViewModel;
+using System.Text.Json;
+using Microsoft.AspNetCore.Http.Json;
 
 namespace WebHome
 {
