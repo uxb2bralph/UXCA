@@ -1,8 +1,17 @@
-﻿using ContractHome.Models.ViewModel;
+<<<<<<< Updated upstream
+using ContractHome.Models.DataEntity;
+using ContractHome.Models.ViewModel;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Collections;
 using System.Text;
 using System.Text.Json;
+using static ContractHome.Models.Helper.ContractServices;
+=======
+﻿using ContractHome.Models.DataEntity;
+using ContractHome.Models.ViewModel;
+using System.Text;
+using static ContractHome.Models.Helper.ContractServices;
+>>>>>>> Stashed changes
 
 namespace ContractHome.Helper
 {
@@ -74,11 +83,28 @@ namespace ContractHome.Helper
             return $"{date:yyyy/MM/dd HH:mm:ss}";
         }
 
+
         public static string ToSerializedDictionary(this ModelStateDictionary modelState)
         {
             return string.Join(";", modelState.Select(
                         pair => string.Format("{0}-{1};", pair.Key,
                             string.Join(" ", pair.Value.Errors.Select(x => x.ErrorMessage).ToArray()))));
+        }
+
+        public static DigitalSignCerts DigitalSignBy(this Organization organization)
+        {
+            if (organization.CHT_Token != null)
+            {
+                return DigitalSignCerts.Enterprise;
+            }
+            else if (organization.OrganizationToken?.PKCS12 != null)
+            {
+                return DigitalSignCerts.UXB2B;
+            }
+            else
+            {
+                return DigitalSignCerts.Exchange;
+            }
         }
     }
 }

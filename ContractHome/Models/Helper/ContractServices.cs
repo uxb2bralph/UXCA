@@ -37,7 +37,14 @@ namespace ContractHome.Models.Helper
             _models = models;
         }
 
-        //public Contract? GetContract => _contract;
+        public enum DigitalSignCerts
+        {
+            Enterprise=0,//企業憑證
+            UXB2B=1,//網優憑證
+            Exchange=2,//以證換證
+            //MOEA= 2,//工商憑證
+            //MOI =3 //自然人憑證
+        }
 
         public Contract? GetContractByID(int? contractID)
         {

@@ -7,5 +7,6 @@
         public string CompanyName { get; set; }
         public bool IsMemberAdmin { get; set; }
         public bool IsSysAdmin { get; set; }
+        public bool IsSignExchange { get; set; }
     }
 }

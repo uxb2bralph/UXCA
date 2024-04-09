@@ -1,35 +1,17 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
-using System.IO;
-using ContractHome.Models;
+﻿using Microsoft.AspNetCore.Mvc;
 using ContractHome.Models.DataEntity;
 using ContractHome.Models.ViewModel;
 using CommonLib.Utility;
 using Newtonsoft.Json;
 using ContractHome.Helper;
-using ContractHome.Properties;
 using CommonLib.Core.Utility;
-using System.Xml;
-using GemBox.Document;
-using System.Net;
-using Microsoft.Extensions.Primitives;
 using System.Drawing;
-using System.Drawing.Imaging;
-using Microsoft.AspNetCore.WebUtilities;
 using System.Linq.Dynamic.Core;
-using System.Reflection;
 using System.Data.Linq;
 using ContractHome.Security.Authorization;
-using Irony.Parsing;
-using DocumentFormat.OpenXml.Spreadsheet;
-using DocumentFormat.OpenXml.InkML;
 using ContractHome.Helper.Security.MembershipManagement;
-using System.ComponentModel.DataAnnotations;
-using Microsoft.EntityFrameworkCore;
 using ContractHome.Models.Dto;
-using ContractHome.Helper.DataQuery;
-using Org.BouncyCastle.Ocsp;
+using static ContractHome.Models.Helper.ContractServices;
 
 namespace ContractHome.Controllers
 {
@@ -642,7 +624,8 @@ namespace ContractHome.Controllers
                 IsMemberAdmin = profile.IsMemberAdmin(),
                 IsSysAdmin = profile.IsSysAdmin(),
                 UserName = profile.PID,
-                EUID = profile.UID.EncryptKey()
+                EUID = profile.UID.EncryptKey(),
+                IsSignExchange = (profile.OrganizationUser.Organization.DigitalSignBy() == DigitalSignCerts.Exchange) ? true : false
             };
 
             return Json(new BaseResponse() { Data= userResponse });

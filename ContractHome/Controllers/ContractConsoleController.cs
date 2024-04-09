@@ -24,6 +24,7 @@ using static ContractHome.Controllers.AccountController;
 using ContractHome.Models.Dto;
 using FluentValidation;
 using Org.BouncyCastle.Ocsp;
+using static ContractHome.Models.Helper.ContractServices;
 
 namespace ContractHome.Controllers
 {
@@ -1226,11 +1227,11 @@ namespace ContractHome.Controllers
             if (!item.SignerID.HasValue)
             {
                 bool isSigned = false;
-                if (item.Organization.CHT_Token != null)
+                if (item.Organization.DigitalSignBy() == DigitalSignCerts.Enterprise)
                 {
                     isSigned = models.CHT_SignPdfByEnterprise(item, profile);
                 }
-                else if (item.Organization.OrganizationToken?.PKCS12 != null)
+                else if (item.Organization.DigitalSignBy() == DigitalSignCerts.UXB2B)
                 {
                     isSigned = models.SignPdfByLocalUser(item, profile);
                 }
