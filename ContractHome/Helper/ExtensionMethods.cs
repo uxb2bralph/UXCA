@@ -1,17 +1,9 @@
-<<<<<<< Updated upstream
 using ContractHome.Models.DataEntity;
 using ContractHome.Models.ViewModel;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using System.Collections;
-using System.Text;
-using System.Text.Json;
-using static ContractHome.Models.Helper.ContractServices;
-=======
-﻿using ContractHome.Models.DataEntity;
-using ContractHome.Models.ViewModel;
 using System.Text;
 using static ContractHome.Models.Helper.ContractServices;
->>>>>>> Stashed changes
+
 
 namespace ContractHome.Helper
 {
