@@ -15,6 +15,7 @@ using MimeKit.Text;
 using Microsoft.EntityFrameworkCore;
 using static ContractHome.Models.Dto.PostFieldSettingRequest;
 using Grpc.Core.Logging;
+using Wangkanai.Detection.Services;
 
 namespace ContractHome.Models.Helper
 {
@@ -24,13 +25,19 @@ namespace ContractHome.Models.Helper
         //protected internal Contract? _contract;
         private readonly EmailFactory _emailFactory;
         private readonly EmailBody _emailBody;
+        private readonly IDetectionService _detectionService;
         public ContractServices(EmailBody emailBody,
-            EmailFactory emailFactory) 
+            EmailFactory emailFactory,
+            IDetectionService detectionService
+            ) 
         {
             _emailBody = emailBody;
             _emailFactory = emailFactory;
-            //_contract = GetContractByID(contractID);
+            _detectionService = detectionService;
         }
+
+        public string GetClientDevice => $"{_detectionService.Platform.Name} {_detectionService.Platform.Version.ToString()}/{_detectionService.Browser.Name}";
+        public string GetClientIP(HttpContext httpContext) => httpContext?.Connection?.RemoteIpAddress?.ToString();
 
         public void SetModels(GenericManager<DCDataContext> models)
         {

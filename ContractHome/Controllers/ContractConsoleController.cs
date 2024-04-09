@@ -13,18 +13,12 @@ using System.Data;
 using ContractHome.Helper.DataQuery;
 using System.Web;
 using Newtonsoft.Json;
-using System.ComponentModel;
-using System.Linq;
 using ContractHome.Models.Email.Template;
 using ContractHome.Models.Email;
-using System.Runtime.CompilerServices;
 using static ContractHome.Models.DataEntity.CDS_Document;
-using System.ComponentModel.DataAnnotations;
-using static ContractHome.Controllers.AccountController;
 using ContractHome.Models.Dto;
 using FluentValidation;
-using Org.BouncyCastle.Ocsp;
-using ContractHome.Models;
+using Wangkanai.Detection.Services;
 
 namespace ContractHome.Controllers
 {
@@ -1564,11 +1558,9 @@ namespace ContractHome.Controllers
                     return BadRequest();
                 }
                 _contractServices.SetConfig(contract, req);
-                var clientIp = HttpContext?.Connection?.RemoteIpAddress?.MapToIPv4().ToString();
-                //var clientDevice = Utilites.GetUserPlatform(HttpContext);
-                var clientDevice = "";
-                contract.CDS_Document.TransitStepTest(models, profile!.UID, CDS_Document.StepEnum.Config, ClientIP:clientIp, ClientDevice:clientDevice);
-                //wait to do...createtime updatetime..加在table或是在DocumentProcessLog?
+                contract.CDS_Document.TransitStepTest(models, profile!.UID, CDS_Document.StepEnum.Config, 
+                    ClientIP: _contractServices.GetClientIP(HttpContext), 
+                    ClientDevice: _contractServices.GetClientDevice);
                 models.SubmitChanges();
                 return Content(baseResponse.JsonStringify());
             }
