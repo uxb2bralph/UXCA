@@ -17,7 +17,6 @@
     <ProjectReference Include="..\CommonLib.Logger\CommonLib.Logger.csproj" />
     <ProjectReference Include="..\CommonLib.PlugInAdapter\CommonLib.PlugInAdapter.csproj" />
     <ProjectReference Include="..\CommonLib.Utility\CommonLib.Utility.csproj" />
-    <ProjectReference Include="..\DotNetLib\System.Data.Linq\System.Data.Linq.csproj" />
   </ItemGroup>
 
   <ItemGroup>
