@@ -6,16 +6,10 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using ContractHome.Properties;
 using ContractHome.Models.Email;
 using ContractHome.Models.Email.Template;
-using CommonLib.DataAccess;
-using ContractHome.Models.DataEntity;
 using ContractHome.Models.Helper;
 using FluentValidation.AspNetCore;
-using FluentValidation;
-using ContractHome.Models.ViewModel;
-using System.Text.Json;
-using Microsoft.AspNetCore.Http.Json;
 
-namespace WebHome
+namespace ContractHome
 {
     public class Startup
     {
@@ -107,6 +101,8 @@ namespace WebHome
             services.AddScoped<EmailFactory>();
             services.AddScoped<EmailBody>();
             services.AddScoped<ContractServices>();
+            // Add detection services container and device resolver service.
+            services.AddDetection();
 
            
         }

@@ -145,6 +145,8 @@
       <Column Name="Status" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="StepID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="ActorID" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="ClientIP" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="ClientDevice" Type="System.String" DbType="NVarChar(512)" CanBeNull="true" />
       <Association Name="FK_DocumentProcessLog_CDS_Document" Member="CDS_Document" ThisKey="DocID" OtherKey="DocID" Type="CDS_Document" IsForeignKey="true" DeleteOnNull="true" />
       <Association Name="FK_DocumentProcessLog_UserProfile" Member="UserProfile" ThisKey="ActorID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
     </Type>
