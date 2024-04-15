@@ -389,12 +389,13 @@ namespace ContractHome.Models.Helper
                 foreach (var user in userProfiles)
                 {
 
-                    JwtPayload jwtPayload = JwtTokenGenerator.GetJwtPayload(
-                        uid: user.UID.ToString(),
-                        email: user.EMail,
-                        contractId: contract.ContractID.ToString(),
-                        4320);
-                    var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayload);
+                    JwtPayloadData jwtPayloadData = new JwtPayloadData()
+                    {
+                        UID = user.UID,
+                        Email = user.EMail,
+                        ContractID = contract.ContractID.ToString()
+                    };
+                    var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData, 4320);
                     var clickLink = $"{defaultUri}/Account/SignatureTrust?token={jwtToken}";
 
                     var emailBody =

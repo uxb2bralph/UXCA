@@ -12,6 +12,8 @@ using ContractHome.Models.Helper;
 using FluentValidation.AspNetCore;
 using FluentValidation;
 using ContractHome.Models.ViewModel;
+using ContractHome.Models.Cache;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace WebHome
 {
@@ -48,6 +50,14 @@ namespace WebHome
 
             //services.AddControllersWithViews();
             services.AddMemoryCache();
+
+            // Configuration of IoC container"
+            var cachingConfigEnum = this.Configuration.GetSection("Caching").GetChildren();
+            Dictionary<string, TimeSpan> cachingExpirationConfig =
+                cachingConfigEnum.ToDictionary(child => child.Key, child => TimeSpan.Parse(child.Value));
+
+            services.AddSingleton<ICacheStore>(x => 
+                new MemoryCacheStore(x.GetService<IMemoryCache>(), cachingExpirationConfig));
 
             services.AddSession(options =>
             {

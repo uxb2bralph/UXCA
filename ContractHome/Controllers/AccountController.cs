@@ -20,6 +20,9 @@ using DocumentFormat.OpenXml.Drawing;
 using Newtonsoft.Json;
 using CommonLib.Core.Utility;
 using ContractHome.Models.Dto;
+using ContractHome.Models.Cache;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace ContractHome.Controllers
 {
@@ -30,15 +33,17 @@ namespace ContractHome.Controllers
     private readonly EmailBody _emailBody;
     private readonly EmailFactory _emailFactory;
     private readonly IMemoryCache _memCache;
+    private readonly ICacheStore _cacheStore;
     private static readonly int tokenTTLMins = 10;
     private static readonly int reSendEmailMins = 3;
-    public AccountController(ILogger<HomeController> logger, IServiceProvider serviceProvider) : base(serviceProvider)
+    public AccountController(ILogger<HomeController> logger, IServiceProvider serviceProvider, ICacheStore cacheStore) : base(serviceProvider)
     {
       _logger = logger;
       _mailService = ServiceProvider.GetRequiredService<IMailService>();
       _emailFactory = serviceProvider.GetRequiredService<EmailFactory>();
       _emailBody = serviceProvider.GetRequiredService<EmailBody>();
       _memCache = serviceProvider.GetRequiredService<IMemoryCache>();
+      _cacheStore = cacheStore;
     }
 
     [HttpPost]
@@ -217,9 +222,9 @@ namespace ContractHome.Controllers
     [HttpGet]
     public ActionResult PasswordResetView([FromQuery] string token)
     {
-      token = token.GetEfficientString();
-
-      (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile) = TokenValidate(token);
+            token = token.GetEfficientString();
+            token = JwtTokenValidator.Base64UrlDecodeToString(token);
+            (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile) = TokenValidate(token);
       if (resp.HasError)
       {
         TempData["message"] = resp.Message;
@@ -258,14 +263,16 @@ namespace ContractHome.Controllers
         return new BaseResponse(true, "驗證資料有誤。");
       }
 
-      SetValueToCache($"{token}", $"{jwtTokenObj.payloadObj.id}", expirateionMin: tokenTTLMins);
       //wait to do...//[RegularExpression(@"^(?=.*\d)(?=.*[a-zA-Z])(?=.*\W).{8,30}$",ErrorMessage = "新密碼格式有誤，請確認")]
       tokenUserProfile.Password = null;
       tokenUserProfile.Password2 = password.HashPassword();
 
       models.SubmitChanges();
 
-      var emailBody =
+            var usedTokenCahceKey = new PasswordApplyUsedTokenCahceKey($"{token}");
+            _cacheStore.Add(new Default(), usedTokenCahceKey);
+
+            var emailBody =
           new EmailBodyBuilder(_emailBody)
           .SetTemplateItem(EmailBody.EmailTemplate.PasswordUpdated)
           .SetUserName(tokenUserProfile.UserName)
@@ -293,22 +300,23 @@ namespace ContractHome.Controllers
       {
         return (new BaseResponse(true, "Token已失效，請重新申請。"), null, null);
       }
-
-      var jwtTokenObj = JwtTokenValidator.DecodeJwtToken(token);
+            var jwtTokenObj = JwtTokenValidator.DecodeJwtToken(token);
       if (jwtTokenObj == null)
       {
         return (new BaseResponse(true, "Token已失效，請重新申請。"), null, null);
       }
 
-      if (_memCache.TryGetValue($"{token}", out string uid))
-      {
-        return (new BaseResponse(true, $"Token已失效，請重新申請。"), null, null);
-      }
+            var usedTokenCahceKey = new PasswordApplyUsedTokenCahceKey(token);
+            var result = _cacheStore.Get(usedTokenCahceKey);
+            if (result != null)
+              {
+                return (new BaseResponse(true, $"Token已失效，請重新申請。"), null, null);
+              }
 
       UserProfile userProfile
           = models.GetTable<UserProfile>()
               .Where(x => x.EMail.Equals(jwtTokenObj.payloadObj.email))
-              .Where(x => x.UID.Equals(jwtTokenObj.payloadObj.id))
+              .Where(x => x.UID.Equals(jwtTokenObj.payloadObj.id.DecryptKeyValue()))
               .FirstOrDefault();
 
       if (userProfile == null)
@@ -345,21 +353,21 @@ namespace ContractHome.Controllers
         return new BaseResponse(true, "驗證資料有誤，請檢查輸入欄位是否正確。");
       }
 
-      if (_memCache.TryGetValue($"PasswordApply.{email}", out string uid))
-      {
-        return new BaseResponse(true, $"通知信已寄發，請查看電子信箱，或{reSendEmailMins}分鐘後重新申請。");
-      }
+        //wait to do..如果email控管重覆?
+        var redoLimitCahceKey = new RedoLimitCahceKey(email);
+        var uid = _cacheStore.Get(redoLimitCahceKey);
+        if (uid!=null)
+        {
+            return new BaseResponse(true, $"通知信已寄發，請查看電子信箱，或稍後重新申請。");
+        }
 
+            JwtPayloadData jwtPayloadData = new JwtPayloadData() { ContractID=string.Empty, Email=email, UID= userProfile.UID };
+            var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData);
+            var clickLink = $"{HttpContext.DefaultWebUri()}/Account/PasswordResetView?token={JwtTokenGenerator.Base64UrlEncode(jwtToken)}";
 
-            JwtPayload jwtPayload = JwtTokenGenerator.GetJwtPayload(
-                uid: userProfile.UID.ToString(),
-                email: email,
-                string.Empty);
-            var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayload);
-            var clickLink = $"{HttpContext.DefaultWebUri()}/Account/PasswordResetView?token={jwtToken}";
-
+            FileLogger.Logger.Error($"clickLink={clickLink}");
             var emailTemp = EmailBody.EmailTemplate.WelcomeUser;
-      if (viewModel.Item.Equals("forgetPassword")) { emailTemp = EmailBody.EmailTemplate.ApplyPassword; }
+      if (viewModel.Item!=null&&viewModel.Item.Equals("forgetPassword")) { emailTemp = EmailBody.EmailTemplate.ApplyPassword; }
 
       var emailBody =
           new EmailBodyBuilder(_emailBody)
@@ -373,23 +381,23 @@ namespace ContractHome.Controllers
 
       _mailService?.SendMailAsync(emailData, default);
 
-      //wait to do:新token產生後, 設定舊token為失效
-      SetValueToCache($"PasswordApply.{email}", $"{userProfile.UID}", expirateionMin: reSendEmailMins);
+        //wait to do:新token產生後, 設定舊token為失效
+        _cacheStore.Add(new Default() { ID = userProfile.UID.ToString() }, redoLimitCahceKey);
 
       return new BaseResponse(false, "");
 
     }
 
-    private void SetValueToCache(string cacheItem, string cacheValue, int expirateionMin = 5, int slidingExpirateionMin = 5)
-    {
-      var cacheExpiryOptions = new MemoryCacheEntryOptions
-      {
-        AbsoluteExpiration = DateTime.Now.AddMinutes(expirateionMin),
-        //SlidingExpiration = TimeSpan.FromMinutes(slidingExpirateionMin),
-        Priority = CacheItemPriority.Low
-      };
-      _memCache.Set(cacheItem, cacheValue, cacheExpiryOptions);
-    }
+    //private void SetValueToCache(string cacheItem, string cacheValue, int expirateionMin = 5, int slidingExpirateionMin = 5)
+    //{
+    //  var cacheExpiryOptions = new MemoryCacheEntryOptions
+    //  {
+    //    AbsoluteExpiration = DateTime.Now.AddMinutes(expirateionMin),
+    //    //SlidingExpiration = TimeSpan.FromMinutes(slidingExpirateionMin),
+    //    Priority = CacheItemPriority.Low
+    //  };
+    //  _memCache.Set(cacheItem, cacheValue, cacheExpiryOptions);
+    //}
 
         [AllowAnonymous]
         [HttpGet]
