@@ -6,6 +6,7 @@ namespace ContractHome.Models.Dto
     public class BaseResponse
     {
         public bool HasError { get; set; }
+        public bool Result { get => !HasError; }
         public dynamic Data { get; set; }
         public dynamic Message { get; set; }
 
@@ -13,7 +14,7 @@ namespace ContractHome.Models.Dto
         public BaseResponse()
         {
             HasError = false;
-            Data= string.Empty;
+            Data = string.Empty;
             Message = string.Empty;
         }
 

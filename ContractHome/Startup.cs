@@ -8,6 +8,8 @@ using ContractHome.Models.Email;
 using ContractHome.Models.Email.Template;
 using ContractHome.Models.Helper;
 using FluentValidation.AspNetCore;
+using ContractHome.Models.Cache;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace ContractHome
 {
@@ -43,7 +45,17 @@ namespace ContractHome
             //var webHome = Configuration.GetSection("WebHome");
 
             //services.AddControllersWithViews();
+            services.AddHttpContextAccessor();
+#region Caching
             services.AddMemoryCache();
+
+            var cachingConfigEnum = this.Configuration.GetSection("Caching").GetChildren();
+            Dictionary<string, TimeSpan> cachingExpirationConfig =
+                cachingConfigEnum.ToDictionary(child => child.Key, child => TimeSpan.Parse(child.Value));
+
+            services.AddSingleton<ICacheStore>(x => 
+                new MemoryCacheStore(x.GetService<IMemoryCache>(), cachingExpirationConfig));
+#endregion
 
             services.AddSession(options =>
             {

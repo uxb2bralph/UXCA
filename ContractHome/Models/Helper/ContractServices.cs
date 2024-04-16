@@ -6,15 +6,10 @@ using ContractHome.Models.DataEntity;
 using ContractHome.Models.Email.Template;
 using ContractHome.Models.Email;
 using ContractHome.Models.ViewModel;
-using DocumentFormat.OpenXml.Office.CustomUI;
-using DocumentFormat.OpenXml.Spreadsheet;
 using Newtonsoft.Json;
-using static ContractHome.Models.Dto.GetFieldSettingRequest;
 using ContractHome.Models.Dto;
-using MimeKit.Text;
 using Microsoft.EntityFrameworkCore;
 using static ContractHome.Models.Dto.PostFieldSettingRequest;
-using Grpc.Core.Logging;
 using Wangkanai.Detection.Services;
 
 namespace ContractHome.Models.Helper
@@ -26,14 +21,18 @@ namespace ContractHome.Models.Helper
         private readonly EmailFactory _emailFactory;
         private readonly EmailBody _emailBody;
         private readonly IDetectionService _detectionService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
         public ContractServices(EmailBody emailBody,
             EmailFactory emailFactory,
-            IDetectionService detectionService
+            IDetectionService detectionService,
+            IHttpContextAccessor httpContextAccessor
             ) 
         {
             _emailBody = emailBody;
             _emailFactory = emailFactory;
             _detectionService = detectionService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public string GetClientDevice => $"{_detectionService.Platform.Name} {_detectionService.Platform.Version.ToString()}/{_detectionService.Browser.Name}";
@@ -359,13 +358,14 @@ namespace ContractHome.Models.Helper
 
         //}
 
-        public IEnumerable<UserProfile>? GetNotifyEmailListAsync(Contract contract)
+        public IEnumerable<UserProfile>? GetNotifyUsersAsync(Contract contract)
         {
             //EmailBody.EmailTemplate template = EmailBody.EmailTemplate.NotifySeal;
 
             if ((contract.CDS_Document.CurrentStep.Equals((int)CDS_Document.StepEnum.Establish)||
                 (contract.CDS_Document.CurrentStep.Equals((int)CDS_Document.StepEnum.DigitalSigning))))
             {
+                //wait to do...新增簽署人時新增簽署順序,並記錄在ContractSignatureRequest
                 var ttt = contract.ContractSignatureRequest
                     .Where(x=>x.StampDate==null);
                 var aaa = ttt.Where(x => x.CompanyID != contract.CompanyID).FirstOrDefault();
@@ -402,10 +402,21 @@ namespace ContractHome.Models.Helper
             var initiatorOrg = GetOrganization(contract);
             var userProfiles = GetUsersbyContract(contract);
 
+
             if (initiatorOrg != null)
             {
                 foreach (var user in userProfiles)
                 {
+
+                    JwtTokenGenerator.JwtPayloadData jwtPayloadData = new JwtTokenGenerator.JwtPayloadData()
+                    {
+                        UID = user.UID,
+                        Email = user.EMail,
+                        ContractID = contract.ContractID.ToString()
+                    };
+                    var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData, 4320);
+                    var clickLink = $"{_httpContextAccessor.HttpContext.DefaultWebUri()}/Account/SignatureTrust?token={jwtToken}";
+
                     var emailBody =
                         new EmailBodyBuilder(_emailBody)
                         .SetTemplateItem(emailTemplate)
@@ -414,6 +425,7 @@ namespace ContractHome.Models.Helper
                         .SetUserName(initiatorOrg.CompanyName)
                         .SetRecipientUserName(user.UserName)
                         .SetRecipientUserEmail(user.EMail)
+                        .SetContractLink(clickLink)
                         .Build();
 
                     yield return _emailFactory.GetEmailToCustomer(

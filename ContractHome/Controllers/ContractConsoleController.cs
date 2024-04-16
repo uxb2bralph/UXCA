@@ -454,15 +454,17 @@ namespace ContractHome.Controllers
             if (viewModel.ContractQueryStep == null) { viewModel.ContractQueryStep = 0; }
 
             var profile = await HttpContext.GetUserAsync();
-            #region add for postman test
-            if (profile == null && viewModel.EncUID.Length > 0)
-            {
-                profile = models.GetTable<UserProfile>().Where(x => x.UID == viewModel.EncUID.DecryptKeyValue()).FirstOrDefault();
-            }
-            #endregion
             var profileCompanyID = 0;
-            var organizationUser = models.GetTable<OrganizationUser>().Where(x => x.UID == profile.UID);
-            profileCompanyID = (organizationUser != null) ? organizationUser.Select(x => x.CompanyID).FirstOrDefault() : 0;
+            var organizationUser = models
+                .GetTable<OrganizationUser>()
+                .Where(x => x.UID == profile.UID);
+            
+            if (organizationUser != null&&organizationUser.FirstOrDefault() != null) 
+            {
+                profileCompanyID = organizationUser.FirstOrDefault().CompanyID;
+            }
+
+            //profileCompanyID = (organizationUser != null) ? organizationUser.Select(x => x.CompanyID).FirstOrDefault() : 0;
 
             IQueryable<Contract> items = PromptContractItems(profile);
 
@@ -838,7 +840,36 @@ namespace ContractHome.Controllers
         }
 
 
-        public ActionResult AffixPdfSeal(SignatureRequestViewModel viewModel)
+        public async Task<ActionResult> AffixPdfSealForTrust(AffixPdfSealForTrustRequest req)
+        {
+            ViewBag.ViewModel = req;
+
+            int? contractID = req.KeyID.DecryptKeyValue();
+
+            var item = models.GetTable<Contract>()
+                                .Where(c => c.ContractID == contractID)
+                                .FirstOrDefault();
+
+            var parties = models!.GetTable<ContractingParty>()
+            .Where(p => p.ContractID == contractID)
+            .Where(p => models.GetTable<OrganizationUser>()
+            .Where(o => o.UID == req.UID).Any(o => o.CompanyID == p.CompanyID))
+            .FirstOrDefault();
+
+            if ((item == null) || (parties == null))
+            {
+                _logger.LogWarning($"{HttpContext.TraceIdentifier}-{"Contract or Party is null."}-{req.ToString()}");
+                throw new NullReferenceException();
+            }
+
+            //TempData["Parties"] = parties;
+            //TempData["UID"] = req.UID;
+
+            return View("~/Views/ContractConsole/AffixPdfSealImage.cshtml", item);
+
+        }
+
+        public async Task<ActionResult> AffixPdfSeal(SignatureRequestViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
 
@@ -851,10 +882,25 @@ namespace ContractHome.Controllers
             var item = models.GetTable<Contract>()
                                 .Where(c => c.ContractID == contractID)
                                 .FirstOrDefault();
+            var profile = await HttpContext.GetUserAsync();
 
-            if (item == null)
+            if (profile==null)
             {
-                return new BadRequestResult();
+                _logger.LogWarning($"{HttpContext.TraceIdentifier}-{"profile is null."}");
+                throw new NullReferenceException();
+            }
+
+            var parties = models!.GetTable<ContractingParty>()
+            .Where(p => p.ContractID == contractID)
+            .Where(p => models.GetTable<OrganizationUser>()
+            .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
+            .FirstOrDefault();
+
+            if ((item == null) || (parties == null))
+            {
+                _logger.LogWarning($"{HttpContext.TraceIdentifier}-{"Contract or Party is null."}" +
+                    $"-contractID={contractID} profile.UID={profile.UID}");
+                throw new NullReferenceException();
             }
 
             return View("~/Views/ContractConsole/AffixPdfSealImage.cshtml", item);
@@ -1000,7 +1046,7 @@ namespace ContractHome.Controllers
                 return Json(new { result = false, message = "請設定上邊界位置!!" });
             }
 
-            ViewResult? result = AffixPdfSeal(viewModel) as ViewResult;
+            ViewResult? result = await AffixPdfSeal(viewModel) as ViewResult;
             if (result == null)
             {
                 return Json(new { result = false, message = "資料錯誤!!" });
@@ -1075,7 +1121,7 @@ namespace ContractHome.Controllers
                 return Json(new { result = false, message = "請設定上邊界位置!!" });
             }
 
-            ViewResult? result = AffixPdfSeal(viewModel) as ViewResult;
+            ViewResult? result = await AffixPdfSeal(viewModel) as ViewResult;
             if (result == null)
             {
                 return Json(new { result = false, message = "資料錯誤!!" });
@@ -1125,7 +1171,7 @@ namespace ContractHome.Controllers
 
         public async Task<ActionResult> ResetPdfSignatureAsync(SignatureRequestViewModel viewModel)
         {
-            ViewResult? result = AffixPdfSeal(viewModel) as ViewResult;
+            ViewResult? result = await AffixPdfSeal(viewModel) as ViewResult;
             if (result == null)
             {
                 return Json(new { result = false, message = "資料錯誤!!" });
@@ -1162,7 +1208,7 @@ namespace ContractHome.Controllers
 
         public async Task<ActionResult> AbortContractAsync(SignatureRequestViewModel viewModel)
         {
-            ViewResult? result = AffixPdfSeal(viewModel) as ViewResult;
+            ViewResult? result = await AffixPdfSeal(viewModel) as ViewResult;
             if (result == null)
             {
                 return Json(new { result = false, message = "資料錯誤!!" });
@@ -1183,7 +1229,7 @@ namespace ContractHome.Controllers
 
         public async Task<ActionResult> DeleteContract(SignatureRequestViewModel viewModel)
         {
-            ViewResult? result = AffixPdfSeal(viewModel) as ViewResult;
+            ViewResult? result = await AffixPdfSeal(viewModel) as ViewResult;
             if (result == null)
             {
                 return Json(new { result = false, message = "資料錯誤!!" });
