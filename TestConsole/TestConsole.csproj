@@ -24,7 +24,6 @@
     <ProjectReference Include="..\CommonLib.PlugInAdapter\CommonLib.PlugInAdapter.csproj" />
     <ProjectReference Include="..\CommonLib.Utility\CommonLib.Utility.csproj" />
     <ProjectReference Include="..\ContractHome\ContractHome.csproj" />
-    <ProjectReference Include="..\WpfTest\WpfTest.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,158 +1,2253 @@
 ﻿@using System.IO
 @using System.Linq.Expressions
+@using System.Text.RegularExpressions
 @using Microsoft.AspNetCore.Mvc.ModelBinding
 
 @using ContractHome.Helper
 @using ContractHome.Controllers
 @using ContractHome.Models.DataEntity
 @using ContractHome.Models.ViewModel
+@using ContractHome.Models.Helper
 @using CommonLib.Utility
 @using Newtonsoft.Json
-@using System.Text.RegularExpressions
 
 @{
-    Layout = "~/Views/Shared/MasterPage.cshtml";
+  Layout = "~/Views/Shared/MasterPage.cshtml";
 
-    ModelStateDictionary _modelState;
-    ModelSource? models;
-    ContractSignatureRequest _model = (ContractSignatureRequest)this.Model;
+  ModelStateDictionary _modelState;
+  ModelSource? models;
+  Contract _model = (Contract)this.Model;
 
-    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
-    _modelState = (ModelStateDictionary)ViewBag.ModelState;
-    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+  models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+  _modelState = (ModelStateDictionary)ViewBag.ModelState;
+  QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
 
-    var party = _model.Contract.ContractingParty.Where(p => p.CompanyID == _model.CompanyID).First();
+  var profile = await Context.GetUserAsync();
+  var party = models!.GetTable<ContractingParty>()
+  .Where(p => p.ContractID == _model.ContractID)
+  .Where(p => models.GetTable<OrganizationUser>()
+  .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
+  .FirstOrDefault();
+
+  var contractRefs = new ContractRefs(_model, "SignaturePositions", party?.CompanyID);
+
+  var contractData = @Html.Raw(_model.JsonStringify());
+  //var partyData = @Html.Raw(party.JsonStringify());
+  // var pageCount = _model.GetPdfPageCount();
+  var contractRefsJson = @Html.Raw(contractRefs.JsonStringify());
 }
-<div class="container">
-    <section>
-        <!-- Section title -->
-        @{
-            await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
-            await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", party.ContractingIntent.Description);
-        }
-
-        <div class="row">
-            @{
-                await Html.RenderPartialAsync("~/Views/ContractConsole/Module/ShowContractImage.cshtml", _model.Contract);
-            }
-            <div class="col-2">
-                @if(_model.StampDate.HasValue)
-                {
-                    <h1 class="h6">
-                        已用印，@(_model.StampDate)
-                    </h1>
-                }
-                else
-                {
-                    <div class="row" id="toAffix">
-                        <form method="post" enctype="multipart/form-data">
-                            <div>
-                                <label class="form-label" for="SealImage">請選擇印鑑章</label>
-                                <input type="file" class="form-control-small" id="SealImage" name="SealImage" />
-                            </div>
-                            <div>
-                                <label class="form-label" for="PageIndex" style="white-space: nowrap;">請選擇用印所在頁碼：</label>
-                                <select name="PageIndex" class="form-control-small col-8">
-                                    @for(int i=0;i<GetPdfPageCount(_model.Contract);i++)
-                                    {
-                                        <option value="@(i)" selected="@(i==_model.PageIndex)">第@(i+1)頁</option>
-                                    }
-                                </select>
-                                <script>
-                                    $('select[name="PageIndex"]').on('change',function() {
-                                        loadContractPage($('select[name="PageIndex"]').val());
-                                    });
-                                </script>
-                            </div>
-                            <div>
-                                <label class="form-label" for="MarginTop" style="white-space: nowrap;">請指定上邊界位置(公分)</label>
-                                <input type="text" class="form-control-small col-8" style="text-align:right;" id="MarginTop" name="MarginTop" value="@(_model?.MarginTop ?? 0)" />
-                            </div>
-                            <div>
-                                <label class="form-label" for="MarginLeft" style="white-space: nowrap;">請指定左邊界位置(公分)</label>
-                                <input type="text" class="form-control-small col-8" style="text-align:right;" id="MarginLeft" name="MarginLeft" value="@(_model?.MarginLeft ?? 0)" />
-                            </div>
-                            <div>
-                                <label class="form-label" for="SealScale" style="white-space: nowrap;">印鑑章縮放比例(%)</label>
-                                <input type="text" class="form-control-small col-8" style="text-align:right;" id="SealScale" name="SealScale" value="@(_model?.SealScale ?? 100)" />
-                            </div>
-                            <div>
-                                <button type="button" onclick="commitSignature(true);" class="form-control">預覽</button>
-                            </div>
-                            <div>
-                                <button type="button" onclick="commitSignature(false);" class="form-control">用印</button>
-                            </div>
-                        </form>
-                        <script>
-                            function commitSignature(preview) {
-                                clearErrors();
-                                $global.viewModel.Preview = preview;
-                                $('form').ajaxForm({
-                                    url: '@Html.Raw(Url.Action("CommitPdfSignature", "ContractConsole"))',
-                                    data: $global.viewModel,
-                                    beforeSubmit: function () {
-                                        showLoading();
-                                    },
-                                    success: function (data) {
-                                        hideLoading();
-                                        if ($.isPlainObject(data)) {
-                                            if (data.result) {
-                                                if(preview) {
-                                                } else {
-                                                    alertModal('已用印完成!!');
-                                                }
-                                                loadContractPage($('select[name="PageIndex"]').val());
-                                            } else {
-                                                alertModal(data.message);
-                                            }
-                                        }
-                                        else {
-                                            $(data).appendTo($('body'));
-                                        }
-                                    },
-                                    error: function (xhr, ajaxOptions, thrownError) {
-                                        hideLoading();
-                                        console.log(xhr.status);
-                                        alertModal(thrownError);
-                                    }
-                                }).submit();
-                            }
-
-                            function loadContractPage(pageIndex) {
-                                showLoading();
-                                $.post('@Html.Raw(Url.Action("LoadContractPage","ContractConsole"))', {'KeyID':'@Html.Raw(_model!.ContractID.EncryptKey())','PageIndex':pageIndex}, function (data) {
-                                    hideLoading();
-                                    if ($.isPlainObject(data)) {
-                                        $('#contractImg').css(data);
-                                    } else {
-                                        $(data).appendTo($('body'));
-                                    }
-                                });
-                            }
-                        </script>
-                    </div>
-                }
-            </div>
+@{
+  await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
+  <script src="~/js/api.js"></script>
+}
+<div id="AffixPdfSealImage" class="container-fluid py-4 pt-2 pb-3">
+  <section>
+    <!-- 標題 - 甲方 / 乙方 -->
+    <div class="d-flex justify-content-between align-items-center pe-5">
+      <div class="d-flex align-items-center mb-2">
+        <h4 class="mb-0 me-3 py-2 fw-bolder">
+          {{ isNew ? '建立新合約' : '簽署人用印'}}
+        </h4>
+        <div v-if="getSignaturePage()" class="alert alert-success ms-3 mb-0 py-2 px-3" role="alert">
+          <i class="fas fa-info-circle pe-2"></i>
+          您有第 <span class="text-danger">{{ getSignaturePage() }}</span> 頁需要進行簽署。
         </div>
+      </div>
+      <!--
+      <div v-if="isNew" id="editTourbutton" class="mb-2 tooltip__wrapper ms-auto">
+        <button type="button" class="px-1 btn btn-lg btn-warning rounded-pill opacity-75" style="width: 48px;"
+          v-on:click="tourHandler">
+          <i class="far fa-street-view"></i>
+        </button>
+        <div class="tooltip__text">導覽小幫手</div>
+      </div>
+      -->
+    </div>
+    <div class="row" style="height: calc(100vh - 145px);">
+      <!-- 合約影像檔 -->
+      <div class="col contract__wrapper">
+        <div class="contract__arrow--left">
+          <button type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="上一頁"
+            class="btn btn-primary rounded-pill opacity-50"
+            :class="{'btn-secondary opacity-25 disabled' : selectedPage === 1}" v-on:click="commitData('prev')">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+        </div>
+        <div id="pdf__wrapper" class="card pdf__wrapper">
+          @{
+            await Html.RenderPartialAsync("~/Views/ContractConsole/Module/ShowContractImage.cshtml", _model);
+          }
+        </div>
+        <div class="contract__arrow--right">
+          <button type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="下一頁"
+            class="btn btn-primary rounded-pill opacity-50"
+            :class="{'btn-secondary opacity-25 disabled' : selectedPage === PageCount}" v-on:click="commitData('next')">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+      <!-- 操作介面 -->
+      <div class="options__wrapper">
+        <div id="toAffix" class="row m-0 p-0">
+          <form method="post" enctype="multipart/form-data" class="ps-1 pe-3">
+            <!-- 起約人簽署設定 -->
+            <div v-if="isNew">
+              <template v-if="editStep === '1'">
+                <div class="card p-3 mb-3">
+                  <h6 class="fw-bolder text-primary">
+                    <i class="fad fa-user me-1"></i>
+                    起約人簽署
+                  </h6>
+                  <p class="my-0 pt-2 pb-3 lh-sm">
+                    <small>
+                      <i class="fas fa-exclamation-circle text-danger me-1"></i>
+                      若您在上傳合約前合約已經用印，請勾選「合約已用印」，並按「下一步」繼續下個流程。
+                    </small>
+                  </p>
+                  <div class="pb-1">
+                    <input v-model="form.usedStamp" type="checkbox" class="form-check-input" id="isInitiatorStamp"
+                      name="IgnoreSeal" />
+                    <label class="form-check-label fw-bolder" for="isInitiatorStamp">
+                      合約已用印
+                    </label>
+                  </div>
+                </div>
+                <div class="card p-3 mb-3">
+                  <h6 class="fw-bolder text-primary">
+                    <i class="fad fa-tasks-alt me-1"></i>
+                    簽署選項
+                  </h6>
+                  <div class="pb-3">
+                    <label class="form-label fw-bolder" for="PageIndex">選擇簽署所在頁碼</label>
+                    <select v-model="selectedPage" id="PageIndex" name="PageIndex" class="form-select form-select-sm"
+                      v-on:change="pageHandler">
+                      <option v-for="(page, index) in PageCount" :key="index" :value="page">第{{ page }}頁</option>
+                    </select>
+                  </div>
+                  <div>
+                    <button type="button" v-on:click="sealHandler" class="btn btn-brown w-100">
+                      <i class="fas fa-stamp"></i> 簽名 或 蓋章
+                    </button>
+                    <button type="button" v-on:click="dateHandler" class="btn btn-brown w-100 mt-2">
+                      <i class="fas fa-calendar-alt"></i> 日期
+                    </button>
+                    <button type="button" v-on:click="textHandler" class="btn btn-brown w-100 mt-2">
+                      <i class="fas fa-text"></i> 文字
+                    </button>
+                  </div>
+                </div>
+              </template>
+              <!-- 簽署人設定 -->
+              <template v-else>
+                <div class="card p-3 pb-0 mb-3">
+                  <h6 class="fw-bolder text-primary">
+                    <i class="fad fa-users me-1"></i>
+                    簽署人設定
+                  </h6>
+                  <div class="pb-3">
+                    <button type="button" class="btn btn-success opacity-75 w-100" v-on:click="openContractorModal">
+                      邀請簽署人
+                    </button>
+                    <p class="my-0 py-2 lh-sm">
+                      <small v-if="isContractorEmpty">
+                        <i class="fas fa-exclamation-circle text-danger me-1"></i>
+                        請先選取簽署人再設定簽署區域。
+                      </small>
+                      <small v-if="!isContractorEmpty && IsJointContracting">
+                        <i class="fas fa-exclamation-circle text-danger me-1"></i>
+                        您有設定「多人簽署同一份文件」，請先指定簽署人再設定簽署區域。
+                      </small>
+                    </p>
+                    <div class="d-grid gap-2 contract__list">
+                      <template v-if="IsJointContracting">
+                        <button v-for="(contractor, index) in companyList" :key="index" type="button"
+                          class="bd-orange-100" class="bd-orange-100" :class="contractor.btnClass"
+                          v-on:click="contractorSetHandler(contractor)">
+                          <i class="fas fa-user me-1 opacity-50"></i>
+                          <span class="fw-bolder">{{ contractor.text }}</span>
+                        </button>
+                      </template>
+                      <template v-else>
+                        <button v-for="(contractor, index) in companyList" :key="index" type="button"
+                          class="bd-orange-100 disabled">
+                          <i class="fas fa-user me-1 opacity-50"></i>
+                          <span class="fw-bolder">{{ contractor.text }}</span>
+                        </button>
+                      </template>
+                    </div>
+                  </div>
+                </div>
+                <div class="card p-3 mb-3">
+                  <h6 class="fw-bolder text-primary">
+                    <i class="fad fa-tasks-alt me-1"></i>
+                    簽署選項
+                  </h6>
+                  <div class="pb-3">
+                    <label class="form-label fw-bolder" for="PageIndex">選擇簽署所在頁碼</label>
+                    <select v-model="selectedPage" id="PageIndex" name="PageIndex" class="form-select form-select-sm"
+                      v-on:change="pageHandler">
+                      <option v-for="(page, index) in PageCount" :key="index" :value="page">第{{ page }}頁</option>
+                    </select>
+                  </div>
+                  <div>
+                    <button type="button" v-on:click="setSealHandler('1')" class="btn btn-brown w-100">
+                      <i class="fas fa-stamp"></i> 簽名 或 蓋章
+                    </button>
+                    <button type="button" v-on:click="setSealHandler('2')" class="btn btn-brown w-100 mt-2">
+                      <i class="fas fa-calendar-alt"></i> 日期
+                    </button>
+                    <button type="button" v-on:click="setSealHandler('3')" class="btn btn-brown w-100 mt-2">
+                      <i class="fas fa-text"></i> 文字
+                    </button>
+                  </div>
+                </div>
+              </template>
+            </div>
+            <!-- 簽署人簽章 -->
+            <div v-else>
+              <div class="p-3 ps-0 pb-0 mb-3">
+                <h6 class="fw-bolder text-primary">
+                  <i class="fad fa-users me-1"></i>
+                  簽署人簽章
+                </h6>
+              </div>
+              <div class="card p-3 mb-3">
+                <h6 class="fw-bolder text-primary">
+                  <i class="fad fa-tasks-alt me-1"></i>
+                  簽署選項
+                </h6>
+                <div class="pb-3">
+                  <label class="form-label fw-bolder" for="PageIndex">選擇簽署所在頁碼</label>
+                  <select v-model="selectedPage" id="PageIndex" name="PageIndex" class="form-select form-select-sm"
+                    v-on:change="pageHandler">
+                    <option v-for="(page, index) in PageCount" :key="index" :value="page">第{{ page }}頁</option>
+                  </select>
+                </div>
+                <p class="my-0 lh-sm">
+                  <small>
+                    <i class="fas fa-exclamation-circle text-danger me-1"></i>
+                    請點選簽署區塊進行編輯。
+                  </small>
+                </p>
+              </div>
+            </div>
+            <!-- 操作按鈕 -->
+            <div class="row g-2 my-0">
+              <div class="col py-1">
+                <button v-if="editStep === '1'" type="button" v-on:click="resetSignature"
+                  class="btn btn-secondary opacity-50 w-100">
+                  <i class="fas fa-eraser"></i> 清除用印
+                </button>
+                <button v-if="editStep === '2'" type="button" v-on:click="editStepHandler('1')"
+                  class="btn btn-secondary opacity-50 w-100">
+                  <i class="fas fa-reply"></i> 上一步
+                </button>
+              </div>
+              <div v-if="isNew" class="col py-1">
+                <button type="button" v-on:click="cancelHandler" class="btn btn-success opacity-75 w-100">
+                  <i class="far fa-times"></i> 取消
+                </button>
+              </div>
+              <div v-else class="col py-1">
+                <button type="button" v-on:click="abortHandler" class="btn btn-danger opacity-75 w-100">
+                  <i class="fas fa-share"></i> 退回合約
+                </button>
+              </div>
+            </div>
+            <div class="row g-2 my-0">
+              <div v-if="isNew && editStep === '1'" class="col py-1">
+                <button type="button" v-on:click="editStepHandler('2')"
+                  class="btn btn-lg btn-primary opacity-75 w-100 fw-bolder">
+                  下一步
+                </button>
+              </div>
+            </div>
+            <div v-if="editStep === '2' || !isNew" class="row g-2 my-0">
+              <div class="col-12 py-1 mb-2">
+                <button type="button" v-on:click="commitContract()"
+                  class="btn btn-lg btn-primary opacity-75 w-100 fw-bolder">
+                  送出合約
+                </button>
+              </div>
+              <div class="divider "></div>
+              <div class="col-12 py-1">
+                <button type="button" v-on:click="backSearch" class="btn btn-light w-100">
+                  <span class="text-black-50">返回合約查詢</span>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    </section>
+  <!-- 新增 簽署人 Dialog -->
+  <div class="modal fade" id="addContractorModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="addContractorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bolder" id="staticBackdropLabel">管理簽署人</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="container">
+            <form novalidate>
+              <div class="row g-3">
+                <div class="col-12 py-3">
+                  <div id="addContract" class="tooltip__wrapper">
+                    <button type="button" class="btn btn-success rounded-pill opacity-75" v-on:click="addContractor">
+                      <i class="fas fa-user-plus"></i>
+                    </button>
+                    <div class="tooltip__text">新增簽署人</div>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="row g-3">
+                    <div v-if="alertActived" class="mt-0 col-sm-12">
+                      <div id="contractorAlert"
+                        class="alert alert-danger d-flex align-items-center alert-dismissible fade"
+                        :class="{'show' : alertActived}" role="alert">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                          class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img"
+                          aria-label="Warning:">
+                          <path
+                            d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                        </svg>
+                        <div>
+                          {{ contractorMag }}
+                        </div>
+                        <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"
+                          v-on:click="closeAlert"></button>
+                      </div>
+                    </div>
+                    <template v-for="(item, index) in selectedContractor">
+                      <div class="my-0 col-sm-12 col-md-3 input__height">
+                        <div :key="index" :id="`company_${index}`" class="btn-group w-100" role="group"
+                          aria-label="Button group with nested dropdown">
+                          <span class="tooltip__wrapper">
+                            <button type="button" class="btn btn-outline-secondary opacity-75 rounded-0 rounded-start"
+                              v-on:click="deleteContractor(item, index)">
+                              <i class="fas fa-trash-alt"></i>
+                            </button>
+                            <div class="tooltip__text">刪除</div>
+                          </span>
+                          <div class="btn-group flex-grow-1" role="group">
+                            <button id="btnGroupDrop1" type="button"
+                              class="btn btn-outline-secondary d-flex align-items-center justify-content-between opacity-75 dropdown-toggle"
+                              data-bs-toggle="dropdown" aria-expanded="false" v-on:click="initContractor">
+                              {{ formatText(item.text) || '請選擇簽署方公司名稱' }}
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                              <li class="px-2 pb-2">
+                                <input v-model="inputSearchCompany" type="text" class="form-control" placeholder=""
+                                  aria-label="Companyname" aria-describedby="basic-addon1"
+                                  v-on:keyup="searchCompany($event.target.value)">
+                              </li>
+                              <li v-for="(item, idx) in contractorList" :key="idx">
+                                <a class="dropdown-item" v-on:click="selectCompany(index, item)">{{ item.text }}</a>
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                        <div class="invalid-feedback text-end">
+                          {{ item.isDuplicate ? '簽署方公司名稱重複，請檢查' : '請選擇簽署方公司名稱' }}
+                        </div>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary opacity-75" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" v-on:click="contractorHandler">下一步</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 日期輸入 Dialog -->
+  <div class="modal fade" id="dateModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="dateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bolder" id="staticBackdropLabel">日期格式</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form method="post" enctype="multipart/form-data" class="pt-3 pb-3 text-center">
+            <div class="row g-3">
+              <div class="col-md-6 col-sm-12"
+                v-on:click="useDateHandler(`中華民國 ${ rocYear } 年 ${ month } 月 ${ day } 日`)">
+                <div class="card shadow-sm block--hover">
+                  <span class="h6 fw-bolder mb-0 py-4">中華民國 {{ rocYear }} 年 {{ month }} 月 {{ day }} 日</span>
+                </div>
+              </div>
+              <div class="col-md-6 col-sm-12" v-on:click="useDateHandler(`${ year } / ${ month } / ${ day }`)">
+                <div class="card shadow-sm block--hover">
+                  <span class="h6 fw-bolder mb-0 py-4">{{ year }} / {{ month }} / {{ day }}</span>
+                </div>
+              </div>
+              <div class="col-md-6 col-sm-12" v-on:click="useDateHandler(`${ month } / ${ day } / ${ year }`)">
+                <div class="card shadow-sm block--hover">
+                  <span class="h6 fw-bolder mb-0 py-4">{{ month }} / {{ day }} / {{ year }}</span>
+                </div>
+              </div>
+              <div class="col-md-6 col-sm-12" v-on:click="useDateHandler(`${ day } / ${ month } / ${ year }`)">
+                <div class="card shadow-sm block--hover">
+                  <span class="h6 fw-bolder mb-0 py-4">{{ day }} / {{ month }} / {{ year }}</span>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 文字輸入 Dialog -->
+  <div class="modal fade" id="textModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="textModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bolder" id="staticBackdropLabel">文字</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body pb-0">
+          <textarea type="text" v-model:trim="noteItem" id="noteItem" name="inputText" class="form-control"
+            v-on:keyup="addNote"></textarea>
+        </div>
+        <div class="modal-footer border-top-0 justify-content-center">
+          <button type="button" id="noteItemBtn" class="btn btn-primary opacity-75"
+            :class="{ 'invisible' : isNoteEmpty }" tabindex="-1" role="button" v-on:click="createVirtualTextArea">
+            使用
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 取消 Dialog -->
+  <div class="modal fade" id="cancelModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="cancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered ">
+      <div class="modal-content">
+        <div class="modal-header border-bottom-0">
+          <h5 class="modal-title" id="staticBackdropLabel"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="pt-0 modal-body text-center">
+          <div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i>
+          </div>
+          <div class="h5 fw-bolder lh-base">確定取消本次新增？</div>
+        </div>
+        <div class="modal-footer border-top-0 justify-content-center">
+          <button type="button" class="btn btn-secondary opacity-50" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" v-on:click="confirmCancel">確定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 退回 Dialog -->
+  <div class="modal fade" id="abortModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="abortModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered ">
+      <div class="modal-content">
+        <div class="modal-header border-bottom-0">
+          <h5 class="modal-title" id="staticBackdropLabel"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center h5 fw-bolder">合約退回後，資料將被清除，確定退回？</div>
+        <div class="modal-footer border-top-0 justify-content-center">
+          <button type="button" class="btn btn-secondary opacity-50" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" v-on:click="abortContract">確定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PDF 預覽 Dialog -->
+  <div class="modal fade" id="pdfModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="pdfModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bolder" id="staticBackdropLabel">合約預覽</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body pb-0">
+          <!-- PDF 內嵌頁面 -->
+          <div class="card pdf__wrapper">
+            @{
+              await Html.RenderPartialAsync("~/Views/ContractConsole/Module/ShowContractImage.cshtml", _model);
+            }
+          </div>
+        </div>
+        <div class="modal-footer border-top-0 justify-content-center">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 訊息 Dialog -->
+  <div class="modal fade" id="infoModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="infoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body text-center h5 fw-bolder pt-5">
+          <div v-html="infoMsg"></div>
+        </div>
+        <div class="modal-footer border-top-0 justify-content-center">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+            v-on:click="isCloseHandler">關閉</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
+<script>
+  @{
+    // 取得人員資料
+    var userOrgItems = models.GetTable<OrganizationUser>().Where(u => u.UID == profile.UID);
+  }
+  // 取得公司(乙方) ID 加密
+  const companyID = '@Html.Raw(party?.CompanyID.EncryptKey())';
+  // 起約人資料清單
+  const dataInitiator = @Html.Raw(userOrgItems.Select(u => new { id = u.CompanyID.EncryptKey(), text = u.Organization.CompanyName }).ToArray().JsonStringify());
+  // 簽署人資料清單
+  const contractorAllList = @Html.Raw(models.GetTable<Organization>().Where(o => userOrgItems.Any(u => u.CompanyID == o.CompanyBelongTo)).Select(u => new { id = u.CompanyID.EncryptKey(), companyName = u.CompanyName, receiptNo = u.ReceiptNo }).ToArray().JsonStringify());
+  // 取得上傳 PDF 總頁數
+  @* const pageCount = @(pageCount); *@
+  const { IsJointContracting, KeyID: contractID, PageCount, Parties } = @Html.Raw(contractRefsJson);
 
-@functions
-{
-    public int GetPdfPageCount(Contract attachment)
-    {
-            if (attachment == null || !File.Exists(attachment.FilePath))
-            {
-                return 0;
-            }
-
-            var content = File.ReadAllText(attachment.FilePath);
-            var match = Regex.Match(content, "/Count(?([^\\r\\n])\\s)\\d+");
-            if (match.Value != String.Empty)
-            {
-                return int.Parse(match.Value.Substring(7));
-            }
-            return 0;
+  var app = new Vue({
+    el: '#AffixPdfSealImage',
+    data() {
+      return {
+        editStep: '1',
+        dataInitiator,
+        contractorAllList,
+        contractorList: [],
+        inputSearchCompany: '',
+        IsJointContracting,
+        PageCount,
+        Parties,
+        contractID,
+        companyID,
+        selectedPage: 1,
+        noteItem: null, // 輸入的文字
+        isNoteEmpty: true, // 輸入文字欄位狀態
+        hasDuplicateContractor: false,
+        selectedContractor: [
+          {
+            id: '0',
+            text: null,
+            isDuplicate: false
+          }
+        ],
+        companyList: [],
+        form: {
+          KeyID: null,
+          EncUID: null,
+          Initiator: null,
+          Contractors: [],
+          usedStamp: false,
+        },
+        alertActived: false,
+        contractorMag: null,
+        currentCompany: {},
+        signaturePositionsTemp: [], // 設定簽屬區域列表
+        contractSignaturePositions: [],
+        contractSignaturePositionsTemp: [],
+        currentSeal: {},
+        day: null,
+        month: null,
+        year: null,
+        rocYear: null,
+        scrolly: 0,
+        scrollType: null,
+        inputType: [
+          { text: '簽章', value: '1' },
+          { text: '日期', value: '2' },
+          { text: '文字', value: '3' },
+        ],
+        usedStampList: [], // 簽署人用印的資料(文字/印章)
+        infoMsg: null,
+        isCanael: false,
+        isCreate: false,
+        isClear: false,
+        isReject: false,
+        sealTempList: [],
+      };
+    },
+    computed: {
+      isNew() {
+        return this.Parties.length === 0;
+      },
+      isContractorEmpty() {
+        const isZero = this.selectedContractor[0]?.id === '0';
+        const isEmpty = this.selectedContractor.length === 1;
+        return isZero && isEmpty;
+      }
+    },
+    mounted() {
+      this.init();
+      this.scrollHeight();
+      setTimeout(() => {
+        if (!this.isNew) {
+          // 取出當前簽署人簽署區塊資料
+          this.getContractor();
+          // 簽約方進入先清除用印以免用印未送出產生圖檔重疊
+          this.resetSignatureOnLoad();
         }
-}
+      }, 100)
+    },
+    methods: {
+      init() {
+        this.form.KeyID = this.contractID;
+        this.form.EncUID = getCookie('userID');
+        this.form.Initiator = this.dataInitiator[0].id;
+        this.form.Contractors = [];
+        //this.contractorList = [...this.contractorAllList];
+        this.contractorMag = null;
+        this.alertActived = false;
+        this.getContractorList();
+        this.getDate();
+
+        // 若為第一次登入，顯示歡迎視窗並進入導覽流程
+        // window.addEventListener('load', (event) => {
+        //   if (!localStorage.getItem("isEditTour")) {
+        //     // 初始化 網頁導覽
+        //     const tourguide = new Tourguide({ steps });
+        //     tourguide.start();
+        //     localStorage.setItem("isEditTour", true);
+        //   }
+        // });
+      },
+
+      // 取得合併資料後的簽署人清單
+      getContractorList() {
+        this.contractorList = this.contractorAllList.map(item => {
+          item.text = `${item.companyName} (${item.receiptNo})`;
+          return item;
+        });
+      },
+
+      // 格式化字串
+      formatText(string) {
+        const stringLength = string && string.length;
+        return stringLength > 10 ? `${string.substring(0, 12)}...` : string;
+      },
+
+      // 卷軸滾動高度
+      scrollHeight() {
+        const pdfWrapper = document.querySelector("#pdf__wrapper");
+        pdfWrapper.addEventListener('scroll', () => {
+          this.scrolly = pdfWrapper.scrollTop.toFixed(2);
+        });
+      },
+
+      // 取的日期資料 
+      getDate() {
+        let objectDate = new Date();
+        this.day = objectDate.getDate();
+        this.month = objectDate.getMonth() + 1;
+        this.year = objectDate.getFullYear();
+        this.rocYear = this.year - 1911;
+      },
+
+      // 簽署步驟
+      editStepHandler(step) {
+        this.editStep = step;
+      },
+
+      // 合約簽署設定查詢
+      // 取出當前簽署人簽署區塊資料
+      getContractor() {
+        // 初始化
+        this.contractSignaturePositions = [];
+        this.contractSignaturePositionsTemp = [];
+        const getSignaturePositions = this.Parties
+          .filter(item => !item.isInitiator && item.IsCurrentUserCompany)
+          .map(item => {
+            return item.SignaturePositions;
+          })
+          .reduce((acc, cur) => {
+            return acc.concat(cur);
+          }, [])
+          .map(item => {
+            item.ItemClass = `vmBox__wrapper--bg00`;
+            return item;
+          });
+        this.contractSignaturePositions = [...getSignaturePositions];
+        this.contractSignaturePositionsTemp = [...getSignaturePositions];
+        this.loadPageItem(this.selectedPage - 1);
+      },
+
+      // 開啟 簽署人設定 Modal
+      openContractorModal() {
+        $('#addContractorModal').modal('show');
+      },
+
+      // 選擇簽約方
+      selectCompany(index, contratcor) {
+        this.selectedContractor[index].id = contratcor.id;
+        this.selectedContractor[index].text = contratcor.text;
+        // 檢核欄位
+
+        this.hasDuplicateValues();
+      },
+
+      // 檢查是否重複
+      hasDuplicateValues() {
+        const source = this.selectedContractor;
+        let items = [];
+        const sourceMap = source.map(sourceItem => {
+          sourceItem.isDuplicate = sourceItem.id !== '0' && items.includes(sourceItem.id);
+          items.push(sourceItem.id);
+          return sourceItem;
+        })
+
+        sourceMap.forEach((item, index) => {
+          const currentItem = document.querySelector(`#company_${index}`);
+          if (item.isDuplicate) {
+            this.hasDuplicateContractor = item.isDuplicate;
+            currentItem.classList.add('is-invalid');
+          } else {
+            this.hasDuplicateContractor = item.isDuplicate;
+            currentItem.classList.remove('is-invalid');
+          }
+        })
+      },
+
+      // Filter 簽約方資料
+      searchCompany(string) {
+        //console.log({ string })
+        this.contractorList = this.contractorAllList.filter(item => item.text.includes(string));
+      },
+
+      // 初始化簽約方名單
+      initContractor() {
+        this.inputSearchCompany = '';
+        //this.contractorList = [...this.contractorAllList];
+        //this.getContractorList();
+      },
+
+      // 新增簽署單位資料
+      addContractor() {
+        this.selectedContractor.push({
+          id: '0',
+          text: null,
+          isDuplicate: false
+        });
+      },
+
+      // 刪除簽署單位資料
+      deleteContractor(obj, index) {
+        if (this.selectedContractor.length === 1) {
+          this.contractorMag = '簽署單位至少要填一筆資料。';
+          this.alertActived = true;
+          return
+        }
+        this.selectedContractor.splice(index, 1);
+      },
+
+      closeAlert() {
+        this.alertActived = !this.alertActived;
+        this.contractorMag = null;
+      },
+
+      // 選擇簽署人
+      contractorHandler() {
+        // 檢查簽約方資料有無填寫
+        const selectedItem = [...this.selectedContractor];
+        selectedItem.forEach((item, index) => {
+          const currentItem = document.querySelector(`#company_${index}`);
+          const isEmpty = item.id === '0';
+          const isDuplicate = item.isDuplicate;
+          // 顯示 UI 狀態
+          if (isEmpty || isDuplicate) {
+            currentItem.classList.add('is-invalid');
+          } else {
+            currentItem.classList.remove('is-invalid');
+          }
+        });
+
+        const hasEmpty = selectedItem.filter(item => item.id === '0').length > 0;
+        const hasDuplicate = selectedItem.filter(item => item.isDuplicate).length > 0;
+
+        // 簽署單位未選取不給過
+        if (hasEmpty) {
+          this.contractorMag = '簽署單位有未選取簽署人，請檢查。';
+          this.alertActived = true;
+          return;
+        };
+
+        // 簽署單位重複選取不給過
+        if (hasDuplicate) return;
+
+        const contractorArray = this.selectedContractor.map(item => item.id);
+        const contractorFilter = this.contractorAllList
+          .filter(item => {
+            return contractorArray.includes(item.id)
+          })
+          .map((item, index) => {
+            return {
+              ...item,
+              btnClass: `bd-0${index}`,
+              ItemClass: `vmBox__wrapper--bg0${index}`
+            }
+          });
+        this.companyList = [...contractorFilter];
+        this.form.Contractors = [];
+        contractorFilter.forEach((item, index) => {
+          this.form.Contractors.push({ Contractor: item.id, Text: item.text });
+        });
+
+        // 多人簽署時重新送出表單後會檢查簽數人是否有更動，並調整已圈選的元件
+        let signaturePositions = this.signaturePositionsTemp;
+        if (this.IsJointContracting && signaturePositions.length > 0) {
+
+          this.signaturePositionsTemp = signaturePositions.filter(item => contractorArray.includes(item.UserId));
+          this.loadPageItem(this.selectedPage - 1);
+        }
+        $('#addContractorModal').modal('hide');
+      },
+
+      // 編輯欄 選擇頁碼
+      pageHandler() {
+        loadContractPage(this.selectedPage - 1);
+        this.loadPageItem(this.selectedPage - 1);
+      },
+
+      // 頁面 選擇頁碼
+      commitData(step) {
+        const currentPage = this.selectedPage;
+        if (isNaN(currentPage)) {
+          return;
+        }
+        if (step === 'next') {
+          this.selectedPage = currentPage < this.PageCount ? this.selectedPage + 1 : this.selectedPage;
+        } else {
+          this.selectedPage = currentPage > 0 ? this.selectedPage - 1 : this.selectedPage;
+        }
+        loadContractPage(this.selectedPage - 1);
+        this.loadPageItem(this.selectedPage - 1);
+      },
+
+      // 載入頁面元件
+      loadPageItem(pageIndex) {
+        const contractArea = document.querySelector("#contractImg");
+        contractArea.innerHTML = '';
+        if (this.isNew) {
+          const pageitem = this.signaturePositionsTemp.filter(item => item.PageIndex === this.selectedPage - 1);
+          if (pageitem.length > 0) {
+            pageitem.forEach(item => this.getComponent(item));
+          }
+        } else {
+          const pageitem = this.contractSignaturePositions.filter(item => item.PageIndex === this.selectedPage - 1);
+          pageitem.forEach(item => this.getCompanyComponent(item));
+        }
+      },
+
+      // 產生圈選元件
+      getComponent(itemObj) {
+        const { Id: uuid, MarginLeft, MarginTop, SealScale, ScaleWidth, ScaleHeight, Type, PageIndex, canEdit, UserId, ItemClass } = itemObj;
+        // 產生一個虛擬 textBox
+        const contractArea = document.querySelector("#contractImg");
+        const textBox = document.createElement("div");
+        // id 動態產生
+        textBox.id = uuid;
+        textBox.setAttribute('class', 'vmBox__wrapper');
+        textBox.setAttribute('style', `top: ${MarginTop}px;left:${MarginLeft}px;width:${ScaleWidth}px;height:${ScaleHeight}px;`);
+
+        const typeText = this.inputType.filter(item => item.value === Type)[0].text;
+
+        contractArea.appendChild(textBox);
+        textBox.classList.add(ItemClass);
+        // 產生文字內容並放到 textBox
+        textBox.innerHTML = `
+          <div class="vmBox__note">${typeText}</div>
+          <div id="vmBox-${uuid}-subtext" class="vmBox__subtext">拖曳至指定位置</div>
+          <div id="vmBox-${uuid}-scale" class="vmBox__scale"></div>
+          <button id="vmBox-${uuid}-remove" class="btn btn-sm vmBox__delete"><i class="far fa-times"></i></button>
+          <button id="vmBox-${uuid}-check" class="btn btn-sm vmBox__check"><i class="far fa-check"></i></button>
+          <button id="vmBox-${uuid}-edit" class="btn btn-sm vmBox__edit hide"><i class="fas fa-pencil"></i></button>`;
+
+        const subtext = document.querySelector(`#vmBox-${uuid}-subtext`);
+        const scaleBox = document.querySelector(`#vmBox-${uuid}-scale`);
+        const removeBox = document.querySelector(`#vmBox-${uuid}-remove`);
+        const useBox = document.querySelector(`#vmBox-${uuid}-check`);
+        const editBox = document.querySelector(`#vmBox-${uuid}-edit`);
+
+        if (canEdit) {
+          subtext.classList.remove('hide');
+          scaleBox.classList.remove('hide');
+          removeBox.classList.remove('hide');
+          useBox.classList.remove('hide');
+          editBox.classList.add('hide');
+          textBox.style.cursor = 'move';
+        } else {
+          subtext.classList.add('hide');
+          scaleBox.classList.add('hide');
+          removeBox.classList.add('hide');
+          useBox.classList.add('hide');
+          editBox.classList.remove('hide');
+          textBox.style.cursor = 'default';
+        }
+
+        this.operator({ uuid, contractArea, textBox, removeBox, scaleBox, useBox, editBox, subtext });
+
+      },
+
+      // 產生乙方用印元件
+      getCompanyComponent(itemObj) {
+        const { ID: uuid, MarginLeft, MarginTop, ScaleHeight, ScaleWidth, Type, ItemClass } = itemObj;
+        // 產生一個虛擬 textBox
+        const contractArea = document.querySelector("#contractImg");
+        const textBox = document.createElement("div");
+        // id 動態產生
+        textBox.id = uuid;
+        textBox.setAttribute('class', 'vmBox__wrapper vmBox__compantEdit');
+        textBox.setAttribute('style', `top: ${MarginTop}px;left:${MarginLeft}px;width:${ScaleWidth}px;height:${ScaleHeight}px;`);
+        const typeText = this.inputType.filter(item => item.value === `${Type}`)[0].text;
+        contractArea.appendChild(textBox);
+
+        textBox.classList.add(ItemClass);
+        // 產生文字內容並放到 textBox
+        textBox.innerHTML = `
+          <div id="vmBox-${uuid}-edit" class="vmBox--edit">
+            <div class="vmBox__note">${typeText}</div>
+          </div>
+          <div id="vmBox-${uuid}-subtext" class="vmBox__subtext">點擊區塊進行編輯</div>
+          <button id="useSeal-${uuid}" class="btn btn-success opacity-75 btn-sm vmUse"> 套用 </utton>
+          `;
+
+        const editBox = document.querySelector(`#vmBox-${uuid}-edit`);
+        editBox.onclick = () => {
+          // 簽章
+          if (Type === 1) {
+            // 一次只能出現一個 editItem
+            const children = contractArea.children;
+            children.forEach(item => item.classList.remove('editItem'));
+
+            textBox.classList.add('editItem');
+            this.sealHandler();
+          };
+
+          // 日期
+          if (Type === 2) {
+            const children = contractArea.children;
+            children.forEach(item => item.classList.remove('editItem'));
+
+            textBox.classList.add('editItem');
+            this.dateHandler();
+          };
+
+          // 文字
+          if (Type === 3) {
+            const children = contractArea.children;
+            children.forEach(item => item.classList.remove('editItem'));
+
+            textBox.classList.add('editItem');
+            this.textHandler();
+          };
+        };
+      },
+
+      // 開啟印鑑 Modal
+      sealHandler() {
+        if ($('#sealModal').length > 0) {
+          $('#sealModal').modal('show');
+        } else {
+          showLoading();
+          $.ajax({
+            type: 'POST',
+            url: '@(Url.Action("ShowSealModal", "UserProfile"))',
+            data: JSON.stringify({}),
+            type: "POST",
+            //dataType: "json",
+            contentType: "application/json;charset=utf-8",
+            success: function (data) {
+              hideLoading();
+              if ($.isPlainObject(data)) {
+                if (data.result) {
+                } else {
+                  alertModal(data.message);
+                }
+              } else {
+                $(data).appendTo($('body'));
+              }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+              hideLoading();
+              console.log(xhr.status);
+              console.log(thrownError);
+            }
+          });
+        }
+      },
+
+      // 開啟 日期輸入Modal
+      dateHandler() {
+        $('#dateModal').modal('show');
+      },
+
+      // 選擇日期格式
+      useDateHandler(dateString) {
+        $('#dateModal').modal('hide');
+        this.createVirtualText(dateString);
+      },
+
+      // 開啟 文字輸入Modal
+      textHandler() {
+        this.noteItem = null;
+        $('#textModal').modal('show');
+      },
+
+      // 置入文字-顯示使用按鈕
+      addNote() {
+        // 有輸入文字才會顯示使用按鈕
+        this.isNoteEmpty = this.noteItem?.length === 0;
+      },
+
+      // 建立文字虛擬框
+      createVirtualTextArea() {
+        $('#textModal').modal('hide');
+        this.createVirtualText(this.noteItem);
+      },
+
+      // 開啟 取消合約 Modal
+      cancelHandler(msg) {
+        $('#cancelModal').modal('show');
+      },
+
+      // 取消新增合約
+      confirmCancel() {
+        $('#cancelModal').modal('hide');
+        this.cancelContract();
+      },
+
+      // 取消新增的合約
+      cancelContract() {
+        const self = this;
+        showLoading();
+        $.post(
+          '@Html.Raw(Url.Action("DeleteContract", "ContractConsole"))',
+          { 'KeyID': self.contractID },
+          function (data) {
+            if ($.isPlainObject(data)) {
+              hideLoading();
+              if (data.result) {
+                // 成功
+                self.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base">合約已取消</div>`;
+                self.isCanael = true;
+              } else {
+                // 失敗
+                self.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;
+              }
+              $("#infoModal").modal("show");
+            } else {
+              $(data).appendTo($('body'));
+            }
+          });
+      },
+
+      // 開啟退回合約 Model
+      abortHandler() {
+        $('#abortModal').modal('show');
+      },
+
+      // 退回合約 
+      abortContract() {
+        const self = this;
+        $('#abortModal').modal('hide');
+        showLoading();
+        $.post(
+          '@Html.Raw(Url.Action("AbortContract", "ContractConsole"))',
+          { 'KeyID': contractID },
+          function (data) {
+            hideLoading();
+            if ($.isPlainObject(data)) {
+              if (data.result) {
+                // 成功
+                self.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"> 合約已退回。</div>`;
+                self.isReject = true;
+              } else {
+                // 失敗
+                self.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;
+              }
+              $("#infoModal").modal("show");
+            } else {
+              $(data).appendTo($('body'));
+            }
+          });
+      },
+
+      // 導覽小幫手
+      tourHandler() {
+        // 初始化 網頁導覽
+        const tourguide = new Tourguide({ steps });
+        tourguide.start();
+      },
+
+      // 開啟預覽 Modal
+      openPdfModal() {
+        $('#pdfModal').modal('show');
+      },
+
+      // 取得待簽署的頁碼
+      getSignaturePage() {
+        // 簽暑人送出合約前，先檢查是否有漏填的簽章
+        const signatureCount = this.contractSignaturePositions.length;
+        if (signatureCount > 0) {
+          let signaturePage = this.contractSignaturePositions.map(item => {
+            return item.PageIndex + 1;
+          });
+          // 去重複
+          // 由小到大排序
+          signaturePage = [...new Set(signaturePage)].sort((a, b) => a - b).join('、 ');
+          return signaturePage;
+        }
+      },
+
+      // 送出合約
+      commitContract() {
+        const self = this;
+        const payload = { ...this.form };
+        const hasStamp = this.sealTempList.length > 0;
+        const hasVm = this.signaturePositionsTemp.length > 0;
+
+        if (this.isNew) {
+          // 檢查起約人是否有用印
+          if (!this.form.usedStamp && !hasStamp) {
+            this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base">請檢查文件是否已用印</div>`;
+            $("#infoModal").modal("show");
+            return;
+          };
+
+          if (!hasVm) {
+            this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base">請設定簽署人簽章區域</div>`;
+            $("#infoModal").modal("show");
+            return;
+          };
+        } else {
+          // 簽暑人送出合約前，先檢查是否有漏填的簽章
+          const signatureCount = this.contractSignaturePositions.length;
+          if (signatureCount > 0) {
+            let signaturePage = this.contractSignaturePositions.map(item => {
+              return item.PageIndex + 1;
+            });
+            // 去重複
+            signaturePage = [...new Set(signaturePage)].sort((a, b) => a - b).join('、 ');
+            this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base">請檢查第 ${signaturePage} 頁尚未簽暑完成</div>`;
+            $("#infoModal").modal("show");
+            return;
+          };
+        }
+        /** 
+         * 多人簽署時，圈選框各自存回簽署人資料列
+         * 非多人簽署時，相同圈選框複製到簽署人資料列
+         */
+        if (this.IsJointContracting) {
+          payload.Contractors
+            .map(item => {
+              const filterList = this.signaturePositionsTemp.filter(spItem => {
+                return spItem.UserId === item.Contractor;
+              });
+              item.SignaturePositions = filterList;
+            });
+        } else {
+          payload.Contractors
+            .map(item => {
+              const { Contractor } = item
+              const filterList = this.signaturePositionsTemp.map(spItem => {
+                return {
+                  ...spItem,
+                  UserId: Contractor
+                }
+              });
+              item.SignaturePositions = filterList;
+            });
+        }
+        showLoading();
+        postData('@(Url.Action(party == null ? "CommitContract" : "AcceptContract", "ContractConsole"))', payload)
+          .then((data) => {
+            this.changeStatus = data.result;
+            hideLoading();
+            if ($.isPlainObject(data) && data.result) {
+              // 成功
+              this.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"> ${this.isNew ? "已建立新合約" : "合約已用印"} (${data.dataItem.contractNo})</div>`;
+              this.isCreate = true;
+            } else {
+              // 失敗
+              this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;
+            }
+            $("#infoModal").modal("show");
+          })
+      },
+
+      // 清除用印
+      resetSignature() {
+        const self = this;
+        clearErrors();
+        const payload = {
+          KeyID: $global.viewModel.KeyID,
+          PageIndex: this.selectedPage - 1,
+        };
+
+        showLoading();
+        // Post API
+        // 解決重複跑三次的問題，不用Form submit的方式做
+        $.post('@Html.Raw(Url.Action("ResetPdfSignature", "ContractConsole"))', payload, function (data) {
+          if (data.result) {
+            // 成功
+            if (self.isNew) {
+              self.sealTempList = [];
+            } else {
+              // 簽署人清除用印後要還原用印區塊
+              self.contractSignaturePositions = [...self.contractSignaturePositionsTemp];
+              self.usedStampList = [];
+              self.currentSeal = {};
+              self.loadPageItem(self.selectedPage - 1);
+            }
+            loadContractPage(self.selectedPage - 1);
+            // 開啟訊息視窗
+            self.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"> 已清除用印</div>`;
+            self.isClear = true;
+            hideLoading();
+            $("#infoModal").modal("show");
+          }
+          else {
+            // 失敗
+            self.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;
+            hideLoading();
+            $("#infoModal").modal("show");
+          }
+
+        });
+      },
+
+      // onLoad 清除用印
+      resetSignatureOnLoad() {
+        const self = this;
+        clearErrors();
+        const payload = {
+          KeyID: $global.viewModel.KeyID,
+          PageIndex: this.selectedPage - 1,
+        };
+        showLoading();
+        // Post API
+        // 解決重複跑三次的問題，不用Form submit的方式做
+        $.post('@Html.Raw(Url.Action("ResetPdfSignature", "ContractConsole"))', payload, function (data) {
+          if (data.result) {
+            // 成功
+            self.loadPageItem(this.selectedPage - 1);
+            loadContractPage(this.selectedPage - 1);
+            setTimeout(() => {
+              hideLoading();
+            }, 500);
+          }
+          else {
+            // 失敗
+            self.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;
+            hideLoading();
+            $("#infoModal").modal("show");
+          }
+        });
+      },
+
+      /********** 用印區塊 ***********/
+      // 虛擬文字框
+      createVirtualText(noteString) {
+        const self = this;
+        const contractArea = document.querySelector("#contractImg");
+        const editItem = document.querySelector('.editItem'); // 編輯中檔案
+
+        if (!editItem) {
+          // 產生一個虛擬 textBox
+          const textBox = document.createElement("div");
+          // id 動態產生
+          const uuid = ui_uuid8();
+          textBox.id = uuid;
+          textBox.setAttribute('class', 'vmNote');
+          textBox.setAttribute('style', `top: calc(${(contractArea.offsetTop + Number(self.scrolly))}px); left: calc(${(contractArea.offsetWidth - 220) / 2}px);`);
+          document.querySelector("#contractImg").appendChild(textBox);
+          // 產生文字內容並放到 textBox
+          textBox.innerHTML = `
+            <div id="note-${uuid}-text" class="note">${noteString}</div>
+            <div id="scaleText-${uuid}" class="vmScale"></div>
+            <button id="delNote-${uuid}" class="btn btn-sm vmDelete"><i class="far fa-times"></i></button>
+            <button id="useAllNote-${uuid}" class="btn btn-success opacity-75 btn-sm vmUseAll"> 套用文件 </button>
+            <button id="useNote-${uuid}" class="btn btn-success opacity-75 btn-sm vmUse"> 套用 </utton>`;
+
+          // 未套用前一次只能新增一個虛擬框
+          const currentId = this.currentSeal.Id;
+          if (currentId) {
+            const currentNote = document.querySelector(`#${currentId}`);
+            if (currentNote) {
+              currentNote.remove();
+            }
+          }
+
+          const textInput = document.querySelector(`#note-${uuid}-text`);
+
+          // 將新增的文字檔資料暫存
+          const noteData = {
+            Id: textBox.id,
+            Note: noteString,
+            currentItem: textBox,
+            MarginTop: (textBox.offsetTop / 37.7).toFixed(2),
+            MarginLeft: (textBox.offsetLeft / 37.7).toFixed(2),
+            SealScale: 100, // 目前寬度取值用這個
+            Width: 220,
+            Height: `${textInput.offsetHeight}px`,
+            PageIndex: this.selectedPage - 1
+          }
+          this.currentSeal.Id = uuid;
+
+          // 滑鼠拖曳效果
+          textBox.onmousedown = (ev) => {
+            this.dragHandler(ev, noteData, contractArea);
+          };
+
+          // 文字區塊縮放效果
+          const scale = document.querySelector(`#scaleText-${uuid}`);
+          scale.onmousedown = (ev) => {
+            this.scaleHandler(ev, noteData, textInput, contractArea);
+          };
+
+          // 取消文字區塊
+          const deleteNote = document.querySelector(`#delNote-${uuid}`);
+          deleteNote.onmousedown = (ev) => {
+            this.deleteHandler(ev, noteData, contractArea);
+          };
+
+          // 套用 - 文字區塊
+          const useNote = document.querySelector(`#useNote-${uuid}`);
+          useNote.onmousedown = (ev) => {
+            this.useNoteHandler(ev, noteData, contractArea, false);
+          };
+
+          // 套用整份文件 - 文字區塊
+          const useAllNote = document.querySelector(`#useAllNote-${uuid}`);
+          useAllNote.onmousedown = (ev) => {
+            this.useNoteHandler(ev, noteData, contractArea, true);
+          };
+        } else {
+          const self = this;
+          // 未套用前一次只能新增一個虛擬框
+          const currentItemFilter = this.usedStampList.filter(item => item.Id !== editItem.id);
+          this.usedStampList = currentItemFilter;
+
+          // 簽署人用印
+          editItem.innerHTML = '';
+          editItem.innerHTML = `
+          <div id="note-${editItem.id}-text" class="note">${noteString}</div>
+          <button id="useNote-${editItem.id}" class="btn btn-success opacity-75 btn-sm vmUse"> 套用 </utton>
+          `;
+
+          const textInput = document.querySelector(`#note-${editItem.id}-text`);
+
+          // 將新增的文字檔資料暫存
+          const noteData = {
+            Id: editItem.id,
+            Note: noteString,
+            currentItem: editItem,
+            MarginTop: (editItem.offsetTop / 37.7).toFixed(2),
+            MarginLeft: (editItem.offsetLeft / 37.7).toFixed(2),
+            SealScale: 100, // 目前寬度取值用這個
+            Width: editItem.offsetWidth,
+            Height: editItem.offsetHeight,
+            PageIndex: this.selectedPage - 1
+          }
+
+          // 用印暫存列表
+          this.usedStampList.push(noteData);
+
+          // 套用 - 文字區塊
+          const useNote = document.querySelector(`#useNote-${editItem.id}`);
+          useNote.onmousedown = (ev) => {
+            const sealFilter = self.usedStampList.filter(item => item.Id === editItem.id)[0];
+            self.useNoteHandler(ev, sealFilter, contractArea, false);
+          };
+        }
+      },
+
+      // 滑鼠拖曳效果
+      dragHandler(ev, noteData, contractArea) {
+        const self = this;
+        const oEvent = ev;
+        // 阻擋瀏覽器的預設行為
+        oEvent.preventDefault();
+        const { Id, Note, currentItem, MarginTop, MarginLeft, SealScale, Width, Height, PageIndex } = noteData;
+        const disX = oEvent.clientX - currentItem.offsetLeft;
+        const disY = oEvent.clientY - currentItem.offsetTop;
+        contractArea.onmousemove = function (ev) {
+          ev.preventDefault();
+          let x = ev.clientX - disX;
+          let y = ev.clientY - disY;
+
+          // 文字區塊移動時的邊界判斷-必須在文件內的範圍
+          x = x <= 0 ? 0 : x;
+          x = x >= contractArea.offsetWidth - currentItem.offsetWidth ? contractArea.offsetWidth - currentItem.offsetWidth : x;
+          y = y <= 0 ? 0 : y;
+          y = y >= contractArea.offsetHeight - currentItem.offsetHeight ? contractArea.offsetHeight - currentItem.offsetHeight : y;
+          currentItem.style.left = x + 'px';
+          currentItem.style.top = y + 'px';
+          // MarginLeft: 左邊界(cm)
+          // MarginTop: 上邊界(cm)
+          noteData.MarginLeft = (x / 37.7).toFixed(2);
+          noteData.MarginTop = (y / 37.7).toFixed(2);
+        }
+        // 文字區塊移出文件範圍取消移動是,防止移動過快觸發滑鼠移出事件，導致滑鼠彈起事件失效
+        contractArea.onmouseleave = function () {
+          self.unBinding(contractArea);
+        }
+        // 鼠標彈起後停止移動
+        contractArea.onmouseup = function () {
+          self.unBinding(contractArea);
+        }
+      },
+
+      // 文字區塊縮放效果
+      scaleHandler(ev, noteData, textInput, contractArea) {
+        const self = this;
+        const oEvent = ev;
+        // 阻止冒泡,避免縮放時觸發移動事件
+        oEvent.stopPropagation();
+        oEvent.preventDefault();
+        const { Id, Note, currentItem, MarginTop, MarginLeft, SealScale, Width, Height, PageIndex } = noteData;
+        const pos = {
+          'w': currentItem.offsetWidth,
+          'h': currentItem.offsetHeight,
+          'x': ev.clientX,
+          'y': ev.clientY
+        };
+        contractArea.onmousemove = function (ev) {
+          ev.preventDefault();
+          // 設置文字區塊的最小縮放為100*30
+          let w = Math.max(160, ev.clientX - pos.x + pos.w);
+          let h = Math.max(30, ev.clientY - pos.y + pos.h);
+
+          // 設置文字區塊的最大寬高
+          currentItem.style.width = `${w}px`;
+          currentItem.style.height = h > textInput.offsetHeight ? `${h}px` : `${textInput.offsetHeight}px`;
+          noteData.Width = w;
+          noteData.Height = h;
+        }
+        contractArea.onmouseleave = function () {
+          self.unBinding(contractArea);
+        }
+        contractArea.onmouseup = function () {
+          self.unBinding(contractArea);
+        }
+      },
+
+      // 取消文字區塊
+      deleteHandler(ev, noteData, contractArea) {
+        const self = this;
+        const oEvent = ev;
+        // 阻止冒泡,避免縮放時觸發移動事件
+        oEvent.stopPropagation();
+        oEvent.preventDefault();
+        noteData.currentItem.remove();
+
+        this.currentSeal = {};
+        this.noteItem = null;
+
+        contractArea.onmouseleave = function () {
+          self.unBinding(contractArea);
+        }
+        contractArea.onmouseup = function () {
+          self.unBinding(contractArea);
+        }
+      },
+
+      // 套用文字區塊
+      useNoteHandler(ev, noteData, contractArea, status) {
+        const self = this;
+        const oEvent = ev;
+        // 阻止冒泡,避免縮放時觸發移動事件
+        oEvent.stopPropagation();
+        oEvent.preventDefault();
+        // 套用文字區塊
+        this.commitNote(noteData, status);
+
+        contractArea.onmouseleave = function () {
+          self.unBinding(contractArea);
+        }
+        contractArea.onmouseup = function () {
+          self.unBinding(contractArea);
+        }
+      },
+
+      unBinding(contractArea) {
+        contractArea.onmousemove = null;
+        contractArea.onmouseup = null;
+      },
+
+      // 儲存 - 套用文字區塊
+      commitNote(noteData, doAllPages) {
+        const self = this;
+        clearErrors();
+        const { Id, Note, currentItem, MarginTop, MarginLeft, SealScale, Width, Height, PageIndex } = noteData
+        const payload = {
+          Id,
+          Note,
+          SealScale,
+          MarginTop,
+          MarginLeft,
+          Width: (Number(Width) / 37.795).toFixed(2),
+          Height: (Number(Height) / 37.795).toFixed(2),
+          PageIndex: PageIndex,
+          DoAllPages: doAllPages,
+          KeyID: $global.viewModel.KeyID
+        }
+        showLoading();
+        $.post('@Html.Raw(Url.Action("CommitPdfNote", "ContractConsole"))', payload, function (data) {
+          hideLoading();
+          if ($.isPlainObject(data)) {
+            if (data.result) {
+              if (!this.isNew) {
+                // 套用一筆 contractSignaturePositions 要刪掉一筆紀錄才能計算有幾筆還未用簽
+                const contractFilter = self.contractSignaturePositions.filter(item => item.ID !== Id);
+                self.contractSignaturePositions = contractFilter;
+
+                const usedStampFilter = self.usedStampList.filter(item => item.Id !== Id);
+                self.usedStampList = usedStampFilter;
+              }
+
+              self.currentSeal = {};
+              self.noteItem = null;
+              loadContractPage(PageIndex);
+
+              if (currentItem) {
+                currentItem.remove();
+              }
+            }
+            else {
+              alertModal(data.message);
+            }
+          } else {
+            $(data).appendTo($('body'));
+          }
+        });
+      },
+
+      /********** 圈選區塊 ***********/
+      // 設定簽署人印鑑區塊
+      setSealHandler(type) {
+        const self = this;
+        const contractArea = document.querySelector("#contractImg");
+        const pdfWrapper = document.querySelector("#pdf__wrapper");
+
+        if (this.IsJointContracting && !this.currentCompany.id) {
+          this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base">1.請先邀請簽署人。<br>2.指定簽署人後再設定簽署位置。</div>`;
+
+          $("#infoModal").modal("show");
+          return;
+        }
+
+        // 產生一個虛擬 textBox
+        const textBox = document.createElement("div");
+        // id 動態產生
+        const uuid = ui_uuid8();
+        textBox.id = uuid;
+        textBox.setAttribute('class', 'vmBox__wrapper');
+        textBox.setAttribute('style', `top: calc(${(contractArea.offsetTop + Number(self.scrolly))}px); left: calc(${(contractArea.offsetWidth - 170) / 2}px);`);
+
+        const typeText = this.inputType.filter(item => item.value === type)[0].text;
+
+        contractArea.appendChild(textBox);
+        if (this.currentCompany.ItemClass) {
+          textBox.classList.add(this.currentCompany.ItemClass);
+        }
+        // 產生文字內容並放到 textBox
+        textBox.innerHTML = `
+          <div class="vmBox__note">${typeText}</div>
+          <div id="vmBox-${uuid}-subtext" class="vmBox__subtext"> 拖曳至指定位置 </div>
+          <div id="vmBox-${uuid}-scale" class="vmBox__scale"></div>
+          <button id="vmBox-${uuid}-remove" class="btn btn-sm vmBox__delete"><i class="far fa-times"></i></button>
+          <button id="vmBox-${uuid}-check" class="btn btn-sm vmBox__check"><i class="far fa-check"></i></button>
+          <button id="vmBox-${uuid}-edit" class="btn btn-sm vmBox__edit hide"><i class="fas fa-pencil"></i></button>`;
+        const subtext = document.querySelector(`#vmBox-${uuid}-subtext`);
+        const scaleBox = document.querySelector(`#vmBox-${uuid}-scale`);
+        const removeBox = document.querySelector(`#vmBox-${uuid}-remove`);
+        const useBox = document.querySelector(`#vmBox-${uuid}-check`);
+        const editBox = document.querySelector(`#vmBox-${uuid}-edit`);
+
+        const vmSeal = {
+          Id: uuid,
+          Type: type,
+          PageIndex: this.selectedPage - 1,
+          SealScale: 100,
+          ScaleWidth: 170,
+          ScaleHeight: 50,
+          MarginLeft: ((contractArea.offsetWidth - 170) / 2).toFixed(2),
+          MarginTop: (contractArea.offsetTop + Number(self.scrolly)).toFixed(2),
+          canEdit: true,
+          UserId: this.currentCompany.id || null,
+          ItemClass: this.currentCompany.ItemClass || null,
+        };
+        this.signaturePositionsTemp.push(vmSeal);
+
+        this.operator({ uuid, contractArea, textBox, removeBox, scaleBox, useBox, editBox, subtext });
+      },
+
+      operator({ uuid, contractArea, textBox, removeBox, scaleBox, useBox, editBox, subtext }) {
+        const currentBox = this.signaturePositionsTemp.filter(item => item.Id === uuid)[0];
+        // 滑鼠拖曳效果
+        if (textBox) {
+          textBox.onmousedown = (ev) => {
+            if (currentBox.canEdit) {
+              this.vmDragHandler(ev, uuid, textBox, contractArea);
+            }
+          };
+        }
+
+        // 區塊縮放效果
+        if (scaleBox) {
+          scaleBox.onmousedown = (ev) => {
+            this.vmScaleHandler(ev, uuid, textBox, contractArea);
+          };
+        }
+
+        // 取消區塊
+        if (removeBox) {
+          removeBox.onmousedown = (ev) => {
+            this.vmRemoveHandler(ev, uuid, textBox, contractArea);
+          };
+        }
+
+        // 套用區塊
+        if (useBox) {
+          useBox.onmousedown = (ev) => {
+            this.vmUseHandler(ev, uuid, contractArea, textBox, removeBox, scaleBox, useBox, editBox, subtext);
+          };
+        }
+
+        // 編輯區塊
+        if (editBox) {
+          editBox.onmousedown = (ev) => {
+            this.vmEditHandler(ev, uuid, contractArea, textBox, removeBox, scaleBox, useBox, editBox, subtext);
+          };
+        }
+      },
+
+      // 滑鼠拖曳效果
+      vmDragHandler(ev, uuid, textBox, contractArea) {
+        const self = this;
+        const oEvent = ev;
+        // 阻擋瀏覽器的預設行為
+        oEvent.preventDefault();
+        const disX = oEvent.clientX - textBox.offsetLeft;
+        const disY = oEvent.clientY - textBox.offsetTop;
+        contractArea.onmousemove = function (ev) {
+          ev.preventDefault();
+          let x = ev.clientX - disX;
+          let y = ev.clientY - disY;
+
+          // 文字區塊移動時的邊界判斷-必須在文件內的範圍
+          x = x <= 0 ? 0 : x;
+          x = x >= contractArea.offsetWidth - textBox.offsetWidth ? contractArea.offsetWidth - textBox.offsetWidth : x;
+          y = y <= 0 ? 0 : y;
+          y = y >= contractArea.offsetHeight - textBox.offsetHeight ? contractArea.offsetHeight - textBox.offsetHeight : y;
+          textBox.style.left = x + 'px';
+          textBox.style.top = y + 'px';
+          let MarginLeft = x.toFixed(2);
+          let MarginTop = y.toFixed(2);
+          // MarginLeft: 左邊界(cm)
+          // MarginTop: 上邊界(cm)
+
+          // 設定 簽署人區塊時要記錄上邊界和左邊界
+          if (uuid) {
+            self.signaturePositionsTemp.forEach(item => {
+              if (item.Id === uuid) {
+                item.MarginLeft = MarginLeft;
+                item.MarginTop = MarginTop;
+              }
+            })
+          }
+
+        }
+        // 文字區塊移出文件範圍取消移動是,防止移動過快觸發滑鼠移出事件，導致滑鼠彈起事件失效
+        contractArea.onmouseleave = function () {
+          self.unBinding(contractArea);
+        }
+        // 署標彈起後停止移動
+        contractArea.onmouseup = function () {
+          self.unBinding(contractArea);
+        }
+      },
+
+      // 圈選區塊縮放效果
+      vmScaleHandler(ev, uuid, textBox, contractArea) {
+        const self = this;
+        const oEvent = ev;
+        // 阻止冒泡,避免縮放時觸發移動事件
+        oEvent.stopPropagation();
+        oEvent.preventDefault();
+        const pos = {
+          'w': textBox.offsetWidth,
+          'h': textBox.offsetHeight,
+          'x': ev.clientX,
+          'y': ev.clientY
+        };
+        contractArea.onmousemove = function (ev) {
+          ev.preventDefault();
+          // 設置區塊的最小縮放為100*30
+          let w = Math.max(160, ev.clientX - pos.x + pos.w);
+          let h = Math.max(30, ev.clientY - pos.y + pos.h);
+
+          // 設置區塊的最大寬高
+          textBox.style.width = w + 'px';
+          textBox.style.height = h + 'px';
+          // 設定 簽署人區塊時要記錄寬高
+          if (uuid) {
+            self.signaturePositionsTemp.forEach(item => {
+              if (item.Id === uuid) {
+                item.ScaleWidth = w;
+                item.ScaleHeight = h
+              }
+            })
+          }
+        }
+        contractArea.onmouseleave = function () {
+          self.unBinding(contractArea);
+        }
+        contractArea.onmouseup = function () {
+          self.unBinding(contractArea);
+        }
+      },
+
+      // 取消區塊
+      vmRemoveHandler(ev, uuid, textBox, contractArea) {
+        const self = this;
+        const oEvent = ev;
+        // 阻止冒泡,避免縮放時觸發移動事件
+        oEvent.stopPropagation();
+        oEvent.preventDefault();
+        textBox.remove();
+
+        self.signaturePositionsTemp = self.signaturePositionsTemp.filter(item => item.Id !== uuid);
+
+        contractArea.onmouseleave = function () {
+          self.unBinding(contractArea);
+        }
+        contractArea.onmouseup = function () {
+          self.unBinding(contractArea);
+        }
+      },
+
+      // 套用區塊
+      vmUseHandler(ev, uuid, contractArea, textBox, scaleBox, removeBox, useBox, editBox, subtext) {
+        const self = this;
+        const oEvent = ev;
+        // 阻止冒泡,避免縮放時觸發移動事件
+        oEvent.stopPropagation();
+        oEvent.preventDefault();
+        subtext.classList.add('hide');
+        scaleBox.classList.add('hide');
+        removeBox.classList.add('hide');
+        useBox.classList.add('hide');
+        editBox.classList.remove('hide');
+        textBox.style.cursor = 'default';
+
+        this.signaturePositionsTemp.forEach(item => {
+          if (item.Id === uuid) {
+            item.canEdit = false;
+          }
+        });
+
+        this.operator(uuid, contractArea, textBox, scaleBox, removeBox, useBox, editBox, subtext);
+
+        contractArea.onmouseleave = function () {
+          self.unBinding(contractArea);
+        }
+        contractArea.onmouseup = function () {
+          self.unBinding(contractArea);
+        }
+      },
+
+      // 編輯區塊
+      vmEditHandler(ev, uuid, contractArea, textBox, scaleBox, removeBox, useBox, editBox, subtext) {
+        const self = this;
+        const oEvent = ev;
+        // 阻止冒泡,避免縮放時觸發移動事件
+        oEvent.stopPropagation();
+        oEvent.preventDefault();
+        subtext.classList.remove('hide');
+        scaleBox.classList.remove('hide');
+        removeBox.classList.remove('hide');
+        useBox.classList.remove('hide');
+        editBox.classList.add('hide');
+        textBox.style.cursor = 'move';
+
+        this.signaturePositionsTemp.forEach(item => {
+          if (item.Id === uuid) {
+            item.canEdit = true;
+          }
+        });
+
+        this.operator(uuid, contractArea, textBox, scaleBox, removeBox, useBox, editBox, subtext);
+
+        contractArea.onmouseleave = function () {
+          self.unBinding(contractArea);
+        }
+        contractArea.onmouseup = function () {
+          self.unBinding(contractArea);
+        }
+      },
+
+      // 簽署人設定區塊
+      contractorSetHandler(company) {
+        this.currentCompany = this.companyList.filter(item => item.id
+          === company.id)[0];
+      },
+
+      // 關閉訊息Modal後的導頁
+      isCloseHandler() {
+        if (this.isCanael || this.isCreate || this.isReject) {
+          this.isCanael = false;
+          this.isCreate = false;
+          this.isReject = false;
+          window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+        };
+        if (this.isClear) {
+          this.isClear = false;
+        };
+      },
+
+      // 返回合約查詢
+      backSearch() {
+        window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+      }
+    },
+  });
+</script>
+
+<script>
+  // 選擇印鑑
+  function useSealHandler(sealID, id) {
+    $('#sealModal').modal('hide');
+    const contractArea = document.querySelector("#contractImg");
+    const pageItem = document.querySelector("#pdf__wrapper");
+    const editItem = document.querySelector('.editItem');
+
+    if (!editItem) {
+      // 產生一個虛擬 sealBox
+      const sealBox = document.createElement("div");
+      // id 動態產生
+      const uuid = ui_uuid8();
+      sealBox.id = uuid;
+      sealBox.setAttribute('class', 'vmSeal');
+      sealBox.setAttribute('style', `top: calc(${(contractArea.offsetTop + Number.parseInt($(pageItem).scrollTop()))}px); left: calc(${(contractArea.offsetWidth - 170) / 2}px);`);
+      document.querySelector("#contractImg").appendChild(sealBox);
+      // 產生印章並放到 sealBox
+      sealBox.innerHTML = `
+      <img id="seal-${uuid}-img" class="sealimg h-100" src="${document.getElementById(id).getAttribute('src')}">
+      <div id="scale-${uuid}" class="vmScale"></div>
+      <button id="del-${uuid}" class="btn btn-sm vmDelete"><i class="far fa-times"></i></button>
+      <button id="useAllSeal-${uuid}" class="btn btn-success opacity-75 btn-sm vmUseAll">套用文件</button>
+      <button id="useSeal-${uuid}" class="btn btn-success opacity-75 btn-sm vmUse">套用</button>`;
+
+      // 未套用前一次只能新增一個虛擬框
+      const currentId = app.$data.currentSeal.Id;
+      if (currentId) {
+        const currentSeal = document.querySelector(`#${currentId}`);
+        if (currentSeal) {
+          currentSeal.remove();
+        }
+      }
+
+      // 取得圖片類型 (用印 / 簽名)
+      const stampType = $global.viewModel.stampType ? $global.viewModel.stampType : 'seal';
+      const sealImg = document.querySelector(`#seal-${uuid}-img`);
+      const sealImgWidth = sealImg.width;
+      const sealImgHeight = sealImg.offsetHeight;
+      var hScale = ((sealImgWidth / sealImg.naturalWidth) * 100);
+
+      // 設置框最小縮放為160*30
+      var w = Math.max(160, sealImgWidth)
+      var h = Math.max(30, sealImgHeight)
+
+      // 設置圖片虛擬框的寬高
+      sealBox.style.width = w <= sealImgWidth ? `${sealImgWidth}px` : `${w}px`;
+      sealBox.style.height = h + 'px';
+
+      // 顯示和實際貼圖的比例差了 1.2 倍
+      // 使用簽名時，不需要乘 1.2，原因待查
+      let sealData = {
+        Id: sealBox.id,
+        SealID: sealID,
+        currentItem: sealBox,
+        SealScale: stampType === 'seal' ? (hScale * 1.2).toFixed(2) : hScale,
+        MarginLeft: (sealBox.offsetLeft / 37.7).toFixed(2),
+        MarginTop: (sealBox.offsetTop / 37.7).toFixed(2),
+        stampType: stampType,
+        useSeal: true,
+        PageIndex: app.$data.selectedPage - 1
+      }
+      app.$data.currentSeal.Id = uuid;
+
+      // 滑鼠拖曳效果
+      sealBox.onmousedown = function (ev) {
+        var oEvent = ev;
+        // 阻擋瀏覽器的預設行為
+        oEvent.preventDefault();
+        var disX = oEvent.clientX - sealBox.offsetLeft;
+        var disY = oEvent.clientY - sealBox.offsetTop;
+        contractArea.onmousemove = function (ev) {
+          oEvent = ev;
+          oEvent.preventDefault();
+          var x = oEvent.clientX - disX;
+          var y = oEvent.clientY - disY;
+
+          // 圖形移動時的邊界判斷-必須在文件內的範圍
+          x = x <= 0 ? 0 : x;
+          x = x >= contractArea.offsetWidth - sealBox.offsetWidth ? contractArea.offsetWidth - sealBox.offsetWidth : x;
+          y = y <= 0 ? 0 : y;
+          y = y >= contractArea.offsetHeight - sealBox.offsetHeight ? contractArea.offsetHeight - sealBox.offsetHeight : y;
+          sealBox.style.left = x + 'px';
+          sealBox.style.top = y + 'px';
+          // MarginLeft: 左邊界(cm)
+          // MarginTop: 上邊界(cm)
+          sealData.MarginLeft = (x / 37.795).toFixed(2);
+          sealData.MarginTop = (y / 37.795).toFixed(2);
+        }
+        // 圖形移出文件範圍取消移動是,防止移動過快觸發滑鼠移出事件，導致滑鼠彈起事件失效
+        contractArea.onmouseleave = function () {
+          sealUnBinding(contractArea);
+        }
+        // 署標彈起後停止移動
+        contractArea.onmouseup = function () {
+          sealUnBinding(contractArea);
+        }
+      }
+      // 圖片縮放效果
+      const scale = document.querySelector(`#scale-${uuid}`);
+      scale.onmousedown = function (ev) {
+        var oEvent = ev;
+        // 阻止冒泡,避免縮放時觸發移動事件
+        oEvent.stopPropagation();
+        oEvent.preventDefault();
+        var pos = {
+          'w': sealBox.offsetWidth,
+          'h': sealBox.offsetHeight,
+          'x': oEvent.clientX,
+          'y': oEvent.clientY
+        };
+        contractArea.onmousemove = function (ev) {
+          ev.preventDefault();
+          // 設置圖片的最小縮放為160*30
+          var w = Math.max(160, ev.clientX - pos.x + pos.w)
+          var h = Math.max(30, ev.clientY - pos.y + pos.h)
+
+          // 設置圖片的寬高
+          const sealImgHeight = sealImg.offsetHeight;
+          sealBox.style.width = w <= sealImg.width ? `${sealImg.width}px` : `${w}px`;
+          sealBox.style.height = h + 'px';
+
+          // 取得圖片縮放 % 比
+          // 顯示和實際貼圖的比例差了 1.2 倍
+          // 使用簽名時，不需要乘 1.2，原因待查
+          hScale = ((sealImg.width / sealImg.naturalWidth) * 100);
+          // var vScale = ((sealImg.height / sealImg.naturalHeight) * 100);
+          sealData.SealScale = stampType === 'seal' ? hScale * 1.2 : hScale;
+        }
+        contractArea.onmouseleave = function () {
+          sealUnBinding(contractArea);
+        };
+
+        contractArea.onmouseup = function () {
+          sealUnBinding(contractArea);
+        };
+      }
+
+      // 取消印鑑輸入框
+      const deleteSeal = document.querySelector(`#del-${uuid}`);
+      deleteSeal.onmousedown = function (ev) {
+        var oEvent = ev;
+        // 阻止冒泡,避免縮放時觸發移動事件
+        oEvent.stopPropagation();
+        oEvent.preventDefault();
+        sealBox.remove();
+        sealData = {};
+
+        contractArea.onmouseleave = function () {
+          sealUnBinding(contractArea);
+        }
+        contractArea.onmouseup = function () {
+          sealUnBinding(contractArea);
+        }
+      }
+
+      // 套用整份文件印鑑檔
+      const useAllSeal = document.querySelector(`#useAllSeal-${uuid}`);
+      useAllSeal.onmousedown = function (ev) {
+        applySealHandler(ev, sealData, contractArea, true);
+      }
+
+      // 套用印鑑檔
+      const useSeal = document.querySelector(`#useSeal-${uuid}`);
+      useSeal.onmousedown = function (ev) {
+        applySealHandler(ev, sealData, contractArea, false);
+      }
+    } else {
+      // 未套用前一次只能選擇一個虛擬框
+      const currentItemFilter = app.$data.usedStampList.filter(item => item.Id !== editItem.id);
+      app.$data.usedStampList = currentItemFilter;
+
+      // 簽署人用印 - 選擇印鑑後置入用印區塊
+      const sealBox = document.querySelector(`#${editItem.id}`);
+      editItem.innerHTML = '';
+      editItem.innerHTML = `      
+      <div id="vmBox-${editItem.id}-edit" class="vmBox--edit">
+        <img id="seal-${editItem.id}-img" class="sealimg h-100" src="${document.getElementById(id).getAttribute('src')}">
+      </div>
+      <button id="useSeal-${editItem.id}" class="btn btn-success opacity-75 btn-sm vmUse"> 套用 </utton>
+      `;
+      const sealImg = document.querySelector(`#seal-${editItem.id}-img`);
+      const stampType = $global.viewModel.stampType ? $global.viewModel.stampType : 'seal';
+      // 圖片寬高設定
+      const vmH = editItem.offsetHeight;
+      const vmW = editItem.offsetWidth;
+      let h = sealImg.height;
+      let w = sealImg.width;
+
+      if (w >= vmW) {
+        sealImg.classList.remove('h-100');
+        sealImg.classList.add('w-100');
+      }
+      hScale = ((sealImg.width / sealImg.naturalWidth) * 100).toFixed(2);
+
+      // 將新增的印鑑檔資料暫存
+      const sealData = {
+        Id: editItem.id,
+        SealID: sealID,
+        currentItem: editItem,
+        SealScale: stampType === 'seal' ? (hScale * 1.2).toFixed(2) : hScale,
+        MarginLeft: (editItem.offsetLeft / 37.7).toFixed(2),
+        MarginTop: (editItem.offsetTop / 37.7).toFixed(2),
+        stampType: stampType,
+        useSeal: true,
+        PageIndex: app.$data.selectedPage - 1
+      }
+
+      // 用印暫存列表
+      app.$data.usedStampList.push(sealData);
+
+      // 套用印鑑檔
+      const useSeal = document.querySelector(`#useSeal-${editItem.id}`);
+      useSeal.onmousedown = function (ev) {
+        const sealFilter = app.$data.usedStampList.filter(item => item.Id === editItem.id)[0];
+        applySealHandler(ev, sealFilter, contractArea, false);
+      }
+
+      // 編輯印章
+      const editBox = document.querySelector(`#vmBox-${editItem.id}-edit`);
+      editBox.addEventListener('click', function () {
+        // 一次只能出現一個 editItem
+        const children = contractArea.children;
+        children.forEach(item => item.classList.remove('editItem'));
+        sealBox.classList.add('editItem');
+        // 簽章
+        app.sealHandler();
+      })
+    }
+  };
+
+  // 套用印鑑檔
+  function applySealHandler(ev, sealFilter, contractArea, doAllPages) {
+    var oEvent = ev;
+    // 阻止冒泡,避免縮放時觸發移動事件
+    oEvent.stopPropagation();
+    oEvent.preventDefault();
+    // 套用印鑑
+
+    commitSignature(sealFilter, doAllPages);
+
+    contractArea.onmouseleave = function () {
+      sealUnBinding(contractArea);
+    }
+    contractArea.onmouseup = function () {
+      sealUnBinding(contractArea);
+    }
+  };
+
+  // 儲存 - 套用印鑑檔
+  function commitSignature(sealData, doAllPages) {
+    clearErrors();
+    const { Id, SealID, currentItem, SealScale, MarginLeft, MarginTop, stampType, useSeal, PageIndex } = sealData;
+    const payload = {
+      SealID,
+      SealScale,
+      MarginLeft,
+      MarginTop,
+      stampType,
+      PageIndex,
+      DoAllPages: doAllPages,
+      KeyID: $global.viewModel.KeyID
+    };
+    showLoading();
+    $.post('@Html.Raw(Url.Action("CommitPdfSignature", "ContractConsole"))', payload, function (data) {
+      hideLoading();
+      if ($.isPlainObject(data)) {
+        if (data.result) {
+          if (app.isNew) {
+            // 用印暫存列表
+            app.$data.sealTempList.push(sealData);
+          } else {
+            if (useSeal) {
+              // 套用一筆 contractSignaturePositions 要刪掉一筆紀錄才能計算有幾筆還未用簽
+              const listData = app.$data.contractSignaturePositions;
+              const listDataFilter = listData.filter(item => item.ID !== Id);
+              app.$data.contractSignaturePositions = listDataFilter;
+
+              const usedStampFilter = app.$data.usedStampList.filter(item => item.Id !== Id);
+              app.$data.usedStampList = usedStampFilter;
+            }
+          }
+          app.$data.currentSeal = {};
+          currentItem && currentItem.remove();
+          loadContractPage(PageIndex);
+        } else {
+          alertModal(data.message);
+        }
+      } else {
+        $(data).appendTo($('body'));
+      }
+    });
+  };
+
+  // 新增印鑑檔
+  function addSealHandler() {
+    var event = event || window.event;
+    if (event.target.form != undefined) {
+      $(event.target.form).ajaxForm({
+        url: '@Html.Raw(Url.Action("CommitSealTemplate", "UserProfile"))',
+        data: $global.viewModel,
+        beforeSubmit: function () {
+          showLoading();
+        },
+        success: function (data) {
+          hideLoading();
+          if ($.isPlainObject(data)) {
+            if (data.result) {
+            } else {
+              alertModal(data.message);
+            }
+          }
+          else {
+            $(data).insertBefore($('#addSeal'));
+          }
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+          hideLoading();
+          console.log(xhr.status);
+          alertModal(thrownError);
+        }
+      }).submit();
+    }
+  };
+
+  // 新增簽名檔
+  function addSignature(sealUrl) {
+    if (sealUrl == null || sealUrl == '') {
+      return;
+    }
+    var index = sealUrl.indexOf(',');
+    var viewModel = {
+      'SealData': sealUrl.substring(index + 1)
+    };
+
+    showLoading();
+    $.ajax({
+      type: 'POST',
+      url: '@(Url.Action("CommitSignatureTemplate", "UserProfile"))',
+      data: JSON.stringify(viewModel),
+      type: "POST",
+      //dataType: "json",
+      contentType: "application/json;charset=utf-8",
+      success: function (data) {
+        hideLoading();
+        if ($.isPlainObject(data)) {
+          if (data.result) {
+          } else {
+            alertModal(data.message);
+          }
+        }
+        else {
+          $('#addSignature').append(data);
+        }
+      },
+      error: function (xhr, ajaxOptions, thrownError) {
+        hideLoading();
+        console.log(xhr.status);
+        console.log(thrownError);
+      }
+    });
+  };
+
+  function sealUnBinding(contractArea) {
+    contractArea.onmousemove = null;
+    contractArea.onmouseup = null;
+  };
+
+  // 載入當前頁面
+  function loadContractPage(pageIndex) {
+    showLoading();
+    $.post('@Html.Raw(Url.Action("LoadContractPage", "ContractConsole"))', { 'KeyID': contractID, 'PageIndex': pageIndex }, function (data) {
+      hideLoading();
+      if ($.isPlainObject(data)) {
+        $('#contractImg').css(data);
+      } else {
+        $(data).appendTo($('body'));
+      }
+    });
+  };
+
+  // 導覽小幫手
+  //const steps = [
+  //  {
+  //    selector: '#step1',
+  //    step: 1,
+  //    title: 'Step 1：指定合約雙方',
+  //    content: '選擇合約雙方：<ul><li>指定起約人：選擇甲方。</li><li>指定簽署人：選擇乙方 (可複選)。</li></ul>'
+  //  },
+  //  {
+  //    selector: '#step2',
+  //    step: 2,
+  //    title: 'Step 2：文件審閱',
+  //    content: '若上傳的合約已經用完印，<br>請起約方或簽約方在文件審閱的地方打勾，就可以省略用印的步驟。<br>直接送出文件。'
+  //  },
+  //  {
+  //    selector: '#step3',
+  //    step: 3,
+  //    title: 'Step 3：創建欄位',
+  //    content: '<ul><li>先選擇要編輯的頁面。</li><li>如果需要用印、簽名或填寫註記、壓日期，請使用下方按鈕新增：<ul></li><li>簽名或蓋章：可以新增簽名檔或印章並置入文件內。</li><li>日期：可以新增日期在文件上。</li><li>文字：可以新增文字備註在文件上。</li></ul></li></ul>'
+  //  },
+  //  {
+  //    selector: '#step4',
+  //    step: 4,
+  //    title: '相關操作',
+  //    content: '<ul><li>清除用印：若要重新編輯合約，可點選清除用印。</li><li>取消：取消這份合約。</li><li>退回合約：若覺得這份合約尚有疑慮，可選擇退回合約。</li></ul>'
+  //  },
+  //  {
+  //    selector: '#step5',
+  //    step: 5,
+  //    title: '編輯畫面',
+  //    content: '合約編輯畫面，可以拖曳、縮放邊及區域，<br>確認好位置後按「套用」可將編輯區塊套用在該頁面。<br>按「套用全部」可將編輯區塊套用在全部頁面。'
+  //  }
+  //];
+</script>

@@ -15,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using ContractHome.Helper.Security.MembershipManagement;
+using System.Data.Linq.SqlClient;
 
 namespace ContractHome.Helper
 {
@@ -156,7 +157,12 @@ namespace ContractHome.Helper
             return profile != null && (profile.UserRole.Any(r => r.RoleID == (int)UserRoleDefinition.RoleEnum.SystemAdmin));
         }
 
-        public static bool IsAuthorized(this UserProfile profile, int[] roleID)
+        public static bool IsMemberAdmin(this UserProfile profile)
+        {
+            return profile != null && (profile.UserRole.Any(r => r.RoleID == (int)UserRoleDefinition.RoleEnum.MemberAdmin));
+        }
+
+        public static bool IsAuthorized(this UserProfile profile, params int[] roleID)
         {
             return profile != null && profile.UserRole.Join(roleID, r => r.RoleID, o => o, (r, o) => r).Any();
         }
@@ -166,5 +172,12 @@ namespace ContractHome.Helper
             return profile != null && (profile.UserRole.Any(r => r.RoleID == (int)UserRoleDefinition.RoleEnum.User));
         }
 
+        public static bool CanCreateContract(this UserProfile profile)
+        {
+            if (profile?.OrganizationUser == null) return false;
+            if (profile?.OrganizationUser.Organization == null) return false;
+            if (profile?.OrganizationUser.Organization.CanCreateContract==true) return true;
+            return false;
+        }
     }
 }

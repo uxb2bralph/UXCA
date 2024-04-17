@@ -1,30 +1,47 @@
 ﻿using CommonLib.Utility;
 using ContractHome.Models.DataEntity;
 using System.Security.Cryptography.X509Certificates;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ContractHome.Helper.Security.MembershipManagement
 {
     public static class UserProfileFactory
     {
-
         public static UserProfile? CreateInstance(int uid)
         {
             using UserProfileManager mgr = new UserProfileManager();
             return mgr.GetUserProfile(uid);
         }
 
+        public static bool CompareEncryptedPassword(
+            string clearPassword, 
+            string encryptedPassword)
+        {
+            var ttt = clearPassword.HashPassword();
+            return (string.Compare(clearPassword.HashPassword(), encryptedPassword, true) == 0);
+        }
+
+        public static bool VerifyPassword(UserProfile profile, string password)
+        {
+            bool result = false;
+            if ((profile == null) || (string.IsNullOrEmpty(password))) { return result; }
+            CipherDecipherSrv cipher = new CipherDecipherSrv(10);
+            if (password.Equals(cipher.decipher(profile.Password)))
+            {
+                result = true;
+            }
+            else if (CompareEncryptedPassword(password, profile.Password2))
+            {
+                result = true;
+            }
+            return result;
+        }
         public static UserProfile? CreateInstance(string pid, string password)
         {
             UserProfile? profile = CreateInstance(pid);
             if (profile != null)
             {
-                CipherDecipherSrv cipher = new CipherDecipherSrv(10);
-                if (!String.IsNullOrEmpty(profile.Password) && password.Equals(cipher.decipher(profile.Password)))
-                {
-                    profile.Password = password;
-                    return profile;
-                }
-                else if (String.Compare(password.HashPassword(), profile.Password2, true) == 0)
+                if (VerifyPassword(profile, password))
                 {
                     profile.Password = password;
                     return profile;

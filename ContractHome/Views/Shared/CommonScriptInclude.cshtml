@@ -10,11 +10,10 @@
 @using Microsoft.AspNetCore.Mvc.ModelBinding
 
 @using Newtonsoft.Json
-    <script type="text/javascript">
-      // Notice how this gets configured before we load Font Awesome
-      //window.FontAwesomeConfig = { autoReplaceSvg: false }
-    </script>
-    @*<script src="~/vendor/fontawesome-free/js/all.min.js"></script>*@
+<script type="text/javascript">
+  // Notice how this gets configured before we load Font Awesome
+  //window.FontAwesomeConfig = { autoReplaceSvg: false }
+</script>
 <script src="~/lib/jquery-ui/Scripts/jquery-ui-1.13.2.js"></script>
 <script src="~/js/jquery.ui.datepicker-zh-TW.js"></script>
 <script src="~/js/jquery.form.js"></script>
@@ -27,388 +26,434 @@
 <script src="~/js/linq.jquery.js"></script>
 <script src="~/js/stringformat-1.11.min.js"></script>
 <script src="~/js/base64.js"></script>
+<!-- 拖曳上傳模組 -->
+<script src="~/lib/dropzone/dropzone.min.js"></script>
+<!-- datepicker 和語系檔 -->
+<script src="~/lib/datepicker/core.min.js"></script>
+<script src="~/lib/datepicker/datepicker.min.js"></script>
+<!-- selecter2 for bootstrap5 -->
+<script src="~/lib/select2/js/select2.min.js"></script>
+<!-- smooth-signature -->
+<script src="~/lib/smooth-signature/index.umd.min.js"></script>
+<!-- tourguide -->
+<script src="~/lib/tourguide/js/tourguide_3.js"></script>
 
 <script>
+  var $global = (function () {
 
-    var $global = (function () {
+    return {
+      registerCloseEvent: function ($tab, tabId) {
+        $tab.find(".closeTab").click(function () {
+          $global.removeTab(tabId);
+          return false;
+          ////there are multiple elements which has .closeTab icon so close the tab whose close icon is clicked
+          //var tabContentId = $(this).parent().attr("href");
+          //$(this).parent().parent().remove(); //remove li of tab
+          //$('#masterTab a:last').tab('show'); // Select first tab
+          //$(tabContentId).remove(); //remove respective tab content
 
-        return {
-            registerCloseEvent: function ($tab,tabId) {
-                $tab.find(".closeTab").click(function () {
-                    $global.removeTab(tabId);
-                    return false;
-                    ////there are multiple elements which has .closeTab icon so close the tab whose close icon is clicked
-                    //var tabContentId = $(this).parent().attr("href");
-                    //$(this).parent().parent().remove(); //remove li of tab
-                    //$('#masterTab a:last').tab('show'); // Select first tab
-                    //$(tabContentId).remove(); //remove respective tab content
-
-                });
-            },
-            removeTab: function (tabId) {
-                if ($('#masterTabContent div.active').attr('id') == tabId) {
-                    $('#masterTab a:first').tab('show'); // Select first tab
-                }
-                setTimeout(function(){
-                    var $a = $('#masterTab a[href="#' + tabId + '"]');
-                    $a.parent().remove(); //remove li of tab
-                    $('#' + tabId).remove(); //remove respective tab content
-                }, 10);
-            },
-            showTab: function (tabId) {
-                $('#masterTab a[href="#' + tabId + '"]').tab('show');
-            },
-            createTab: function (tabId, tabText, tabContent, show) {
-
-                //this.removeTab(tabId);
-                var $a = $('#masterTab a[href="#' + tabId + '"]');
-                $a.parent().remove(); //remove li of tab
-                $('#' + tabId).remove(); //remove respective tab content
-
-                var newTab = $('<a class="nav-link" data-mdb-toggle="tab" role="tab" aria-selected="false"></a>')
-                                .attr('href', '#' + tabId)
-                                .attr('id','ex1-tab-'+tabId)
-                                .attr('aria-controls', tabId)
-                                .text(tabText);
-                newTab.append($('<i class="fa fa-times ms-2 closeTab" aria-hidden="true"></i>'));
-                newTab = $('<li role="presentation" class="nav-item"></li>')
-                            .append(newTab);
-                newTab.appendTo($('#masterTab'));
-
-                $('<div role="tabpanel" class="tab-pane fade"></div>').attr('id', tabId)
-                    .append(tabContent).appendTo($('#masterTabContent'));
-                this.registerCloseEvent(newTab,tabId);
-                if (show) {
-                    setTimeout(function(){
-                        $global.showTab(tabId);
-                    },10);
-                }
-            },
-            onReady: [],
-        };
-    })();
-
-    $.fn.serializeObject = function () {
-        var o = {};
-        var a = this.serializeArray();
-        $.each(a, function () {
-            if (o[this.name] !== undefined) {
-                if (!o[this.name].push) {
-                    o[this.name] = [o[this.name]];
-                }
-                o[this.name].push(this.value || '');
-            } else {
-                o[this.name] = this.value || '';
-            }
         });
-        return o;
+      },
+      removeTab: function (tabId) {
+        if ($('#masterTabContent div.active').attr('id') == tabId) {
+          $('#masterTab a:first').tab('show'); // Select first tab
+        }
+        setTimeout(function () {
+          var $a = $('#masterTab a[href="#' + tabId + '"]');
+          $a.parent().remove(); //remove li of tab
+          $('#' + tabId).remove(); //remove respective tab content
+        }, 10);
+      },
+      showTab: function (tabId) {
+        $('#masterTab a[href="#' + tabId + '"]').tab('show');
+      },
+      createTab: function (tabId, tabText, tabContent, show) {
+
+        //this.removeTab(tabId);
+        var $a = $('#masterTab a[href="#' + tabId + '"]');
+        $a.parent().remove(); //remove li of tab
+        $('#' + tabId).remove(); //remove respective tab content
+
+        var newTab = $('<a class="nav-link" data-mdb-toggle="tab" role="tab" aria-selected="false"></a>')
+          .attr('href', '#' + tabId)
+          .attr('id', 'ex1-tab-' + tabId)
+          .attr('aria-controls', tabId)
+          .text(tabText);
+        newTab.append($('<i class="fa fa-times ms-2 closeTab" aria-hidden="true"></i>'));
+        newTab = $('<li role="presentation" class="nav-item"></li>')
+          .append(newTab);
+        newTab.appendTo($('#masterTab'));
+
+        $('<div role="tabpanel" class="tab-pane fade"></div>').attr('id', tabId)
+          .append(tabContent).appendTo($('#masterTabContent'));
+        this.registerCloseEvent(newTab, tabId);
+        if (show) {
+          setTimeout(function () {
+            $global.showTab(tabId);
+          }, 10);
+        }
+      },
+      onReady: [],
     };
+  })();
 
-    $.fn.launchDownload = function (url, params, target, loading) {
-
-        var data = this.serializeObject();
-        if (params) {
-            $.extend(data, params);
+  $.fn.serializeObject = function () {
+    var o = {};
+    var a = this.serializeArray();
+    $.each(a, function () {
+      if (o[this.name] !== undefined) {
+        if (!o[this.name].push) {
+          o[this.name] = [o[this.name]];
         }
+        o[this.name].push(this.value || '');
+      } else {
+        o[this.name] = this.value || '';
+      }
+    });
+    return o;
+  };
 
-        if (loading) {
-            token = (new Date()).getTime();
-            data.FileDownloadToken = token;
-        }
+  $.fn.launchDownload = function (url, params, target, loading) {
 
-        var form = $('<form></form>').attr('action', url).attr('method', 'post');//.attr('target', '_blank');
-        if (target) {
-            form.attr('target', target);
-            if (window.frames[target] == null) {
-                $('<iframe>')
-                    .css('display', 'none')
-                    .attr('name', target).appendTo($('body'));
-            }
-        }
-
-        Object.keys(data).forEach(function (key) {
-            var value = data[key];
-
-            if (value instanceof Array) {
-                value.forEach(function (v) {
-                    form.append($("<input></input>").attr('type', 'hidden').attr('name', key).attr('value', v));
-                });
-            } else {
-                form.append($("<input></input>").attr('type', 'hidden').attr('name', key).attr('value', value));
-            }
-
-        });
-
-        if (loading) {
-            showLoading();
-            fileDownloadCheckTimer = window.setInterval(function () {
-                var cookieValue = $.cookie('FileDownloadToken');
-                if (cookieValue == token)
-                    finishDownload();
-            }, 1000);
-        }
-
-        //send request
-        form.appendTo('body').submit().remove();
-    };
-
-    function finishDownload() {
-        window.clearInterval(fileDownloadCheckTimer);
-        $.removeCookie('fileDownloadToken'); //clears this cookie value
-        hideLoading();
+    var data = this.serializeObject();
+    if (params) {
+      $.extend(data, params);
     }
 
-
-
-    function showLoading(autoHide,onBlock) {
-        $.blockUI({
-            message:  '<img src="@(VirtualPathUtility.ToAbsolute("~/images/loading.gif"))" /><h1>Loading</h1>',
-            css: {
-                border: 'none',
-                padding: '15px',
-                backgroundColor: '#000',
-                '-webkit-border-radius': '10px',
-                '-moz-border-radius': '10px',
-                opacity: .5,
-                color: '#fff'
-            },
-            // 背景圖層
-            overlayCSS:  {
-                backgroundColor: '#3276B1',
-                opacity:         0.6,
-                cursor:          'wait'
-            },
-            onBlock: onBlock
-        });
-
-        if(autoHide)
-            setTimeout($.unblockUI, 5000);
+    if (loading) {
+      token = (new Date()).getTime();
+      data.FileDownloadToken = token;
     }
 
-    function hideLoading() {
-        $.unblockUI();
+    var form = $('<form></form>').attr('action', url).attr('method', 'post');//.attr('target', '_blank');
+    if (target) {
+      form.attr('target', target);
+      if (window.frames[target] == null) {
+        $('<iframe>')
+          .css('display', 'none')
+          .attr('name', target).appendTo($('body'));
+      }
     }
 
-    function initSort (sort,offset) {
+    Object.keys(data).forEach(function (key) {
+      var value = data[key];
 
-        $('.itemList th').each(function (idx, elmt) {
-            var $this = $(this);
-            if(sort.indexOf(idx+offset)>=0) {
-                $this.attr('aria-sort', 'ascending');
-                $this.append('<i class="fa fa-sort-asc" aria-hidden="true"></i>')
-                    .append($('<input type="hidden" name="sort"/>').val(idx+offset));
-            } else if(sort.indexOf(-idx-offset)>=0) {
-                $this.attr('aria-sort', 'desending');
-                $this.append('<i class="fa fa-sort-desc" aria-hidden="true"></i>')
-                    .append($('<input type="hidden" name="sort"/>').val(-idx-offset));
-            }
+      if (value instanceof Array) {
+        value.forEach(function (v) {
+          form.append($("<input></input>").attr('type', 'hidden').attr('name', key).attr('value', v));
         });
-    }
+      } else {
+        form.append($("<input></input>").attr('type', 'hidden').attr('name', key).attr('value', value));
+      }
 
-    function buildSort(inquire, currentPageIndex, offset) {
-
-        var chkBox = $(".itemList input[name='chkAll']");
-        var chkItem = $(".itemList input[name='chkItem']");
-        chkBox.click(function () {
-            chkItem.prop('checked', chkBox.is(':checked'));
-        });
-
-        chkItem.click(function (e) {
-            if (!$(this).is(':checked')) {
-                chkBox.prop('checked', false);
-            }
-        });
-
-        $('.itemList th').each(function (idx, elmt) {
-            var $this = $(this);
-            if (!$this.is('[aria-sort="other"]')) {
-                if (!$this.is('[aria-sort]')) {
-                    $this.append('<i class="fa fa-sort" aria-hidden="true"></i>')
-                        .append('<input type="hidden" name="sort"/>');
-                    $this.attr('aria-sort', 'none');
-                }
-                $this.on('click', function (evt) {
-                    var $target = $(this);
-                    $target.find('i').remove();
-                    if ($target.is('[aria-sort="none"]')) {
-                        $target.append('<i class="fa fa-sort-asc" aria-hidden="true"></i>');
-                        $target.attr('aria-sort', 'ascending');
-                        $target.find('input[name="sort"]').val(idx + offset);
-                    } else if ($target.is('[aria-sort="ascending"]')) {
-                        $target.append('<i class="fa fa-sort-desc" aria-hidden="true"></i>');
-                        $target.attr('aria-sort', 'descending');
-                        $target.find('input[name="sort"]').val(-idx - offset);
-                    } else {
-                        $target.append('<i class="fa fa-sort" aria-hidden="true"></i>');
-                        $target.attr('aria-sort', 'none');
-                        $target.find('input[name="sort"]').val('');
-                    }
-                    inquire(currentPageIndex, function (data) {
-                        var $node = $('.itemList').next();
-                        $('.itemList').remove();
-                        $node.before(data);
-                    });
-                });
-            }
-        });
-    }
-
-    function initSortable($table, inquire, currentPageIndex, sort) {
-
-        $table.find('th').each(function (index, elmt) {
-            var $this = $(this);
-            var idx = 0;
-            if (!$this.is('[aria-sort="other"]')) {
-                if (!$this.is('[aria-sort]')) {
-                    $this.append('<i class="fa fa-sort" aria-hidden="true"></i>')
-                    $this.attr('aria-sort', 'none');
-                }
-
-                if ($this.is('[data-sort]')) {
-                    idx = $this.attr('data-sort');
-                    if (!isNaN(idx)) {
-                        idx = Number(idx);
-                    } else {
-                        idx = index > 0 ? index : 99999;
-                    }
-                }
-
-                $this.on('click', function (evt) {
-                    var $target = $(this);
-                    $target.find('i').remove();
-                    if ($target.is('[aria-sort="none"]')) {
-                        $target.append('<i class="fa fa-sort-asc" aria-hidden="true"></i>');
-                        $target.attr('aria-sort', 'ascending');
-                        var sortIdx = idx + 0;
-                        if (sort.indexOf(sortIdx) < 0) {
-                            sort.push(sortIdx);
-                        }
-                    } else if ($target.is('[aria-sort="ascending"]')) {
-                        $target.append('<i class="fa fa-sort-desc" aria-hidden="true"></i>');
-                        $target.attr('aria-sort', 'descending');
-                        var sortIdx = idx + 0;
-                        var curr = sort.indexOf(sortIdx);
-                        if (curr >= 0) {
-                            sort[curr] = -sortIdx;
-                        }
-                    } else {
-                        $target.append('<i class="fa fa-sort" aria-hidden="true"></i>');
-                        $target.attr('aria-sort', 'none');
-                        var sortIdx = -idx - 0;
-                        var curr = sort.indexOf(sortIdx);
-                        if (curr >= 0) {
-                            sort.splice(curr, 1);
-                        }
-                    }
-
-                    inquire(currentPageIndex);
-                });
-            }
-        });
-    }
-
-    function datepicker($items) {
-        $items.datepicker({ showButtonPanel: true, changeYear: true, changeMonth: true, yearRange: '2012:+1' });
-    }
-
-    $(function () {
-        $('input[type="button"]').addClass('btn');
-        $('button').addClass('btn');
-        //$.datepicker.setDefaults($.datepicker.regional['zh-tw']);
-        datepicker($('.form_date'));
     });
 
-    $.widget("ui.dialog", $.extend({}, $.ui.dialog.prototype, {
-        _title: function (title) {
-            if (!this.options.title) {
-                title.html("&#160;");
-            } else {
-                title.html(this.options.title);
+    if (loading) {
+      showLoading();
+      fileDownloadCheckTimer = window.setInterval(function () {
+        var cookieValue = $.cookie('FileDownloadToken');
+        if (cookieValue == token)
+          finishDownload();
+      }, 1000);
+    }
+
+    //send request
+    form.appendTo('body').submit().remove();
+  };
+
+  function finishDownload() {
+    window.clearInterval(fileDownloadCheckTimer);
+    $.removeCookie('fileDownloadToken'); //clears this cookie value
+    hideLoading();
+  }
+
+
+  // Loading 遮罩
+  function showLoading(autoHide, onBlock) {
+    $.blockUI({
+      message: '<div class="fa-3x"><i class="fad fa-spinner-third fa-spin" style="--fa-primary-color: gold;"></i></div><h4>資料處理中 ...</h4>',
+      css: {
+        border: 'none',
+        padding: '15px 50px',
+        backgroundColor: '#333',
+        'border-radius': '10px',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 'auto',
+        color: '#fff'
+      },
+      // 背景圖層
+      overlayCSS: {
+        backgroundColor: '#000',
+        opacity: 0.5,
+        cursor: 'wait'
+      },
+      onBlock: onBlock
+    });
+
+    if (autoHide)
+      setTimeout($.unblockUI, 5000);
+  }
+
+  function hideLoading() {
+    $.unblockUI();
+  }
+
+  function initSort(sort, offset) {
+
+    $('.itemList th').each(function (idx, elmt) {
+      var $this = $(this);
+      if (sort.indexOf(idx + offset) >= 0) {
+        $this.attr('aria-sort', 'ascending');
+        $this.append('<i class="fa fa-sort-asc" aria-hidden="true"></i>')
+          .append($('<input type="hidden" name="sort"/>').val(idx + offset));
+      } else if (sort.indexOf(-idx - offset) >= 0) {
+        $this.attr('aria-sort', 'desending');
+        $this.append('<i class="fa fa-sort-desc" aria-hidden="true"></i>')
+          .append($('<input type="hidden" name="sort"/>').val(-idx - offset));
+      }
+    });
+  }
+
+  function buildSort(inquire, currentPageIndex, offset) {
+
+    var chkBox = $(".itemList input[name='chkAll']");
+    var chkItem = $(".itemList input[name='chkItem']");
+    chkBox.click(function () {
+      chkItem.prop('checked', chkBox.is(':checked'));
+    });
+
+    chkItem.click(function (e) {
+      if (!$(this).is(':checked')) {
+        chkBox.prop('checked', false);
+      }
+    });
+
+    $('.itemList th').each(function (idx, elmt) {
+      var $this = $(this);
+      if (!$this.is('[aria-sort="other"]')) {
+        if (!$this.is('[aria-sort]')) {
+          $this.append('<i class="fa fa-sort" aria-hidden="true"></i>')
+            .append('<input type="hidden" name="sort"/>');
+          $this.attr('aria-sort', 'none');
+        }
+        $this.on('click', function (evt) {
+          var $target = $(this);
+          $target.find('i').remove();
+          if ($target.is('[aria-sort="none"]')) {
+            $target.append('<i class="fa fa-sort-asc" aria-hidden="true"></i>');
+            $target.attr('aria-sort', 'ascending');
+            $target.find('input[name="sort"]').val(idx + offset);
+          } else if ($target.is('[aria-sort="ascending"]')) {
+            $target.append('<i class="fa fa-sort-desc" aria-hidden="true"></i>');
+            $target.attr('aria-sort', 'descending');
+            $target.find('input[name="sort"]').val(-idx - offset);
+          } else {
+            $target.append('<i class="fa fa-sort" aria-hidden="true"></i>');
+            $target.attr('aria-sort', 'none');
+            $target.find('input[name="sort"]').val('');
+          }
+          inquire(currentPageIndex, function (data) {
+            var $node = $('.itemList').next();
+            $('.itemList').remove();
+            $node.before(data);
+          });
+        });
+      }
+    });
+  }
+
+  function initSortable($table, inquire, currentPageIndex, sort) {
+
+    $table.find('th').each(function (index, elmt) {
+      var $this = $(this);
+      var idx = 0;
+      if (!$this.is('[aria-sort="other"]')) {
+        if (!$this.is('[aria-sort]')) {
+          $this.append('<i class="fa fa-sort" aria-hidden="true"></i>')
+          $this.attr('aria-sort', 'none');
+        }
+
+        if ($this.is('[data-sort]')) {
+          idx = $this.attr('data-sort');
+          if (!isNaN(idx)) {
+            idx = Number(idx);
+          } else {
+            idx = index > 0 ? index : 99999;
+          }
+        }
+
+        $this.on('click', function (evt) {
+          var $target = $(this);
+          $target.find('i').remove();
+          if ($target.is('[aria-sort="none"]')) {
+            $target.append('<i class="fa fa-sort-asc" aria-hidden="true"></i>');
+            $target.attr('aria-sort', 'ascending');
+            var sortIdx = idx + 0;
+            if (sort.indexOf(sortIdx) < 0) {
+              sort.push(sortIdx);
             }
+          } else if ($target.is('[aria-sort="ascending"]')) {
+            $target.append('<i class="fa fa-sort-desc" aria-hidden="true"></i>');
+            $target.attr('aria-sort', 'descending');
+            var sortIdx = idx + 0;
+            var curr = sort.indexOf(sortIdx);
+            if (curr >= 0) {
+              sort[curr] = -sortIdx;
+            }
+          } else {
+            $target.append('<i class="fa fa-sort" aria-hidden="true"></i>');
+            $target.attr('aria-sort', 'none');
+            var sortIdx = -idx - 0;
+            var curr = sort.indexOf(sortIdx);
+            if (curr >= 0) {
+              sort.splice(curr, 1);
+            }
+          }
+
+          inquire(currentPageIndex);
+        });
+      }
+    });
+  }
+
+  function datepicker($items) {
+    $items.datepicker({ showButtonPanel: true, changeYear: true, changeMonth: true, yearRange: '2012:+1' });
+  }
+
+  $(function () {
+    $('input[type="button"]').addClass('btn');
+    $('button').addClass('btn');
+    //$.datepicker.setDefaults($.datepicker.regional['zh-tw']);
+    datepicker($('.form_date'));
+  });
+
+  $.widget("ui.dialog", $.extend({}, $.ui.dialog.prototype, {
+    _title: function (title) {
+      if (!this.options.title) {
+        title.html("&#160;");
+      } else {
+        title.html(this.options.title);
+      }
+    }
+  }));
+
+  function uploadFile($file, postData, url, callback, errorback) {
+
+    $('<form method="post" enctype="multipart/form-data"></form>')
+      .append($file).ajaxForm({
+        url: url,
+        data: postData,
+        beforeSubmit: function () {
+          showLoading();
+        },
+        success: function (data) {
+          hideLoading();
+          callback(data);
+        },
+        error: function () {
+          hideLoading();
+          errorback();
         }
-    }));
+      }).submit();
+  }
 
-    function uploadFile($file, postData, url, callback, errorback) {
+  function clearErrors() {
+    $('span.help-error-text').remove();
+    $('.error-msg input,select,textarea').removeClass('error-msg')
+    $('div.error-msg').remove();
+  }
 
-        $('<form method="post" enctype="multipart/form-data"></form>')
-            .append($file).ajaxForm({
-                url: url,
-                data: postData,
-                beforeSubmit: function () {
-                    showLoading();
-                },
-                success: function (data) {
-                    hideLoading();
-                    callback(data);
-                },
-                error: function () {
-                    hideLoading();
-                    errorback();
-                }
-            }).submit();
-    }
+  function loadScript(url, callback) {
 
-    function clearErrors() {
-        $('span.help-error-text').remove();
-        $('.error-msg input,select,textarea').removeClass('error-msg')
-        $('div.error-msg').remove();
-    }
+    var script = document.createElement("script")
+    script.type = "text/javascript";
 
-    function loadScript(url, callback) {
-
-        var script = document.createElement("script")
-        script.type = "text/javascript";
-
-        if (script.readyState) {  //IE
-            script.onreadystatechange = function () {
-                if (script.readyState == "loaded" ||
-                    script.readyState == "complete") {
-                    script.onreadystatechange = null;
-                    callback();
-                }
-            };
-        } else {  //Others
-            script.onload = function () {
-                callback();
-            };
+    if (script.readyState) {  //IE
+      script.onreadystatechange = function () {
+        if (script.readyState == "loaded" ||
+          script.readyState == "complete") {
+          script.onreadystatechange = null;
+          callback();
         }
-
-        script.src = url;
-        document.getElementsByTagName("head")[0].appendChild(script);
+      };
+    } else {  //Others
+      script.onload = function () {
+        callback();
+      };
     }
 
-    function alertModal(alertMessage) {
-        if (!$global.$alertModal) {
-            showLoading();
-            $.post('@Html.Raw(Url.Action("Alert", "Home"))', { 'alertMessage': alertMessage }, function (data) {
-                hideLoading();
-                if ($.isPlainObject(data)) {
-                } else {
-                    $(data).appendTo($('body'));
-                }
-            });
+    script.src = url;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  }
+
+  function alertModal(alertMessage) {
+    if (!$global.$alertModal) {
+      showLoading();
+      $.post('@Html.Raw(Url.Action("Alert", "Home"))', { 'alertMessage': alertMessage }, function (data) {
+        hideLoading();
+        if ($.isPlainObject(data)) {
         } else {
-            $global.$alertModal.find('.modal-body').text(alertMessage);
-            $global.$alertModal.modal('show');
+          $(data).appendTo($('body'));
         }
+      });
+    } else {
+      $global.$alertModal.find('.modal-body').text(alertMessage);
+      $global.$alertModal.modal('show');
     }
+  }
 
-    function markInputError($scope, key, message, dataRole, idx) {
-        var $scope = $scope || $('body');
-        var input =
-            $scope.find('[name="' + key + '"]:enabled');
-        if (dataRole != null && dataRole != '') {
-            input = input.find('[data-role="' + dataRole + '"]');
-        }
-        if (idx >= 0) {
-            input = input.eq(idx);
-        }
-        input.addClass('error-msg');
-        var msg = $('<div class="error-msg">')
-            .attr('id', key + '-error')
-            .attr('for', key)
-            .text(message);
-        input.after(msg);
+  function markInputError($scope, key, message, dataRole, idx) {
+    var $scope = $scope || $('body');
+    var input =
+      $scope.find('[name="' + key + '"]:enabled');
+    if (dataRole != null && dataRole != '') {
+      input = input.find('[data-role="' + dataRole + '"]');
     }
+    if (idx >= 0) {
+      input = input.eq(idx);
+    }
+    input.addClass('error-msg');
+    var msg = $('<div class="error-msg">')
+      .attr('id', key + '-error')
+      .attr('for', key)
+      .text(message);
+    input.after(msg);
+  }
+
+  // 產生uuid
+  function ui_uuid() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      let r = (Math.random() * 16) | 0;
+      let v = c == 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
+
+  // 產生8碼 uuid
+  function ui_uuid8() {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    const numbers = '0123456789';
+
+    const firstChar = characters.charAt(Math.floor(Math.random() * characters.length));
+    const thirdChar = characters.charAt(Math.floor(Math.random() * characters.length));
+
+    const numericPart = Array.from({ length: 6 }, () => numbers.charAt(Math.floor(Math.random() * numbers.length))).join('');
+
+    return `${firstChar}${numericPart}${thirdChar}`;
+  }
+
+  // 取得 EncPID
+  function getCookie(cname) {
+    const name = cname + "=";
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+      const c = ca[i].trim();
+      if (c.indexOf(name) == 0) return c.substring(name.length, c.length);
+    }
+    return "";
+  }
+
 
 </script>

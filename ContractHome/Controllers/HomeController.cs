@@ -15,16 +15,22 @@ using GemBox.Document;
 using System.Net;
 using Microsoft.Extensions.Primitives;
 using System.Drawing;
+using ContractHome.Models.Email;
 
 namespace ContractHome.Controllers
 {
     public class HomeController : SampleController
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IMailService _mailService;
 
-        public HomeController(ILogger<HomeController> logger, IServiceProvider serviceProvider) : base(serviceProvider)
+
+        public HomeController(ILogger<HomeController> logger, 
+            IServiceProvider serviceProvider,
+            IMailService _MailService) : base(serviceProvider)
         {
             _logger = logger;
+            _mailService = _MailService;
         }
 
         public IActionResult Index()
@@ -217,7 +223,7 @@ namespace ContractHome.Controllers
                 data.Add("EndDate", viewModel.EndDate);
                 data.Add("CreditDate", viewModel.CreditDate);
                 data.Add("Amount", viewModel.Amount);
-                data.Add("No", viewModel.No);
+                data.Add("No", viewModel.ContractNo);
                 data.Add("BuyerSeal", viewModel.BuyerSeal);
                 data.Add("SellerSeal", viewModel.SellerSeal);
 
@@ -264,7 +270,7 @@ namespace ContractHome.Controllers
             return new EmptyResult { };
         }
 
-        public ActionResult SearchCompany(String term)
+        public ActionResult SearchCompany(String? term)
         {
             IQueryable<Organization> items = models.GetTable<Organization>();
 
@@ -278,6 +284,8 @@ namespace ContractHome.Controllers
                 items = items.Where(f => false);
             }
 
+            ViewBag.DataItems = items;
+
             return Json(items.OrderBy(o => o.ReceiptNo).ToArray()
                 .Select(o => new
                 {
@@ -285,5 +293,14 @@ namespace ContractHome.Controllers
                     value = o.CompanyID.EncryptKey()
                 }));
         }
+
+        public ActionResult VueSearchCompany([FromBody] QueryViewModel viewModel)
+        {
+            ViewBag.ViewModel = viewModel;
+            SearchCompany(viewModel.Term);
+            IQueryable<Organization> items = (IQueryable<Organization>)ViewBag.DataItems;
+            return View("~/Views/Organization/VueModule/OrganizationItems.cshtml", items);
+        }
+
     }
 }

@@ -1,0 +1,42 @@
+﻿@using System.Linq
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using ContractHome.Helper.DataQuery
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@functions
+{
+  ModelSource? models;
+  SealTemplate? _model;
+  QueryViewModel? _viewModel;
+}
+@{
+
+  models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+  _model = (SealTemplate)this.Model;
+  _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+  var buf = _model?.SealImage?.ToArray();
+}
+@if (buf != null)
+{
+  var id = $"s_{_model?.SealID}";
+  <div class="d-flex align-items-stretch col-md-3 col-sm-12 mt-0 pb-3">
+    <div class="card p-1 w-100 block--hover block--border shadow-sm" style="height: 150px;"
+      onclick="useSealHandler(@(_model?.SealID),'@(id)')">
+      <div class="d-inline-flex h-100 w-100 justify-content-center align-items-center">
+        <img id="@(id)" src="@Html.Raw($"data:application/octet-stream;base64,{Convert.ToBase64String(buf)}")"
+          class="mh-100 mw-100" />
+      </div>
+      <div class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded operation__card block--show">
+        <i class="fas fa-check"></i>
+      </div>
+    </div>
+  </div>
+}

@@ -2,58 +2,107 @@
 @using ContractHome.Models.ViewModel;
 @using ContractHome.Helper;
 @{
-    Layout = null;
-    QueryViewModel? _viewModel = ViewBag.ViewModel as QueryViewModel;
-    UserProfile? profile = await Context.GetUserAsync();
+  Layout = null;
+  QueryViewModel? _viewModel = ViewBag.ViewModel as QueryViewModel;
+  UserProfile? profile = await Context.GetUserAsync();
 }
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <title>Digital Contract</title>
-    <!-- MDB icon -->
-    <link rel="icon" href="~/img/mdb-favicon.ico" type="image/x-icon" />
-    <!-- Font Awesome -->
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <!-- Google Fonts Roboto -->
-    <link rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" />
-    <!-- MDB -->
-    <link rel="stylesheet" href="~/css/mdb.min.css" />
-    <!-- MDB -->
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/main.css" />
-    <script type="text/javascript" src="~/js/mdb.min.js"></script>
-    <!-- Custom scripts -->
-    <link rel="stylesheet" href="~/lib/jquery-ui/Content/themes/base/all.css" />
-    <script type="text/javascript" src="~/lib/jquery/dist/jquery.js"></script>
-    <script type="text/javascript" src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
-    @{
-        await Html.RenderPartialAsync("~/Views/Shared/CommonScriptInclude.cshtml");
-    }
-</head>
-<body>
+<html lang="zh-tw">
 
-    @*@if (_viewModel?.PageMainTitle != null)
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge" />
+  <title>安心簽 UX SIGN 數位簽章管理系統</title>
+  <!-- MDB icon -->
+  <link rel="icon" href="~/images/uxSign.ico" type="image/x-icon" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="~/css/fontawesome/all.css" />
+  <!-- Google Fonts Roboto -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
+  <!-- Boostrap -->
+  <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+  <!-- Custom scripts -->
+  <link rel="stylesheet" href="~/lib/jquery-ui/Content/themes/base/all.css" />
+  <!-- 拖曳上傳模組 -->
+  <link rel="stylesheet" href="~/lib/dropzone/dropzone.min.css" type="text/css" />
+  <!-- datepicker 和語系檔 -->
+  <link href="~/lib/datepicker/core.min.css" rel="stylesheet" type="text/css">
+  <link href="~/lib/datepicker/datepicker.min.css" rel="stylesheet" type="text/css">
+  <!-- selecter2 for bootstrap5 -->
+  <link rel="stylesheet" href="~/lib/select2/css/select2.min.css" />
+  <link rel="stylesheet" href="~/lib/select2/css/select2-bootstrap-5-theme.min.css" />
+  <!-- 網站設定樣式 -->
+  <link rel="stylesheet" href="~/css/site.css" />
+  <script type="text/javascript" src="~/lib/jquery/dist/jquery.js"></script>
+  <script type="text/javascript" src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="~/js/vue.js"></script>
+  @{
+    await Html.RenderPartialAsync("~/Views/Shared/CommonScriptInclude.cshtml");
+    await Html.RenderPartialAsync("~/Views/Shared/DataOperationScript.cshtml");
+  }
+</head>
+
+<body>
+  <!-- Navbar -->
+  @{
+    if (profile != null)
     {
-        <header class="section-header py-4">
-            <div class="container">
-                <h2>@(_viewModel.PageMainTitle)</h2>
-            </div>
-        </header>
-    }*@
-    <!-- Start your project here-->
-    <!-- Navbar -->
-    @{
-        if (profile != null)
-        {
-            await Html.RenderPartialAsync("~/Views/Shared/SiteAction/MainNavBar.cshtml");
-        }
+      await Html.RenderPartialAsync("~/Views/Shared/SiteAction/MainNavBar.cshtml");
     }
-    @RenderBody()
-    <!-- End your project here-->
+  }
+  <!-- Container -->
+  @RenderBody()
+
+  <div id="infoAlert"
+    class="justify-content-between align-items-center alert alert-warning infoAlert alert-dismissible fade shadow">
+    <div class="pe-5">
+      <div class="pb-2 fs-5 fw-bolder">UX SIGN 安心簽 網站更新條款</div>
+      <p class="mb-1 fs-14">為了使用安心簽，我們要求您先閱讀我們的 <a class="navbar-brand fs-14"
+          href="@Url.Action("Privacy", "Home")">隱私政策</a>
+        ( <a class="navbar-brand fs-14" href="@Url.Action("Gdpr", "Home")">GDPR 聲明</a> )、<a class="navbar-brand fs-14"
+          href="@Url.Action("Security", "Home")">安全宣告</a>
+        和
+        安心簽 <a class="navbar-brand fs-14" href="@Url.Action("Personal", "Home")">個資保護</a>。
+        為了獲得最佳的瀏覽體驗，安心簽將從您的瀏覽器收集並儲存 cookie，如果您繼續使用本網站，我們將假定您同意這些條款。</p>
+      <p class="mb-0 fs-14">如有任何疑問，請聯絡我們的服務中心以獲取更多資訊。</p>
+    </div>
+    <div>
+      <button type="button" id="agreement" class="btn btn-primary opacity-75 px-5 text-nowrap"
+        data-bs-dismiss="alert">同意</button>
+    </div>
+  </div>
 </body>
+
 </html>
+<script>
+  /** 設定不顯示 MainNavBar 的頁面*/
+  const pathName = location.pathname;
+  // 登入首頁
+  const isHomePage = pathName === '/' || pathName === '/Home';
+  const isForgetPassWord = pathName === '/Account/ForgetPassword';
+  const mainNavBar = document.querySelector('#mainNavBar');
+  if (mainNavBar) {
+    mainNavBar.style.display = isHomePage || isForgetPassWord ? 'none' : null;
+  }
+
+  // 初始化 網頁導覽
+  const infoAlert = document.querySelector('#infoAlert');
+  const agreement = document.querySelector('#agreement');
+  window.addEventListener('load', () => {
+    if (!localStorage.getItem("isAgreement")) {
+      infoAlert.classList.add('show');
+    } else {
+      infoAlert.classList.remove('show');
+    }
+  });
+
+  agreement.addEventListener('click', () => {
+    if (!localStorage.getItem("isAgreement")) {
+      infoAlert.classList.add('show');
+      localStorage.setItem("isAgreement", true);
+    } else {
+      infoAlert.classList.remove('show');
+    }
+  })
+</script>

@@ -1,25 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.EntityFrameworkCore;
-
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-
 using ContractHome.Controllers.Filters;
-using Microsoft.Extensions.Logging;
 using ContractHome.Helper;
 using CommonLib.Core.Utility;
-using System.IO;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using ContractHome.Properties;
+using ContractHome.Models.Email;
+using ContractHome.Models.Email.Template;
+using CommonLib.DataAccess;
+using ContractHome.Models.DataEntity;
+using ContractHome.Models.Helper;
 
 namespace WebHome
 {
@@ -105,6 +94,15 @@ namespace WebHome
             services.AddScoped<IViewRenderService, ViewRenderService>();
 
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+
+            services.AddOptions<MailSettings>().BindConfiguration("MailSettings");
+            services.AddScoped<IMailService, MailService>();
+            services.AddScoped<EmailFactory>();
+            services.AddScoped<EmailBody>();
+            services.AddScoped<ContractServices>();
+            //services.AddSingleton<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
+            //services.AddSingleton<GenericManager<DCDataContext>>();
+            //services.AddScoped<ContractRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

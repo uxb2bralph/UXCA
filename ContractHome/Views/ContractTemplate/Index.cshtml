@@ -1,40 +1,40 @@
 ﻿@using CommonLib.Core.Utility;
 @using ContractHome.Models.ViewModel;
 @{
-    Layout = "~/Views/Shared/MasterPage.cshtml";
-    QueryViewModel? _viewModel = ViewBag.ViewModel as QueryViewModel;
+  Layout = "~/Views/Shared/MasterPage.cshtml";
+  QueryViewModel? _viewModel = ViewBag.ViewModel as QueryViewModel;
 }
 
-<div class="container">
-    <section>
-        <!-- Section title -->
+<div id="index" class="container-lg py-5">
+  <section>
+    <!-- Section title -->
+    @{
+      await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "合約及印鑑章範本下載");
+    }
+
+    <p>
+    </p>
+
+    <!--Section: Demo-->
+    <section class="pb-4">
+      <div class="row">
         @{
-            await Html.RenderPartialAsync("~/Views/SiteAction/FunctionTitleBar.cshtml", "合約及印鑑章範本下載");
-        }
-
-        <p>
-        </p>
-
-        <!--Section: Demo-->
-        <section class="pb-4">
-            <div class="row">
-                @{
-                    String templatePath = System.IO.Path.Combine(FileLogger.Logger.LogPath, "Template");
-                    foreach (var item in System.IO.Directory.GetFiles(templatePath))
-                    {
-                        <div class="col-xl-4 col-lg-6 mb-4">
-                            @{
-                                await Html.RenderPartialAsync("~/Views/ContractTemplate/Module/TemplateItem.cshtml", item);
-                            }
-                        </div>
-                    }
-                }
+          String templatePath = System.IO.Path.Combine(FileLogger.Logger.LogPath, "Template");
+          foreach (var item in System.IO.Directory.GetFiles(templatePath))
+          {
+            <div class="col-xl-4 col-lg-6 mb-4">
+              @{
+                await Html.RenderPartialAsync("~/Views/ContractTemplate/Module/TemplateItem.cshtml", item);
+              }
             </div>
-        </section>
+          }
+        }
+      </div>
     </section>
+  </section>
 </div>
 <script>
-    function downloadTemplate(keyID) {
-        $('').launchDownload('@Html.Raw(Url.Action("DownloadResource", "ContractTemplate"))', { 'KeyID': keyID });
-    }
+  function downloadTemplate(keyID) {
+    $('').launchDownload('@Html.Raw(Url.Action("DownloadResource", "ContractTemplate"))', { 'KeyID': keyID });
+  }
 </script>

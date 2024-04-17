@@ -1,0 +1,59 @@
+﻿
+@using System.Linq
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using ContractHome.Helper.DataQuery
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@functions
+{
+    ModelSource? models;
+    IQueryable<dynamic> _model;
+    IOrderedQueryable<dynamic> _order;
+    QueryViewModel _viewModel;
+}
+@{
+    Layout = "~/Views/Shared/VueModule/DataItemList.cshtml";
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _model = (IQueryable<dynamic>)this.Model;
+    _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+}
+
+@functions
+{
+    object BuildData(UserProfile item)
+    {
+        return new
+        {
+            item.OrganizationUser?.Organization.CompanyName,
+            EncCompanyID = item.OrganizationUser?.CompanyID.EncryptKey(),
+            item.UserName,
+            item.PID,
+            item.EMail,
+            RoleID = item.UserRole.FirstOrDefault()?.RoleID,
+            Region = item.OrganizationUser?.Organization.CHT_Token != null ? "E" : item.Region,
+            KeyID = item.UID.EncryptKey(),
+        };
+    }
+}
+
+@section DataResult
+{
+    @{
+        IQueryable<dynamic> items = (IQueryable<dynamic>)ViewContext.HttpContext.Items["ResultItems"];
+        <script>
+            $(function () {
+                app.userList = @Html.Raw(items!.ToArray().Select(c=>BuildData((UserProfile)c)).JsonStringify());
+                app.totalRecordCount = @(_model.Count());
+            });
+        </script>
+    }
+}

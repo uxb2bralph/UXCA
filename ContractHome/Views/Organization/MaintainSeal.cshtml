@@ -1,0 +1,197 @@
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+  Layout = "~/Views/Shared/MasterPage.cshtml";
+
+  ModelStateDictionary _modelState;
+  ModelSource? models;
+
+  models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+  _modelState = (ModelStateDictionary)ViewBag.ModelState;
+  QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+  var profile = await Context.GetUserAsync();
+
+  var items = models!.GetTable<SealTemplate>()
+  .Where(s => !s.Disabled.HasValue || s.Disabled == false)
+  .Where(s => s.UID == profile.UID)
+  .Where(s => s.SealImage != null);
+  var sealItems = items.Select(s => new
+  {
+    KeyID = s.SealID.EncryptKey(),
+    Src = $"data:application/octet-stream;base64,{Convert.ToBase64String(s.SealImage.ToArray())}",
+  });
+
+}
+<div id="maintainSeal">
+  <div class="container-lg py-4">
+    <section class="queryform">
+      <!-- 標題 -->
+      <h4 class="mb-2 fw-bolder">印鑑檔管理</h4>
+      <!-- 印鑑檔管理-->
+      <div class="card p-3 shadow-sm" style="min-height: 360px;">
+        <form v-on:submit.prevent method="post" enctype="multipart/form-data" class="pt-3 pb-5 text-center">
+          <div class="h5 fw-bolder mt-3 text-center">新增印鑑影像檔</div>
+          <div class="h6 fw-bolder mb-3 opacity-50 text-center">( 支援 .jpg 和 .png 檔案格式 )</div>
+          <div class="inputSale">
+            <label for="formFile" class="form-label">
+              <a class="btn btn-lg btn-success rounded-pill opacity-75">
+                <i class="fal fa-file-plus"></i>
+              </a>
+            </label>
+            <input id="formFile" class="form-control" name="sealImage" type="file" v-on:change="addHandler" />
+          </div>
+        </form>
+        <div class="row g-3">
+          <div v-for="(seal,index) in sealList" :key="index" class="d-flex align-items-stretch col-md-3 col-sm-12"
+            style="height: 150px;">
+            <div class="card p-3 w-100 h-100">
+              <div class="d-inline-flex h-100 w-100 justify-content-center align-items-center">
+                <img id="frame" :src="seal.Src" class="mh-100 mw-100" />
+              </div>
+              <div class="operation__card">
+                <div class="tooltip__wrapper">
+                  <button type="button" class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded"
+                    v-on:click="delSaleHandler(seal, index)">
+                    <i class="fal fa-trash-alt"></i>
+                  </button>
+                  <div class="tooltip__text">刪除</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 刪除 Dialog -->
+    <div class="modal fade" id="deleteModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+      aria-labelledby="deleteModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered ">
+        <div class="modal-content">
+          <div class="modal-header border-bottom-0">
+            <h5 class="modal-title" id="staticBackdropLabel"></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center h5 fw-bolder">
+            確定刪除印鑑檔案？
+          </div>
+          <div class="modal-footer border-top-0 justify-content-center">
+            <button type="button" class="btn btn-secondary opacity-50" data-bs-dismiss="modal">取消</button>
+            <button type="button" class="btn btn-primary" v-on:click="confirmDel(currentSaleData)">確定</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 訊息 Dialog -->
+    <div class="modal fade" id="infoModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+      aria-labelledby="infoModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-body text-center h5 fw-bolder pt-5">
+            <div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div>
+            <div v-html="infoMsg"></div>
+          </div>
+          <div class="modal-footer border-top-0 justify-content-center">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  var app = new Vue({
+    el: '#maintainSeal',
+    data: {
+      isValidate: false,
+      infoMsg: null,
+      sealList: @Html.Raw(sealItems.ToArray().JsonStringify()),
+      currentSaleData: null
+    },
+    methods: {
+      addHandler(event) {
+        var viewModel = {
+          ...$global.viewModel
+        };
+        viewModel.ResultMode = @((int)DataResultMode.DataContent);
+        var event = event || window.event;
+        if (event.target.form != undefined) {
+          $(event.target.form).ajaxForm({
+            url: '@Html.Raw(Url.Action("CommitSealTemplate", "UserProfile"))',
+            data: viewModel,
+            beforeSubmit: function () {
+              showLoading();
+            },
+            success: function (data) {
+              hideLoading();
+              if ($.isPlainObject(data)) {
+                if (data.result) {
+                  app.sealList.push(data.dataItem);
+                } else {
+                  alertModal(data.message);
+                }
+              }
+              else {
+                $(data).insertBefore($('#addSeal'));
+              }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+              hideLoading();
+              console.log(xhr.status);
+              alertModal(thrownError);
+            }
+          }).submit();
+        }
+      },
+      delSaleHandler(seal, index) {
+        this.currentSaleData = { seal, index }
+        this.openDeleteDialog();
+      },
+
+      // 開啟刪除Modal
+      openDeleteDialog() {
+        $("#deleteModal").modal('show');
+      },
+      // 刪除廠商資料串API
+      confirmDel() {
+        console.log(this.currentSaleData);
+
+        $("#deleteModal").modal('hide');
+        commitToDeletSeal(this.currentSaleData.seal.KeyID, function () {
+          app.sealList.splice(app.currentSaleData.index, 1);
+          app.currentSaleData = null;
+          app.infoMsg = '印鑑已刪除';
+          $('#infoModal').modal('show');
+        });
+      },
+    }
+  });
+
+  function commitToDeletSeal(keyID, onDone) {
+    showLoading();
+    $.post('@Html.Raw(Url.Action("CommitToDeleteSeal", "UserProfile"))', { 'KeyID': keyID }, function (data) {
+      hideLoading();
+      if ($.isPlainObject(data)) {
+        if (data.result) {
+          if (onDone) {
+            onDone();
+          }
+        } else {
+          alertModal(data.message);
+        }
+      } else {
+        $(data).appendTo($('body'));
+      }
+    });
+  }
+</script>

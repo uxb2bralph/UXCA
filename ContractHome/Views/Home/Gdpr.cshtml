@@ -1,0 +1,97 @@
+﻿@{
+  Layout = null;
+}
+<!DOCTYPE html>
+<html lang="zh-tw">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge" />
+  <title>安心簽 UX SIGN 數位簽章管理系統 - 通用數據保護條例 (GDPR) 政策聲明</title>
+  <!-- MDB icon -->
+  <link rel="icon" href="~/images/uxSign.ico" type="image/x-icon" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="~/css/fontawesome/all.css" />
+  <!-- Google Fonts Roboto -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" />
+  <!-- Boostrap -->
+  <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+  <!-- 網站設定樣式 -->
+  <link rel="stylesheet" href="~/css/site.css" />
+  <script src="~/lib/jquery/dist/jquery.min.js"></script>
+  <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body class="bg-secondary bg-opacity-10">
+  <div class="container">
+    <div class="pt-5 pb-3 d-flex justify-content-between align-items-center">
+      <div>
+        <a class="navbar-brand" href="@Url.Action("ListToStampIndex", "ContractConsole")">
+          <img src="~/images/uxSign-logo.png" alt="安心簽" style="height: 35px;">
+        </a>
+      </div>
+      <ul class="nav nav-pills" id="pills-tab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link btn-sm opacity-75 active" id="pills-tw-tab" data-bs-toggle="pill" data-bs-target="#tw"
+            type="button" role="tab" aria-controls="tw" aria-selected="true">中文</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link btn-sm opacity-75" id="pills-eng-tab" data-bs-toggle="pill" data-bs-target="#eng"
+            type="button" role="tab" aria-controls="eng" aria-selected="false">English</button>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="tw" role="tabpanel" aria-labelledby="tw-tab">
+        <h1 class="mt-4 mb-3 ps-3 border-start border-primary border-5 fs-3 fw-bolder text-primary">通用數據保護條例 (GDPR) 政策聲明
+        </h1>
+        <div class="bg-white rounded-2 p-5 mb-4 shadow">
+          <p class="fw-bolder">感謝您選擇網際優勢(以下簡稱本公司)。我們致力於保護您的個人資料並尊重您的隱私。 </p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">一、收集的資訊</h5>
+          <p>我們可能會收集您的個人資訊，例如姓名、聯絡資訊、IP位址等。我們只會在您同意的情況下收集這些資訊，並且只會用於您同意的目的。</p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">二、使用的資訊</h5>
+          <p>我們可能會使用您的資訊來改善我們的服務、與您聯絡、或者進行內部分析。我們不會將您的資訊出售給第三方，也不會將其用於未經您同意的目的。</p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">三、資訊的保護</h5>
+          <p>我們已經實施了適當的技術和組織措施來保護您的個人資訊，防止未經授權或非法的處理，以及防止意外的損失、破壞或損壞。</p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">四、您的權利</h5>
+          <p>根據GDPR，您有權查詢、更正、刪除您的個人資訊，以及限制或反對我們處理您的個人資訊。如果您希望行使這些權利，請聯絡我們。</p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">五、政策變更</h5>
+          <p>我們可能會不時更新此政策以反映公司和客戶需求的變動，以及法律變更。請定期查看此政策以確保您了解最新版本。</p>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="eng" role="tabpanel" aria-labelledby="eng-tab">
+        <h1 class="mt-4 mb-3 ps-3 border-start border-primary border-5 fs-3 fw-bolder text-primary">General Data
+          Protection Regulation (GDPR) Policy Statement</h1>
+        <div class="bg-white rounded-2 p-5 mb-4 shadow">
+          <p class="fw-bolder">Thank you for choosing Universal eXchange Inc. (hereinafter referred to as “the
+            Company”). We are committed to protecting your personal data and respecting your privacy.</p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">I. Information Collected</h5>
+          <p>We may collect your personal information, such as name, contact information, IP address, etc. We will only
+            collect this information with your consent and will only use it for the purpose you agree to.</p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">II. Use of Information</h5>
+          <p>We may use your information to improve our services, contact you, or conduct internal analysis. We will not
+            sell your information to third parties, nor will we use it for purposes without your consent.</p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">III. Protection of Information</h5>
+          <p>We have implemented appropriate technical and organizational measures to protect your personal data,
+            prevent unauthorized or illegal processing, and prevent accidental loss, destruction or damage.</p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">IV. Your Rights</h5>
+          <p>Under the GDPR, you have the right to inquire, correct, delete your personal data, and restrict or object
+            to our processing of your personal data. If you wish to exercise these rights, please contact us.</p>
+          <h5 class="pt-1 fw-bolder text-primary opacity-75">V. Policy Changes</h5>
+          <p>We may update this policy from time to time to reflect changes in the needs of the company and customers,
+            as well as legal changes. Please check this policy regularly to ensure that you understand the latest
+            version.</p>
+        </div>
+      </div>
+      <div class="text-center mb-5">
+        <button type="button" class="btn btn-primary opacity-75 px-5" onclick="history.go(-1)">回上頁</button>
+      </div>
+    </div>
+
+  </div>
+</body>
+
+</html>
