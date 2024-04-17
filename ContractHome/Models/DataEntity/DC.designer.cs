@@ -22,7 +22,6 @@ namespace ContractHome.Models.DataEntity
 	using System;
 	
 	
-	[global::System.Data.Linq.Mapping.DatabaseAttribute(Name="DigitalContract")]
 	public partial class DCDataContext : System.Data.Linq.DataContext
 	{
 		
@@ -3329,6 +3328,10 @@ namespace ContractHome.Models.DataEntity
 		
 		private System.Nullable<int> _ActorID;
 		
+		private string _ClientIP;
+		
+		private string _ClientDevice;
+		
 		private EntityRef<CDS_Document> _CDS_Document;
 		
 		private EntityRef<UserProfile> _UserProfile;
@@ -3349,6 +3352,10 @@ namespace ContractHome.Models.DataEntity
     partial void OnStepIDChanged();
     partial void OnActorIDChanging(System.Nullable<int> value);
     partial void OnActorIDChanged();
+    partial void OnClientIPChanging(string value);
+    partial void OnClientIPChanged();
+    partial void OnClientDeviceChanging(string value);
+    partial void OnClientDeviceChanged();
     #endregion
 		
 		public DocumentProcessLog()
@@ -3482,6 +3489,46 @@ namespace ContractHome.Models.DataEntity
 					this._ActorID = value;
 					this.SendPropertyChanged("ActorID");
 					this.OnActorIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ClientIP", DbType="VarChar(50)")]
+		public string ClientIP
+		{
+			get
+			{
+				return this._ClientIP;
+			}
+			set
+			{
+				if ((this._ClientIP != value))
+				{
+					this.OnClientIPChanging(value);
+					this.SendPropertyChanging();
+					this._ClientIP = value;
+					this.SendPropertyChanged("ClientIP");
+					this.OnClientIPChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ClientDevice", DbType="NVarChar(512)")]
+		public string ClientDevice
+		{
+			get
+			{
+				return this._ClientDevice;
+			}
+			set
+			{
+				if ((this._ClientDevice != value))
+				{
+					this.OnClientDeviceChanging(value);
+					this.SendPropertyChanging();
+					this._ClientDevice = value;
+					this.SendPropertyChanged("ClientDevice");
+					this.OnClientDeviceChanged();
 				}
 			}
 		}

@@ -13,17 +13,11 @@ using System.Data;
 using ContractHome.Helper.DataQuery;
 using System.Web;
 using Newtonsoft.Json;
-using System.ComponentModel;
-using System.Linq;
 using ContractHome.Models.Email.Template;
 using ContractHome.Models.Email;
-using System.Runtime.CompilerServices;
 using static ContractHome.Models.DataEntity.CDS_Document;
-using System.ComponentModel.DataAnnotations;
-using static ContractHome.Controllers.AccountController;
 using ContractHome.Models.Dto;
 using FluentValidation;
-using Org.BouncyCastle.Ocsp;
 using static ContractHome.Models.Helper.ContractServices;
 
 namespace ContractHome.Controllers
@@ -35,7 +29,7 @@ namespace ContractHome.Controllers
         private readonly ILogger<HomeController> _logger;
         private ContractServices? _contractServices;
         private readonly IMailService _mailService;
-        private BaseResponse baseResponse = new BaseResponse(false, "");
+        private BaseResponse baseResponse = new BaseResponse();
 
         public ContractConsoleController(ILogger<HomeController> logger,
             IServiceProvider serviceProvider) : base(serviceProvider)
@@ -460,15 +454,17 @@ namespace ContractHome.Controllers
             if (viewModel.ContractQueryStep == null) { viewModel.ContractQueryStep = 0; }
 
             var profile = await HttpContext.GetUserAsync();
-            #region add for postman test
-            if (profile == null && viewModel.EncUID.Length > 0)
-            {
-                profile = models.GetTable<UserProfile>().Where(x => x.UID == viewModel.EncUID.DecryptKeyValue()).FirstOrDefault();
-            }
-            #endregion
             var profileCompanyID = 0;
-            var organizationUser = models.GetTable<OrganizationUser>().Where(x => x.UID == profile.UID);
-            profileCompanyID = (organizationUser != null) ? organizationUser.Select(x => x.CompanyID).FirstOrDefault() : 0;
+            var organizationUser = models
+                .GetTable<OrganizationUser>()
+                .Where(x => x.UID == profile.UID);
+            
+            if (organizationUser != null&&organizationUser.FirstOrDefault() != null) 
+            {
+                profileCompanyID = organizationUser.FirstOrDefault().CompanyID;
+            }
+
+            //profileCompanyID = (organizationUser != null) ? organizationUser.Select(x => x.CompanyID).FirstOrDefault() : 0;
 
             IQueryable<Contract> items = PromptContractItems(profile);
 
@@ -844,7 +840,36 @@ namespace ContractHome.Controllers
         }
 
 
-        public ActionResult AffixPdfSeal(SignatureRequestViewModel viewModel)
+        public async Task<ActionResult> AffixPdfSealForTrust(AffixPdfSealForTrustRequest req)
+        {
+            ViewBag.ViewModel = req;
+
+            int? contractID = req.KeyID.DecryptKeyValue();
+
+            var item = models.GetTable<Contract>()
+                                .Where(c => c.ContractID == contractID)
+                                .FirstOrDefault();
+
+            var parties = models!.GetTable<ContractingParty>()
+            .Where(p => p.ContractID == contractID)
+            .Where(p => models.GetTable<OrganizationUser>()
+            .Where(o => o.UID == req.UID).Any(o => o.CompanyID == p.CompanyID))
+            .FirstOrDefault();
+
+            if ((item == null) || (parties == null))
+            {
+                _logger.LogWarning($"{HttpContext.TraceIdentifier}-{"Contract or Party is null."}-{req.ToString()}");
+                throw new NullReferenceException();
+            }
+
+            //TempData["Parties"] = parties;
+            //TempData["UID"] = req.UID;
+
+            return View("~/Views/ContractConsole/AffixPdfSealImage.cshtml", item);
+
+        }
+
+        public async Task<ActionResult> AffixPdfSeal(SignatureRequestViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
 
@@ -857,10 +882,25 @@ namespace ContractHome.Controllers
             var item = models.GetTable<Contract>()
                                 .Where(c => c.ContractID == contractID)
                                 .FirstOrDefault();
+            var profile = await HttpContext.GetUserAsync();
 
-            if (item == null)
+            if (profile==null)
             {
-                return new BadRequestResult();
+                _logger.LogWarning($"{HttpContext.TraceIdentifier}-{"profile is null."}");
+                throw new NullReferenceException();
+            }
+
+            var parties = models!.GetTable<ContractingParty>()
+            .Where(p => p.ContractID == contractID)
+            .Where(p => models.GetTable<OrganizationUser>()
+            .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
+            .FirstOrDefault();
+
+            if ((item == null) || (parties == null))
+            {
+                _logger.LogWarning($"{HttpContext.TraceIdentifier}-{"Contract or Party is null."}" +
+                    $"-contractID={contractID} profile.UID={profile.UID}");
+                throw new NullReferenceException();
             }
 
             return View("~/Views/ContractConsole/AffixPdfSealImage.cshtml", item);
@@ -1006,7 +1046,7 @@ namespace ContractHome.Controllers
                 return Json(new { result = false, message = "請設定上邊界位置!!" });
             }
 
-            ViewResult? result = AffixPdfSeal(viewModel) as ViewResult;
+            ViewResult? result = await AffixPdfSeal(viewModel) as ViewResult;
             if (result == null)
             {
                 return Json(new { result = false, message = "資料錯誤!!" });
@@ -1081,7 +1121,7 @@ namespace ContractHome.Controllers
                 return Json(new { result = false, message = "請設定上邊界位置!!" });
             }
 
-            ViewResult? result = AffixPdfSeal(viewModel) as ViewResult;
+            ViewResult? result = await AffixPdfSeal(viewModel) as ViewResult;
             if (result == null)
             {
                 return Json(new { result = false, message = "資料錯誤!!" });
@@ -1131,7 +1171,7 @@ namespace ContractHome.Controllers
 
         public async Task<ActionResult> ResetPdfSignatureAsync(SignatureRequestViewModel viewModel)
         {
-            ViewResult? result = AffixPdfSeal(viewModel) as ViewResult;
+            ViewResult? result = await AffixPdfSeal(viewModel) as ViewResult;
             if (result == null)
             {
                 return Json(new { result = false, message = "資料錯誤!!" });
@@ -1168,7 +1208,7 @@ namespace ContractHome.Controllers
 
         public async Task<ActionResult> AbortContractAsync(SignatureRequestViewModel viewModel)
         {
-            ViewResult? result = AffixPdfSeal(viewModel) as ViewResult;
+            ViewResult? result = await AffixPdfSeal(viewModel) as ViewResult;
             if (result == null)
             {
                 return Json(new { result = false, message = "資料錯誤!!" });
@@ -1189,7 +1229,7 @@ namespace ContractHome.Controllers
 
         public async Task<ActionResult> DeleteContract(SignatureRequestViewModel viewModel)
         {
-            ViewResult? result = AffixPdfSeal(viewModel) as ViewResult;
+            ViewResult? result = await AffixPdfSeal(viewModel) as ViewResult;
             if (result == null)
             {
                 return Json(new { result = false, message = "資料錯誤!!" });
@@ -1538,7 +1578,7 @@ namespace ContractHome.Controllers
 
         [HttpPost]
         //是否有Contract產製修改權限ContractHome.Security.Authorization
-        public async Task<BaseResponse> ConfigAsync([FromBody] PostConfigRequest req)
+        public async Task<ActionResult> ConfigAsync([FromBody] PostConfigRequest req)
         {
             var profile = await HttpContext.GetUserAsync();
             #region add for postman test
@@ -1554,23 +1594,26 @@ namespace ContractHome.Controllers
                 Contract contract = _contractServices.GetContractByID(contractID: contractID);
                 if (contract == null)
                 {
-                    return new BaseResponse(true, "合約不存在");
+                    ModelState.AddModelError("", "合約不存在");
+                    return BadRequest();
                 }
                 //wait to do...獨立控管每項作業可執行step
                 if (contract.CDS_Document.CurrentStep >= 2)
                 {
-                    return new BaseResponse(true, "合約已進行中,無法修改資料");
+                    ModelState.AddModelError("", "合約已進行中,無法修改資料");
+                    return BadRequest();
                 }
                 _contractServices.SetConfig(contract, req);
-                contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Config);
-                //wait to do...createtime updatetime..加在table或是在DocumentProcessLog?
+                contract.CDS_Document.TransitStepTest(models, profile!.UID, CDS_Document.StepEnum.Config, 
+                    ClientIP: _contractServices.GetClientIP(HttpContext), 
+                    ClientDevice: _contractServices.GetClientDevice);
                 models.SubmitChanges();
-                return baseResponse;
+                return Content(baseResponse.JsonStringify());
             }
             catch (Exception ex)
             {
                 FileLogger.Logger.Error($"{req.ToString()} {ex.ToString()}");
-                return new BaseResponse(true, "");
+                return Content(new BaseResponse(true, "").JsonStringify());
             }
 
         }

@@ -28,8 +28,9 @@ namespace ContractHome.Models.Email.Template
         public enum EmailTemplate
         {
             Undefined = 0,
-            NotifySeal = 2,
-            NotifySign = 5,
+            NotifySeal = 2, //v2用印
+            NotifySign = 5, //v2簽章
+            NotifySignature = 6, //v3可視簽章
             FinishContract =8,
             LoginFailed = 9,
             LoginSuccessed = 10,

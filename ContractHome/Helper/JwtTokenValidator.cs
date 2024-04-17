@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using CommonLib.Core.Utility;
+using Newtonsoft.Json;
 using System.Security.Cryptography;
 using System.Text;
 using static ContractHome.Helper.JwtTokenGenerator;
@@ -9,7 +10,7 @@ namespace ContractHome.Helper
     {
         public static JwtToken DecodeJwtToken(string token)
         {
-
+            //FileLogger.Logger.Error($"token={token}");
             var tokenParts = token.Split('.');
             // Step 1: Decode the Header and Payload
             var encodedHeader = tokenParts[0];
@@ -17,10 +18,11 @@ namespace ContractHome.Helper
 
             var header = Encoding.UTF8.GetString(Base64UrlDecode(encodedHeader));
             var payload = Encoding.UTF8.GetString(Base64UrlDecode(encodedPayload));
-
+            //FileLogger.Logger.Error($"header={header}");
+            //FileLogger.Logger.Error($"payload={payload}");
             // Step 2: Verify the Signature
             var signature = Base64UrlDecode(tokenParts[2]);
-
+            FileLogger.Logger.Error($"tokenParts[2]={tokenParts[2]}");
             return new JwtToken()
             {
                 headerObj = JsonConvert.DeserializeObject<JwtHeader>(header),
@@ -37,6 +39,7 @@ namespace ContractHome.Helper
 
             var secretKeyBytes = Encoding.UTF8.GetBytes(secretKey);
             var input = $"{jwtTokenObj.header}.{jwtTokenObj.payload}";
+            FileLogger.Logger.Error($"input={input}");
 
             var isValidSignature = VerifyTokenSignature(input, jwtTokenObj.signature, secretKeyBytes);
 
@@ -52,6 +55,7 @@ namespace ContractHome.Helper
             using (var hmac = new HMACSHA256(secretKey))
             {
                 var computedSignature = hmac.ComputeHash(Encoding.UTF8.GetBytes(input));
+                FileLogger.Logger.Error($"computedSignature={computedSignature}");
                 return computedSignature.SequenceEqual(signature);
             }
         }
@@ -86,6 +90,12 @@ namespace ContractHome.Helper
             long exp = payload.exp;
             long now = DateTime.Now.Ticks;
             return (now > exp);
+        }
+
+        internal static string Base64UrlDecodeToString(string input)
+        {
+            var ttt = Base64UrlDecode(input);
+            return Encoding.UTF8.GetString(ttt);
         }
 
         private static byte[] Base64UrlDecode(string input)

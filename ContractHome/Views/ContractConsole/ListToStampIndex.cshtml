@@ -690,7 +690,7 @@
               </div>
             </div>
             <div class="text-center h5 fw-bolder">
-              驗證成功。<br>
+              {{ currentUserInfo.isSignExchange ? '驗證成功。' : null }}<br>
               您將代表 <span class="text-primary opacity-75">" {{ signerMessage }} "</span> 對此文件進行數位簽章
             </div>
             <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
@@ -1529,10 +1529,13 @@
         this.signerMessage = Name;
         this.currentCompanyData = { KeyID, Name, ContractNo, Title };
 
-        // 憑證檢驗
-        this.openUserCertDialog('certValidate');
-
-        //$('#signModal').modal('show');
+        // 企業用戶(非以證換證)不用檢驗憑證
+        if (this.currentUserInfo.isSignExchange) {
+          // 憑證檢驗
+          this.openUserCertDialog('certValidate');
+        } else {
+          $('#signModal').modal('show');
+        }
       },
 
       // 簽署

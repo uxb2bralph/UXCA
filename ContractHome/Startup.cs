@@ -6,16 +6,12 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using ContractHome.Properties;
 using ContractHome.Models.Email;
 using ContractHome.Models.Email.Template;
-using CommonLib.DataAccess;
-using ContractHome.Models.DataEntity;
 using ContractHome.Models.Helper;
 using FluentValidation.AspNetCore;
-using FluentValidation;
-using ContractHome.Models.ViewModel;
-using System.Text.Json;
-using Microsoft.AspNetCore.Http.Json;
+using ContractHome.Models.Cache;
+using Microsoft.Extensions.Caching.Memory;
 
-namespace WebHome
+namespace ContractHome
 {
     public class Startup
     {
@@ -49,7 +45,17 @@ namespace WebHome
             //var webHome = Configuration.GetSection("WebHome");
 
             //services.AddControllersWithViews();
+            services.AddHttpContextAccessor();
+#region Caching
             services.AddMemoryCache();
+
+            var cachingConfigEnum = this.Configuration.GetSection("Caching").GetChildren();
+            Dictionary<string, TimeSpan> cachingExpirationConfig =
+                cachingConfigEnum.ToDictionary(child => child.Key, child => TimeSpan.Parse(child.Value));
+
+            services.AddSingleton<ICacheStore>(x => 
+                new MemoryCacheStore(x.GetService<IMemoryCache>(), cachingExpirationConfig));
+#endregion
 
             services.AddSession(options =>
             {
@@ -107,6 +113,8 @@ namespace WebHome
             services.AddScoped<EmailFactory>();
             services.AddScoped<EmailBody>();
             services.AddScoped<ContractServices>();
+            // Add detection services container and device resolver service.
+            services.AddDetection();
 
            
         }

@@ -24,7 +24,7 @@ namespace ContractHome.Controllers.Filters
 
             if (!context.ModelState.IsValid)
             {
-                string modelStateString = context.ModelState.ToSerializedDictionary();
+                string modelStateString = context.ModelState.ErrorMessage();
                 BaseResponse baseResponse = new BaseResponse(true, modelStateString);
                 var serializeOptions = new JsonSerializerOptions
                 {
@@ -35,7 +35,7 @@ namespace ContractHome.Controllers.Filters
                 {
                     Content = System.Text.Json.JsonSerializer.Serialize(baseResponse, serializeOptions),
                     ContentType = "application/json",
-                    StatusCode = (int?)HttpStatusCode.BadRequest
+                    StatusCode = (int?)HttpStatusCode.OK
                 };
             }
 

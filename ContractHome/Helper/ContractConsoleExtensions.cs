@@ -123,7 +123,31 @@ namespace ContractHome.Helper
             }
         }
 
-        public static void TransitStep(this CDS_Document document, GenericManager<DCDataContext> models, int actorID, CDS_Document.StepEnum step)
+        public static void TransitStepTest(this CDS_Document document,
+    GenericManager<DCDataContext> models,
+    int actorID,
+    CDS_Document.StepEnum step,
+    string ClientIP,
+    string ClientDevice
+    )
+        {
+            document.DocumentProcessLog.Add(new DocumentProcessLog
+            {
+                LogDate = DateTime.Now,
+                ActorID = actorID,
+                StepID = (int)step,
+                ClientIP = ClientIP,
+                ClientDevice = ClientDevice
+            });
+
+            document.CurrentStep = (int)step;
+            models.SubmitChanges();
+        }
+
+        public static void TransitStep(this CDS_Document document, GenericManager<DCDataContext> models, 
+            int actorID, 
+            CDS_Document.StepEnum step
+            )
         {
             document.DocumentProcessLog.Add(new DocumentProcessLog
             {

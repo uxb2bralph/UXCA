@@ -1,12 +1,18 @@
-﻿using Newtonsoft.Json;
+﻿using CommonLib.Core.Utility;
+using ContractHome.Models.DataEntity;
+using DocumentFormat.OpenXml.Spreadsheet;
+using Newtonsoft.Json;
+using System.Data.Linq.SqlClient;
 using System.Security.Cryptography;
 using System.Text;
+using static ContractHome.Helper.JwtTokenGenerator;
 
 namespace ContractHome.Helper
 {
     public class JwtTokenGenerator
     {
-        internal static string secretKey = "XulpspCzuyL1fmCWxfw9g2o8qyMKHAUl";
+        internal readonly static string secretKey = "XulpspCzuyL1fmCWxfw9g2o8qyMKHAUl";
+        internal readonly static int tokenTTLMins = 10;
         public class JwtToken
         {
             public JwtHeader headerObj { get; set; }
@@ -29,6 +35,7 @@ namespace ContractHome.Helper
             public long iat { get; set; }
             public string id { get; set; }
             public string email { get; set; }
+            public string contractId { get; set; }
         }
 
         public static string GetTicket(string data, string key)
@@ -51,8 +58,26 @@ namespace ContractHome.Helper
                 return BitConverter.ToString(hash).Replace("-", "").ToUpper();
             }
         }
+        public class JwtPayloadData
+        {
+            public int UID { get; set; }
+            public string? Email { get; set; }
+            public string? ContractID { get; set; }
+        }
 
-        public static string GenerateJwtToken(object payload, string secretKey)
+        public static string GenerateJwtToken(JwtPayloadData jwtTokenData, int tokenTTLMins = 1)
+        {
+
+            JwtPayload jwtPayload = JwtTokenGenerator.GetJwtPayload(
+                uid: jwtTokenData.UID.EncryptKey(),
+                email: jwtTokenData.Email,
+                contractId: jwtTokenData.ContractID.ToString(),
+                tokenTTLMins: tokenTTLMins);
+
+            return CreateJwtToken(jwtPayload);
+        }
+
+        public static string CreateJwtToken(JwtPayload payload)
         {
             var header = new { alg = "HS256", typ = "JWT" };
             var encodedHeader = Base64UrlEncode(Encoding.UTF8.GetBytes(Newtonsoft.Json.JsonConvert.SerializeObject(header)));
@@ -66,6 +91,7 @@ namespace ContractHome.Helper
             var encodedSignature = Base64UrlEncode(signature);
 
             var jwtToken = $"{encodedHeader}.{encodedPayload}.{encodedSignature}";
+            FileLogger.Logger.Error($"CreateJwtToken={jwtToken}");
 
             return jwtToken;
         }
@@ -78,11 +104,30 @@ namespace ContractHome.Helper
             }
         }
 
+        internal static string Base64UrlEncode(string input)
+        {
+            var base64Bytes = Encoding.UTF8.GetBytes(input);
+            return Base64UrlEncode(base64Bytes);
+        }
+
         private static string Base64UrlEncode(byte[] input)
         {
             var base64 = Convert.ToBase64String(input);
             var base64Url = base64.Replace("+", "-").Replace("/", "_").TrimEnd('=');
             return base64Url;
+        }
+
+        public static JwtPayload GetJwtPayload(string uid, string email, string contractId, int tokenTTLMins=1)
+        {
+            DateTimeOffset now = DateTime.Now;
+            return new JwtPayload()
+            {
+                id = uid,
+                email = email,
+                contractId = contractId,
+                iat = now.Ticks,
+                exp = now.AddMinutes(tokenTTLMins).Ticks
+            };
         }
 
     }
