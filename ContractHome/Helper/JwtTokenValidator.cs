@@ -22,7 +22,7 @@ namespace ContractHome.Helper
             //FileLogger.Logger.Error($"payload={payload}");
             // Step 2: Verify the Signature
             var signature = Base64UrlDecode(tokenParts[2]);
-            FileLogger.Logger.Error($"tokenParts[2]={tokenParts[2]}");
+
             return new JwtToken()
             {
                 headerObj = JsonConvert.DeserializeObject<JwtHeader>(header),
@@ -55,7 +55,6 @@ namespace ContractHome.Helper
             using (var hmac = new HMACSHA256(secretKey))
             {
                 var computedSignature = hmac.ComputeHash(Encoding.UTF8.GetBytes(input));
-                FileLogger.Logger.Error($"computedSignature={computedSignature}");
                 return computedSignature.SequenceEqual(signature);
             }
         }

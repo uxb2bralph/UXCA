@@ -5,13 +5,13 @@ using FluentValidation;
 
 namespace ContractHome.Models.Dto
 {
-    public class AffixPdfSealForTrustRequest: QueryViewModel
+    public class TrustAffixPdfSealRequest: QueryViewModel
     {
         public string KeyID { get; set; }
         public int? ContractID { get; set; }
         public int UID { get; set; }
 
-        public class Validator:AbstractValidator<AffixPdfSealForTrustRequest>
+        public class Validator:AbstractValidator<TrustAffixPdfSealRequest>
         {
             public Validator() 
             {

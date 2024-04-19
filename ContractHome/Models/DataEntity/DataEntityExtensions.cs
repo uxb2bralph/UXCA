@@ -30,6 +30,7 @@ namespace ContractHome.Models.DataEntity
     public partial class Contract
     {
         public static String ContractStore { get; } = "Contract".WebStoreTargetDailyPath().CheckStoredPath();
+        public int CurrentStep => CDS_Document.CurrentStep ?? 0;
     }
 
     public partial class UserRoleDefinition
@@ -86,6 +87,9 @@ namespace ContractHome.Models.DataEntity
             models.UserProfile.InsertOnSubmit(item);
             return item;
         }
+
+        public int CompanyID =>
+            (OrganizationUser!=null)? OrganizationUser.Organization.CompanyID:0;
     }
 
     public partial class CDS_Document

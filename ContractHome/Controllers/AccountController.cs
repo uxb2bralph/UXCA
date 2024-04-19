@@ -23,6 +23,7 @@ using ContractHome.Models.Dto;
 using ContractHome.Models.Cache;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using ContractHome.Models.Helper;
 
 namespace ContractHome.Controllers
 {
@@ -32,18 +33,20 @@ namespace ContractHome.Controllers
     private readonly IMailService _mailService;
     private readonly EmailBody _emailBody;
     private readonly EmailFactory _emailFactory;
-    private readonly IMemoryCache _memCache;
     private readonly ICacheStore _cacheStore;
-    private static readonly int tokenTTLMins = 10;
-    private static readonly int reSendEmailMins = 3;
-    public AccountController(ILogger<HomeController> logger, IServiceProvider serviceProvider, ICacheStore cacheStore) : base(serviceProvider)
+        private ContractServices? _contractServices;
+        //private static readonly int tokenTTLMins = 10;
+        //private static readonly int reSendEmailMins = 3;
+        public AccountController(ILogger<HomeController> logger, IServiceProvider serviceProvider, 
+            ICacheStore cacheStore, 
+            ContractServices contractServices) : base(serviceProvider)
     {
       _logger = logger;
       _mailService = ServiceProvider.GetRequiredService<IMailService>();
       _emailFactory = serviceProvider.GetRequiredService<EmailFactory>();
       _emailBody = serviceProvider.GetRequiredService<EmailBody>();
-      _memCache = serviceProvider.GetRequiredService<IMemoryCache>();
       _cacheStore = cacheStore;
+      _contractServices = contractServices;
     }
 
     [HttpPost]
@@ -220,14 +223,22 @@ namespace ContractHome.Controllers
 
     [AllowAnonymous]
     [HttpGet]
-    public ActionResult PasswordResetView([FromQuery] string token)
+    public ActionResult TrustPasswordReset([FromQuery] string token)
     {
             token = token.GetEfficientString();
             token = JwtTokenValidator.Base64UrlDecodeToString(token);
-            (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile) = TokenValidate(token);
+
+            var result = _cacheStore.Get(new TrustPasswordApplyTokenCahceKey(token));
+            if (result != null)
+            {
+                throw new InvalidOperationException($"Token已失效，請重新申請。");
+            }
+
+            _contractServices.SetModels(models);
+            (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile) = _contractServices.TokenValidate(token);
       if (resp.HasError)
       {
-        TempData["message"] = resp.Message;
+        TempData["message"] += resp.Message;
       }
 
       PasswordResetViewModel passwordResetViewModel = new PasswordResetViewModel() { Token = token };
@@ -244,7 +255,14 @@ namespace ContractHome.Controllers
       var password = viewModel.Password.GetEfficientString();
       var pid = viewModel.PID.GetEfficientString();
 
-      (BaseResponse resp, JwtToken jwtTokenObj, UserProfile tokenUserProfile) = TokenValidate(token);
+            var result = _cacheStore.Get(new TrustPasswordApplyTokenCahceKey(token));
+            if (result != null)
+            {
+                return new BaseResponse(true, $"Token已失效，請重新申請。");
+            }
+
+            _contractServices.SetModels(models);
+            (BaseResponse resp, JwtToken jwtTokenObj, UserProfile tokenUserProfile) = _contractServices.TokenValidate(token);
       if (resp.HasError) { return resp; }
 
       var viewModelUserProfile
@@ -269,7 +287,7 @@ namespace ContractHome.Controllers
 
       models.SubmitChanges();
 
-            var usedTokenCahceKey = new PasswordApplyUsedTokenCahceKey($"{token}");
+            var usedTokenCahceKey = new TrustPasswordApplyTokenCahceKey($"{token}");
             _cacheStore.Add(new Default(), usedTokenCahceKey);
 
             var emailBody =
@@ -283,48 +301,6 @@ namespace ContractHome.Controllers
 
       Logout();
       return new BaseResponse(false, "密碼更新完成。");
-
-    }
-
-    [AllowAnonymous]
-    public (BaseResponse, JwtToken, UserProfile) TokenValidate(string token)
-    {
-      token = token.GetEfficientString();
-
-      if (string.IsNullOrEmpty(token))
-      {
-        return (new BaseResponse(true, "驗證資料為空值。"), null, null);
-      }
-
-      if (!JwtTokenValidator.ValidateJwtToken(token, JwtTokenGenerator.secretKey))
-      {
-        return (new BaseResponse(true, "Token已失效，請重新申請。"), null, null);
-      }
-            var jwtTokenObj = JwtTokenValidator.DecodeJwtToken(token);
-      if (jwtTokenObj == null)
-      {
-        return (new BaseResponse(true, "Token已失效，請重新申請。"), null, null);
-      }
-
-            var usedTokenCahceKey = new PasswordApplyUsedTokenCahceKey(token);
-            var result = _cacheStore.Get(usedTokenCahceKey);
-            if (result != null)
-              {
-                return (new BaseResponse(true, $"Token已失效，請重新申請。"), null, null);
-              }
-
-      UserProfile userProfile
-          = models.GetTable<UserProfile>()
-              .Where(x => x.EMail.Equals(jwtTokenObj.payloadObj.email))
-              .Where(x => x.UID.Equals(jwtTokenObj.payloadObj.id.DecryptKeyValue()))
-              .FirstOrDefault();
-
-      if (userProfile == null)
-      {
-        return (new BaseResponse(true, "驗證資料有誤。"), jwtTokenObj, userProfile);
-      }
-
-      return (new BaseResponse(false, ""), jwtTokenObj, userProfile);
 
     }
 
@@ -363,7 +339,7 @@ namespace ContractHome.Controllers
 
             JwtPayloadData jwtPayloadData = new JwtPayloadData() { ContractID=string.Empty, Email=email, UID= userProfile.UID };
             var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData);
-            var clickLink = $"{HttpContext.DefaultWebUri()}/Account/PasswordResetView?token={JwtTokenGenerator.Base64UrlEncode(jwtToken)}";
+            var clickLink = $"{HttpContext.DefaultWebUri()}/Account/TrustPasswordReset?token={JwtTokenGenerator.Base64UrlEncode(jwtToken)}";
 
             FileLogger.Logger.Error($"clickLink={clickLink}");
             var emailTemp = EmailBody.EmailTemplate.WelcomeUser;
@@ -388,38 +364,38 @@ namespace ContractHome.Controllers
 
     }
 
-    //private void SetValueToCache(string cacheItem, string cacheValue, int expirateionMin = 5, int slidingExpirateionMin = 5)
-    //{
-    //  var cacheExpiryOptions = new MemoryCacheEntryOptions
-    //  {
-    //    AbsoluteExpiration = DateTime.Now.AddMinutes(expirateionMin),
-    //    //SlidingExpiration = TimeSpan.FromMinutes(slidingExpirateionMin),
-    //    Priority = CacheItemPriority.Low
-    //  };
-    //  _memCache.Set(cacheItem, cacheValue, cacheExpiryOptions);
-    //}
+        //private void SetValueToCache(string cacheItem, string cacheValue, int expirateionMin = 5, int slidingExpirateionMin = 5)
+        //{
+        //  var cacheExpiryOptions = new MemoryCacheEntryOptions
+        //  {
+        //    AbsoluteExpiration = DateTime.Now.AddMinutes(expirateionMin),
+        //    //SlidingExpiration = TimeSpan.FromMinutes(slidingExpirateionMin),
+        //    Priority = CacheItemPriority.Low
+        //  };
+        //  _memCache.Set(cacheItem, cacheValue, cacheExpiryOptions);
+        //}
 
-        [AllowAnonymous]
-        [HttpGet]
-        public async Task<IActionResult> SignatureTrust(string token)
-        {
-            (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile)
-                    = TokenValidate(token);
-            if (resp.HasError)
-            {
-                return View(resp);
-            }
-            //wait to do:Trust進來可能沒有正常user權限,
-            //但因為controller都有用var profile = await HttpContext.GetUserAsync();, 暫時先用
-            HttpContext.SignOnAsync(userProfile);
+        //[AllowAnonymous]
+        //[HttpGet]
+        //public async Task<IActionResult> SignatureTrust(string token)
+        //{
+        //    (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile)
+        //            = _contractServices.TokenValidate(token);
+        //    if (resp.HasError)
+        //    {
+        //        return View(resp);
+        //    }
+        //    //wait to do:Trust進來可能沒有正常user權限,
+        //    //但因為controller都有用var profile = await HttpContext.GetUserAsync();, 暫時先用
+        //    HttpContext.SignOnAsync(userProfile);
 
-            return RedirectToAction("AffixPdfSealForTrust", "ContractConsole"
-                , new
-                {
-                    KeyID = Int32.Parse(jwtTokenObj.payloadObj.contractId).EncryptKey(),
-                    UID = jwtTokenObj.payloadObj.id
-                });
-        }
+        //    return RedirectToAction("AffixPdfSealForTrust", "ContractConsole"
+        //        , new
+        //        {
+        //            KeyID = Int32.Parse(jwtTokenObj.payloadObj.contractId).EncryptKey(),
+        //            UID = jwtTokenObj.payloadObj.id
+        //        });
+        //}
 
     }
 

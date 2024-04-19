@@ -2,15 +2,15 @@
 
 namespace ContractHome.Models.Cache
 {
-    public class PasswordApplyUsedTokenCahceKey : ICacheKey<Default>
+    public class TrustPasswordApplyTokenCahceKey : ICacheKey<Default>
     {
         private readonly string _token;
-        public PasswordApplyUsedTokenCahceKey(string token)
+        public TrustPasswordApplyTokenCahceKey(string token)
         {
             _token = token;
         }
 
-        public string CacheKey => $"PasswordApplyUsedToken_{this._token}";
+        public string CacheKey => $"{this.GetType().Name}_{this._token}";
 
         public string DurationSetting => "Default";
     }

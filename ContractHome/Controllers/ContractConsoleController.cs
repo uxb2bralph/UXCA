@@ -19,25 +19,30 @@ using static ContractHome.Models.DataEntity.CDS_Document;
 using ContractHome.Models.Dto;
 using FluentValidation;
 using static ContractHome.Models.Helper.ContractServices;
+using static ContractHome.Helper.JwtTokenGenerator;
+using ContractHome.Models.Cache;
 
 namespace ContractHome.Controllers
 {
     //remark for testing by postman
-    //[Authorize]
+    [Authorize]
     public class ContractConsoleController : SampleController
     {
         private readonly ILogger<HomeController> _logger;
         private ContractServices? _contractServices;
         private readonly IMailService _mailService;
         private BaseResponse baseResponse = new BaseResponse();
+        private readonly ICacheStore _cacheStore;
 
         public ContractConsoleController(ILogger<HomeController> logger,
-            IServiceProvider serviceProvider) : base(serviceProvider)
+            IServiceProvider serviceProvider,
+            ICacheStore cacheStore
+          ) : base(serviceProvider)
         {
             _logger = logger;
             _contractServices = ServiceProvider.GetRequiredService<ContractServices>(); ;
             _mailService = ServiceProvider.GetRequiredService<IMailService>();
-
+            _cacheStore = cacheStore;
         }
 
         public IActionResult ApplyContract(TemplateResourceViewModel viewModel)
@@ -373,6 +378,11 @@ namespace ContractHome.Controllers
                 {
                     _mailService.SendMailAsync(mailData, default);
                 }
+            }
+
+            if (HttpContext.Session.GetString("isTrust").Equals("true"))
+            {
+                this.HttpContext.Logout();
             }
 
             return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
@@ -839,33 +849,31 @@ namespace ContractHome.Controllers
 
         }
 
-
-        public async Task<ActionResult> AffixPdfSealForTrust(AffixPdfSealForTrustRequest req)
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<ActionResult> TrustAffixPdfSeal(string token)
         {
-            ViewBag.ViewModel = req;
-
-            int? contractID = req.KeyID.DecryptKeyValue();
-
-            var item = models.GetTable<Contract>()
-                                .Where(c => c.ContractID == contractID)
-                                .FirstOrDefault();
-
-            var parties = models!.GetTable<ContractingParty>()
-            .Where(p => p.ContractID == contractID)
-            .Where(p => models.GetTable<OrganizationUser>()
-            .Where(o => o.UID == req.UID).Any(o => o.CompanyID == p.CompanyID))
-            .FirstOrDefault();
-
-            if ((item == null) || (parties == null))
+            _contractServices.SetModels(models);
+            (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile)
+                    = _contractServices.TokenValidate(token);
+            if (resp.HasError)
             {
-                _logger.LogWarning($"{HttpContext.TraceIdentifier}-{"Contract or Party is null."}-{req.ToString()}");
-                throw new NullReferenceException();
+                //return View("SignatureTrust",resp);
+                throw new ArgumentException(resp.Message);
             }
 
-            //TempData["Parties"] = parties;
-            //TempData["UID"] = req.UID;
+            if (jwtTokenObj.contractID==0)
+            {
+                throw new ArgumentException("contractID is null.");
+            }
 
-            return View("~/Views/ContractConsole/AffixPdfSealImage.cshtml", item);
+            //wait to do:Trust進來可能沒有正常user權限,
+            //但因為controller都有用var profile = await HttpContext.GetUserAsync();, 暫時先用
+            HttpContext.SignOnAsync(userProfile);
+            HttpContext.Session.SetString("isTrust", "true");
+
+            return RedirectToAction("AffixPdfSeal", "ContractConsole"
+                , new SignatureRequestViewModel() { KeyID = jwtTokenObj.contractID.EncryptKey() });
 
         }
 
@@ -882,13 +890,13 @@ namespace ContractHome.Controllers
             var item = models.GetTable<Contract>()
                                 .Where(c => c.ContractID == contractID)
                                 .FirstOrDefault();
-            var profile = await HttpContext.GetUserAsync();
-
+            var profile = (await HttpContext.GetUserAsync()).LoadInstance(models);
             if (profile==null)
             {
-                _logger.LogWarning($"{HttpContext.TraceIdentifier}-{"profile is null."}");
-                throw new NullReferenceException();
+                //throw new ArgumentNullException("profile is null.");
+                return Ok(new BaseResponse(true, "請重新登入"));
             }
+
 
             var parties = models!.GetTable<ContractingParty>()
             .Where(p => p.ContractID == contractID)
@@ -898,9 +906,33 @@ namespace ContractHome.Controllers
 
             if ((item == null) || (parties == null))
             {
-                _logger.LogWarning($"{HttpContext.TraceIdentifier}-{"Contract or Party is null."}" +
-                    $"-contractID={contractID} profile.UID={profile.UID}");
-                throw new NullReferenceException();
+                //throw new ArgumentNullException($"{HttpContext.TraceIdentifier}-{"Contract or Party is null."}" +
+                //    $"-contractID={contractID} profile.UID={profile.UID}");
+                //wait to do...導頁訊息
+                return Ok(new BaseResponse(true, "合約資料有誤"));
+            }
+
+            if (item.CurrentStep>=(int)CDS_Document.StepEnum.Sealed)
+            {
+                //throw new InvalidOperationException($"contract currentStep is {item.CurrentStep}");
+                //wait to do...導頁訊息
+                return Ok(new BaseResponse(true, "合約已完成用印流程"));
+            }
+
+            if
+                    (item.ContractSignatureRequest
+                        .Where(x => x.CompanyID == profile.CompanyID)
+                        .Where(x => x.StampDate != null).Count() > 0)
+            {
+                //wait to do...導頁訊息
+                return Ok(new BaseResponse(true, "合約已用印"));
+            }
+
+            if ((item.ContractSealRequest.Count() > 0) &&
+                (!item.ContractSealRequest.Select(x => x.StampUID).Contains(profile.UID)))
+            {
+                //wait to do...導頁訊息
+                return Ok(new BaseResponse(true, "合約已有其他人用印中"));
             }
 
             return View("~/Views/ContractConsole/AffixPdfSealImage.cshtml", item);
@@ -1605,7 +1637,7 @@ namespace ContractHome.Controllers
                 }
                 _contractServices.SetConfig(contract, req);
                 contract.CDS_Document.TransitStepTest(models, profile!.UID, CDS_Document.StepEnum.Config, 
-                    ClientIP: _contractServices.GetClientIP(HttpContext), 
+                    ClientIP: _contractServices.GetClientIP, 
                     ClientDevice: _contractServices.GetClientDevice);
                 models.SubmitChanges();
                 return Content(baseResponse.JsonStringify());
@@ -1720,7 +1752,7 @@ namespace ContractHome.Controllers
             #region add for postman test
             if (profile == null&& req.EncUID.Length>0)
             {
-                profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
+                profile = models.GetTable<UserProfile>().Where(x => x.UID == 4).FirstOrDefault();
             }
             #endregion
             _contractServices?.SetModels(models: models);

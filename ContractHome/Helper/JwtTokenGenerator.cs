@@ -21,6 +21,13 @@ namespace ContractHome.Helper
             public string payload { get; set; }
             public byte[] signature { get; set; }
 
+            public int contractID => Int32.Parse(payloadObj.contractId);
+            public int uID => payloadObj.id.DecryptKeyValue();
+
+            public override string? ToString()
+            {
+                return payloadObj.ToString();
+            }
         }
 
         public class JwtHeader
@@ -36,6 +43,11 @@ namespace ContractHome.Helper
             public string id { get; set; }
             public string email { get; set; }
             public string contractId { get; set; }
+
+            public override string? ToString()
+            {
+                return $"exp={exp} iat={iat} id={id} email={email} contractId={contractId}";
+            }
         }
 
         public static string GetTicket(string data, string key)
@@ -91,7 +103,6 @@ namespace ContractHome.Helper
             var encodedSignature = Base64UrlEncode(signature);
 
             var jwtToken = $"{encodedHeader}.{encodedPayload}.{encodedSignature}";
-            FileLogger.Logger.Error($"CreateJwtToken={jwtToken}");
 
             return jwtToken;
         }

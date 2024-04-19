@@ -11,6 +11,9 @@ using ContractHome.Models.Dto;
 using Microsoft.EntityFrameworkCore;
 using static ContractHome.Models.Dto.PostFieldSettingRequest;
 using Wangkanai.Detection.Services;
+using ContractHome.Models.Cache;
+using Microsoft.AspNetCore.Authorization;
+using static ContractHome.Helper.JwtTokenGenerator;
 
 namespace ContractHome.Models.Helper
 {
@@ -22,21 +25,23 @@ namespace ContractHome.Models.Helper
         private readonly EmailBody _emailBody;
         private readonly IDetectionService _detectionService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ICacheStore _cacheStore;
 
         public ContractServices(EmailBody emailBody,
             EmailFactory emailFactory,
             IDetectionService detectionService,
-            IHttpContextAccessor httpContextAccessor
+            IHttpContextAccessor httpContextAccessor, ICacheStore cacheStore
             ) 
         {
             _emailBody = emailBody;
             _emailFactory = emailFactory;
             _detectionService = detectionService;
             _httpContextAccessor = httpContextAccessor;
+            _cacheStore = cacheStore;
         }
 
         public string GetClientDevice => $"{_detectionService.Platform.Name} {_detectionService.Platform.Version.ToString()}/{_detectionService.Browser.Name}";
-        public string GetClientIP(HttpContext httpContext) => httpContext?.Connection?.RemoteIpAddress?.ToString();
+        public string GetClientIP => _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
 
         public void SetModels(GenericManager<DCDataContext> models)
         {
@@ -394,6 +399,41 @@ namespace ContractHome.Models.Helper
 
         }
 
+
+        public (BaseResponse, JwtToken, UserProfile) TokenValidate(string token)
+        {
+            token = token.GetEfficientString();
+
+            if (string.IsNullOrEmpty(token))
+            {
+                return (new BaseResponse(true, "驗證資料為空值。"), null, null);
+            }
+
+            if (!JwtTokenValidator.ValidateJwtToken(token, JwtTokenGenerator.secretKey))
+            {
+                return (new BaseResponse(true, "Token已失效，請重新申請。"), null, null);
+            }
+            var jwtTokenObj = JwtTokenValidator.DecodeJwtToken(token);
+            if (jwtTokenObj == null)
+            {
+                return (new BaseResponse(true, "Token已失效，請重新申請。"), null, null);
+            }
+
+            UserProfile userProfile
+                = _models.GetTable<UserProfile>()
+                    .Where(x => x.EMail.Equals(jwtTokenObj.payloadObj.email))
+                    .Where(x => x.UID.Equals(jwtTokenObj.payloadObj.id.DecryptKeyValue()))
+                    .FirstOrDefault();
+
+            if (userProfile == null)
+            {
+                return (new BaseResponse(true, "驗證資料有誤。"), jwtTokenObj, userProfile);
+            }
+
+            return (new BaseResponse(false, ""), jwtTokenObj, userProfile);
+
+        }
+
         public async IAsyncEnumerable<MailData> GetContractNotifyEmailAsync(
             Contract contract,
             //IEnumerable<UserProfile> userProfiles,
@@ -415,7 +455,18 @@ namespace ContractHome.Models.Helper
                         ContractID = contract.ContractID.ToString()
                     };
                     var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData, 4320);
-                    var clickLink = $"{_httpContextAccessor.HttpContext.DefaultWebUri()}/Account/SignatureTrust?token={jwtToken}";
+                    var clickLink = string.Empty;
+
+                    if (emailTemplate==EmailBody.EmailTemplate.NotifySeal)
+                    {
+                        clickLink = $"{_httpContextAccessor.HttpContext.DefaultWebUri()}/ContractConsole/TrustAffixPdfSeal?token={jwtToken}";
+                    }
+
+                    if (emailTemplate == EmailBody.EmailTemplate.NotifySign)
+                    {
+                        //wait to do...
+                        clickLink = $"{_httpContextAccessor.HttpContext.DefaultWebUri()}/ContractConsole/AffixPdfSealForTrust?token={jwtToken}";
+                    }
 
                     var emailBody =
                         new EmailBodyBuilder(_emailBody)

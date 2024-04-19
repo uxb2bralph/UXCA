@@ -33,6 +33,12 @@ namespace ContractHome.Controllers.Filters
             {
                 ApplicationLogging.CreateLogger<ExceptionFilter>().LogError(filterContext.Exception, filterContext.Exception.Message);
 
+                //wait to merge into LogError
+                ApplicationLogging.CreateLogger<ExceptionFilter>().LogWarning(
+                    eventId: new EventId(), 
+                    message: $"{Activity.Current?.Id ?? filterContext.HttpContext.TraceIdentifier}",
+                    $"{filterContext.Exception.Message}"
+                );
                 ViewDataDictionary viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
                 {
                     Model = new ErrorViewModel
