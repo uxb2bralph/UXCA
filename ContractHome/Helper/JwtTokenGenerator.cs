@@ -1,8 +1,11 @@
 ﻿using CommonLib.Core.Utility;
 using ContractHome.Models.DataEntity;
+using ContractHome.Models.Email.Template;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Newtonsoft.Json;
 using System.Data.Linq.SqlClient;
+using System.Diagnostics.Contracts;
 using System.Security.Cryptography;
 using System.Text;
 using static ContractHome.Helper.JwtTokenGenerator;
@@ -16,13 +19,15 @@ namespace ContractHome.Helper
         public class JwtToken
         {
             public JwtHeader headerObj { get; set; }
-            public string header { get; set; }
+            internal string header { get; set; }
             public JwtPayload payloadObj { get; set; }
-            public string payload { get; set; }
-            public byte[] signature { get; set; }
+            internal string payload { get; set; }
+            internal byte[] signature { get; set; }
 
-            public int contractID => Int32.Parse(payloadObj.contractId);
-            public int uID => payloadObj.id.DecryptKeyValue();
+            public string Email => payloadObj.data.Email;
+            public string ContractID => payloadObj.data.ContractID;
+            public string UID => payloadObj.data.UID;
+            public EmailBody.EmailTemplate? EmailTemplate => payloadObj.data.EmailTemplate;  
 
             public override string? ToString()
             {
@@ -40,13 +45,14 @@ namespace ContractHome.Helper
         {
             public long exp { get; set; }
             public long iat { get; set; }
-            public string id { get; set; }
-            public string email { get; set; }
-            public string contractId { get; set; }
+            //public string id { get; set; }
+            //public string email { get; set; }
+            //public string contractId { get; set; }
+            public JwtPayloadData data { get; set; }
 
             public override string? ToString()
             {
-                return $"exp={exp} iat={iat} id={id} email={email} contractId={contractId}";
+                return $"exp={exp} iat={iat} id={data.UID} email={data.Email} contractId={data.ContractID}";
             }
         }
 
@@ -72,18 +78,21 @@ namespace ContractHome.Helper
         }
         public class JwtPayloadData
         {
-            public int UID { get; set; }
+            public string UID { get; set; }
             public string? Email { get; set; }
             public string? ContractID { get; set; }
+            public EmailBody.EmailTemplate? EmailTemplate { get; set; }
+
+            public override string? ToString()
+            {
+                return $"UID={UID} Email={Email} contractId={ContractID} EmailTemplate={EmailTemplate}";
+            }
         }
 
         public static string GenerateJwtToken(JwtPayloadData jwtTokenData, int tokenTTLMins = 1)
         {
-
             JwtPayload jwtPayload = JwtTokenGenerator.GetJwtPayload(
-                uid: jwtTokenData.UID.EncryptKey(),
-                email: jwtTokenData.Email,
-                contractId: jwtTokenData.ContractID.ToString(),
+                payloadData: jwtTokenData,
                 tokenTTLMins: tokenTTLMins);
 
             return CreateJwtToken(jwtPayload);
@@ -128,14 +137,12 @@ namespace ContractHome.Helper
             return base64Url;
         }
 
-        public static JwtPayload GetJwtPayload(string uid, string email, string contractId, int tokenTTLMins=1)
+        public static JwtPayload GetJwtPayload(JwtPayloadData payloadData, int tokenTTLMins=1)
         {
             DateTimeOffset now = DateTime.Now;
             return new JwtPayload()
             {
-                id = uid,
-                email = email,
-                contractId = contractId,
+                data = payloadData,
                 iat = now.Ticks,
                 exp = now.AddMinutes(tokenTTLMins).Ticks
             };

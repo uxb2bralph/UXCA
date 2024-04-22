@@ -14,6 +14,8 @@ using Wangkanai.Detection.Services;
 using ContractHome.Models.Cache;
 using Microsoft.AspNetCore.Authorization;
 using static ContractHome.Helper.JwtTokenGenerator;
+using ContractHome.Helper.DataQuery;
+using ContractHome.Properties;
 
 namespace ContractHome.Models.Helper
 {
@@ -26,6 +28,7 @@ namespace ContractHome.Models.Helper
         private readonly IDetectionService _detectionService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ICacheStore _cacheStore;
+        private BaseResponse normal = new BaseResponse();
 
         public ContractServices(EmailBody emailBody,
             EmailFactory emailFactory,
@@ -201,6 +204,52 @@ namespace ContractHome.Models.Helper
             return contract;
         }
 
+        public (BaseResponse, Contract, UserProfile)  AffixPdfSealCheck(int? contractID)
+        {
+            if (contractID==null||contractID == 0)
+            {
+                return (new BaseResponse(reason: WebReasonEnum.ContractNotExisted), null, null);
+            }
+
+            var profile = (_httpContextAccessor.HttpContext.GetUserAsync().Result).LoadInstance(_models);
+            if (profile == null)
+            {
+                return (new BaseResponse(reason: WebReasonEnum.Relogin),null,null);
+            }
+
+            var item = GetContractByID(contractID:contractID);
+
+            var parties = _models!.GetTable<ContractingParty>()
+            .Where(p => p.ContractID == contractID)
+            .Where(p => _models.GetTable<OrganizationUser>()
+            .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
+            .FirstOrDefault();
+
+            if ((item == null) || (parties == null))
+            {
+                return (new BaseResponse(reason: WebReasonEnum.Relogin), item, profile);
+            }
+
+            if (item.CurrentStep >= (int)CDS_Document.StepEnum.Sealed)
+            {
+                return (new BaseResponse(true, "合約已完成用印流程, 無法再次用印."), item, profile);
+            }
+
+            if (item.ContractSignatureRequest
+                        .Where(x => x.CompanyID == profile.CompanyID)
+                        .Where(x => x.StampDate != null).Count() > 0)
+            {
+                return (new BaseResponse(true, "合約已完成用印, 無法再次用印."), item, profile);
+            }
+
+            if ((item.ContractSealRequest.Count() > 0) &&
+                (!item.ContractSealRequest.Select(x => x.StampUID).Contains(profile.UID)))
+            {
+                return (new BaseResponse(true, "合約已有其他人用印中"), item, profile);
+            }
+
+            return (normal, item, profile);
+        }
 
         public Contract CreateAndSaveParty(int initiatorID, 
             int contractorID, 
@@ -421,8 +470,8 @@ namespace ContractHome.Models.Helper
 
             UserProfile userProfile
                 = _models.GetTable<UserProfile>()
-                    .Where(x => x.EMail.Equals(jwtTokenObj.payloadObj.email))
-                    .Where(x => x.UID.Equals(jwtTokenObj.payloadObj.id.DecryptKeyValue()))
+                    .Where(x => x.EMail.Equals(jwtTokenObj.Email))
+                    .Where(x => x.UID.Equals(jwtTokenObj.UID.DecryptKeyValue()))
                     .FirstOrDefault();
 
             if (userProfile == null)
@@ -450,23 +499,14 @@ namespace ContractHome.Models.Helper
 
                     JwtTokenGenerator.JwtPayloadData jwtPayloadData = new JwtTokenGenerator.JwtPayloadData()
                     {
-                        UID = user.UID,
+                        UID = user.UID.EncryptKey(),
                         Email = user.EMail,
-                        ContractID = contract.ContractID.ToString()
+                        ContractID = contract.ContractID.EncryptKey(),
+                        EmailTemplate = emailTemplate
                     };
+
                     var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData, 4320);
-                    var clickLink = string.Empty;
-
-                    if (emailTemplate==EmailBody.EmailTemplate.NotifySeal)
-                    {
-                        clickLink = $"{_httpContextAccessor.HttpContext.DefaultWebUri()}/ContractConsole/TrustAffixPdfSeal?token={jwtToken}";
-                    }
-
-                    if (emailTemplate == EmailBody.EmailTemplate.NotifySign)
-                    {
-                        //wait to do...
-                        clickLink = $"{_httpContextAccessor.HttpContext.DefaultWebUri()}/ContractConsole/AffixPdfSealForTrust?token={jwtToken}";
-                    }
+                    var clickLink = $"{Settings.Default.WebAppDomain}/ContractConsole/Trust?token={jwtToken}";
 
                     var emailBody =
                         new EmailBodyBuilder(_emailBody)

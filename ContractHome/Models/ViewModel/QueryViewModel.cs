@@ -150,6 +150,7 @@ namespace ContractHome.Models.ViewModel
     public String? Note { get; set; }
     public bool? DoAllPages { get; set; }
         public string? Signature { get; set; }
+        public bool? IsTrust { get; set; }
     }
 
   public class TemplateResourceViewModel : QueryViewModel

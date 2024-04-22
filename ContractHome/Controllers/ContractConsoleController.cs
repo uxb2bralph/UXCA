@@ -21,6 +21,8 @@ using FluentValidation;
 using static ContractHome.Models.Helper.ContractServices;
 using static ContractHome.Helper.JwtTokenGenerator;
 using ContractHome.Models.Cache;
+using Org.BouncyCastle.Ocsp;
+using ContractHome.Properties;
 
 namespace ContractHome.Controllers
 {
@@ -36,11 +38,12 @@ namespace ContractHome.Controllers
 
         public ContractConsoleController(ILogger<HomeController> logger,
             IServiceProvider serviceProvider,
-            ICacheStore cacheStore
+            ICacheStore cacheStore,
+            ContractServices contractServices
           ) : base(serviceProvider)
         {
             _logger = logger;
-            _contractServices = ServiceProvider.GetRequiredService<ContractServices>(); ;
+            _contractServices = contractServices;
             _mailService = ServiceProvider.GetRequiredService<IMailService>();
             _cacheStore = cacheStore;
         }
@@ -378,11 +381,6 @@ namespace ContractHome.Controllers
                 {
                     _mailService.SendMailAsync(mailData, default);
                 }
-            }
-
-            if (HttpContext.Session.GetString("isTrust").Equals("true"))
-            {
-                this.HttpContext.Logout();
             }
 
             return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
@@ -851,7 +849,7 @@ namespace ContractHome.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult> TrustAffixPdfSeal(string token)
+        public async Task<ActionResult> Trust(string token)
         {
             _contractServices.SetModels(models);
             (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile)
@@ -862,7 +860,7 @@ namespace ContractHome.Controllers
                 throw new ArgumentException(resp.Message);
             }
 
-            if (jwtTokenObj.contractID==0)
+            if (string.IsNullOrEmpty(jwtTokenObj.ContractID))
             {
                 throw new ArgumentException("contractID is null.");
             }
@@ -870,12 +868,28 @@ namespace ContractHome.Controllers
             //wait to do:Trust進來可能沒有正常user權限,
             //但因為controller都有用var profile = await HttpContext.GetUserAsync();, 暫時先用
             HttpContext.SignOnAsync(userProfile);
-            HttpContext.Session.SetString("isTrust", "true");
 
-            return RedirectToAction("AffixPdfSeal", "ContractConsole"
-                , new SignatureRequestViewModel() { KeyID = jwtTokenObj.contractID.EncryptKey() });
+            if (jwtTokenObj.EmailTemplate==EmailBody.EmailTemplate.NotifySeal)
+            {
+                //return RedirectToAction("AffixPdfSeal", "ContractConsole"
+                //    , new SignatureRequestViewModel() { KeyID = jwtTokenObj.ContractID });
 
+                return await AffixPdfSeal(new SignatureRequestViewModel() { IsTrust =true,KeyID = jwtTokenObj.ContractID });
+            }
+
+            if (jwtTokenObj.EmailTemplate == EmailBody.EmailTemplate.NotifySign)
+            {
+                return await StartSigningAsync(new SignatureRequestViewModel()
+                {
+                    ContractID = jwtTokenObj.ContractID.DecryptKeyValue(),
+                    CompanyID = userProfile.CompanyID
+                });
+
+            }
+            this.HttpContext.Logout();
+            return RedirectToAction("Login", "Account");
         }
+
 
         public async Task<ActionResult> AffixPdfSeal(SignatureRequestViewModel viewModel)
         {
@@ -887,55 +901,21 @@ namespace ContractHome.Controllers
                 contractID = viewModel.DecryptKeyValue();
             }
 
-            var item = models.GetTable<Contract>()
-                                .Where(c => c.ContractID == contractID)
-                                .FirstOrDefault();
-            var profile = (await HttpContext.GetUserAsync()).LoadInstance(models);
-            if (profile==null)
+            _contractServices.SetModels(models);
+            (BaseResponse resp, Contract contract, UserProfile userProfile) = 
+                 _contractServices.AffixPdfSealCheck(contractID: contractID);
+
+            if (resp.HasError)
             {
-                //throw new ArgumentNullException("profile is null.");
-                return Ok(new BaseResponse(true, "請重新登入"));
+                resp.Url = $"{Settings.Default.ContractListUrl}";
+                if (viewModel.IsTrust!=null&&viewModel.IsTrust==true)
+                {
+                    resp.Url = $"{Settings.Default.WebAppDomain}";
+                }
+                return View("~/Views/Shared/CustomMessage.cshtml", resp);
             }
 
-
-            var parties = models!.GetTable<ContractingParty>()
-            .Where(p => p.ContractID == contractID)
-            .Where(p => models.GetTable<OrganizationUser>()
-            .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
-            .FirstOrDefault();
-
-            if ((item == null) || (parties == null))
-            {
-                //throw new ArgumentNullException($"{HttpContext.TraceIdentifier}-{"Contract or Party is null."}" +
-                //    $"-contractID={contractID} profile.UID={profile.UID}");
-                //wait to do...導頁訊息
-                return Ok(new BaseResponse(true, "合約資料有誤"));
-            }
-
-            if (item.CurrentStep>=(int)CDS_Document.StepEnum.Sealed)
-            {
-                //throw new InvalidOperationException($"contract currentStep is {item.CurrentStep}");
-                //wait to do...導頁訊息
-                return Ok(new BaseResponse(true, "合約已完成用印流程"));
-            }
-
-            if
-                    (item.ContractSignatureRequest
-                        .Where(x => x.CompanyID == profile.CompanyID)
-                        .Where(x => x.StampDate != null).Count() > 0)
-            {
-                //wait to do...導頁訊息
-                return Ok(new BaseResponse(true, "合約已用印"));
-            }
-
-            if ((item.ContractSealRequest.Count() > 0) &&
-                (!item.ContractSealRequest.Select(x => x.StampUID).Contains(profile.UID)))
-            {
-                //wait to do...導頁訊息
-                return Ok(new BaseResponse(true, "合約已有其他人用印中"));
-            }
-
-            return View("~/Views/ContractConsole/AffixPdfSealImage.cshtml", item);
+            return View("~/Views/ContractConsole/AffixPdfSealImage.cshtml", contract);
 
         }
 
@@ -1790,7 +1770,9 @@ namespace ContractHome.Controllers
             //3.發送通知(one by one)
             await foreach (var mailData in
                     _contractServices?.GetContractNotifyEmailAsync(contract, 
-                        (contract.IsPassStamp == true)?EmailBody.EmailTemplate.NotifySign:EmailBody.EmailTemplate.NotifySeal))
+                        (contract.IsPassStamp == true)?
+                            EmailBody.EmailTemplate.NotifySign:
+                            EmailBody.EmailTemplate.NotifySeal))
                 {
                     _mailService.SendMailAsync(mailData, default);
                 }

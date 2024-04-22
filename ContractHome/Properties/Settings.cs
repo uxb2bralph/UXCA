@@ -22,6 +22,7 @@
         public String LoginUrl { get; set; } = "/Account/Login";
         public String LogoutUrl { get; set; } = "/Account/Logout";
         public String WebAppDomain { get; set; } = "https://localhost:5151";
+        public String ContractListUrl { get; set; } = $"https://localhost:5151/ContractConsole/ListToStampIndex";
         public String DCDBConnection { get; set; } = "Integrated Security=SSPI;Persist Security Info=False;Initial Catalog=DigitalContract;Data Source=192.168.200.70";
         public double? LeftMargins { get; set; }
         public double LineSpacing { get; set; } = 0;

@@ -267,7 +267,7 @@ namespace ContractHome.Controllers
 
       var viewModelUserProfile
           = models.GetTable<UserProfile>()
-              .Where(x => x.EMail.Equals(jwtTokenObj.payloadObj.email))
+              .Where(x => x.EMail.Equals(jwtTokenObj.payloadObj.data.Email))
               .Where(x => x.PID.Equals(pid))
               .FirstOrDefault();
 
@@ -337,9 +337,10 @@ namespace ContractHome.Controllers
             return new BaseResponse(true, $"通知信已寄發，請查看電子信箱，或稍後重新申請。");
         }
 
-            JwtPayloadData jwtPayloadData = new JwtPayloadData() { ContractID=string.Empty, Email=email, UID= userProfile.UID };
+            JwtPayloadData jwtPayloadData = new JwtPayloadData() { 
+                ContractID=string.Empty, Email=email, UID= userProfile.UID.EncryptKey() };
             var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData);
-            var clickLink = $"{HttpContext.DefaultWebUri()}/Account/TrustPasswordReset?token={JwtTokenGenerator.Base64UrlEncode(jwtToken)}";
+            var clickLink = $"{Settings.Default.WebAppDomain}/Account/TrustPasswordReset?token={JwtTokenGenerator.Base64UrlEncode(jwtToken)}";
 
             FileLogger.Logger.Error($"clickLink={clickLink}");
             var emailTemp = EmailBody.EmailTemplate.WelcomeUser;

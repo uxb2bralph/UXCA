@@ -39,7 +39,6 @@ namespace ContractHome.Helper
 
             var secretKeyBytes = Encoding.UTF8.GetBytes(secretKey);
             var input = $"{jwtTokenObj.header}.{jwtTokenObj.payload}";
-            FileLogger.Logger.Error($"input={input}");
 
             var isValidSignature = VerifyTokenSignature(input, jwtTokenObj.signature, secretKeyBytes);
 
