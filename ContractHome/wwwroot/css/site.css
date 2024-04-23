@@ -118,17 +118,17 @@ html, body {
   max-width: 1280px;
   margin: auto;
 }
-@media (max-width: 1400px) {
+@media (min-width: 1400px) {
   .login__signin {
     max-width: 80%;
   }
 }
-@media (max-width: 768px) {
+@media (min-width: 768px) {
   .login__signin {
     max-width: 80%;
   }
 }
-@media (max-width: 576px) {
+@media (min-width: 576px) {
   .login__signin {
     max-width: 90%;
   }
@@ -150,7 +150,7 @@ html, body {
   border-bottom-left-radius: 0.5rem;
   border-top-left-radius: 0.5rem;
 }
-@media (max-width: 1200px) {
+@media (min-width: 1200px) {
   .login__intro {
     min-height: 300px;
     border-top-right-radius: 0.5rem;
@@ -204,7 +204,7 @@ html, body {
 .input__height {
   height: 62px;
 }
-@media (max-width: 768px) {
+@media (min-width: 768px) {
   .input__height {
     height: auto;
   }
@@ -550,8 +550,15 @@ html, body {
 }
 
 .contract__wrapper {
-  height: 100%;
+  width: 100%;
+  height: calc(100% - 40px);
   position: relative;
+}
+@media (min-width: 1200px) {
+  .contract__wrapper {
+    width: calc(100% - 400px);
+    height: 100%;
+  }
 }
 .contract__arrow--left {
   position: absolute;
@@ -567,10 +574,22 @@ html, body {
 }
 
 .options__wrapper {
-  width: 400px;
-  height: 100%;
+  width: 100%;
   overflow: hidden;
   overflow-y: auto;
+}
+@media (min-width: 1200px) {
+  .options__wrapper {
+    width: 400px;
+  }
+}
+.options--show {
+  display: none;
+}
+@media (min-width: 1200px) {
+  .options--show {
+    display: flex;
+  }
 }
 
 #signatureCanvas > canvas {

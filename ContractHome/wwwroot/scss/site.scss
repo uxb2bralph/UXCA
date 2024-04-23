@@ -1,31 +1,31 @@
 @charset "UTF-8";
 
 @mixin sm {
-  @media(max-width: 576px) {
+  @media(min-width: 576px) {
     @content
   }
 }
 
 @mixin md {
-  @media(max-width: 768px) {
+  @media(min-width: 768px) {
     @content
   }
 }
 
 @mixin lg {
-  @media(max-width: 992px) {
+  @media(min-width: 992px) {
     @content
   }
 }
 
 @mixin xl {
-  @media(max-width: 1200px) {
+  @media(min-width: 1200px) {
     @content
   }
 }
 
 @mixin xxl {
-  @media(max-width: 1400px) {
+  @media(min-width: 1400px) {
     @content
   }
 }
@@ -696,8 +696,13 @@ html, body {
 
 .contract {
   &__wrapper {
-    height: 100%;
+    width: 100%;
+    height: calc(100% - 40px);
     position: relative;
+    @include xl {
+      width: calc(100% - 400px);
+      height: 100%;
+    }
   }
 
   &__arrow {
@@ -725,10 +730,18 @@ html, body {
 
 .options {
   &__wrapper {
-    width: 400px;
-    height: 100%;
+    width: 100%;
     overflow: hidden;
     overflow-y: auto;
+    @include xl {
+      width: 400px;
+    }
+  }
+  &--show {
+    display: none;
+    @include xl {
+      display: flex;
+    }
   }
 }
 
@@ -744,7 +757,6 @@ html, body {
     padding: 30px 10px;
     height: 100%;
     display: block;
-    // text-align: center;
     overflow-y: auto;
     background-color: #fbf8f8;
   }
