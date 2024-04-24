@@ -192,11 +192,11 @@ html, body {
   padding-bottom: 0;
 }
 .input__height {
-  height: 62px;
+  height: auto;
 }
 @media (min-width: 768px) {
   .input__height {
-    height: auto;
+    height: 62px;
   }
 }
 

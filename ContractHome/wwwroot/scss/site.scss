@@ -262,10 +262,10 @@ html, body {
 
   // 搜尋
   &__height {
-    height: 62px;
-
+    height: auto;
+    
     @include md {
-      height: auto;
+      height: 62px;
     }
   }
 }
