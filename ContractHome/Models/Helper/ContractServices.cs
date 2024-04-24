@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using static ContractHome.Helper.JwtTokenGenerator;
 using ContractHome.Helper.DataQuery;
 using ContractHome.Properties;
+using System.Text;
 
 namespace ContractHome.Models.Helper
 {
@@ -506,7 +507,7 @@ namespace ContractHome.Models.Helper
                     };
 
                     var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData, 4320);
-                    var clickLink = $"{Settings.Default.WebAppDomain}/ContractConsole/Trust?token={jwtToken}";
+                    var clickLink = $"{Settings.Default.WebAppDomain}/ContractConsole/Trust?token={Base64UrlEncode((jwtToken.EncryptData()))}";
 
                     var emailBody =
                         new EmailBodyBuilder(_emailBody)

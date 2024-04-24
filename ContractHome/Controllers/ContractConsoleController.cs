@@ -853,7 +853,7 @@ namespace ContractHome.Controllers
         {
             _contractServices.SetModels(models);
             (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile)
-                    = _contractServices.TokenValidate(token);
+                    = _contractServices.TokenValidate(JwtTokenValidator.Base64UrlDecodeToString(token).DecryptData());
             if (resp.HasError)
             {
                 //return View("SignatureTrust",resp);
