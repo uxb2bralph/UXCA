@@ -205,7 +205,49 @@ namespace ContractHome.Models.Helper
             return contract;
         }
 
-        public (BaseResponse, Contract, UserProfile)  AffixPdfSealCheck(int? contractID)
+        public (BaseResponse, Contract, UserProfile) CanPdfDigitalSign(int? contractID)
+        {
+            if (contractID == null || contractID == 0)
+            {
+                return (new BaseResponse(reason: WebReasonEnum.ContractNotExisted), null, null);
+            }
+
+            var profile = (_httpContextAccessor.HttpContext.GetUserAsync().Result).LoadInstance(_models);
+            if (profile == null)
+            {
+                return (new BaseResponse(reason: WebReasonEnum.Relogin), null, null);
+            }
+
+            var item = GetContractByID(contractID: contractID);
+
+            var parties = _models!.GetTable<ContractingParty>()
+            .Where(p => p.ContractID == contractID)
+            .Where(p => _models.GetTable<OrganizationUser>()
+            .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
+            .FirstOrDefault();
+
+            if ((item == null) || (parties == null))
+            {
+                return (new BaseResponse(reason: WebReasonEnum.ContractNotExisted), item, profile);
+            }
+
+            if (item.CurrentStep >= (int)CDS_Document.StepEnum.DigitalSigned)
+            {
+                return (new BaseResponse(true, "合約已完成簽署流程, 無法再次簽署."), item, profile);
+            }
+
+            if (item.ContractSignatureRequest
+                        .Where(x => x.CompanyID == profile.CompanyID)
+                        .Where(x => x.SignatureDate != null).Count() > 0)
+            {
+                return (new BaseResponse(true, "合約已完成簽署, 無法再次簽署."), item, profile);
+            }
+
+            return (normal, item, profile);
+        }
+
+
+        public (BaseResponse, Contract, UserProfile)  CanPdfSeal(int? contractID)
         {
             if (contractID==null||contractID == 0)
             {
@@ -515,7 +557,7 @@ namespace ContractHome.Models.Helper
                         .SetContractNo(contract.ContractNo)
                         .SetTitle(contract.Title)
                         .SetUserName(initiatorOrg.CompanyName)
-                        .SetRecipientUserName(user.UserName)
+                        .SetRecipientUserName($"{user.CompanyName} {user.UserName}")
                         .SetRecipientUserEmail(user.EMail)
                         .SetContractLink(clickLink)
                         .Build();

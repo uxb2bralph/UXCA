@@ -32,7 +32,7 @@
         public double? SealImageDPI { get; set; }
         public String StoreRoot { get; set; } = "WebStore";
         public String DefaultUILanguage { get; set;} = "zh-TW";
-        public bool IsIdentityCertCheck { get; set; } = true;
+        public bool IsIdentityCertCheck { get; set; } = false;
         public String[][] ConnectionList { get; set; } =
             new[]
             {

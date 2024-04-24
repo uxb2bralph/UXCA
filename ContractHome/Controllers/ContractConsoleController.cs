@@ -871,21 +871,36 @@ namespace ContractHome.Controllers
 
             if (jwtTokenObj.EmailTemplate==EmailBody.EmailTemplate.NotifySeal)
             {
-                //return RedirectToAction("AffixPdfSeal", "ContractConsole"
-                //    , new SignatureRequestViewModel() { KeyID = jwtTokenObj.ContractID });
-
                 return await AffixPdfSeal(new SignatureRequestViewModel() { IsTrust =true,KeyID = jwtTokenObj.ContractID });
             }
 
             if (jwtTokenObj.EmailTemplate == EmailBody.EmailTemplate.NotifySign)
             {
-                return await StartSigningAsync(new SignatureRequestViewModel()
+
+                _contractServices.SetModels(models);
+                ( resp, Contract contract, userProfile) =
+                     _contractServices.CanPdfDigitalSign(contractID: jwtTokenObj.ContractID.DecryptKeyValue());
+
+                if (resp.HasError)
                 {
-                    ContractID = jwtTokenObj.ContractID.DecryptKeyValue(),
-                    CompanyID = userProfile.CompanyID
-                });
+                    resp.Url = $"{Settings.Default.WebAppDomain}";
+                    return View("~/Views/Shared/CustomMessage.cshtml", resp);
+                }
+
+                DigitalSignModal digitalSignModal = new DigitalSignModal()
+                {
+
+                    ContractNo = contract.ContractNo,
+                    ContractTitle = contract.Title,
+                    CompanyName = userProfile.CompanyName,
+                    ContractID = jwtTokenObj.ContractID
+                };
+
+
+                return View("~/Views/Shared/DigitalSignModal.cshtml", digitalSignModal);
 
             }
+
             this.HttpContext.Logout();
             return RedirectToAction("Login", "Account");
         }
@@ -903,7 +918,7 @@ namespace ContractHome.Controllers
 
             _contractServices.SetModels(models);
             (BaseResponse resp, Contract contract, UserProfile userProfile) = 
-                 _contractServices.AffixPdfSealCheck(contractID: contractID);
+                 _contractServices.CanPdfSeal(contractID: contractID);
 
             if (resp.HasError)
             {
@@ -1276,6 +1291,7 @@ namespace ContractHome.Controllers
             #endregion
             
             UserProfile profile = (UserProfile)ViewBag.Profile;
+
             if (!item.SignerID.HasValue)
             {
                 bool isSigned = false;
@@ -1389,11 +1405,20 @@ namespace ContractHome.Controllers
                         models.SubmitChanges();
                     }
 
-                    return Ok();
+                    return Json(baseResponse);
 
                 }
             }
-            return BadRequest();
+
+            baseResponse = new BaseResponse(haserror: true, error: "合約已有簽署記錄, 無法再次簽署.");
+            if (viewModel.IsTrust != null && viewModel.IsTrust == true)
+            {
+
+                baseResponse.Url = $"{Settings.Default.WebAppDomain}";
+                return View("~/Views/Shared/CustomMessage.cshtml", baseResponse);
+            }
+
+            return Json(baseResponse);
 
         }
 
@@ -1769,12 +1794,12 @@ namespace ContractHome.Controllers
 
             //3.發送通知(one by one)
             await foreach (var mailData in
-                    _contractServices?.GetContractNotifyEmailAsync(contract, 
+                   _contractServices?.GetContractNotifyEmailAsync(contract, 
                         (contract.IsPassStamp == true)?
                             EmailBody.EmailTemplate.NotifySign:
                             EmailBody.EmailTemplate.NotifySeal))
                 {
-                    _mailService.SendMailAsync(mailData, default);
+                    await _mailService.SendMailAsync(mailData, default);
                 }
             return Json(baseResponse);
         }
