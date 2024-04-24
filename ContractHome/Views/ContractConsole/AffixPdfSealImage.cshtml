@@ -45,10 +45,10 @@
     <!-- 標題 - 甲方 / 乙方 -->
     <div class="d-flex justify-content-between align-items-center pe-5">
       <div class="d-flex align-items-center mb-2">
-        <h4 class="mb-0 me-3 py-2 fw-bolder">
+        <h4 class="mb-0 me-4 py-2 fw-bolder options--show">
           {{ isEdit ? '編輯文件' : '簽署人用印'}}
         </h4>
-        <div v-if="getSignaturePage()" class="alert alert-success ms-3 mb-0 py-2 px-3" role="alert">
+        <div v-if="getSignaturePage()" class="alert alert-success mb-0 py-2 px-3" role="alert">
           <i class="fas fa-info-circle pe-2"></i>
           您有第 <span class="text-danger">{{ getSignaturePage() }}</span> 頁需要進行簽署或用印。
         </div>
@@ -65,7 +65,7 @@
     </div>
     <div class="row" style="height: calc(100vh - 145px);">
       <!-- 合約影像檔 -->
-      <div class="col contract__wrapper">
+      <div class="contract__wrapper">
         <div class="contract__arrow--left">
           <button type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="上一頁"
             class="btn btn-primary rounded-pill opacity-50"
@@ -87,7 +87,7 @@
         </div>
       </div>
       <!-- 操作介面 -->
-      <div class="options__wrapper">
+      <div class="options__wrapper pt-sm-3 pt-xl-0">
         <div id="toAffix" class="row m-0 p-0">
           <form method="post" enctype="multipart/form-data" class="ps-1 pe-3">
             <!-- 簽署人設定 -->
@@ -179,13 +179,13 @@
             </div>
             <!-- 簽署人簽章 -->
             <div v-else>
-              <div class="p-3 ps-0 pb-0 mb-3">
+              <div class="p-3 ps-0 pb-0 mb-3 options--show">
                 <h6 class="fw-bolder text-primary">
                   <i class="fad fa-users me-1"></i>
                   簽署人簽章
                 </h6>
               </div>
-              <div class="card p-3 mb-3">
+              <div class="card p-3 mb-3  options--show">
                 <h6 class="fw-bolder text-primary">
                   <i class="fad fa-tasks-alt me-1"></i>
                   簽署選項
@@ -219,22 +219,22 @@
               </div>
             </div>
             <div v-else class="row g-2 my-0">
-              <div class="col-md-6 py-1">
+              <div class="col-lg-3 col-xl-6 py-1">
                 <button type="button" class="btn btn-secondary opacity-50 w-100" v-on:click="resetSignature">
                   <i class="fas fa-eraser"></i> 清除用印
                 </button>
               </div>
-              <div class="col-md-6 py-1">
+              <div class="col-lg-3 col-xl-6 py-1">
                 <button type="button" class="btn btn-danger opacity-75 w-100" v-on:click="abortHandler">
                   <i class="fas fa-share"></i> 退回合約
                 </button>
               </div>
-              <div class="col-md-5 py-1">
+              <div class="col-lg-3 col-xl-5 py-1">
                 <button type="button" class="btn btn-secondary opacity-50 w-100" v-on:click="backSearch">
                   返回文件列表
                 </button>
               </div>
-              <div class="col py-1">
+              <div class="col-lg-3 col-xl-7 py-1">
                 <button type="button" class="btn btn-primary opacity-75 w-100 fw-bolder" v-on:click="commitContract">
                   送出合約
                 </button>

@@ -24,15 +24,15 @@
   <div class="container-lg">
     <section class="queryform">
       <!-- 標題 -->
-      <h4 class="mb-2 pt-4 fw-bolder">合約查詢</h4>
-      <!-- 合約搜尋 -->
+      <h4 class="mb-2 pt-4 fw-bolder">文件查詢</h4>
+      <!-- 文件搜尋 -->
       <div class="card shadow-sm">
         <form v-on:submit.prevent method="post" enctype="multipart/form-data">
           <div class="container">
             <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3 m-3 mb-lg-0 data-item">
               <div class="col input__height">
                 <div class="row">
-                  <label for="ContractNo" class="col-sm-12 col-md-3 col-form-label fs-14 fw-bolder">合約號碼</label>
+                  <label for="ContractNo" class="col-sm-12 col-md-3 col-form-label fs-14 fw-bolder">文件號碼</label>
                   <div class="col-sm-12 col-md-9">
                     <input v-model="formData.ContractNo" type=" text" class="form-control" name="ContractNo"
                       id="ContractNo" />
@@ -106,7 +106,7 @@
     </section>
 
     <!-- 標題 -->
-    <h4 class="mb-2 fw-bolder pb-2 border-bottom border-1">合約列表</h4>
+    <h4 class="mb-2 fw-bolder pb-2 border-bottom border-1">文件列表</h4>
     <!-- 排序項目 -->
     <div v-if="contractList.length > 0" class="row my-0 pt-2"
       :style="{ 'padding-bottom': !isLayoutCard ? `12px` : null }">

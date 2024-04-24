@@ -104,7 +104,6 @@ html, body {
 
 .login__wrapper {
   display: flex;
-  align-items: center;
   justify-content: center;
   height: 100vh;
   background-color: #2c70a6;
@@ -113,28 +112,19 @@ html, body {
   background-position: center;
   background-size: cover;
 }
+@media (min-width: 1200px) {
+  .login__wrapper {
+    align-items: center;
+  }
+}
 .login__signin {
   width: 100%;
-  max-width: 1280px;
-  margin: auto;
+  margin: 0 auto;
 }
-@media (max-width: 1400px) {
+@media (min-width: 992px) {
   .login__signin {
-    max-width: 80%;
+    max-width: 1200px;
   }
-}
-@media (max-width: 768px) {
-  .login__signin {
-    max-width: 80%;
-  }
-}
-@media (max-width: 576px) {
-  .login__signin {
-    max-width: 90%;
-  }
-}
-.login__signin .card {
-  border-radius: 0.5rem;
 }
 .login__forgetPassword {
   width: 100%;
@@ -142,19 +132,19 @@ html, body {
   margin: auto;
 }
 .login__intro {
-  min-height: 450px;
+  min-height: 300px;
   background-image: url("../images/login-banner.png");
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
-  border-bottom-left-radius: 0.5rem;
-  border-top-left-radius: 0.5rem;
+  border-radius: 0;
 }
-@media (max-width: 1200px) {
+@media (min-width: 992px) {
   .login__intro {
-    min-height: 300px;
-    border-top-right-radius: 0.5rem;
-    border-bottom-left-radius: 0;
+    min-height: 450px;
+    border-top-left-radius: 0.25rem;
+    border-top-right-radius: 0;
+    border-bottom-left-radius: 0.25rem;
   }
 }
 .login__intro img {
@@ -202,11 +192,11 @@ html, body {
   padding-bottom: 0;
 }
 .input__height {
-  height: 62px;
+  height: auto;
 }
-@media (max-width: 768px) {
+@media (min-width: 768px) {
   .input__height {
-    height: auto;
+    height: 62px;
   }
 }
 
@@ -550,8 +540,15 @@ html, body {
 }
 
 .contract__wrapper {
-  height: 100%;
+  width: 100%;
+  height: calc(100% - 40px);
   position: relative;
+}
+@media (min-width: 1200px) {
+  .contract__wrapper {
+    width: calc(100% - 400px);
+    height: 100%;
+  }
 }
 .contract__arrow--left {
   position: absolute;
@@ -567,10 +564,22 @@ html, body {
 }
 
 .options__wrapper {
-  width: 400px;
-  height: 100%;
+  width: 100%;
   overflow: hidden;
   overflow-y: auto;
+}
+@media (min-width: 1200px) {
+  .options__wrapper {
+    width: 400px;
+  }
+}
+.options--show {
+  display: none;
+}
+@media (min-width: 1200px) {
+  .options--show {
+    display: flex;
+  }
 }
 
 #signatureCanvas > canvas {
