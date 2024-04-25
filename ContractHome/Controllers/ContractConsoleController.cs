@@ -376,8 +376,8 @@ namespace ContractHome.Controllers
             {
                 contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Sealed);
                 _contractServices?.SetModels(models);
-                await foreach (var mailData in _contractServices?.GetAllContractUsersNotifyEmailAsync(
-                    new List<Contract>() { contract }, EmailBody.EmailTemplate.NotifySign))
+                await foreach (var mailData in _contractServices?.GetContractNotifyEmailAsync(
+                    contract , EmailBody.EmailTemplate.NotifySign))
                 {
                     _mailService.SendMailAsync(mailData, default);
                 }
@@ -1392,8 +1392,8 @@ namespace ContractHome.Controllers
                         item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Committed);
                         _contractServices?.SetModels(models);
                         await foreach (var mailData in
-                            _contractServices?.GetAllContractUsersNotifyEmailAsync(
-                            new List<Contract>() { item?.Contract }, EmailBody.EmailTemplate.FinishContract))
+                            _contractServices?.GetContractNotifyEmailAsync(
+                            item?.Contract , EmailBody.EmailTemplate.FinishContract))
                         {
                             _mailService?.SendMailAsync(mailData, default);
                         }
@@ -1793,12 +1793,13 @@ namespace ContractHome.Controllers
             //);
 
             //3.發送通知(one by one)
-            await foreach (var mailData in
+            await foreach(var mailData in
                    _contractServices?.GetContractNotifyEmailAsync(contract, 
                         (contract.IsPassStamp == true)?
                             EmailBody.EmailTemplate.NotifySign:
                             EmailBody.EmailTemplate.NotifySeal))
                 {
+                    //wait to do...沒有await可以嗎?
                     await _mailService.SendMailAsync(mailData, default);
                 }
             return Json(baseResponse);

@@ -285,11 +285,13 @@ namespace ContractHome.Models.Helper
                 return (new BaseResponse(true, "合約已完成用印, 無法再次用印."), item, profile);
             }
 
-            if ((item.ContractSealRequest.Count() > 0) &&
-                (!item.ContractSealRequest.Select(x => x.StampUID).Contains(profile.UID)))
-            {
-                return (new BaseResponse(true, "合約已有其他人用印中"), item, profile);
-            }
+
+            //wait to do...同一份合約, 單邊只能一個人用印
+            //if ((item.ContractSealRequest.Count() > 0) &&
+            //    (!item.ContractSealRequest.Select(x => x.StampUID).Contains(profile.UID)))
+            //{
+            //    return (new BaseResponse(true, "合約已有其他人用印中"), item, profile);
+            //}
 
             return (normal, item, profile);
         }
@@ -404,40 +406,40 @@ namespace ContractHome.Models.Helper
                 .Select(y => y.UserProfile);
         }
 
-        public async IAsyncEnumerable<MailData> GetAllContractUsersNotifyEmailAsync(
-            List<Contract> contracts,
-            EmailBody.EmailTemplate emailTemplate)
-        {
-            foreach (var contract in contracts)
-            {
-                var initiatorOrg = contract.GetInitiator()?.GetOrganization(_models);
-                var users = contract.ContractingParty.SelectMany(x => x.GetUsers(_models));
+        //public async IAsyncEnumerable<MailData> GetAllContractUsersNotifyEmailAsync(
+        //    List<Contract> contracts,
+        //    EmailBody.EmailTemplate emailTemplate)
+        //{
+        //    foreach (var contract in contracts)
+        //    {
+        //        var initiatorOrg = contract.GetInitiator()?.GetOrganization(_models);
+        //        var users = contract.ContractingParty.SelectMany(x => x.GetUsers(_models));
 
-                if ((initiatorOrg != null) && (initiatorOrg != null))
-                {
-                    foreach (var user in users)
-                    {
-                        var emailBody =
-                            new EmailBodyBuilder(_emailBody)
-                            .SetTemplateItem(emailTemplate)
-                            .SetContractNo(contract.ContractNo)
-                            .SetTitle(contract.Title)
-                            .SetUserName(initiatorOrg.CompanyName)
-                            .SetRecipientUserName(user.UserName)
-                            .SetRecipientUserEmail(user.EMail)
-                            .Build();
+        //        if ((initiatorOrg != null) && (initiatorOrg != null))
+        //        {
+        //            foreach (var user in users)
+        //            {
+        //                var emailBody =
+        //                    new EmailBodyBuilder(_emailBody)
+        //                    .SetTemplateItem(emailTemplate)
+        //                    .SetContractNo(contract.ContractNo)
+        //                    .SetTitle(contract.Title)
+        //                    .SetUserName(initiatorOrg.CompanyName)
+        //                    .SetRecipientUserName(user.UserName)
+        //                    .SetRecipientUserEmail(user.EMail)
+        //                    .Build();
 
-                        yield return _emailFactory.GetEmailToCustomer(
-                            emailBody.RecipientUserEmail,
-                            _emailFactory.GetEmailTitle(emailTemplate),
-                            await emailBody.GetViewRenderString());
+        //                yield return _emailFactory.GetEmailToCustomer(
+        //                    emailBody.RecipientUserEmail,
+        //                    _emailFactory.GetEmailTitle(emailTemplate),
+        //                    await emailBody.GetViewRenderString());
 
-                    }
-                }
-            }
+        //            }
+        //        }
+        //    }
 
-            yield break;
-        }
+        //    yield break;
+        //}
 
         //public enum NotifyFlagEnum
         //{
