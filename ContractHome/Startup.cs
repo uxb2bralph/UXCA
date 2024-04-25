@@ -109,9 +109,11 @@ namespace ContractHome
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
             services.AddOptions<MailSettings>().BindConfiguration("MailSettings");
-            services.AddScoped<IMailService, MailService>();
+            services.AddSingleton<IMailService, MailService>();
             services.AddScoped<EmailFactory>();
             services.AddScoped<EmailBody>();
+            services.AddScoped<IEmailBodyBuilder, EmailBodyBuilder>();
+            
             services.AddScoped<ContractServices>();
             // Add detection services container and device resolver service.
             services.AddDetection();

@@ -25,13 +25,13 @@ namespace ContractHome.Models.Helper
         protected internal GenericManager<DCDataContext> _models;
         //protected internal Contract? _contract;
         private readonly EmailFactory _emailFactory;
-        private readonly EmailBody _emailBody;
+        private readonly IEmailBodyBuilder _emailBody;
         private readonly IDetectionService _detectionService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ICacheStore _cacheStore;
         private BaseResponse normal = new BaseResponse();
 
-        public ContractServices(EmailBody emailBody,
+        public ContractServices(IEmailBodyBuilder emailBody,
             EmailFactory emailFactory,
             IDetectionService detectionService,
             IHttpContextAccessor httpContextAccessor, ICacheStore cacheStore
@@ -406,57 +406,6 @@ namespace ContractHome.Models.Helper
                 .Select(y => y.UserProfile);
         }
 
-        //public async IAsyncEnumerable<MailData> GetAllContractUsersNotifyEmailAsync(
-        //    List<Contract> contracts,
-        //    EmailBody.EmailTemplate emailTemplate)
-        //{
-        //    foreach (var contract in contracts)
-        //    {
-        //        var initiatorOrg = contract.GetInitiator()?.GetOrganization(_models);
-        //        var users = contract.ContractingParty.SelectMany(x => x.GetUsers(_models));
-
-        //        if ((initiatorOrg != null) && (initiatorOrg != null))
-        //        {
-        //            foreach (var user in users)
-        //            {
-        //                var emailBody =
-        //                    new EmailBodyBuilder(_emailBody)
-        //                    .SetTemplateItem(emailTemplate)
-        //                    .SetContractNo(contract.ContractNo)
-        //                    .SetTitle(contract.Title)
-        //                    .SetUserName(initiatorOrg.CompanyName)
-        //                    .SetRecipientUserName(user.UserName)
-        //                    .SetRecipientUserEmail(user.EMail)
-        //                    .Build();
-
-        //                yield return _emailFactory.GetEmailToCustomer(
-        //                    emailBody.RecipientUserEmail,
-        //                    _emailFactory.GetEmailTitle(emailTemplate),
-        //                    await emailBody.GetViewRenderString());
-
-        //            }
-        //        }
-        //    }
-
-        //    yield break;
-        //}
-
-        //public enum NotifyFlagEnum
-        //{
-        //    None = 0,  // 無通知
-        //    Signature = 1,   // 用印簽署通知
-        //    Finish = 2,   // 完成通知
-        //}
-
-        //public NotifyFlagEnum GetNotifyFlagAsync(Contract contract)
-        //{
-
-        //    //items = items.Where(d => !d.CDS_Document.CurrentStep.HasValue
-        //    //    || CDS_Document.PendingState.Contains((CDS_Document.StepEnum)d.CDS_Document.CurrentStep!));
-        //    //CDS_Document.StepEnum
-
-        //}
-
         public IEnumerable<UserProfile>? GetNotifyUsersAsync(Contract contract)
         {
             //EmailBody.EmailTemplate template = EmailBody.EmailTemplate.NotifySeal;
@@ -528,9 +477,8 @@ namespace ContractHome.Models.Helper
 
         }
 
-        public async IAsyncEnumerable<MailData> GetContractNotifyEmailAsync(
+        public async void SendContractNotifyEmailAsync(
             Contract contract,
-            //IEnumerable<UserProfile> userProfiles,
             EmailBody.EmailTemplate emailTemplate)
         {
             var initiatorOrg = GetOrganization(contract);
@@ -554,7 +502,7 @@ namespace ContractHome.Models.Helper
                     var clickLink = $"{Settings.Default.WebAppDomain}/ContractConsole/Trust?token={Base64UrlEncode((jwtToken.EncryptData()))}";
 
                     var emailBody =
-                        new EmailBodyBuilder(_emailBody)
+                        _emailBody
                         .SetTemplateItem(emailTemplate)
                         .SetContractNo(contract.ContractNo)
                         .SetTitle(contract.Title)
@@ -564,53 +512,15 @@ namespace ContractHome.Models.Helper
                         .SetContractLink(clickLink)
                         .Build();
 
-                    yield return _emailFactory.GetEmailToCustomer(
+                    _emailFactory.SendEmailToCustomer(
                         emailBody.RecipientUserEmail,
                         _emailFactory.GetEmailTitle(emailTemplate),
                         await emailBody.GetViewRenderString());
 
                 }
-                yield break;
             }
 
 
-        }
-
-        public async IAsyncEnumerable<MailData> GetContractorNotifyEmailAsync(
-            List<Contract> contracts,
-            EmailBody.EmailTemplate emailTemplate)
-        {
-
-            foreach (var contract in contracts)
-            {
-                var initiatorOrg = contract.GetInitiator()?.GetOrganization(_models);
-                var contractors = contract.GetContractor();
-                var contractorUsers = contractors.SelectMany(x => x.GetUsers(_models));
-
-                if ((initiatorOrg != null) && (initiatorOrg != null))
-                {
-                    foreach (var user in contractorUsers)
-                    {
-                        var emailBody =
-                            new EmailBodyBuilder(_emailBody)
-                            .SetTemplateItem(emailTemplate)
-                            .SetContractNo(contract.ContractNo)
-                            .SetTitle(contract.Title)
-                            .SetUserName(initiatorOrg.CompanyName)
-                            .SetRecipientUserName(user.UserName)
-                            .SetRecipientUserEmail(user.EMail)
-                            .Build();
-
-                        yield return _emailFactory.GetEmailToCustomer(
-                            emailBody.RecipientUserEmail,
-                            _emailFactory.GetEmailTitle(emailTemplate),
-                            await emailBody.GetViewRenderString());
-
-                    }
-                }
-            }
-
-            yield break;
         }
 
         public void SaveContract()
