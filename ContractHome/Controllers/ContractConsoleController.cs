@@ -32,7 +32,6 @@ namespace ContractHome.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private ContractServices? _contractServices;
-        private readonly IMailService _mailService;
         private BaseResponse baseResponse = new BaseResponse();
         private readonly ICacheStore _cacheStore;
 
@@ -44,7 +43,6 @@ namespace ContractHome.Controllers
         {
             _logger = logger;
             _contractServices = contractServices;
-            _mailService = ServiceProvider.GetRequiredService<IMailService>();
             _cacheStore = cacheStore;
         }
 
@@ -303,14 +301,12 @@ namespace ContractHome.Controllers
 
                 _contractServices.SaveContract();
 
-                if (notifyList.Count > 0)
-                {
-                    await foreach (var mailData in _contractServices.GetContractorNotifyEmailAsync(
-                        notifyList, EmailBody.EmailTemplate.NotifySeal))
-                    {
-                        _mailService.SendMailAsync(mailData, default);
-                    }
-                }
+                //wait to do..CommitContractAsync for 個別簽署功能待確認
+                //if (notifyList.Count > 0)
+                //{
+                //    _contractServices.SendNotifyEmailAsync(
+                //        notifyList, EmailBody.EmailTemplate.NotifySeal);
+                //}
             }
             catch (Exception ex)
             {
@@ -376,11 +372,7 @@ namespace ContractHome.Controllers
             {
                 contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Sealed);
                 _contractServices?.SetModels(models);
-                await foreach (var mailData in _contractServices?.GetContractNotifyEmailAsync(
-                    contract , EmailBody.EmailTemplate.NotifySign))
-                {
-                    _mailService.SendMailAsync(mailData, default);
-                }
+                _contractServices?.SendContractNotifyEmailAsync(contract, EmailBody.EmailTemplate.NotifySign);
             }
 
             return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
@@ -1391,12 +1383,7 @@ namespace ContractHome.Controllers
                     {
                         item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Committed);
                         _contractServices?.SetModels(models);
-                        await foreach (var mailData in
-                            _contractServices?.GetContractNotifyEmailAsync(
-                            item?.Contract , EmailBody.EmailTemplate.FinishContract))
-                        {
-                            _mailService?.SendMailAsync(mailData, default);
-                        }
+                        _contractServices?.SendContractNotifyEmailAsync(item?.Contract, EmailBody.EmailTemplate.FinishContract);
                     }
 
                     if (contract.InProgress != null && contract.InProgress == true)
@@ -1793,15 +1780,11 @@ namespace ContractHome.Controllers
             //);
 
             //3.發送通知(one by one)
-            await foreach(var mailData in
-                   _contractServices?.GetContractNotifyEmailAsync(contract, 
-                        (contract.IsPassStamp == true)?
-                            EmailBody.EmailTemplate.NotifySign:
-                            EmailBody.EmailTemplate.NotifySeal))
-                {
-                    //wait to do...沒有await可以嗎?
-                    await _mailService.SendMailAsync(mailData, default);
-                }
+            _contractServices?.SendContractNotifyEmailAsync(contract,
+                        (contract.IsPassStamp == true) ?
+                            EmailBody.EmailTemplate.NotifySign :
+                            EmailBody.EmailTemplate.NotifySeal);
+
             return Json(baseResponse);
         }
 

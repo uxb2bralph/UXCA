@@ -73,7 +73,7 @@ namespace ContractHome.Controllers
               .SetUserEmail(userprofile.EMail)
           .Build();
 
-          _mailService?.SendMailAsync(await _emailFactory.GetEmailToCustomer(emailBody), default);
+          _emailFactory.SendEmailToCustomer(emailBody);
         }
 
         return Json(new { result = false, message = ModelState.ErrorMessage() });
@@ -88,7 +88,7 @@ namespace ContractHome.Controllers
             .SetUserEmail(userprofile.EMail)
             .Build();
 
-        _mailService?.SendMailAsync(await _emailFactory.GetEmailToCustomer(emailBody), default);
+        _emailFactory.SendEmailToCustomer(emailBody);
       }
 
       return Json(new { result = true, message = Url.Action("ListToStampIndex", "ContractConsole") });
@@ -297,7 +297,7 @@ namespace ContractHome.Controllers
           .SetUserEmail(tokenUserProfile.EMail)
       .Build();
 
-      _mailService?.SendMailAsync(await _emailFactory.GetEmailToCustomer(emailBody), default);
+      _emailFactory.SendEmailToCustomer(emailBody);
 
       Logout();
       return new BaseResponse(false, "密碼更新完成。");
@@ -354,9 +354,7 @@ namespace ContractHome.Controllers
           .SetVerifyLink(clickLink)
           .Build();
 
-      var emailData = await _emailFactory.GetEmailToCustomer(emailBody);
-
-      _mailService?.SendMailAsync(emailData, default);
+        _emailFactory.SendEmailToCustomer(emailBody);
 
         //wait to do:新token產生後, 設定舊token為失效
         _cacheStore.Add(new Default() { ID = userProfile.UID.ToString() }, redoLimitCahceKey);

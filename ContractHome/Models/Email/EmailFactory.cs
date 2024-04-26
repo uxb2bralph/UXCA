@@ -1,15 +1,22 @@
 ﻿using ContractHome.Models.Email.Template;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.Extensions.Options;
+using Org.BouncyCastle.Asn1.Pkcs;
 
 namespace ContractHome.Models.Email
 {
     public class EmailFactory
     {
         private readonly MailSettings _mailSettings;
-        public EmailFactory(IOptions<MailSettings> mailSettingsOptions)
+        private IEmailBodyBuilder _emailBodyBuilder;
+        private readonly IMailService _mailService;
+        public EmailFactory(IOptions<MailSettings> mailSettingsOptions,
+            IEmailBodyBuilder emailBodyBuilder,
+            IMailService mailService)
         {
             _mailSettings = mailSettingsOptions.Value;
+            _emailBodyBuilder = emailBodyBuilder;
+            _mailService = mailService;
         }
 
         internal MailSettings MailSettings => _mailSettings;
@@ -24,36 +31,22 @@ namespace ContractHome.Models.Email
 
         }
 
-        public async Task<MailData> GetEmailToCustomer(EmailBody emailBody)
+
+
+        public async void SendEmailToCustomer(EmailBody emailBody)
         {
-            List<string> emailList = new List<string>
-            {
-                emailBody.UserEmail
-            };
             var emailBodyString = await emailBody.GetViewRenderString();
-
-            return new MailData(
-                to: emailList,
-                subject: GetEmailTitle(emailBody.TemplateItem),
-                body: emailBodyString,
-                from: _mailSettings.From,
-                displayName: _mailSettings.DisplayName,
-                replyTo: null,
-                replyToName: null,
-                bcc: null,
-                cc: null
-                );
-
+            SendEmailToCustomer(email: emailBody.UserEmail, subject: GetEmailTitle(emailBody.TemplateItem), body: emailBodyString);
         }
 
-        public MailData GetEmailToCustomer(string email, string subject, string body)
+        public async void SendEmailToCustomer(string email, string subject, string body)
         {
             List<string> emailList = new List<string>
             {
                 email
             };
 
-            return new MailData(
+            MailData mailData = new MailData(
                 to: emailList,
                 subject: subject,
                 body: body,
@@ -62,8 +55,10 @@ namespace ContractHome.Models.Email
                 replyTo: null,
                 replyToName: null,
                 bcc: null,
-                cc: null
-                );
+            cc: null
+            );
+            //wait to do...沒有await可以嗎?
+            _mailService.SendMailAsync(mailData, default);
 
         }
         public MailData GetEmailToSystem(string subject, string body)
