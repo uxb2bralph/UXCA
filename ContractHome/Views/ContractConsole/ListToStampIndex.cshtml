@@ -667,7 +667,8 @@
     </div>
 
     <!-- 簽署 Dialog -->
-    <div class="modal fade" id="signModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="signModalLabel" aria-hidden="true">
+    <div class="modal fade" id="signModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+      aria-labelledby="signModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
           <div class="modal-header border-bottom-0">
@@ -691,15 +692,17 @@
             <div class="text-center h5 fw-bolder">
               您將代表 <span class="text-primary opacity-75">" {{ signerMessage }} "</span> 對此文件進行數位簽章
             </div>
-          <div class="pt-3 text-center">
-            <span>如同意簽署，則您的個人資訊紕露亦遵循 服務條款 及 隱私權政策 的規範。</span>
-            <div class="d-flex align-items-center justify-content-center pt-2 fs-6 fw-bold">
-              <input v-model="agree" class="form-check-input mt-0 me-2" type="checkbox" id="agree" :true-value="true" :false-value="false">
-              <label class="form-check-label text-primary" for="agree">
-                我已閱讀並同意遵守 <a class="link" href="@Url.Action("Personal", "Home")">個資保護</a> 及 <a class="link" href="@Url.Action("Privacy", "Home")">隱私政策</a>
-              </label>
+            <div class="pt-3 text-center">
+              <span>如同意簽署，則您的個人資訊紕露亦遵循 服務條款 及 隱私權政策 的規範。</span>
+              <div class="d-flex align-items-center justify-content-center pt-2 fs-6 fw-bold">
+                <input v-model="agree" class="form-check-input mt-0 me-2" type="checkbox" id="agree" :true-value="true"
+                  :false-value="false">
+                <label class="form-check-label text-primary" for="agree">
+                  我已閱讀並同意遵守 <a class="link" href="@Url.Action("Personal", "Home")">個資保護</a> 及 <a class="link"
+                    href="@Url.Action("Privacy", "Home")">隱私政策</a>
+                </label>
+              </div>
             </div>
-          </div>
             <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
               <symbol id="info-fill" fill="currentColor" viewBox="0 0 16 16">
                 <path
@@ -717,7 +720,8 @@
           </div>
           <div class="modal-footer border-top-0 justify-content-center">
             <button type="button" class="btn btn-secondary opacity-75" data-bs-dismiss="modal">取消</button>
-            <button type="button" class="btn btn-primary" :class="{'disabled': !agree}" v-on:click="confirmSign">確定</button>
+            <button type="button" class="btn btn-primary" :class="{'disabled': !agree}"
+              v-on:click="confirmSign">確定</button>
           </div>
         </div>
       </div>
@@ -1569,7 +1573,7 @@
           hideLoading();
           if ($.isPlainObject(data)) {
             if (data.result) {
-              alertModal('簽章完成!!');
+              alertModal('簽署完成！');
               setTimeout(() => {
                 window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
               }, 3000);
