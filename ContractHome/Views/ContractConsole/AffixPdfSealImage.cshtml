@@ -980,37 +980,33 @@
         } else {
           payload.KeyID = ContractID;
         }
-        console.log({ payload });
-        // return;
 
         showLoading();
         if (this.isEdit) {
           postData('@(Url.Action("FeildSettingsUpdate", "ContractConsole"))', payload)
             .then((res) => {
               const { hasError, data, message } = res;
-              console.log({ hasError, data, message })
               if (!hasError) {
                 // 文件已填寫並用印完畢則建立合約
                 this.established(ContractID);
               } else {
                 // 失敗
                 this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${message.replace(/、/g, '<br>')} </div>`;
+                hideLoading();
+                $("#infoModal").modal("show");
               }
-              hideLoading();
-              $("#infoModal").modal("show");
             })
         } else {
           postData('@(Url.Action("AcceptContract", "ContractConsole"))', payload)
             .then((res) => {
-              const { result, dataItem, HasError, Data, Message } = res;
-              console.log({ result, dataItem, HasError, Data, Message })
-              if (!!result || !HasError) {
+              const { result, dataItem, message } = res;
+              if (result) {
                 // 成功
                 this.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"> ${dataItem.title} <br> (${dataItem.contractNo}) <br> 合約已用印 </div>`;
                 this.isCreate = true;
               } else {
                 // 失敗
-                this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> 資料有誤 </div>`;
+                this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${message ? message : '資料有誤'} </div>`;
               }
               hideLoading();
               $("#infoModal").modal("show");
@@ -1024,7 +1020,8 @@
         const payload = { ContractID };
         this.isCreate = true;
 
-        showLoading();
+        //showLoading();
+        console.log('loading')
         postData('@(Url.Action("Establish", "ContractConsole"))', payload)
           .then((res) => {
             const { hasError, data, message } = res;
