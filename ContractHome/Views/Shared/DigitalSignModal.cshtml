@@ -58,7 +58,8 @@ For more information on enabling MVC for empty projects, visit https://go.micros
             <div class="d-flex align-items-center justify-content-center pt-2 fs-6 fw-bold">
               <input class="form-check-input mt-0 me-2" type="checkbox" id="agree">
               <label class="form-check-label text-primary" for="agree">
-                我已閱讀並同意遵守 <a class="link" href="@Url.Action("Personal", "Home")">個資保護</a> 及 <a class="link" href="@Url.Action("Privacy", "Home")">隱私政策</a>
+                我已閱讀並同意遵守 <a class="link" href="@Url.Action("Personal", "Home")">個資保護</a> 及 <a class="link"
+                  href="@Url.Action("Privacy", "Home")">隱私政策</a>
               </label>
             </div>
           </div>
@@ -108,13 +109,18 @@ For more information on enabling MVC for empty projects, visit https://go.micros
         'Signature': null
       }, function (data) {
         hideLoading();
-        if (data.result) {
-          alertModal(`${$("#contractTitle").val()}<br>(${$("#contractNo").val()}) <br>簽署完成！`);
-          setTimeout(() => {
-            window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
-          }, 3000);
+
+        if ($.isPlainObject(data)) {
+          if (data.result) {
+            alertModal(`${$("#contractTitle").val()}<br>(${$("#contractNo").val()}) <br>簽署完成！`);
+            setTimeout(() => {
+              window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+            }, 3000);
+          } else {
+            alertModal(data.message);
+          }
         } else {
-          alertModal(data.message);
+          $(data).appendTo($('body'));
         }
       });
     });
