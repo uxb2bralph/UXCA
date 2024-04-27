@@ -27,8 +27,9 @@ namespace ContractHome.Helper
             public string Email => payloadObj.data.Email;
             public string ContractID => payloadObj.data.ContractID;
             public string UID => payloadObj.data.UID;
-            public EmailBody.EmailTemplate? EmailTemplate => payloadObj.data.EmailTemplate;  
-
+            //public EmailBody.EmailTemplate? EmailTemplate => payloadObj.data.EmailTemplate;
+            public bool IsSeal => payloadObj.data.Func.Equals(typeof(NotifySeal).Name);
+            public bool IsSign => payloadObj.data.Func.Equals(typeof(NotifySign).Name);
             public override string? ToString()
             {
                 return payloadObj.ToString();
@@ -52,7 +53,7 @@ namespace ContractHome.Helper
 
             public override string? ToString()
             {
-                return $"exp={exp} iat={iat} id={data.UID} email={data.Email} contractId={data.ContractID}";
+                return $"exp={exp} iat={iat} id={data.UID} data={data.ToString()} ";
             }
         }
 
@@ -81,11 +82,12 @@ namespace ContractHome.Helper
             public string UID { get; set; }
             public string? Email { get; set; }
             public string? ContractID { get; set; }
-            public EmailBody.EmailTemplate? EmailTemplate { get; set; }
+            //public EmailBody.EmailTemplate? EmailTemplate { get; set; }
+            public string? Func { get; set; }
 
             public override string? ToString()
             {
-                return $"UID={UID} Email={Email} contractId={ContractID} EmailTemplate={EmailTemplate}";
+                return $"UID={UID} Email={Email} contractId={ContractID} Func={Func}";
             }
         }
 

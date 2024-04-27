@@ -23,6 +23,7 @@ using static ContractHome.Helper.JwtTokenGenerator;
 using ContractHome.Models.Cache;
 using Org.BouncyCastle.Ocsp;
 using ContractHome.Properties;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace ContractHome.Controllers
 {
@@ -34,16 +35,18 @@ namespace ContractHome.Controllers
         private ContractServices? _contractServices;
         private BaseResponse baseResponse = new BaseResponse();
         private readonly ICacheStore _cacheStore;
-
+        private readonly Models.Email.Template.EmailFactory _emailContentFactories;
         public ContractConsoleController(ILogger<HomeController> logger,
             IServiceProvider serviceProvider,
             ICacheStore cacheStore,
-            ContractServices contractServices
+            ContractServices contractServices,
+            Models.Email.Template.EmailFactory emailContentFactories
           ) : base(serviceProvider)
         {
             _logger = logger;
             _contractServices = contractServices;
             _cacheStore = cacheStore;
+            _emailContentFactories = emailContentFactories;
         }
 
         public IActionResult ApplyContract(TemplateResourceViewModel viewModel)
@@ -372,7 +375,7 @@ namespace ContractHome.Controllers
             {
                 contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Sealed);
                 _contractServices?.SetModels(models);
-                _contractServices?.SendContractNotifyEmailAsync(contract, EmailBody.EmailTemplate.NotifySign);
+                _contractServices?.SendAllContractUsersNotifyEmailDIAsync(contract,_emailContentFactories.GetNotifySign());
             }
 
             return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
@@ -861,12 +864,12 @@ namespace ContractHome.Controllers
             //但因為controller都有用var profile = await HttpContext.GetUserAsync();, 暫時先用
             HttpContext.SignOnAsync(userProfile);
 
-            if (jwtTokenObj.EmailTemplate==EmailBody.EmailTemplate.NotifySeal)
+            if (jwtTokenObj.IsSeal)
             {
                 return await AffixPdfSeal(new SignatureRequestViewModel() { IsTrust =true,KeyID = jwtTokenObj.ContractID });
             }
 
-            if (jwtTokenObj.EmailTemplate == EmailBody.EmailTemplate.NotifySign)
+            if (jwtTokenObj.IsSign)
             {
 
                 _contractServices.SetModels(models);
@@ -1382,8 +1385,9 @@ namespace ContractHome.Controllers
                         .Any())
                     {
                         item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Committed);
-                        _contractServices?.SetModels(models);
-                        _contractServices?.SendContractNotifyEmailAsync(item?.Contract, EmailBody.EmailTemplate.FinishContract);
+                        //wait to do
+                        //_contractServices?.SetModels(models);
+                        //_contractServices?.SendContractNotifyEmailAsync(item?.Contract, EmailBody.EmailTemplate.FinishContract);
                     }
 
                     if (contract.InProgress != null && contract.InProgress == true)
@@ -1780,10 +1784,10 @@ namespace ContractHome.Controllers
             //);
 
             //3.發送通知(one by one)
-            _contractServices?.SendContractNotifyEmailAsync(contract,
-                        (contract.IsPassStamp == true) ?
-                            EmailBody.EmailTemplate.NotifySign :
-                            EmailBody.EmailTemplate.NotifySeal);
+
+            _contractServices?.SendAllContractUsersNotifyEmailDIAsync(
+                contract, 
+                (contract.IsPassStamp == true)? _emailContentFactories.GetNotifySign():_emailContentFactories.GetNotifySeal());
 
             return Json(baseResponse);
         }

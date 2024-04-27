@@ -24,29 +24,24 @@ using ContractHome.Models.Cache;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ContractHome.Models.Helper;
+using System.Diagnostics.Contracts;
 
 namespace ContractHome.Controllers
 {
   public class AccountController : SampleController
   {
     private readonly ILogger<HomeController> _logger;
-    private readonly IMailService _mailService;
-    private readonly EmailBody _emailBody;
-    private readonly EmailFactory _emailFactory;
+    private readonly Models.Email.Template.EmailFactory _emailFactory;
     private readonly ICacheStore _cacheStore;
         private ContractServices? _contractServices;
-        //private static readonly int tokenTTLMins = 10;
-        //private static readonly int reSendEmailMins = 3;
+
         public AccountController(ILogger<HomeController> logger, IServiceProvider serviceProvider, 
-            ICacheStore cacheStore, 
-            ContractServices contractServices) : base(serviceProvider)
+            ICacheStore cacheStore,
+            Models.Email.Template.EmailFactory emailContentFactories) : base(serviceProvider)
     {
-      _logger = logger;
-      _mailService = ServiceProvider.GetRequiredService<IMailService>();
-      _emailFactory = serviceProvider.GetRequiredService<EmailFactory>();
-      _emailBody = serviceProvider.GetRequiredService<EmailBody>();
-      _cacheStore = cacheStore;
-      _contractServices = contractServices;
+          _logger = logger;
+          _cacheStore = cacheStore;
+        _emailFactory = emailContentFactories;
     }
 
     [HttpPost]
@@ -63,33 +58,21 @@ namespace ContractHome.Controllers
 
       if (!ModelState.IsValid)
       {
-        //wait to do...甲方的公司UserEmail登入失敗通知信
-        if (userprofile.CanCreateContract())
-        {
-          var emailBody =
-              new EmailBodyBuilder(_emailBody)
-              .SetTemplateItem(EmailBody.EmailTemplate.LoginFailed)
-              .SetUserName(userprofile.UserName)
-              .SetUserEmail(userprofile.EMail)
-          .Build();
-
-          _emailFactory.SendEmailToCustomer(emailBody);
-        }
+                //wait to do...甲方的公司UserEmail登入失敗通知信
+                if (userprofile.CanCreateContract())
+                {
+                    _emailFactory.SendEmailToCustomer(
+                        _emailFactory.GetLoginFailed(a: userprofile.UserName, b: userprofile.EMail));
+                }
 
         return Json(new { result = false, message = ModelState.ErrorMessage() });
       }
 
       if (userprofile.CanCreateContract())
       {
-        var emailBody =
-            new EmailBodyBuilder(_emailBody)
-            .SetTemplateItem(EmailBody.EmailTemplate.LoginSuccessed)
-            .SetUserName(userprofile.UserName)
-            .SetUserEmail(userprofile.EMail)
-            .Build();
-
-        _emailFactory.SendEmailToCustomer(emailBody);
-      }
+                _emailFactory.SendEmailToCustomer(
+                    _emailFactory.GetLoginSuccessed(a: userprofile.UserName, b: userprofile.EMail));
+            }
 
       return Json(new { result = true, message = Url.Action("ListToStampIndex", "ContractConsole") });
     }
@@ -290,14 +273,8 @@ namespace ContractHome.Controllers
             var usedTokenCahceKey = new TrustPasswordApplyTokenCahceKey($"{token}");
             _cacheStore.Add(new Default(), usedTokenCahceKey);
 
-            var emailBody =
-          new EmailBodyBuilder(_emailBody)
-          .SetTemplateItem(EmailBody.EmailTemplate.PasswordUpdated)
-          .SetUserName(tokenUserProfile.UserName)
-          .SetUserEmail(tokenUserProfile.EMail)
-      .Build();
-
-      _emailFactory.SendEmailToCustomer(emailBody);
+            _emailFactory.SendEmailToCustomer(
+                _emailFactory.GetPasswordUpdated(a: tokenUserProfile.UserName, b: tokenUserProfile.UserName));
 
       Logout();
       return new BaseResponse(false, "密碼更新完成。");
@@ -337,24 +314,25 @@ namespace ContractHome.Controllers
             return new BaseResponse(true, $"通知信已寄發，請查看電子信箱，或稍後重新申請。");
         }
 
-            JwtPayloadData jwtPayloadData = new JwtPayloadData() { 
-                ContractID=string.Empty, Email=email, UID= userProfile.UID.EncryptKey() };
-            var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData);
-            var clickLink = $"{Settings.Default.WebAppDomain}/Account/TrustPasswordReset?token={JwtTokenGenerator.Base64UrlEncode(jwtToken)}";
+        //wait to add
+      //      JwtPayloadData jwtPayloadData = new JwtPayloadData() { 
+      //          ContractID=string.Empty, Email=email, UID= userProfile.UID.EncryptKey() };
+      //      var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData);
+      //      var clickLink = $"{Settings.Default.WebAppDomain}/Account/TrustPasswordReset?token={JwtTokenGenerator.Base64UrlEncode(jwtToken)}";
 
-            FileLogger.Logger.Error($"clickLink={clickLink}");
-            var emailTemp = EmailBody.EmailTemplate.WelcomeUser;
-      if (viewModel.Item!=null&&viewModel.Item.Equals("forgetPassword")) { emailTemp = EmailBody.EmailTemplate.ApplyPassword; }
+      //      FileLogger.Logger.Error($"clickLink={clickLink}");
+      //      var emailTemp = EmailBody.EmailTemplate.WelcomeUser;
+      //if (viewModel.Item!=null&&viewModel.Item.Equals("forgetPassword")) { emailTemp = EmailBody.EmailTemplate.ApplyPassword; }
 
-      var emailBody =
-          new EmailBodyBuilder(_emailBody)
-          .SetTemplateItem(emailTemp)
-          .SetUserName(userProfile.UserName)
-          .SetUserEmail(userProfile.EMail)
-          .SetVerifyLink(clickLink)
-          .Build();
+      //var emailBody =
+      //    new EmailBodyBuilder(_emailBody)
+      //    .SetTemplateItem(emailTemp)
+      //    .SetUserName(userProfile.UserName)
+      //    .SetUserEmail(userProfile.EMail)
+      //    .SetVerifyLink(clickLink)
+      //    .Build();
 
-        _emailFactory.SendEmailToCustomer(emailBody);
+      //  _emailFactory.SendEmailToCustomer(emailBody);
 
         //wait to do:新token產生後, 設定舊token為失效
         _cacheStore.Add(new Default() { ID = userProfile.UID.ToString() }, redoLimitCahceKey);

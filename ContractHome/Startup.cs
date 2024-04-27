@@ -110,9 +110,15 @@ namespace ContractHome
 
             services.AddOptions<MailSettings>().BindConfiguration("MailSettings");
             services.AddSingleton<IMailService, MailService>();
-            services.AddScoped<EmailFactory>();
-            services.AddScoped<EmailBody>();
-            services.AddScoped<IEmailBodyBuilder, EmailBodyBuilder>();
+            //services.AddTransient<EmailFactory>();
+            services.AddTransient<EmailBody>();
+            services.AddTransient<IEmailBodyBuilder, EmailBodyBuilder>();
+            services.AddTransient<IEmailContent, NotifySeal>();
+            services.AddTransient<IEmailContent, NotifySign>();
+            services.AddTransient<IEmailContent, LoginFailed>();
+            services.AddTransient<IEmailContent, LoginSuccessed>();
+            services.AddTransient<IEmailContent, PasswordUpdated>();
+            services.AddTransient<EmailFactory>();
             
             services.AddScoped<ContractServices>();
             // Add detection services container and device resolver service.
