@@ -356,14 +356,16 @@ namespace ContractHome.Controllers
                 return Json(new { result = false, message = "合約未用印!!" });
             }
 
-            var sealItems = models.GetTable<SealTemplate>().Where(s => s.UID == profile.UID);
-            if (!models.GetTable<ContractSealRequest>()
-                .Where(s => s.ContractID == contract.ContractID)
-                .Where(s => sealItems.Any(t => t.SealID == s.SealID))
-                .Any())
-            {
-                return Json(new { result = false, message = "簽約人尚未用印!!" });
-            }
+
+            //wait to do:用印定義? 挖框決定? 不一定是[文字],[圖章],[日期], 只要符合起約人預期就要可以過, 待補
+            //var sealItems = models.GetTable<SealTemplate>().Where(s => s.UID == profile.UID);
+            //if (!models.GetTable<ContractSealRequest>()
+            //    .Where(s => s.ContractID == contract.ContractID)
+            //    .Where(s => sealItems.Any(t => t.SealID == s.SealID))
+            //    .Any())
+            //{
+            //    return Json(new { result = false, message = "簽約人尚未用印!!" });
+            //}
 
             requestItem.StampDate = DateTime.Now;
             models.SubmitChanges();
