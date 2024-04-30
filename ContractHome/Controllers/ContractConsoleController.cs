@@ -23,6 +23,7 @@ using static ContractHome.Helper.JwtTokenGenerator;
 using ContractHome.Models.Cache;
 using Org.BouncyCastle.Ocsp;
 using ContractHome.Properties;
+using ContractHome.Controllers.Filters;
 
 namespace ContractHome.Controllers
 {
@@ -1557,6 +1558,7 @@ namespace ContractHome.Controllers
             return Content("");
         }
 
+        [RequestSizeLimit(200 * 1024 * 1024)]
         public async Task<IActionResult> InitialContract(IFormFile file)
         {
             var profile = (await HttpContext.GetUserAsync()).LoadInstance(models);
@@ -1760,7 +1762,7 @@ namespace ContractHome.Controllers
             {
                 return Json(new BaseResponse(true, "合約資料錯誤!!"));
             }
-            contract.ContractContent = new Binary(System.IO.File.ReadAllBytes(contract.FilePath));
+            contract.ContractContent = new Binary(System.IO.File.ReadAllBytesAsync(contract.FilePath).Result);
             contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Establish);
             
             if (contract.IsPassStamp==true)
