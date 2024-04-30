@@ -1,1 +1,0 @@
-C:\Project\Github\UXCA\TWCACAPIAdapter\bin\Debug\net6.0\openssl.exe x509 -req -days 7300 -out C:\Project\Github\UXCA\TWCACAPIAdapter\bin\Debug\net6.0\logs\2022\05\23\637889157969658990.crt -in C:\Project\Github\UXCA\TWCACAPIAdapter\bin\Debug\net6.0\logs\2022\05\23\637889157969658990.csr -CA ca.crt -CAkey ca.key -sha256 -passin pass:111111
