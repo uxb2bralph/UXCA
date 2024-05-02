@@ -1209,7 +1209,7 @@
           addRemoveLinks: false,
           acceptedFiles: 'application/pdf',
           dictDefaultMessage: "<div class='text-center h2 text-primary opacity-75'><i class='fas fa-cloud-upload-alt fa-lg'></i></div><div class='fs-5 fw-bolder text-secondary'>請將檔案拖曳到這裡，或是點一下，就可以上傳檔案</div>",
-          dictFileTooBig: '檔案限制：20MB',
+          dictFileTooBig: '檔案限制：100MB',
           init: function () {
             var myDropzone = this;
             this.on("success", function (file, data) {
@@ -1230,7 +1230,7 @@
               if (file.status === 'error') {
                 // 顯示錯誤訊息，2 秒後自動消失
                 self.isUploadFile = true;
-                self.uploadFileMsg = '檔案請勿超過20MB，以免發生不可預期的問題，請調整檔案後重新上傳';
+                self.uploadFileMsg = '檔案請勿超過100MB，以免發生不可預期的問題，請調整檔案後重新上傳';
                 setTimeout(() => {
                   myDropzone.removeAllFiles(true)
                   self.isUploadFile = false;
