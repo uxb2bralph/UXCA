@@ -13,6 +13,7 @@ using ContractHome.Helper.Security.MembershipManagement;
 using ContractHome.Models.Dto;
 using static ContractHome.Models.Helper.ContractServices;
 using ContractHome.Helper.DataQuery;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ContractHome.Controllers
 {
@@ -283,7 +284,6 @@ namespace ContractHome.Controllers
 
       UserProfile item = dataItem ?? UserProfile.PrepareNewItem(models.DataContext);
 
-      item.OrganizationUser.CompanyID = companyID!.Value;
       item.PID = viewModel.PID;
       item.EMail = viewModel.EMail;
       item.UserName = viewModel.UserName.GetEfficientString();
@@ -298,6 +298,11 @@ namespace ContractHome.Controllers
       try
       {
         models.SubmitChanges();
+
+                models.GetTable<OrganizationUser>().InsertOnSubmit(
+                    new OrganizationUser() { UID = item.UID, CompanyID = companyID ?? 0 });
+
+                models.SubmitChanges();
         if (viewModel.RoleID.HasValue)
         {
           models.ExecuteCommand(@"DELETE FROM UserRole WHERE (UID = {0})", item.UID);
@@ -609,7 +614,7 @@ namespace ContractHome.Controllers
 
     }
 
-        [UserAuthorize]
+        [Authorize]
         [HttpGet]
         [AutoValidateAntiforgeryToken]
         public async Task<ActionResult> GetUserAsync()
@@ -619,14 +624,27 @@ namespace ContractHome.Controllers
             {
                 return Json(new BaseResponse(true, "驗證失敗"));
             }
+
+            var isSignExchange = true;
+            var companyName = string.Empty;
+            if (profile.IsSysAdmin())
+            {
+                isSignExchange = false;
+            }
+            else
+            {
+                isSignExchange = (profile.OrganizationUser.Organization.DigitalSignBy() == DigitalSignCerts.Exchange);
+                companyName = profile.OrganizationUser.Organization.CompanyName;
+            }
+
             ClientUserInfo userResponse = new()
             {
-                CompanyName = profile.OrganizationUser.Organization.CompanyName,
+                CompanyName = companyName,
                 IsMemberAdmin = profile.IsMemberAdmin(),
                 IsSysAdmin = profile.IsSysAdmin(),
                 UserName = profile.PID,
                 EUID = profile.UID.EncryptKey(),
-                IsSignExchange = (profile.OrganizationUser.Organization.DigitalSignBy() == DigitalSignCerts.Exchange) ? true : false
+                IsSignExchange = isSignExchange ? true : false
             };
 
             return Json(new BaseResponse() { Data= userResponse });
