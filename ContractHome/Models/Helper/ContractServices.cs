@@ -499,7 +499,7 @@ namespace ContractHome.Models.Helper
                     };
 
                     var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData, 4320);
-                    var clickLink = $"{Settings.Default.WebAppDomain}/ContractConsole/Trust?token={Base64UrlEncode((jwtToken.EncryptData()))}";
+                    var clickLink = $"{Settings.Default.WebAppDomain}/ContractConsole/Trust?token={Base64UrlEncode(jwtToken.EncryptData())}";
 
                     var emailBody =
                         _emailBody

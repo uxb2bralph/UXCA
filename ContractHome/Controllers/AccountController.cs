@@ -24,6 +24,7 @@ using ContractHome.Models.Cache;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ContractHome.Models.Helper;
+using static ContractHome.Models.Email.Template.EmailBody;
 
 namespace ContractHome.Controllers
 {
@@ -223,8 +224,9 @@ namespace ContractHome.Controllers
 
     [AllowAnonymous]
     [HttpGet]
-    public ActionResult TrustPasswordReset([FromQuery] string token)
+        public async Task<ActionResult> Trust(string token)
     {
+            Logout();
             token = token.GetEfficientString();
             token = JwtTokenValidator.Base64UrlDecodeToString(token);
 
@@ -235,7 +237,8 @@ namespace ContractHome.Controllers
             }
 
             _contractServices.SetModels(models);
-            (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile) = _contractServices.TokenValidate(token);
+            (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile) = 
+                _contractServices.TokenValidate(token.DecryptData());
       if (resp.HasError)
       {
         TempData["message"] += resp.Message;
@@ -339,8 +342,9 @@ namespace ContractHome.Controllers
 
             JwtPayloadData jwtPayloadData = new JwtPayloadData() { 
                 ContractID=string.Empty, Email=email, UID= userProfile.UID.EncryptKey() };
-            var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData);
-            var clickLink = $"{Settings.Default.WebAppDomain}/Account/TrustPasswordReset?token={JwtTokenGenerator.Base64UrlEncode(jwtToken)}";
+            var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData, 4320);
+            var clickLink = $"{Settings.Default.WebAppDomain}/Account/Trust?token={Base64UrlEncode(jwtToken.EncryptData())}";
+
 
             FileLogger.Logger.Error($"clickLink={clickLink}");
             var emailTemp = EmailBody.EmailTemplate.WelcomeUser;
