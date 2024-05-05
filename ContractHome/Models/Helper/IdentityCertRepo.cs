@@ -11,14 +11,9 @@ namespace ContractHome.Models.Helper
     {
         protected internal GenericManager<DCDataContext> _models;
         public IdentityCertRepo(
-            //EmailBody emailBody,
-            //    EmailFactory emailFactory
             GenericManager<DCDataContext> models
             )
         {
-            //_emailBody = emailBody;
-            //_emailFactory = emailFactory;
-            //_contract = GetContractByID(contractID);
             _models = models;
         }
 

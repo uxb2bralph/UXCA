@@ -8,7 +8,7 @@ namespace ContractHome.Models.Dto
 {
     public class ValidateIdentityCertRequest 
     {
-        //public string B64Cert { get; set; }
+        public string B64Cert { get; set; }
         //public string BindingEmail { get; set; }
         public string Signature { get; set; }
         //public string EUID { get; set; }
