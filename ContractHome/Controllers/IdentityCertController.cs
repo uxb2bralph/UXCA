@@ -89,13 +89,13 @@ namespace ContractHome.Controllers
         public async Task<ActionResult> ValidateBySubject([FromBody] ValidateIdentityCertRequest req)
         {
             if (!ModelState.IsValid) { return BadRequest(); }
-            var profile = await HttpContext.GetUserAsync();
+            var profile = (await HttpContext.GetUserAsync()).LoadInstance(models);
             #region add for postman test
-            if (profile == null)
-            {
-                profile = models.GetTable<UserProfile>().Where(x => x.UID == 4).FirstOrDefault();
-            }
-            #endregion
+            //if (profile == null)
+            //{
+            //    profile = models.GetTable<UserProfile>().Where(x => x.UID == 11).FirstOrDefault();
+            //}
+            //#endregion
             if (profile == null)
             {
                 ModelState.AddModelError("EUID", "身份驗證失敗");
