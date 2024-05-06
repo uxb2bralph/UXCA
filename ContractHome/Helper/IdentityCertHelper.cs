@@ -37,7 +37,9 @@ namespace ContractHome.Helper
 
 
         public string X509PemString { get; }
-        public bool IsSubjectContainKeyWord(string containKeyWord)
+        public bool IsCorporateCert => X509Cert.Issuer.Contains("工商憑證");
+
+        public bool IsSubjectMatch(string containKeyWord)
         {
             if (string.IsNullOrEmpty(containKeyWord)) { return false; }
             if (X509Cert == null) return false;

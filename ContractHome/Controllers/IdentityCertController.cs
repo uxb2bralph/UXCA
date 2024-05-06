@@ -89,34 +89,47 @@ namespace ContractHome.Controllers
         public async Task<ActionResult> ValidateBySubject([FromBody] ValidateIdentityCertRequest req)
         {
             if (!ModelState.IsValid) { return BadRequest(); }
-            var profile = (await HttpContext.GetUserAsync()).LoadInstance(models);
-            #region add for postman test
-            //if (profile == null)
-            //{
-            //    profile = models.GetTable<UserProfile>().Where(x => x.UID == 11).FirstOrDefault();
-            //}
-            //#endregion
-            if (profile == null)
+
+            //#region add for postman test
+            try
             {
-                ModelState.AddModelError("EUID", "身份驗證失敗");
-                return BadRequest();
+                var profile = (await HttpContext.GetUserAsync()).LoadInstance(models);
+                //var profile = models.GetTable<UserProfile>().Where(x => x.UID == 11).FirstOrDefault();
+                //#endregion
+                if (profile == null)
+                {
+                    ModelState.AddModelError("EUID", "身份驗證失敗");
+                    return BadRequest();
+                }
+
+                identityCertHelper = new(x509PemString: req.B64Cert);
+                if (!identityCertHelper.IsSubjectMatch(profile.CompanyName))
+                {
+                    ModelState.AddModelError("CompanyName", "憑證資料不符(O)");
+                }
+                if (identityCertHelper.IsCorporateCert
+                    &&
+                    !identityCertHelper.IsSubjectMatch(profile.Organization.ReceiptNo))
+                {
+                    ModelState.AddModelError("ReceiptNo", "憑證資料不符(S)");
+                }
+
+                if (!identityCertHelper.IsSignatureValid(profile.PID, req.Signature))
+                {
+                    ModelState.AddModelError("Signature", "驗章失敗");
+                }
+
+                if (ModelState.IsValid)
+                { return Json(defaultResponse); }
+                else
+                { return BadRequest(); }
+            }
+            catch (Exception ex)
+            {
+                defaultResponse = new BaseResponse(haserror:true, error:"系統錯誤");
+                return View("~/Views/Shared/CustomMessage.cshtml", defaultResponse);
             }
 
-            identityCertHelper = new(x509PemString: req.B64Cert);
-            if (!identityCertHelper.IsSubjectContainKeyWord(profile.CompanyName))
-            {
-                ModelState.AddModelError("CompanyName", "憑證資料不符");
-            }
-
-            if (!identityCertHelper.IsSignatureValid(profile.PID, req.Signature))
-            {
-                ModelState.AddModelError("Signature", "驗章失敗");
-            }
-
-            if (ModelState.IsValid)
-            { return Content(defaultResponse.JsonStringify()); }
-            else
-            { return BadRequest(); }
 
         }
 

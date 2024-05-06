@@ -93,6 +93,9 @@ namespace ContractHome.Models.DataEntity
 
         public string CompanyName =>
             (OrganizationUser != null) ? OrganizationUser.Organization.CompanyName : string.Empty;
+
+        public Organization? Organization =>
+            (OrganizationUser != null) ? OrganizationUser.Organization : null;
     }
 
     public partial class CDS_Document
