@@ -21,6 +21,9 @@
   var profile = await Context.GetUserAsync();
   _viewModel.UrlAction = Url.Action("InquireData", "UserProfile");
 }
+@{
+  <script src="~/js/api.js"></script>
+}
 
 <div id="userProdile" class="container-lg py-4">
   <section class="queryform">
@@ -137,7 +140,7 @@
           </thead>
           <tbody>
             <tr v-for="(user, index) in userList" :key="`c_${index}`">
-              <td class="text-nowrap fs-13">{{ user.CompanyName }}</td>
+              <td class="text-nowrap fs-13">{{ user.PID === 'ifsadmin' ? '系統管理員' : user.CompanyName }}</td>
               <td class="text-nowrap fs-13">{{ user.PID }}</td>
               <td class="fs-13">{{ user.UserName }}</td>
               <td class="fs-13">{{ user.EMail }}</td>
@@ -171,7 +174,7 @@
                   <div class="tooltip__text">可進行印鑑管理</div>
                 </span>
                 <!-- 發送密碼修改通知 -->
-                <span class="tooltip__wrapper mx-1">
+                <span v-if="user.PID !== 'ifsadmin'" class="tooltip__wrapper mx-1">
                   <button type="button" id="ApplyPassword"
                     class="btn btn-sm btn-success opacity-75 rounded-pill icon__rounded"
                     v-on:click="sendApplyPassword(user.EMail)">
@@ -182,12 +185,21 @@
                 <span class="text-black-50 opacity-75"> | </span>
                 <!-- 停用 -->
                 <span v-if="user.PID !== 'ifsadmin'" class="tooltip__wrapper mx-1">
-                  <button type="button" id="deleteCompany"
+                  <button type="button" id="stopCompany"
                     class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded"
                     v-on:click="openConfirmDialog('stop', user)">
                     <i class="fas fa-stop"></i>
                   </button>
                   <div class="tooltip__text">停用</div>
+                </span>
+                <!-- 刪除 -->
+                <span v-if="user.PID !== 'ifsadmin'" class="tooltip__wrapper mx-1">
+                  <button type="button" id="deleteCompany"
+                    class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded"
+                    v-on:click="openConfirmDialog('delete', user)">
+                    <i class="fal fa-trash-alt"></i>
+                  </button>
+                  <div class="tooltip__text">刪除</div>
                 </span>
               </td>
             </tr>
@@ -433,7 +445,9 @@
           <div v-html="infoMsg"></div>
         </div>
         <div class="modal-footer border-top-0 justify-content-center">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+          <button v-if="deleteConfirm" type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+            v-on:click="inquireData">關閉</button>
+          <button v-else type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
         </div>
       </div>
     </div>
@@ -529,7 +543,8 @@
       isSearchOptionsOpen: false,
       isInputOptionsOpen: false,
       searchResults: [],
-      currentlyCounter: -1
+      currentlyCounter: -1,
+      deleteConfirm: false
     },
     watch: {
       // 檢查公司名稱輸入框的值，並執行Autocomplate
@@ -613,9 +628,9 @@
         if (type === 'stop') {
           this.confirmMsg = `確定停用 <span class="text-primary opacity-75">"${item.UserName}"</span> 使用者權限？`;
         }
-        //if (type === 'delete') {
-        //  this.confirmMsg = `確定刪除 <span class="text-primary opacity-75">"${item.UserName}"</span> 使用者？`;
-        //}
+        if (type === 'delete') {
+          this.confirmMsg = `確定刪除 <span class="text-primary opacity-75">"${item.UserName}"</span> 使用者？`;
+        }
         $("#confirmModal").modal('show');
       },
       confirmHandler() {
@@ -625,9 +640,9 @@
         if (this.editType === 'stop') {
           this.setStop();
         }
-        //if (this.editType === 'delete') {
-        //  this.confirmDel();
-        //}
+        if (this.editType === 'delete') {
+          this.confirmDel();
+        }
         $("#confirmModal").modal('hide');
       },
       // 設定印鑑管理權限
@@ -640,44 +655,30 @@
       },
       // 開啟刪除Modal
       openDeleteDialog(item) {
-        console.log('currentUserData:', item);
         this.currentUserData = item;
         $("#confirmModal").modal('show');
       },
       // 刪除廠商資料串API
       confirmDel() {
-        var viewModel = this.currentUserData;
+        const { UserName, KeyID } = this.currentUserData;
 
         showLoading();
-        $.ajax({
-          url: '@(Url.Action("VueDeleteItem", "UserProfile"))',
-          data: JSON.stringify(viewModel),
-          type: "POST",
-          //dataType: "json",
-          contentType: "application/json;charset=utf-8",
-          success: function (data) {
-            hideLoading();
-            if ($.isPlainObject(data)) {
-              if (data.result) {
-                // alertModal('資料已刪除!!');
-                const filterUserList = app.userList.filter(item => item.KeyID !== userData.KeyID);
-                app.userList = filterUserList;
-                app.infoMsg = `<span class='text-primary opacity-75'>" ${userData.UserName} "</span> 資料已刪除`;
-                $('#infoModal').modal('show');
-              } else {
-                alertModal('刪除未完成，原因：' + data.message);
-              }
+        postData('@(Url.Action("VueDeleteItem", "UserProfile"))', { KeyID })
+          .then((res) => {
+            const { result, message } = res;
+            if (result) {
+              // 成功
+              $("#confirmModal").modal("hide");
+              this.deleteConfirm = true;
+              this.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"> ${UserName} 已成功刪除 </div>`;
+              $("#infoModal").modal("show");
             } else {
-              $(data).appendTo($('body')).remove();
+              // 失敗
+              this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${message} </div>`;
+              $("#infoModal").modal("show");
             }
-          },
-          error: function (xhr, ajaxOptions, thrownError) {
             hideLoading();
-            alertModal(thrownError);
-            console.log(xhr.status);
-            console.log(thrownError);
-          }
-        });
+          })
       },
       // 發送密碼修改申請
       sendApplyPassword(emailString) {
@@ -781,6 +782,7 @@
       inquireData() {
         // email欄位檢核沒過不送出表單
         if (this.searchMailCheck) return;
+        this.deleteConfirm = false;
 
         // 表單資料
         this.page = 1;
