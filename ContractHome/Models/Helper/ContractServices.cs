@@ -233,14 +233,14 @@ namespace ContractHome.Models.Helper
 
             if (item.CurrentStep >= (int)CDS_Document.StepEnum.DigitalSigned)
             {
-                return (new BaseResponse(true, "合約已完成簽署流程, 無法再次簽署."), item, profile);
+                return (new BaseResponse(true, "合約已完成簽署流程, 無法再次簽署.").AddContractMessage(item), item, profile);
             }
 
             if (item.ContractSignatureRequest
                         .Where(x => x.CompanyID == profile.CompanyID)
                         .Where(x => x.SignatureDate != null).Count() > 0)
             {
-                return (new BaseResponse(true, "合約已完成簽署, 無法再次簽署."), item, profile);
+                return (new BaseResponse(true, "合約已完成簽署, 無法再次簽署.").AddContractMessage(item), item, profile);
             }
 
             return (normal, item, profile);
@@ -275,14 +275,14 @@ namespace ContractHome.Models.Helper
 
             if (item.CurrentStep >= (int)CDS_Document.StepEnum.Sealed)
             {
-                return (new BaseResponse(true, "合約已完成用印流程, 無法再次用印."), item, profile);
+                return (new BaseResponse(true, "合約已完成用印流程, 無法再次用印.").AddContractMessage(item), item, profile);
             }
 
             if (item.ContractSignatureRequest
                         .Where(x => x.CompanyID == profile.CompanyID)
                         .Where(x => x.StampDate != null).Count() > 0)
             {
-                return (new BaseResponse(true, "合約已完成用印, 無法再次用印."), item, profile);
+                return (new BaseResponse(true, "合約已完成用印, 無法再次用印.").AddContractMessage(item), item, profile);
             }
 
 
