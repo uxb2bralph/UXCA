@@ -1543,7 +1543,7 @@
         this.signerMessage = Name;
         this.currentCompanyData = { KeyID, Name, ContractNo, Title };
 
-        // 企業用戶(非以證換證)不用檢驗憑證
+        // 非企業用戶(以證換證)要檢驗憑證
         if (this.currentUserInfo.isSignExchange) {
           // 憑證檢驗
           this.openUserCertDialog('certValidate');
@@ -1956,8 +1956,35 @@
             }
             hideLoading();
           })
+      },
 
-      }
+      // 憑證檢查是否和公司或個人登錄資訊相符
+      userValidate() {
+        this.infoMsg = null;
+        const { certb64, signature } = this.signatureInfo;
+        const payload = {
+          B64Cert: certb64,
+          Signature: signature,
+        }
+        if (!certb64 || !signature) return;
+        showLoading();
+        postData('@(Url.Action("ValidateBySubject", "IdentityCert"))', payload)
+          .then((res) => {
+            const { hasError, data, message } = res;
+            console.log({ hasError, data, message });
+            if (!hasError) {
+              // 成功
+              $("#userCertModal").modal("hide");
+              console.log('憑證驗證ok');
+              $('#signModal').modal('show');
+            } else {
+              // 失敗
+              this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${message} </div>`;
+              $("#infoModal").modal("show");
+            }
+            hideLoading();
+          })
+      },
     }
   });
 
@@ -2027,11 +2054,15 @@
         app.$data.signatureInfo.message = result.message || null;
         app.$data.signatureInfo.message2 = result.message2 || null;
       }
-      if (app.$data.certStatus === 'certValidate') {
-        app.certValidate();
-      } else {
-        app.certRegister();
-      }
+      // 檢核卡片簽章是否符合user的資訊
+      app.userValidate();
+
+      // 憑證如果未認證，就註冊後再驗證
+      //if (app.$data.certStatus === 'certValidate') {
+      //  app.certValidate();
+      //} else {
+      //  app.certRegister();
+      //}
     }
   }
 </script>
