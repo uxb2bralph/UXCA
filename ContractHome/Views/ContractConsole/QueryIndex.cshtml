@@ -62,7 +62,7 @@
                   <label for="Initiator" class="col-sm-12 col-md-3 col-form-label fs-14 fw-bolder">起約人</label>
                   <div id="initiatorField" class="col-sm-12 col-md-9">
                     <input v-model="formData.InitiatorName" type="text" class="form-control" name="Initiator"
-                      placeholder="可輸入鍵字查詢公司名稱" autocomplete="off" />
+                      placeholder="可輸入關鍵字查詢公司名稱" autocomplete="off" />
                     <ul v-show="isInitiatorOptionsOpen" class="list-group mb-3 shadow__card">
                       <li v-for="(result, index) in searchResults" :key="index"
                         class="list-group-item list-group-item-action" v-on:click="setResult(result, 'initiator')"
@@ -78,7 +78,7 @@
                   <label for="ContractorName" class="col-sm-12 col-md-3 col-form-label fs-14 fw-bolder">簽約人</label>
                   <div id="contractorField" class="col-sm-12 col-md-9">
                     <input v-model="formData.ContractorName" type="text" class="form-control" name="ContractorName"
-                      id="ContractorName" placeholder="可輸入鍵字查詢公司名稱" autocomplete="off" />
+                      id="ContractorName" placeholder="可輸入關鍵字查詢公司名稱" autocomplete="off" />
                     <ul v-show="isContractorOptionsOpen" class="list-group mb-3 shadow__card">
                       <li v-for="(result, index) in searchResults" :key="index"
                         class="list-group-item list-group-item-action" v-on:click="setResult(result, 'contractor')"
