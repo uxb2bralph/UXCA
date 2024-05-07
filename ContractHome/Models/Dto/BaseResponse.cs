@@ -1,4 +1,5 @@
 ﻿using CommonLib.Utility;
+using ContractHome.Models.DataEntity;
 using ContractHome.Properties;
 using System.Text.Json.Serialization;
 
@@ -35,6 +36,12 @@ namespace ContractHome.Models.Dto
             Message = error;
             Data= string.Empty;
             Url = string.Empty;
+        }
+
+        public BaseResponse AddContractMessage(Contract contract)
+        {
+            Message = $"{contract.Title}({contract.ContractNo}) {this.Message}";
+            return this;
         }
 
         public BaseResponse (WebReasonEnum reason)

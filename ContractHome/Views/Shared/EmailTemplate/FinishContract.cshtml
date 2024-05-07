@@ -10,7 +10,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>文件@(Model.ContractNo)已完成簽署</title>
+    <title>@(Model.Title)(@(Model.ContractNo)) 已完成簽署</title>
 </head>
 
 <body>
@@ -42,7 +42,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
                     <span style="font-size:12pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#333333;">
                       Hello @(Model.RecipientUserName)
                       <br>
-                        "@(Model.ContractNo)"簽署任務已完成。您可以在安心簽中查看並下載檔案。
+                                            @(Model.Title)(@(Model.ContractNo)) 簽署任務已完成。您可以在安心簽中查看並下載檔案。
                       <br>
                       <br>
                       祝一切順心。
