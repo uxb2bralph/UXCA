@@ -194,7 +194,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
     el: '#DigitalSignModal',
     data() {
       return {
-        contractID: '@(Model.ContractID)',
+        contractID: '@Html.Raw(Model.ContractID)',
         contractNo: '@(Model.ContractNo)',
         contractTitle: '@(Model.ContractTitle)',
         companyName: '@(Model.CompanyName)',

@@ -115,6 +115,15 @@ namespace ContractHome.Controllers
 
         //}
 
+
+        [HttpGet]
+        [Route("DecryptKeyValue")]
+        public IActionResult GetDecryptKeyValue([FromQuery] string keyID)
+        {
+            //viewModel.ContractID = viewModel.DecryptKeyValue();
+            return Ok(keyID.DecryptKeyValue());
+        }
+
         [HttpPost]
         [Route("GetEncryptUserID")]
         public IActionResult GetEncryptUserID([FromBody] VO targetString)
