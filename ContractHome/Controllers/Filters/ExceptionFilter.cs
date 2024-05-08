@@ -4,16 +4,10 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
 using ContractHome.Helper;
 using ContractHome.Models;
 using System.Diagnostics;
+using CommonLib.Core.Utility;
 
 namespace ContractHome.Controllers.Filters
 {
@@ -34,11 +28,8 @@ namespace ContractHome.Controllers.Filters
                 ApplicationLogging.CreateLogger<ExceptionFilter>().LogError(filterContext.Exception, filterContext.Exception.Message);
 
                 //wait to merge into LogError
-                ApplicationLogging.CreateLogger<ExceptionFilter>().LogWarning(
-                    eventId: new EventId(), 
-                    message: $"{Activity.Current?.Id ?? filterContext.HttpContext.TraceIdentifier}",
-                    $"{filterContext.Exception.Message}"
-                );
+                FileLogger.Logger.Error($"{Activity.Current?.Id ?? filterContext.HttpContext.TraceIdentifier}  {filterContext.Exception.Message}");
+
                 ViewDataDictionary viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
                 {
                     Model = new ErrorViewModel
