@@ -168,7 +168,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
         <div class="d-flex justify-content-center">
           <button type="button" class="btn btn-secondary opacity-75 mx-1" id="backToSomewhere"
             v-on:click="backToSomewhere">取消</button>
-          <button type="button" id="confirmSign" class="btn btn-primary mx-1" :class="{ disabled: !isRead }"
+          <button type="button" id="confirmSign" class="btn btn-primary mx-1" :class="{ disabled: !agree }"
             v-on:click="confirmSignHandler">確定</button>
         </div>
       </div>
@@ -182,12 +182,15 @@ For more information on enabling MVC for empty projects, visit https://go.micros
             <div v-html="infoMsg"></div>
           </div>
           <div class="modal-footer border-top-0 justify-content-center">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+            <button v-if="isCommitSuccess" type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+              v-on:click="backToSomewhere">關閉</button>
+            <button v-else type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
           </div>
         </div>
       </div>
     </div>
   </div>
+  <div id="signBox" class="p-5"></div>
 </body>
 <script>
   var app = new Vue({
@@ -198,7 +201,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
         contractNo: '@(Model.ContractNo)',
         contractTitle: '@(Model.ContractTitle)',
         companyName: '@(Model.CompanyName)',
-        isRead: false,
+        agree: false,
         // 憑證簽章
         signature: {
           type: 'PKCS1',
@@ -225,6 +228,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
         currentUserInfo: {},
         isValidated: false,
         infoMsg: null,
+        isCommitSuccess: false,
       }
     },
     mounted() {
@@ -281,7 +285,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
 
       // 讀取個資同意
       checkAgree() {
-        this.isRead = !this.isRead;
+        this.agree = !this.agree;
       },
 
       // 進行簽署
@@ -291,20 +295,21 @@ For more information on enabling MVC for empty projects, visit https://go.micros
         $.post('@Html.Raw(Url.Action("CommitDigitalSignature", "ContractConsole"))', {
           'KeyID': self.contractID,
           'Signature': null
-        }, function (data) {
+        }, function (res) {
           hideLoading();
-
-          if ($.isPlainObject(data)) {
-            if (data.result) {
-              alertModal(`${self.contractTitle}<br>(${self.contractNo}) <br>簽署完成！`);
-              setTimeout(() => {
-                window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
-              }, 3000);
+          if ($.isPlainObject(res)) {
+            const { data, hasError, message, result } = res;
+            if (result) {
+              // 成功
+              self.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base">${contractTitle}( ${contractNo} )<br>簽署完成！</div>`;
+              self.isCommitSuccess = true;
             } else {
-              alertModal(data.message);
+              // 失敗
+              self.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${message} </div>`;
             }
+            $('#infoModal').modal('show');
           } else {
-            $(data).appendTo($('body'));
+            $(res).appendTo($('#signBox'));
           }
         });
       },
@@ -394,7 +399,34 @@ For more information on enabling MVC for empty projects, visit https://go.micros
             }
             hideLoading();
           })
-      }
+      },
+
+      // 憑證檢查是否和公司或個人登錄資訊相符
+      userValidate() {
+        this.infoMsg = null;
+        const { certb64, signature } = this.signatureInfo;
+        const payload = {
+          B64Cert: certb64,
+          Signature: signature,
+        }
+        if (!certb64 || !signature) return;
+        showLoading();
+        postData('@(Url.Action("ValidateBySubject", "IdentityCert"))', payload)
+          .then((res) => {
+            const { hasError, data, message } = res;
+            console.log({ hasError, data, message });
+            if (!hasError) {
+              // 成功
+              console.log('憑證驗證ok');
+              this.isValidated = true;
+            } else {
+              // 失敗
+              this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${message} </div>`;
+              $("#infoModal").modal("show");
+            }
+            hideLoading();
+          })
+      },
     }
   });
 
@@ -432,12 +464,15 @@ For more information on enabling MVC for empty projects, visit https://go.micros
         app.$data.signatureInfo.message = result.message || null;
         app.$data.signatureInfo.message2 = result.message2 || null;
       }
-      console.log('certStatus', app.$data.certStatus)
-      if (app.$data.certStatus === 'certValidate') {
-        app.certValidate();
-      } else {
-        app.certRegister();
-      }
+      // 憑證檢查是否和公司或個人登錄資訊相符
+      app.userValidate();
+
+      // 憑證如果未認證，就註冊後再驗證 (驗證註冊綁定功能先關掉)
+      //if (app.$data.certStatus === 'certValidate') {
+      //  app.certValidate();
+      //} else {
+      //  app.certRegister();
+      //}
     }
   }
 </script>

@@ -90,10 +90,23 @@
       <div class="options__wrapper pt-sm-3 pt-xl-0">
         <div id="toAffix" class="row m-0 p-0">
           <form method="post" enctype="multipart/form-data" class="ps-1 pe-3">
+            <!-- 文件名稱 -->
+            <div class="card p-3 mb-2">
+              <h6 class="fw-bolder text-primary">
+                <i class="fad fa-file-signature me-1"></i>
+                文件名稱
+              </h6>
+              <span class="fs-13 text-black-50">
+                文件編號： {{ ContractNo }}
+              </span>
+              <span class="fs-14">
+                {{ Title }}
+              </span>
+            </div>
             <!-- 簽署人設定 -->
             <div v-if="isEdit">
               <template>
-                <div class="card p-3 pb-0 mb-3">
+                <div class="card p-3 pb-0 mb-2">
                   <h6 class="fw-bolder text-primary">
                     <i class="fad fa-users me-1"></i>
                     簽署人
@@ -131,7 +144,7 @@
                     簽署選項
                   </h6>
                   <div class="pb-3">
-                    <label class="form-label fw-bolder" for="PageIndex">選擇簽署所在頁碼</label>
+                    <label class="form-label fw-bolder fs-13" for="PageIndex">選擇簽署所在頁碼</label>
                     <select v-model="selectedPage" id="PageIndex" name="PageIndex" class="form-select form-select-sm"
                       v-on:change="pageHandler">
                       <option v-for="(page, index) in PageCount" :key="index" :value="page">第{{ page }}頁</option>
@@ -179,13 +192,13 @@
             </div>
             <!-- 簽署人簽章 -->
             <div v-else>
-              <div class="p-3 ps-0 pb-0 mb-3 options--show">
+              <div class="p-3 ps-0 pb-0 mb-1 options--show">
                 <h6 class="fw-bolder text-primary">
                   <i class="fad fa-users me-1"></i>
                   簽署人簽章
                 </h6>
               </div>
-              <div class="card p-3 mb-3  options--show">
+              <div class="card p-3 mb-1 options--show">
                 <h6 class="fw-bolder text-primary">
                   <i class="fad fa-tasks-alt me-1"></i>
                   簽署選項
@@ -417,7 +430,7 @@
 </div>
 <script>
   // 取得上傳 PDF 總頁數
-  const { CurrentStep, KeyID: contractID, PageCount, Parties } = @Html.Raw(contractRefsJson);
+  const { ContractNo, Title, CurrentStep, KeyID: contractID, PageCount, Parties } = @Html.Raw(contractRefsJson);
 
   /**
    * param {Number} StepEnum 文件狀態
@@ -438,6 +451,8 @@
     el: '#AffixPdfSealImage',
     data() {
       return {
+        ContractNo,
+        Title,
         CurrentStep,
         PageCount,
         Parties,
