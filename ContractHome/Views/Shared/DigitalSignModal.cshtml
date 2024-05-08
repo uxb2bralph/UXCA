@@ -190,6 +190,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
       </div>
     </div>
   </div>
+  <div id="signBox" class="p-5"></div>
 </body>
 <script>
   var app = new Vue({
@@ -294,14 +295,13 @@ For more information on enabling MVC for empty projects, visit https://go.micros
         $.post('@Html.Raw(Url.Action("CommitDigitalSignature", "ContractConsole"))', {
           'KeyID': self.contractID,
           'Signature': null
-        }, function (data) {
+        }, function (res) {
           hideLoading();
-
           if ($.isPlainObject(res)) {
             const { data, hasError, message, result } = res;
             if (result) {
               // 成功
-              self.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base">${fileInfo}<br>簽署完成！</div>`;
+              self.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base">${contractTitle}( ${contractNo} )<br>簽署完成！</div>`;
               self.isCommitSuccess = true;
             } else {
               // 失敗
@@ -309,7 +309,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
             }
             $('#infoModal').modal('show');
           } else {
-            $(data).appendTo($('body'));
+            $(res).appendTo($('#signBox'));
           }
         });
       },
