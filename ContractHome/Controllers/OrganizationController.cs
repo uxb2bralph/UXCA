@@ -226,6 +226,19 @@ namespace ContractHome.Controllers
         }
       }
 
+      if (viewModel.BelongToCompany != null)
+        {
+                try
+                {
+                    int belongToCompany = viewModel.BelongToCompany.DecryptKeyValue();
+                }
+                catch (Exception)
+                {
+                    ModelState.AddModelError("BelongToCompany", "所屬起約公司不存在!!");
+                }
+
+        }
+
       if (!ModelState.IsValid)
       {
         return Json(new { result = false, message = ModelState.ErrorMessage() });
@@ -247,6 +260,8 @@ namespace ContractHome.Controllers
       item.ContactPhone = viewModel.ContactPhone;
       item.ContactMobilePhone = viewModel.ContactMobilePhone;
       item.ContactEmail = viewModel.ContactEmail;
+            item.CanCreateContract = (viewModel.CreateContract!=null)? viewModel.CreateContract:false;
+            item.CompanyBelongTo = (viewModel.BelongToCompany != null) ? viewModel.BelongToCompany.DecryptKeyValue() : null;
       try
       {
         models.SubmitChanges();

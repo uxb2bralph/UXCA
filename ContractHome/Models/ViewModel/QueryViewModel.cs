@@ -234,7 +234,9 @@ namespace ContractHome.Models.ViewModel
     public int? CurrentLevel { get; set; }
     public String? AuthorizationNo { get; set; }
     public String[]? ItemName { get; set; }
-  }
+        public bool? CreateContract { get; set; }
+        public string? BelongToCompany { get; set; }
+    }
 
   public partial class UserProfileViewModel : QueryViewModel
   {
