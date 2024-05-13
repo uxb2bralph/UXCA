@@ -266,7 +266,9 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title fw-bolder" id="staticBackdropLabel">{{ editTitle }}公司資料</h5>
+          <h5 class="modal-title fw-bolder" id="staticBackdropLabel">
+            {{ formStatus === 'addNew' ? '新增' : '編輯' }}公司資料
+          </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -281,13 +283,6 @@
                         :class="{'is-invalid': isCompanyName}" id="CompanyName"
                         v-on:focus="resetValidate('isCompanyName')"
                         v-on:blur="validateField('isCompanyName', formData.CompanyName)" autocomplete="off" />
-                      <ul v-show="isInputOptionsOpen" class="list-group mb-3 shadow__card">
-                        <li v-for="(result, index) in searchResults" :key="index"
-                          class="list-group-item list-group-item-action" v-on:click="setResult(result, 'edit')"
-                          :class="{'active': index === currentlyCounter}">
-                          {{ result }}
-                        </li>
-                      </ul>
                       <div class="invalid-feedback">
                         請輸入公司名稱
                       </div>
@@ -374,6 +369,35 @@
                     </div>
                   </div>
                 </div>
+                <div class="col input__height">
+                  <div class="row">
+                    <label for="BelongToCompanyName"
+                      class="col-sm-12 col-md-3 col-form-label fw-bolder">所屬起約方公司名稱</label>
+                    <div id="addBelongToCompanyName" class="col-sm-12 col-md-9">
+                      <input v-model="formData.BelongToCompanyName" type="text" class="form-control"
+                        placeholder="可輸入關鍵字查詢公司名稱" id="BelongToCompanyName" autocomplete="off" />
+                      <ul v-show="isInputOptionsOpen" class="list-group mb-3 shadow__card">
+                        <li v-for="(result, index) in searchResults" :key="index"
+                          class="list-group-item list-group-item-action" v-on:click="setResult(result, 'edit')"
+                          :class="{'active': index === currentlyCounter}">
+                          {{ result.CompanyName }}
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col input__height">
+                  <div class="row">
+                    <div class="col-md-6 mt-0">
+                      <input v-model="formData.CreateContract" type="checkbox" class="form-check-input me-1"
+                        id="CreateContract" name="CreateContract" :true-value="true" :false-value="false" />
+                      <label class="form-check-label fw-bolder" for="CreateContract">
+                        新增文件權限
+                      </label>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </form>
@@ -392,7 +416,6 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body text-center h5 fw-bolder pt-5">
-          <div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div>
           <div v-html="infoMsg"></div>
         </div>
         <div class="modal-footer border-top-0 justify-content-center">
@@ -404,55 +427,11 @@
 
 </div>
 <script>
-  // Fake company Data
-  const companyOptions = [
-    'Option 1',
-    'Option 111',
-    'Option 11',
-    'Option 22',
-    'Option 2',
-    'Option 3',
-  ];
-
-  // 廠商列表
-  @*const companyList = [
-    {
-    uuid: '111',
-    CompanyName: '網際優勢甲方公司',
-    ReceiptNo: '12345678',
-    Phone: '02-12345678',
-    Fax: '02-12345679',
-    Addr: '台北市中正區南海路20號6樓',
-    ContactEmail: 'David@uxb2b.com',
-    UndertakerName: '劉大衛'
-    },
-    {
-    uuid: '222',
-    CompanyName: '網際優勢乙方公司',
-    ReceiptNo: '87654321',
-    Phone: '02-12345678',
-    Fax: '02-12345679',
-    Addr: '台北市中正區杭州南路120號8樓',
-    ContactEmail: 'wang@uxb2b.com',
-    UndertakerName: '王大衛'
-    },
-    {
-    uuid: '333',
-    CompanyName: '網際優勢丙方公司',
-    ReceiptNo: '85214788',
-    Phone: '02-12345678',
-    Fax: '02-12345679',
-    Addr: '台北市中正區羅斯福路200號6樓之一',
-    ContactEmail: 'lin@uxb2b.com',
-    UndertakerName: '林大衛'
-    },
-    ];*@
-  const companyList = [];
-
   var app = new Vue({
     el: '#organization',
     data: {
       isValidate: false,
+      formStatus: 'addNew',
       /**
        * 廠商資料查詢表單
        * @@param {string} CompanyName 公司名稱
@@ -474,7 +453,6 @@
       },
       // 編輯
       initialFormData: {
-        uuid: null,
         CompanyName: null,
         ReceiptNo: null,
         Phone: null,
@@ -482,11 +460,12 @@
         Addr: null,
         ContactEmail: null,
         UndertakerName: null,
+        CreateContract: null,
+        BelongToCompanyName: null,
+        BelongToCompany: null
       },
-      formData: {
-        CompanyName: null,
-      },
-      companyList,
+      formData: {},
+      companyList: [],
       /** 分頁 options
        * totalRecordCount: 總筆數
        * pageSize: 每頁筆數
@@ -497,7 +476,6 @@
       pageSize: 10,
       page: 1,
       currentCompanyData: {},
-      editTitle: null,
       isCompanyName: false,
       isReceiptNo: false,
       isPhone: false,
@@ -509,7 +487,7 @@
       /**
        * Autocomplete
        */
-      companyOptions,
+      companyOptions: [],
       isSearchOptionsOpen: false,
       isInputOptionsOpen: false,
       searchResults: [],
@@ -520,7 +498,7 @@
       'searchFormData.CompanyName'() {
         this.filterResults('search');
       },
-      'formData.CompanyName'() {
+      'formData.BelongToCompanyName'() {
         this.filterResults('edit');
       }
     },
@@ -537,6 +515,9 @@
       }
     },
     mounted() {
+      // 編輯表單初始化
+      this.init();
+
       // 進入本頁先查詢清單
       this.inquireData();
 
@@ -560,67 +541,52 @@
       });
     },
     methods: {
+      init() {
+        this.formData = JSON.parse(JSON.stringify(this.initialFormData));
+      },
+
       // 新增 / 編輯 表單Modal
       editData(type, data) {
-        $('#addNewModal').modal('show');
-        const isNew = type === 'addNew';
-        this.editTitle = isNew ? '新增' : '編輯';
-        // 新增時加入一筆uuid
-        this.formData.uuid = isNew ? ui_uuid() : this.formData.uuid;
-        if (type === 'addNew') {
-          this.formData = JSON.parse(JSON.stringify(this.initialFormData));
-        }
+        this.formStatus = type;
+        this.init();
         if (type === 'edit') {
-          this.formData = data; //JSON.parse(JSON.stringify(data));
+          this.formData = { ...this.formData, ...data };
         }
+        $('#addNewModal').modal('show');
       },
+
       // 開啟刪除Modal
       openDeleteDialog(item) {
-        console.log('currentCompanyData:', item);
         this.currentCompanyData = item;
         $("#deleteModal").modal('show');
       },
       // 刪除廠商資料串API
       confirmDel(companyData) {
-        console.log('companyData:', companyData);
-
+        const { KeyID } = companyData;
         $("#deleteModal").modal('hide');
-
-        // showLoading();
-        // setTimeout(() => {
-        //   // 模擬假資料被刪除
-        //   // const filterCompanyList = this.companyList.filter(item => item.uuid !== companyData.uuid);
-        //   // this.companyList = filterCompanyList;
-
-        //   hideLoading();
-        //   // 開啟訊息視窗
-        //   this.infoMsg = `<span class='text-primary opacity-75'>" ${this.currentCompanyData.CompanyName} "</span> 資料已刪除`;
-        //   $('#infoModal').modal('show');
-        // }, 2000);
-
-        var viewModel = companyData;
 
         showLoading();
         $.ajax({
           url: '@(Url.Action("VueDeleteItem", "Organization"))',
-          data: JSON.stringify(viewModel),
+          data: JSON.stringify({ KeyID }),
           type: "POST",
           //dataType: "json",
           contentType: "application/json;charset=utf-8",
-          success: function (data) {
+          success: function (res) {
+            const { hasError, message, result, data } = res;
             hideLoading();
-            if ($.isPlainObject(data)) {
-              if (data.result) {
-                // alertModal('資料已刪除!!');
+            if ($.isPlainObject(res)) {
+              if (!hasError) {
+                // 成功
                 const filterCompanyList = app.companyList.filter(item => item.KeyID !== companyData.KeyID);
                 app.companyList = filterCompanyList;
-                app.infoMsg = `<span class='text-primary opacity-75'>" ${companyData.CompanyName} "</span> 資料已刪除`;
-                $('#infoModal').modal('show');
+                app.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"><span class="text-primary opacity-75">" ${companyData.CompanyName} "</span> 資料已刪除</div>`;
               } else {
-                alertModal('刪除未完成，原因：' + data.message);
+                app.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> 刪除未完成，原因：${message} </div>`;
               }
+              $('#infoModal').modal('show');
             } else {
-              $(data).appendTo($('body')).remove();
+              $(res).appendTo($('body')).remove();
             }
           },
           error: function (xhr, ajaxOptions, thrownError) {
@@ -633,56 +599,52 @@
       },
       // 儲存表單
       saveHandler() {
+        const { CompanyName, ReceiptNo, Phone, Fax, UndertakerName, ContactEmail, Addr, BelongToCompanyName, BelongToCompany } = this.formData;
         // 輸入欄位檢核
-        this.isCompanyName = !this.formData.CompanyName;
-        this.isReceiptNo = !this.formData.ReceiptNo;
-        this.isPhone = !this.formData.Phone;
-        this.isFax = !this.formData.Fax;
-        this.isUndertakerName = !this.formData.UndertakerName;
-        this.isContactEmail = !this.formData.ContactEmail;
-        this.isAddr = !this.formData.Addr;
+        this.isCompanyName = !CompanyName;
+        this.isReceiptNo = !ReceiptNo;
+        this.isPhone = !Phone;
+        this.isFax = !Fax;
+        this.isUndertakerName = !UndertakerName;
+        this.isContactEmail = !ContactEmail;
+        this.isAddr = !Addr;
         // 檢核email格式是否正確
-        this.checkMail('isContactEmail', this.formData.ContactEmail);
+        this.checkMail('isContactEmail', ContactEmail);
+
+        // 檢核
+        if (BelongToCompanyName && !BelongToCompany) {
+          alertModal('<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> 查無所屬起約方公司名稱！ </div>');
+          return;
+        }
         // 如果檢核通過，就會送出表單
         if (this.isCompanyName || this.isReceiptNo || this.isPhone /* || this.isFax */ || this.isUndertakerName || this.isContactEmail || this.isAddr) return;
 
         console.log('儲存表單');
         $('#addNewModal').modal('hide');
-        // showLoading();
-        // setTimeout(() => {
-        //   hideLoading();
-        //   // 開啟訊息視窗
-        //   this.infoMsg = "存檔完成";
-        //   $('#infoModal').modal('show');
-
-        // }, 2000);
 
         var viewModel = this.formData;
-
-  @* if (addNew) {
-          delete $inquiryAgent.viewModel.EncKeyItem;
-          delete $inquiryAgent.viewModel.KeyItem;
-          } *@
-          showLoading();
+        showLoading();
         $.ajax({
           url: '@(Url.Action("VueCommitItem", "Organization"))',
           data: JSON.stringify(viewModel),
           type: "POST",
           //dataType: "json",
           contentType: "application/json;charset=utf-8",
-          success: function (data) {
+          success: function (res) {
             hideLoading();
-            if ($.isPlainObject(data)) {
-              if (data.result) {
-                app.infoMsg = "存檔完成";
-                $('#infoModal').modal('show');
+            const { hasError, message, result, data } = res;
+            if ($.isPlainObject(res)) {
+              if (!hasError) {
+                // 成功
+                app.infoMsg = '<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base">存檔完成！</div>';
                 app.inquireData();
-                // alertModal('存檔完成!!');
               } else {
-                alertModal('存檔失敗，原因：' + data.message);
+                // 失敗
+                app.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> 存檔失敗，原因：${message} </div>`;
               }
+              $('#infoModal').modal('show');
             } else {
-              $('body').append($(data));
+              $('body').append($(res));
             }
           },
           error: function (xhr, ajaxOptions, thrownError) {
@@ -714,7 +676,6 @@
           pageSize: this.pageSize,
           page: this.page
         }
-        console.log('payload:', payload);
 
         var viewModel = $.extend({
           PageSize: this.pageSize,
@@ -795,25 +756,31 @@
        */
       filterResults(type) {
         // 搜尋和輸入資料來源不同
-        const inputValue = type === 'search' ? this.searchFormData.CompanyName : this.formData.CompanyName;
+        const inputValue = type === 'search' ? this.searchFormData.CompanyName : this.formData.BelongToCompanyName;
+        // 顯示查詢結果列表
         this.searchResults = !inputValue ? [] : this.companyOptions.filter((item) => {
           return item.toLowerCase().indexOf(inputValue.toLowerCase()) > -1;
         });
-        if (type === 'search') {
-          // this.isInputOptionsOpen = this.searchResults.length > 0;
-          var viewModel = {
-            Term: inputValue
-          };
 
-          fetchDataList(viewModel, '@(Url.Action("VueSearchCompany", "Home"))',
-            function (dataItems) {
-              app.searchResults = dataItems;
+        const self = this;
+        const viewModel = {
+          Term: inputValue
+        };
+        // 查詢公司列表
+        fetchDataList(viewModel, '@(Url.Action("VueSearchCompany", "Home"))',
+          function (dataItems) {
+            app.searchResults = dataItems;
+            console.log({ dataItems })
+            if (type === 'search') {
+              console.log('search')
               app.isSearchOptionsOpen = $.isArray(dataItems) && dataItems.length > 0;
-            });
-        }
-        if (type === 'edit') {
-          this.isInputOptionsOpen = this.searchResults.length > 0;
-        }
+
+            } else {
+              console.log('edit')
+              self.isInputOptionsOpen = $.isArray(dataItems) && dataItems.length > 0;
+            }
+          }
+        );
       },
       // 選取值後代入欄位
       setResult(result, type) {
@@ -823,7 +790,8 @@
             this.searchFormData.ReceiptNo = result.ReceiptNo;
           }
           if (type === 'edit') {
-            this.formData.CompanyName = result;
+            this.formData.BelongToCompanyName = result.CompanyName;
+            this.formData.BelongToCompany = result.KeyID;
           }
           this.clearAll(type);
         }
