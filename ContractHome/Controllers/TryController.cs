@@ -2,13 +2,16 @@
 using CommonLib.Core.Utility;
 using ContractHome.Helper;
 using ContractHome.Models.DataEntity;
+using ContractHome.Models.Dto;
 using ContractHome.Models.Email;
 using ContractHome.Models.Email.Template;
+using ContractHome.Models.Helper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.DirectoryServices.Protocols;
 using System.Web;
+using static ContractHome.Helper.JwtTokenGenerator;
 
 namespace ContractHome.Controllers
 {
@@ -18,28 +21,18 @@ namespace ContractHome.Controllers
     {
 
         private readonly IMailService _mailService;
-        //private readonly IEnumerable<IEmailTemplate> _emailTemplate;
         private readonly IViewRenderService _viewRenderService;
-        //private readonly EmailDataFactory _emailDataFactory;
-        //private readonly EmailBodyTemplate _emailBodyTemplate;
         private readonly IRazorViewToStringRenderer _razorViewToStringRenderer;
-
+        private ContractServices? _contractServices;
         public TryController(
             IMailService mailService,
-            //IEnumerable<IEmailTemplate> emailTemplate,
-            IViewRenderService viewRenderService
-            //EmailDataFactory emailDataFactory,
-            //IRazorViewToStringRenderer razorViewToStringRenderer,
-            //EmailBodyTemplate emailBodyTemplate
+            IViewRenderService viewRenderService,
+            ContractServices contractServices
             )
         {
-
+            _contractServices = contractServices;
             _mailService = mailService;
-            //_emailTemplate = emailTemplate;
-            //_emailDataFactory = emailDataFactory;
             _viewRenderService = viewRenderService;
-            //_razorViewToStringRenderer = razorViewToStringRenderer;
-            //_emailBodyTemplate = emailBodyTemplate;
         }
 
         public class VO
@@ -47,73 +40,6 @@ namespace ContractHome.Controllers
             public string StringItem { get; set; }
             public int IntItem { get; set; }
         }
-
-        //[HttpPost]
-        //[Route("TestRazorViewToStringRenderer")]
-        //public async Task<IActionResult> TestRazorViewToStringRenderer(VO sendMailData)
-        //{
-        //    TemplateShopExpired welcome = new TemplateShopExpired();
-        //    welcome.ShopHost = "a";
-        //    welcome.ShopHostAdmin = "a";
-        //    welcome.ShopSaveDays = "a";
-        //    welcome.ShopCloseDate = "a";
-        //    welcome.CdnHost = "a";
-        //    var ttt = await _razorViewToStringRenderer.RenderViewToStringAsync(
-        //        viewName: sendMailData.StringItem,
-        //        model: welcome);
-        //    return Ok(ttt.Length);
-        //}
-
-        //[HttpPost]
-        //[Route("TestViewRenderService")]
-        //public async Task<IActionResult> TestViewRenderService(VO sendMailData)
-        //{
-        //    TemplateShopExpired welcome = new TemplateShopExpired();
-        //    welcome.ShopHost = "a";
-        //    welcome.ShopHostAdmin = "a";
-        //    welcome.ShopSaveDays = "a";
-        //    welcome.ShopCloseDate = "a";
-        //    welcome.CdnHost = "a";
-        //    string ttt = await _viewRenderService.RenderToStringAsync(
-        //        viewName: sendMailData.StringItem,
-        //        model: welcome);
-        //    return Ok(ttt.Length);
-        //}
-        //[HttpPost]
-        //[Route("SendTemplateEMail")]
-        //public async Task<bool> SendTemplateEMail([FromBody] VO sendMailData)
-        //{
-        //    try
-        //    {
-        //        EmailBodyTemplate emailDataTemplate =
-        //            new EmailBodyTemplateBuilder(_emailBodyTemplate)
-        //            .SetTemplateItem(sendMailData.StringItem)
-        //            .SetContractNo("ContractNo.12345")
-        //            .SetTitle("this is title.")
-        //            .SetUserName("IAmIris.")
-        //            .SetUserEmail("iris@uxb2b.com.")
-        //            .SetRecipientUserName("IAmPartyB.")
-        //            .SetRecipientUserEmail("partyB@uxb2b.com")
-        //            .SetContractLink(@"https://localhost:5153/account/login")
-        //            .SetVerifyLink(@"https://localhost:5153/account/login")
-        //            .Build();
-
-        //        var mailData = _emailDataFactory.GetMailDataToCustomer(
-        //            email: "iris@uxb2b.com",
-        //            subject: $@"{sendMailData.StringItem}",
-        //            body: await emailDataTemplate.GetViewRenderString());
-
-        //        return await _mailService.SendMailAsync(mailData);
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine(ex.ToString());
-        //        return false;
-        //    }
-
-
-        //}
 
 
         [HttpGet]
@@ -165,5 +91,33 @@ namespace ContractHome.Controllers
 
 
         }
+
+        [HttpGet]
+        [Route("TokenValidate")]
+        public IActionResult GetTokenValidate([FromQuery] string tokenString)
+        {
+            string result = string.Empty;
+            var a = JwtTokenValidator.Base64UrlDecodeToString(tokenString);
+            var b = a.DecryptData();
+
+
+            if (string.IsNullOrEmpty(b))
+            {
+                result = "驗證資料為空值。";
+            }
+
+            if (!JwtTokenValidator.ValidateJwtToken(b, JwtTokenGenerator.secretKey))
+            {
+                result += "Token已失效，請重新申請。";
+            }
+            var jwtTokenObj = JwtTokenValidator.DecodeJwtToken(b);
+            if (jwtTokenObj == null)
+            {
+                result += "Token已失效，請重新申請。";
+            }
+
+            return Ok(jwtTokenObj);
+        }
+
     }
 }
