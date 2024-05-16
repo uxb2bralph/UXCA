@@ -32,7 +32,7 @@
   <!-- 數位簽章 Dialog -->
   <div class="modal fade" id="acquireCertificate" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
     aria-labelledby="acquireCertificateLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-md">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title fw-bolder" id="staticBackdropLabel">簽署憑證申請</h5>
@@ -41,8 +41,14 @@
         <div class="modal-body">
           <div class="card p-3 mb-4">
             <div class="h5 fw-bolder text-primary opacity-75">文件編號：@(_item?.Contract.ContractNo)</div>
-            <div class="h6">首次簽署將進行文件簽署雲端憑證申請，PIN 碼將做為未來文件簽署的驗證密碼，請妥善保管。</div>
             <div class="h6">申請人電子郵件信箱：@(profile.EMail)</div>
+            <div class="py-3 fs-13 border-top text-danger">
+              <i class="fas fa-exclamation-circle"></i>
+              <span>申請憑證時所輸入的PIN碼(如下圖所示)將做為未來文件簽署的驗證密碼，請妥善保管。</span>
+            </div>
+            <div>
+              <img src="~/images/pin.png" class="img-fluid border rounded-3" alt="Pin 碼">
+            </div>
           </div>
         </div>
         <div class="modal-footer border-top-0 justify-content-center pb-4">

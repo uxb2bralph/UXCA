@@ -880,7 +880,7 @@
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-              <div v-if="certStatus === 'certValidate'" class="pb-3">您為首次簽署，為確保簽署憑證的有效性及正確性，將進行憑證驗證。</div>
+              <div v-if="certStatus === 'certValidate'" class="pb-3">首次簽署將進行中華電信雲端憑證申請作業，為確保簽署憑證的有效性及正確性，將進行憑證驗證。</div>
               <div v-else class="pb-3">為確保簽署憑證的有效性及正確性，將進行憑證註冊。</div>
               <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
                 <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
@@ -2031,7 +2031,7 @@
     });
   }
 
-  // 為避免跨網域問題，下面語法沒有包到 vue 裡面
+  // 為避免跨網域問題，下面語法沒有包到 nvue 裡面
   let popupForm;
   let timeout;
 
