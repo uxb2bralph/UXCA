@@ -265,13 +265,13 @@ namespace ContractHome.Controllers
             }
 
             _contractServices.SetModels(models);
-            (BaseResponse resp, JwtToken jwtTokenObj, UserProfile tokenUserProfile) = _contractServices.TokenValidate(token);
+            (BaseResponse resp, JwtToken jwtTokenObj, UserProfile tokenUserProfile) 
+                = _contractServices.TokenValidate(JwtTokenValidator.Base64UrlDecodeToString(token).DecryptData());
       if (resp.HasError) { return resp; }
 
       var viewModelUserProfile
           = models.GetTable<UserProfile>()
               .Where(x => x.EMail.Equals(jwtTokenObj.payloadObj.data.Email))
-              .Where(x => x.PID.Equals(pid))
               .FirstOrDefault();
 
       if (viewModelUserProfile == null)

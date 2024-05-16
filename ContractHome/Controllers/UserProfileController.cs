@@ -216,8 +216,13 @@ namespace ContractHome.Controllers
 
       try
       {
-        profile.Password = null;
-        profile.Password2 = userPasswordChange.NewPassword.HashPassword();
+        UserProfile userProfile
+            = models.GetTable<UserProfile>()
+                .Where(x => x.UID.Equals(profile.UID))
+                .FirstOrDefault();
+
+        userProfile.Password = null;
+        userProfile.Password2 = userPasswordChange.NewPassword.HashPassword();
 
         models.SubmitChanges();
 
