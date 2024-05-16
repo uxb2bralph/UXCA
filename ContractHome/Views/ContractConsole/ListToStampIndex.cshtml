@@ -872,93 +872,94 @@
       aria-labelledby="userCertModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title fw-bolder" id="staticBackdropLabel">
-              {{ certStatus === 'certValidate' ? '憑證驗證' : '憑證註冊' }}
-            </h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <div v-if="certStatus === 'certValidate'" class="pb-3">為確保簽署憑證的有效性及正確性，將進行憑證驗證。</div>
-            <div v-else class="pb-3">為確保簽署憑證的有效性及正確性，將進行憑證註冊。</div>
-            <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
-              <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
-                <path
-                  d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
-              </symbol>
-              <symbol id="info-fill" fill="currentColor" viewBox="0 0 16 16">
-                <path
-                  d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" />
-              </symbol>
-              <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
-                <path
-                  d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
-              </symbol>
-            </svg>
-            <div class="alert alert-primary d-flex align-items-center" role="alert">
-              <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:">
-                <use xlink:href="#info-fill" />
-              </svg>
-              <div>
-                請準備好讀卡機及工商憑證 / 自然人憑證以進行身分綁定。
-                <br>
-                請先安裝
-                <a title="https://api-hisecurecdn.cdn.hinet.net/HiCOS_Client.zip"
-                  href="https://api-hisecurecdn.cdn.hinet.net/HiCOS_Client.zip"
-                  class="alert-link text-decoration-underline">HiCOS卡片管理工具(ZIP)</a>
-                ，可協助檢查用戶IC卡與讀卡機驅動程式是否安裝成功，IC卡能否讀取，並提供PIN碼驗證，簽章驗章與加解密功能檢測。
-                <a title="HICOS卡片管理工具使用說明(PDF)" href="http://moica.nat.gov.tw/download/File/HiCOS.pdf"
-                  class="alert-link text-decoration-underline">HICOS卡片管理工具使用說明(PDF)</a>
-              </div>
+          <form>
+            <div class="modal-header">
+              <h5 class="modal-title fw-bolder" id="staticBackdropLabel">
+                {{ certStatus === 'certValidate' ? '憑證驗證' : '憑證註冊' }}
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="container">
-              <div class="row pt-3 pb-3 mb-3 border-bottom border-1">
-                <div class="col input__height">
-                  <div class="row">
-                    <label for="Pin" class="col-sm-12 col-md-2 col-form-label fs-14 fw-bolder">PIN碼</label>
-                    <div class="col-sm-12 col-md-10">
-                      <input ref="pin" v-model="signature.pin" type="password" class="form-control" name="Pin"
-                        id="Pin" />
-                      <div class="invalid-feedback text-end">
-                        {{ '請輸入卡片PIN碼' }}
+            <div class="modal-body">
+              <div v-if="certStatus === 'certValidate'" class="pb-3">您為首次簽署，為確保簽署憑證的有效性及正確性，將進行憑證驗證。</div>
+              <div v-else class="pb-3">為確保簽署憑證的有效性及正確性，將進行憑證註冊。</div>
+              <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
+                  <path
+                    d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
+                </symbol>
+                <symbol id="info-fill" fill="currentColor" viewBox="0 0 16 16">
+                  <path
+                    d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" />
+                </symbol>
+                <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
+                  <path
+                    d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                </symbol>
+              </svg>
+              <div class="alert alert-primary d-flex align-items-center" role="alert">
+                <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:">
+                  <use xlink:href="#info-fill" />
+                </svg>
+                <div>
+                  請準備好讀卡機及工商憑證 / 自然人憑證以進行身分驗證。
+                  <br>
+                  請先安裝
+                  <a title="https://api-hisecurecdn.cdn.hinet.net/HiCOS_Client.zip"
+                    href="https://api-hisecurecdn.cdn.hinet.net/HiCOS_Client.zip"
+                    class="alert-link text-decoration-underline">HiCOS卡片管理工具(ZIP)</a>
+                  ，可協助檢查用戶IC卡與讀卡機驅動程式是否安裝成功，IC卡能否讀取，並提供PIN碼驗證，簽章驗章與加解密功能檢測。
+                  <a title="HICOS卡片管理工具使用說明(PDF)" href="http://moica.nat.gov.tw/download/File/HiCOS.pdf"
+                    class="alert-link text-decoration-underline">HICOS卡片管理工具使用說明(PDF)</a>
+                </div>
+              </div>
+              <div class="container">
+                <div class="row pt-3 pb-3 mb-3 border-bottom border-1">
+                  <div class="col input__height">
+                    <div class="row">
+                      <label for="Pin" class="col-sm-12 col-md-2 col-form-label fs-14 fw-bolder">PIN碼</label>
+                      <div class="col-sm-12 col-md-10">
+                        <input ref="pin" v-model="signature.pin" type="password" class="form-control" name="Pin" placeholder="請輸入卡片PIN碼" autocomplete="off" id="Pin" />
+                        <div class="invalid-feedback text-end">
+                          {{ '請輸入卡片PIN碼' }}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div v-if="signatureInfo.message || signatureInfo.message2">
-              <div class="alert alert-danger d-flex align-items-center" role="alert">
-                <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:">
-                  <use xlink:href="#exclamation-triangle-fill" />
-                </svg>
-                <div>
-                  {{ signatureInfo.message }} <br> {{ signatureInfo.message2 }}
+              <div v-if="signatureInfo.message || signatureInfo.message2">
+                <div class="alert alert-danger d-flex align-items-center" role="alert">
+                  <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:">
+                    <use xlink:href="#exclamation-triangle-fill" />
+                  </svg>
+                  <div>
+                    {{ signatureInfo.message }} <br> {{ signatureInfo.message2 }}
+                  </div>
                 </div>
               </div>
+              <!-- 卡片簽章資訊，除錯時用 -->
+              <!--
+              <div v-if="signatureInfo.ret_code === 0" class="alert alert-success" role="alert">
+                <dl class="row">
+                  <dt class="col-md-3">cardSN (卡號)：</dt>
+                  <dd class="col-md-9">{{signatureInfo.cardSN}}</dd>
+                  <dt class="col-md-3">ret_code (結果)：</dt>
+                  <dd class="col-md-9">{{signatureInfo.ret_code}}</dd>
+                  <dt class="col-md-3">signature (簽章值)：</dt>
+                  <dd class="col-md-9 text-break">{{signatureInfo.signature}}</dd>
+                  <dt class="col-md-3">certb64 (憑證)：</dt>
+                  <dd class="col-md-9 text-break">{{signatureInfo.certb64}}</dd>
+                </dl>
+              </div>
+              -->
             </div>
-            <!-- 卡片簽章資訊，除錯時用 -->
-            <!--
-            <div v-if="signatureInfo.ret_code === 0" class="alert alert-success" role="alert">
-              <dl class="row">
-                <dt class="col-md-3">cardSN (卡號)：</dt>
-                <dd class="col-md-9">{{signatureInfo.cardSN}}</dd>
-                <dt class="col-md-3">ret_code (結果)：</dt>
-                <dd class="col-md-9">{{signatureInfo.ret_code}}</dd>
-                <dt class="col-md-3">signature (簽章值)：</dt>
-                <dd class="col-md-9 text-break">{{signatureInfo.signature}}</dd>
-                <dt class="col-md-3">certb64 (憑證)：</dt>
-                <dd class="col-md-9 text-break">{{signatureInfo.certb64}}</dd>
-              </dl>
+            <div class="modal-footer border-top-0 justify-content-center">
+              <button type="button" class="btn btn-secondary opacity-50" data-bs-dismiss="modal">取消</button>
+              <button type="button" class="btn btn-primary" v-on:click="getUserCert">
+                {{ certStatus === 'certValidate' ? '憑證驗證' : '憑證註冊' }}
+              </button>
             </div>
-            -->
-          </div>
-          <div class="modal-footer border-top-0 justify-content-center">
-            <button type="button" class="btn btn-secondary opacity-50" data-bs-dismiss="modal">取消</button>
-            <button type="button" class="btn btn-primary" v-on:click="getUserCert">
-              {{ certStatus === 'certValidate' ? '憑證驗證' : '憑證註冊' }}
-            </button>
-          </div>
+          </form>
         </div>
       </div>
     </div>
@@ -1555,6 +1556,7 @@
       // 簽署
       confirmSign() {
         $('#signModal').modal('hide');
+        this.agree = false;
         this.commitDigitalSignature();
       },
 
@@ -1564,13 +1566,10 @@
         const fileInfo = `${Title} (${ContractNo})`;
         const payload = {
           'KeyID': this.currentCompanyData.KeyID,
-          'Signature': this.signatureInfo.signature
+          //'Signature': this.signatureInfo.signature
         };
         showLoading();
-        $.post('@Html.Raw(Url.Action("CommitDigitalSignature", "ContractConsole"))', {
-          'KeyID': self.currentCompanyData.KeyID,
-          'Signature': self.signatureInfo.signature
-        }, function (res) {
+        $.post('@Html.Raw(Url.Action("CommitDigitalSignature", "ContractConsole"))', payload, function (res) {
           hideLoading();
           if ($.isPlainObject(res)) {
             const { data, hasError, message, result } = res;
@@ -1965,7 +1964,10 @@
           })
       },
 
-      // 憑證檢查是否和公司或個人登錄資訊相符
+      /**
+       * 首次簽署時才會顯示公司憑證檢核視窗
+       * 憑證檢查是否和公司或個人登錄資訊相符
+       */
       userValidate() {
         this.infoMsg = null;
         const { certb64, signature } = this.signatureInfo;
@@ -1983,7 +1985,9 @@
               // 成功
               $("#userCertModal").modal("hide");
               console.log('憑證驗證ok');
-              $('#signModal').modal('show');
+              //$('#signModal').modal('show');
+              // 憑證驗證ok後準備開啟中華電信雲端憑證申請視窗
+              $('#acquireCertificate').modal('show');
             } else {
               // 失敗
               this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${message} </div>`;
@@ -2027,6 +2031,7 @@
     });
   }
 
+  // 為避免跨網域問題，下面語法沒有包到 vue 裡面
   let popupForm;
   let timeout;
 
