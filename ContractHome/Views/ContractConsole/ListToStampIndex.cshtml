@@ -1544,9 +1544,9 @@
         // 非企業用戶(以證換證)要檢驗憑證
         if (this.currentUserInfo.isSignExchange) {
           // 憑證檢驗
-          this.openUserCertDialog('certValidate');
+          //this.openUserCertDialog('certValidate');
           // 先不檢驗
-          //$('#signModal').modal('show');
+          $('#signModal').modal('show');
         } else {
           $('#signModal').modal('show');
         }
