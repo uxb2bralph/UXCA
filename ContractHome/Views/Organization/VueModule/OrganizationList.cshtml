@@ -70,6 +70,11 @@
 {
     object BuildData(Organization item)
     {
+        Organization organizationCompanyBelongTo 
+            = models.GetTable<Organization>().Where(o => o.CompanyID == item.CompanyBelongTo).FirstOrDefault();
+        var NameOfCompanyBelongTo = (organizationCompanyBelongTo==null)?string.Empty:organizationCompanyBelongTo.CompanyName;
+        var CompanyBelongToa = item.CompanyBelongTo??0;
+        var CompanyBelongTo = CompanyBelongToa.EncryptKey();
         return new
         {
             item.CompanyName,
@@ -80,7 +85,8 @@
             item.UndertakerName,
             item.ContactEmail,
             item.CanCreateContract,
-            item.CompanyBelongTo,
+            CompanyBelongTo,
+            NameOfCompanyBelongTo,
             KeyID = item.CompanyID.EncryptKey(),
         };
     }
