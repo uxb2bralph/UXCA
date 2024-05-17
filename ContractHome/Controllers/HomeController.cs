@@ -35,7 +35,8 @@ namespace ContractHome.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            this.HttpContext.Logout();
+            return RedirectToAction("Login", "Account");
         }
 
         public IActionResult Privacy()
