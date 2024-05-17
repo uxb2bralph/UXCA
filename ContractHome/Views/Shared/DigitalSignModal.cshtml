@@ -32,13 +32,13 @@ For more information on enabling MVC for empty projects, visit https://go.micros
 
 <body>
   <div id="DigitalSignModal" class="container mt-5">
-    <div v-if="!isValidated" class="card">
+    <div v-if="certStatus === 'certValidate'" class="card">
       <div class="card-body">
         <h5 class="modal-title fw-bolder" id="staticBackdropLabel">
           {{ certStatus === 'certValidate' ? '憑證驗證' : '憑證註冊' }}
         </h5>
         <div class="card-text">
-          <div v-if="certStatus === 'certValidate'" class="pb-3">為確保簽署憑證的有效性及正確性，將進行憑證驗證。</div>
+          <div v-if="certStatus === 'certValidate'" class="pb-3">首次簽署將進行中華電信雲端憑證申請作業，為確保簽署憑證的有效性及正確性，將進行憑證驗證。</div>
           <div v-else class="pb-3">為確保簽署憑證的有效性及正確性，將進行憑證註冊。</div>
           <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
             <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
@@ -59,7 +59,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
               <use xlink:href="#info-fill" />
             </svg>
             <div>
-              請準備好讀卡機及工商憑證 / 自然人憑證以進行身分綁定。
+              請準備好讀卡機及工商憑證 / 自然人憑證以進行身分驗證。
               <br>
               請先安裝
               <a title="https://api-hisecurecdn.cdn.hinet.net/HiCOS_Client.zip"
@@ -76,7 +76,8 @@ For more information on enabling MVC for empty projects, visit https://go.micros
                 <div class="row">
                   <label for="Pin" class="col-sm-12 col-md-2 col-form-label fs-14 fw-bolder">PIN碼</label>
                   <div class="col-sm-12 col-md-10">
-                    <input ref="pin" v-model="signature.pin" type="password" class="form-control" name="Pin" id="Pin" />
+                    <input ref="pin" v-model="signature.pin" type="password" class="form-control" name="Pin" id="Pin"
+                      placeholder="請輸入卡片PIN碼" autocomplete="off" />
                     <div class="invalid-feedback text-end">
                       {{ '請輸入卡片PIN碼' }}
                     </div>
@@ -226,7 +227,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
         signatureInfo: {},
         certInfo: null,
         currentUserInfo: {},
-        isValidated: false,
+        isValidated: false, // 驗證憑證中
         infoMsg: null,
         isCommitSuccess: false,
       }
@@ -265,16 +266,18 @@ For more information on enabling MVC for empty projects, visit https://go.micros
           })
       },
 
+      // 開啟憑證檢查 Dialog
+      openUserCertDialog(status) {
+        this.getUserCertForm(status);
+      },
+
       // 企業用戶(非以證換證)不用檢驗憑證
       checkSignExchange() {
         if (this.currentUserInfo.isSignExchange) {
-          // 憑證檢驗
-          this.isValidated = false;
-          this.getUserCertForm('certValidate');
           // 先不檢驗
-          // this.isValidated = true;
+          this.getUserCertForm(null);
         } else {
-          this.isValidated = true;
+          this.getUserCertForm(null);;
         }
       },
 
@@ -291,6 +294,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
       // 進行簽署
       confirmSignHandler() {
         const self = this;
+        this.checkAgree();
         showLoading();
         $.post('@Html.Raw(Url.Action("CommitDigitalSignature", "ContractConsole"))', {
           'KeyID': self.contractID,
@@ -380,9 +384,9 @@ For more information on enabling MVC for empty projects, visit https://go.micros
           .then((res) => {
             const { HasError, Data, Message } = res;
             if (!HasError) {
-              // 成功
+              // 憑證驗證ok，開啟導頁視窗
               console.log('憑證驗證ok');
-              this.isValidated = true;
+              $('#signModal').modal('show');
             } else {
               // 失敗
               const { EUID, Signature, B64Cert, IdentityCert } = Message;
@@ -418,7 +422,8 @@ For more information on enabling MVC for empty projects, visit https://go.micros
             if (!hasError) {
               // 成功
               console.log('憑證驗證ok');
-              this.isValidated = true;
+              // 憑證驗證ok後準備開啟中華電信雲端憑證申請視窗
+              $('#acquireCertificate').modal('show');
             } else {
               // 失敗
               this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${message} </div>`;
