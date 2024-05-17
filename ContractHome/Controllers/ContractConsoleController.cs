@@ -1300,23 +1300,24 @@ namespace ContractHome.Controllers
                 }
                 else
                 {
-                    if (Properties.Settings.Default.IsIdentityCertCheck)
-                    {
-                        IdentityCertRepo identityCertRepo = new(models);
-                        var identityCert = identityCertRepo.GetByUid(profile.UID).FirstOrDefault();
-                        if (identityCert == null)
-                        {
-                            ModelState.AddModelError("Signature", "使用者未註冊憑證");
-                            return BadRequest();
-                        }
+                    //iris:目前未使用
+                    //if (Properties.Settings.Default.IsIdentityCertCheck)
+                    //{
+                    //    IdentityCertRepo identityCertRepo = new(models);
+                    //    var identityCert = identityCertRepo.GetByUid(profile.UID).FirstOrDefault();
+                    //    if (identityCert == null)
+                    //    {
+                    //        ModelState.AddModelError("Signature", "使用者未註冊憑證");
+                    //        return BadRequest();
+                    //    }
 
-                        IdentityCertHelper identityCertHelper = new(x509PemString: identityCert.X509Certificate);
-                        if (!identityCertHelper.IsSignatureValid(profile.PID, viewModel.Signature))
-                        {
-                            ModelState.AddModelError("Signature", "驗章失敗");
-                            return BadRequest();
-                        }
-                    }
+                    //    IdentityCertHelper identityCertHelper = new(x509PemString: identityCert.X509Certificate);
+                    //    if (!identityCertHelper.IsSignatureValid(profile.PID, viewModel.Signature))
+                    //    {
+                    //        ModelState.AddModelError("Signature", "驗章失敗");
+                    //        return BadRequest();
+                    //    }
+                    //}
 
                     ViewBag.DataItem = item;
                     var content = profile.CHT_UserRequestTicket();
@@ -1338,6 +1339,10 @@ namespace ContractHome.Controllers
                             {
                                 return View("~/Views/ContractConsole/PromptToAcquireCertificate.cshtml", content);
                             }
+                        }
+                        else
+                        {
+                            return Json(new BaseResponse(haserror: true, error: $"錯誤代碼: {content["result"]}"));
                         }
                     }
                 }
@@ -1398,12 +1403,14 @@ namespace ContractHome.Controllers
                     return Json(baseResponse);
 
                 }
+            } 
+            else
+            {
+                return Json(new BaseResponse(haserror: true, error: "合約已有簽署記錄, 無法再次簽署."));
             }
 
-            baseResponse = new BaseResponse(haserror: true, error: "合約已有簽署記錄, 無法再次簽署.");
             if (viewModel.IsTrust != null && viewModel.IsTrust == true)
             {
-
                 baseResponse.Url = $"{Settings.Default.WebAppDomain}";
                 return View("~/Views/Shared/CustomMessage.cshtml", baseResponse);
             }
