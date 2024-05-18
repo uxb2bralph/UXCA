@@ -36,7 +36,8 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title fw-bolder" id="staticBackdropLabel">簽署憑證申請</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+            id="maintainDataHandler"></button>
         </div>
         <div class="modal-body">
           <div class="card p-3 mb-4">
@@ -47,12 +48,12 @@
               <span>申請憑證時所輸入的PIN碼(如下圖所示)將做為未來文件簽署的驗證密碼，請妥善保管。</span>
             </div>
             <div>
-              <img src="~/images/pin.png" class="img-fluid border rounded-3" alt="Pin 碼">
+              <img src="~/images/pin_password.png" class="img-fluid border rounded-3" alt="Pin 碼">
             </div>
           </div>
         </div>
         <div class="modal-footer border-top-0 justify-content-center pb-4">
-          <button type="button" class="btn btn-primary" v-on:click="acquireHandler">申請簽章憑證</button>
+          <button type="button" class="btn btn-primary" id="acquireHandler">申請簽章憑證</button>
         </div>
       </div>
     </div>
@@ -65,16 +66,18 @@
     });
   </script>
 }
-<script>
-  var certAapp = new Vue({
-    el: '#promptToAcquireCertificate',
-    mounted() {
-      app.openUserCertDialog('certValidate');
-    },
-    methods: {
-      acquireHandler() {
-        location.href = `@Html.Raw(_model["url"])`;
-      },
-    }
-  });  
-</script>
+@{
+  <script>
+    // 導頁
+    const acquireHandler = document.querySelector('#acquireHandler');
+    acquireHandler.addEventListener('click', function () {
+      window.open('@Html.Raw(_model["url"])', '_blank');
+    });
+
+    // 關閉Dialog時重整頁面
+    const maintainDataHandler = document.querySelector('#maintainDataHandler');
+    maintainDataHandler.addEventListener('click', function () {
+      window.location.href = '@Html.Raw(Url.Action("ListToStampIndex", "ContractConsole"))';
+    });
+  </script>
+}
