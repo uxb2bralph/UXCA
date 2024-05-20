@@ -1587,8 +1587,11 @@
             $('#infoModal').modal('show');
           } else {
             $(res).appendTo($('#listToStamp'));
-            self.openUserCertDialog('certValidate');
-            //$('#acquireCertificate').modal('show');
+            // 首次驗證
+            const isFirstValidate = res.includes('promptToAcquireCertificate');
+            if (isFirstValidate) {
+              self.openUserCertDialog('certValidate');
+            }
           }
         });
       },
