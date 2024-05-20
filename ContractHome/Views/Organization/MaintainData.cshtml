@@ -280,7 +280,7 @@
                     <label for="CompanyName" class="col-sm-12 col-md-3 col-form-label fw-bolder">公司名稱</label>
                     <div id="InputCompanyName" class="col-sm-12 col-md-9">
                       <input v-model="formData.CompanyName" type="text" class="form-control form-control-sm"
-                        :class="{'is-invalid': isCompanyName}" id="CompanyName"
+                        :class="{'is-invalid': isCompanyName}" id="CompanyName" maxlength="15"
                         v-on:focus="resetValidate('isCompanyName')"
                         v-on:blur="validateField('isCompanyName', formData.CompanyName)" autocomplete="off" />
                       <div class="invalid-feedback">
@@ -295,7 +295,7 @@
                     <div class="col-sm-12 col-md-9">
                       <input v-model="formData.ReceiptNo" type="text" class="form-control form-control-sm"
                         :class="{'is-invalid': isReceiptNo}" id="ReceiptNo" v-on:focus="resetValidate('isReceiptNo')"
-                        v-on:blur="validateField('isReceiptNo', formData.ReceiptNo)" />
+                        v-on:blur="validateField('isReceiptNo', formData.ReceiptNo)" maxlength="10" />
                       <div class="invalid-feedback">
                         請輸入統一編號
                       </div>
@@ -307,7 +307,8 @@
                     <label for="Phone" class="col-sm-12 col-md-3 col-form-label fw-bolder">電話</label>
                     <div class="col-sm-12 col-md-9">
                       <input v-model="formData.Phone" type="text" class="form-control form-control-sm"
-                        :class="{'is-invalid': isPhone}" name="Phone" id="Phone" v-on:focus="resetValidate('isPhone')"
+                        :class="{'is-invalid': isPhone}" name="Phone" id="Phone" placeholder="02-12345678"
+                        maxlength="12" v-on:focus="resetValidate('isPhone')"
                         v-on:blur="validateField('isPhone', formData.Phone)" />
                       <div class="invalid-feedback">
                         請輸入電話
@@ -319,12 +320,9 @@
                   <div class="row">
                     <label for="Fax" class="col-sm-12 col-md-3 col-form-label fw-bolder">傳真</label>
                     <div class="col-sm-12 col-md-9">
-                      <input v-model="formData.Fax" type="text" class="form-control form-control-sm"
-                        :class="{'is-invalid': isFax}" name="Fax" id="Fax" v-on:focus="resetValidate('isFax')"
+                      <input v-model="formData.Fax" type="text" class="form-control form-control-sm" name="Fax" id="Fax"
+                        placeholder="02-87654321" maxlength="12" v-on:focus="resetValidate('isFax')"
                         v-on:blur="validateField('isFax', formData.Fax)" />
-                      <div class="invalid-feedback">
-                        請輸入傳真號碼
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -335,7 +333,7 @@
                       <input v-model="formData.UndertakerName" type="text" class="form-control form-control-sm"
                         :class="{'is-invalid': isUndertakerName}" id="UndertakerName"
                         v-on:focus="resetValidate('isUndertakerName')"
-                        v-on:blur="validateField('isUndertakerName', formData.UndertakerName)" />
+                        v-on:blur="validateField('isUndertakerName', formData.UndertakerName)" maxlength="10" />
                       <div class="invalid-feedback">
                         請輸入負責人姓名
                       </div>
@@ -347,8 +345,8 @@
                     <label for="Addr" class="col-sm-12 col-md-3 col-form-label fw-bolder">地址</label>
                     <div class="col-sm-12 col-md-9">
                       <input v-model="formData.Addr" type="text" class="form-control form-control-sm"
-                        :class="{'is-invalid': isAddr}" name="Addr" id="Addr" v-on:focus="resetValidate('isAddr')"
-                        v-on:blur="validateField('isAddr', formData.Addr)" />
+                        :class="{'is-invalid': isAddr}" name="Addr" id="Addr" maxlength="30"
+                        v-on:focus="resetValidate('isAddr')" v-on:blur="validateField('isAddr', formData.Addr)" />
                       <div class="invalid-feedback">
                         請輸入地址
                       </div>
@@ -550,7 +548,12 @@
         this.formStatus = type;
         this.init();
         if (type === 'edit') {
-          this.formData = { ...this.formData, ...data };
+          const restData = {
+            CreateContract: data.CanCreateContract,
+            BelongToCompany: data.CompanyBelongTo,
+            BelongToCompanyName: data.NameOfCompanyBelongTo
+          }
+          this.formData = { ...this.formData, ...data, ...restData };
         }
         $('#addNewModal').modal('show');
       },
@@ -664,10 +667,6 @@
         // 表單資料
         this.page = 1;
         this.fetchAPI();
-
-        // var $tr = $tr || $(window.event.target).closest('form').find('div.data-item');
-        // $inquiryAgent.viewModel.DataItem = $tr.find('input,select,textArea').serializeArray();
-        // $inquiryAgent.inquire();
       },
       fetchAPI() {
         // 執行查詢合約列表
@@ -772,11 +771,8 @@
             app.searchResults = dataItems;
             console.log({ dataItems })
             if (type === 'search') {
-              console.log('search')
               app.isSearchOptionsOpen = $.isArray(dataItems) && dataItems.length > 0;
-
             } else {
-              console.log('edit')
               self.isInputOptionsOpen = $.isArray(dataItems) && dataItems.length > 0;
             }
           }
@@ -807,13 +803,7 @@
             this.isInputOptionsOpen = false;
           }
         })
-      }
+      },
     }
   });
-  /**
-  $inquiryAgent.showQueryResult = function (data) {
-    var $tr = $('form div.data-item');
-    $tr.empty().append($(data));
-  }
-  **/
 </script>
