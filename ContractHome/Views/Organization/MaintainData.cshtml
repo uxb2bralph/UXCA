@@ -282,7 +282,7 @@
                       <input v-model="formData.CompanyName" type="text" class="form-control form-control-sm"
                         :class="{'is-invalid': isCompanyName}" id="CompanyName" maxlength="15"
                         v-on:focus="resetValidate('isCompanyName')"
-                        v-on:blur="validateField('isCompanyName', formData.CompanyName)" autocomplete="off" />
+                        v-on:blur="validateField('isCompanyName', formData.CompanyName)" v-on:keyup="checkText(formData.CompanyName)" autocomplete="off" />
                       <div class="invalid-feedback">
                         請輸入公司名稱
                       </div>
@@ -307,7 +307,7 @@
                     <label for="Phone" class="col-sm-12 col-md-3 col-form-label fw-bolder">電話</label>
                     <div class="col-sm-12 col-md-9">
                       <input v-model="formData.Phone" type="text" class="form-control form-control-sm"
-                        :class="{'is-invalid': isPhone}" name="Phone" id="Phone" placeholder="02-12345678"
+                        :class="{'is-invalid': isPhone}" name="Phone" id="Phone" placeholder="Ex: 02-12345678"
                         maxlength="12" v-on:focus="resetValidate('isPhone')"
                         v-on:blur="validateField('isPhone', formData.Phone)" />
                       <div class="invalid-feedback">
@@ -321,7 +321,7 @@
                     <label for="Fax" class="col-sm-12 col-md-3 col-form-label fw-bolder">傳真</label>
                     <div class="col-sm-12 col-md-9">
                       <input v-model="formData.Fax" type="text" class="form-control form-control-sm" name="Fax" id="Fax"
-                        placeholder="02-87654321" maxlength="12" v-on:focus="resetValidate('isFax')"
+                        placeholder="Ex: 02-87654321" maxlength="12" v-on:focus="resetValidate('isFax')"
                         v-on:blur="validateField('isFax', formData.Fax)" />
                     </div>
                   </div>
@@ -615,7 +615,8 @@
         this.checkMail('isContactEmail', ContactEmail);
 
         // 檢核
-        if (BelongToCompanyName && !BelongToCompany) {
+        const isCompanyName = BelongToCompanyName && BelongToCompanyName !== '';
+        if (isCompanyName && !BelongToCompany) {
           alertModal('<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> 查無所屬起約方公司名稱！ </div>');
           return;
         }
@@ -769,7 +770,6 @@
         fetchDataList(viewModel, '@(Url.Action("VueSearchCompany", "Home"))',
           function (dataItems) {
             app.searchResults = dataItems;
-            console.log({ dataItems })
             if (type === 'search') {
               app.isSearchOptionsOpen = $.isArray(dataItems) && dataItems.length > 0;
             } else {
@@ -804,6 +804,10 @@
           }
         })
       },
+
+      checkText(companyName) {
+        this.formData.CompanyName = companyName.replace(/[^a-zA-Z0-9\u4E00-\u9FA5 ]/g, '');
+      }
     }
   });
 </script>
