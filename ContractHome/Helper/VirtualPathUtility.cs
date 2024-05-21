@@ -11,6 +11,7 @@ namespace ContractHome.Helper
         {
             return path.Replace("~", Properties.Settings.Default.ApplicationPath);
         }
+
     }
 
     

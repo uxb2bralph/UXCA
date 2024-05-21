@@ -23,17 +23,17 @@
 <div class="modal fade" id="@(_dialogID)" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
   aria-labelledby="$('@(_dialogID)')Label" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
+    <div class="modal-content shadow">
       @* <div class="modal-header border-buttom-0">
-        <h5 class="modal-title fw-bolder">@(_viewModel.AlertTitle ?? "訊息")</h5>
-        <button type="button" class="btn-close" aria-label="Close" aria-hidden="true"
-          onclick="$('#@(_dialogID)').modal('hide');"></button>
+      <h5 class="modal-title fw-bolder">@(_viewModel.AlertTitle ?? "訊息")</h5>
+      <button type="button" class="btn-close" aria-label="Close" aria-hidden="true"
+      onclick="$('#@(_dialogID)').modal('hide');"></button>
       </div> *@
       <div class="modal-body text-center h5 fw-bolder pt-5">
         <p>@Html.Raw(_viewModel.AlertMessage)</p>
       </div>
       <div class="modal-footer border-top-0 justify-content-center">
-        <button type="button" class="btn btn-secondary opacity-50" data-dismiss="modal"
+        <button type="button" class="btn btn-secondary opacity-75" data-dismiss="modal"
           onclick="$('#@(_dialogID)').modal('hide');">關閉</button>
       </div>
     </div><!-- /.modal-content -->

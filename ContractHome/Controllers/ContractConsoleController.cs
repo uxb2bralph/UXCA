@@ -13,12 +13,17 @@ using System.Data;
 using ContractHome.Helper.DataQuery;
 using System.Web;
 using Newtonsoft.Json;
-using System.ComponentModel;
-using System.Linq;
 using ContractHome.Models.Email.Template;
 using ContractHome.Models.Email;
-using System.Runtime.CompilerServices;
 using static ContractHome.Models.DataEntity.CDS_Document;
+using ContractHome.Models.Dto;
+using FluentValidation;
+using static ContractHome.Models.Helper.ContractServices;
+using static ContractHome.Helper.JwtTokenGenerator;
+using ContractHome.Models.Cache;
+using Org.BouncyCastle.Ocsp;
+using ContractHome.Properties;
+using ContractHome.Controllers.Filters;
 
 namespace ContractHome.Controllers
 {
@@ -28,13 +33,18 @@ namespace ContractHome.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private ContractServices? _contractServices;
-        private readonly IMailService _mailService;
+        private BaseResponse baseResponse = new BaseResponse();
+        private readonly ICacheStore _cacheStore;
+
         public ContractConsoleController(ILogger<HomeController> logger,
-            IServiceProvider serviceProvider) : base(serviceProvider)
+            IServiceProvider serviceProvider,
+            ICacheStore cacheStore,
+            ContractServices contractServices
+          ) : base(serviceProvider)
         {
             _logger = logger;
-            _contractServices = ServiceProvider.GetRequiredService<ContractServices>(); ;
-            _mailService = ServiceProvider.GetRequiredService<IMailService>();
+            _contractServices = contractServices;
+            _cacheStore = cacheStore;
         }
 
         public IActionResult ApplyContract(TemplateResourceViewModel viewModel)
@@ -160,6 +170,7 @@ namespace ContractHome.Controllers
             return Json(new { result = true });
         }
 
+
         public async Task<ActionResult> CommitContractAsync([FromBody] SignContractViewModel viewModel)
         {
             var profile = await HttpContext.GetUserAsync();
@@ -254,51 +265,49 @@ namespace ContractHome.Controllers
                         uid ?? 0);
 
                     //return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
-                } 
+                }
                 else
                 {
                     for (int i = 0; i < viewModel.Contractors!.Length; i++)
                     {
                         var contractorID = viewModel.Contractors[i].ContractorID;
                         var initiatorID = viewModel.InitiatorID!.Value;
+                        //wait to do..個別簽署暫關閉待調整
+                        //if ((contract.IsJointContracting == true) || (i == 0))
+                        //{
+                        //    _contractServices?.CreateAndSaveParty(
+                        //        initiatorID: initiatorID,
+                        //        contractorID: contractorID ?? 0,
+                        //        contract: contract,
+                        //        viewModel.Contractors[i].SignaturePositions,
+                        //        uid ?? 0);
 
-                        if ((contract.IsJointContracting == true) || (i == 0))
-                        {
-                            _contractServices?.CreateAndSaveParty(
-                                initiatorID: initiatorID,
-                                contractorID: contractorID ?? 0,
-                                contract: contract,
-                                viewModel.Contractors[i].SignaturePositions,
-                                uid ?? 0);
+                        //}
+                        //else
+                        //{
+                        //    var newContract = _contractServices.CreateAndSaveContractByOld(contract);
 
-                        }
-                        else
-                        {
-                            var newContract = _contractServices.CreateAndSaveContractByOld(contract);
-
-                            _contractServices.CreateAndSaveParty(
-                                initiatorID: initiatorID,
-                                contractorID: contractorID ?? 0,
-                                contract: newContract,
-                                viewModel.Contractors[i].SignaturePositions,
-                                uid ?? 0
-                            );
-                            notifyList.Add(newContract);
-                        }
+                        //    _contractServices.CreateAndSaveParty(
+                        //        initiatorID: initiatorID,
+                        //        contractorID: contractorID ?? 0,
+                        //        contract: newContract,
+                        //        viewModel.Contractors[i].SignaturePositions,
+                        //        uid ?? 0
+                        //    );
+                        //    notifyList.Add(newContract);
+                        //}
 
                     }
                 }
 
                 _contractServices.SaveContract();
 
-                if (notifyList.Count > 0)
-                {
-                    await foreach (var mailData in _contractServices.GetContractorNotifyEmailAsync(
-                        notifyList, EmailBody.EmailTemplate.NotifySeal))
-                    {
-                        _mailService.SendMailAsync(mailData, default);
-                    }
-                }
+                //wait to do..CommitContractAsync for 個別簽署功能待確認
+                //if (notifyList.Count > 0)
+                //{
+                //    _contractServices.SendNotifyEmailAsync(
+                //        notifyList, EmailBody.EmailTemplate.NotifySeal);
+                //}
             }
             catch (Exception ex)
             {
@@ -348,27 +357,25 @@ namespace ContractHome.Controllers
                 return Json(new { result = false, message = "合約未用印!!" });
             }
 
-            var sealItems = models.GetTable<SealTemplate>().Where(s => s.UID == profile.UID);
-            if (!models.GetTable<ContractSealRequest>()
-                .Where(s => s.ContractID == contract.ContractID)
-                .Where(s => sealItems.Any(t => t.SealID == s.SealID))
-                .Any())
-            {
-                return Json(new { result = false, message = "簽約人尚未用印!!" });
-            }
+
+            //wait to do:用印定義? 挖框決定? 不一定是[文字],[圖章],[日期], 只要符合起約人預期就要可以過, 待補
+            //var sealItems = models.GetTable<SealTemplate>().Where(s => s.UID == profile.UID);
+            //if (!models.GetTable<ContractSealRequest>()
+            //    .Where(s => s.ContractID == contract.ContractID)
+            //    .Where(s => sealItems.Any(t => t.SealID == s.SealID))
+            //    .Any())
+            //{
+            //    return Json(new { result = false, message = "簽約人尚未用印!!" });
+            //}
 
             requestItem.StampDate = DateTime.Now;
             models.SubmitChanges();
 
             if (contract.isAllStamped())
-            { 
+            {
                 contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Sealed);
                 _contractServices?.SetModels(models);
-                await foreach (var mailData in _contractServices?.GetAllContractUsersNotifyEmailAsync(
-                    new List<Contract>() { contract }, EmailBody.EmailTemplate.NotifySign))
-                {
-                    _mailService.SendMailAsync(mailData, default);
-                }
+                _contractServices?.SendContractNotifyEmailAsync(contract, EmailBody.EmailTemplate.NotifySign);
             }
 
             return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
@@ -441,7 +448,7 @@ namespace ContractHome.Controllers
             CurrentUser = 1,  // 0001
             UnStamped = 2,   // 0010
             UnSigned = 4,   // 0100
-            UnCommited =8  // 1000
+            UnCommited = 8  // 1000
         }
 
         public async Task<ActionResult> ListToStampAsync(SignContractViewModel viewModel)
@@ -451,8 +458,16 @@ namespace ContractHome.Controllers
 
             var profile = await HttpContext.GetUserAsync();
             var profileCompanyID = 0;
-            var organizationUser = models.GetTable<OrganizationUser>().Where(x => x.UID == profile.UID);
-            profileCompanyID = (organizationUser!=null)?organizationUser.Select(x=>x.CompanyID).FirstOrDefault():0;
+            var organizationUser = models
+                .GetTable<OrganizationUser>()
+                .Where(x => x.UID == profile.UID);
+            
+            if (organizationUser != null&&organizationUser.FirstOrDefault() != null) 
+            {
+                profileCompanyID = organizationUser.FirstOrDefault().CompanyID;
+            }
+
+            //profileCompanyID = (organizationUser != null) ? organizationUser.Select(x => x.CompanyID).FirstOrDefault() : 0;
 
             IQueryable<Contract> items = PromptContractItems(profile);
 
@@ -462,7 +477,7 @@ namespace ContractHome.Controllers
 
             //items = items.Where(c => docItems.Any(d => d.DocID == c.ContractID));
 
-            items = items.Where(d => !d.CDS_Document.CurrentStep.HasValue 
+            items = items.Where(d => !d.CDS_Document.CurrentStep.HasValue
                 || CDS_Document.PendingState.Contains((CDS_Document.StepEnum)d.CDS_Document.CurrentStep!));
 
             #region 處理查詢條件:是否為登入者/是否已用印/是否已用簽
@@ -501,7 +516,7 @@ namespace ContractHome.Controllers
                 if ((Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.UnSigned)))
                 {
                     removeContract = removeContract
-                        .Where(y => ((y.SignatureDate != null)||(y.StampDate == null)))
+                        .Where(y => ((y.SignatureDate != null) || (y.StampDate == null)))
                         .Where(y => (y.Contract.CDS_Document.CurrentStep == (int)StepEnum.Sealing));
                 }
 
@@ -578,8 +593,8 @@ namespace ContractHome.Controllers
 
             item.ContractNo = viewModel.ContractNo;
             item.Title = viewModel.Title;
-            item.IsJointContracting = viewModel.IsJointContracting;
-
+            //item.IsJointContracting = viewModel.IsJointContracting;
+            //新增簽署對象
             models.SubmitChanges();
 
             return Json(new { result = true });
@@ -614,7 +629,7 @@ namespace ContractHome.Controllers
                 DateTime _date;
                 DateTime.TryParseExact(viewModel.ContractDateFrom, "yyyy/MM/dd", null,
                     System.Globalization.DateTimeStyles.None, out _date);
-                if (_date!=null)
+                if (_date != null)
                 {
                     documents = documents.Where(d => d.DocDate >= _date);
                     queryByDocument = true;
@@ -623,7 +638,7 @@ namespace ContractHome.Controllers
             if (!string.IsNullOrEmpty(viewModel.ContractDateTo))
             {
                 DateTime _date;
-                DateTime.TryParseExact(viewModel.ContractDateTo, "yyyy/MM/dd", null, 
+                DateTime.TryParseExact(viewModel.ContractDateTo, "yyyy/MM/dd", null,
                     System.Globalization.DateTimeStyles.None, out _date);
                 if (_date != null)
                 {
@@ -827,8 +842,66 @@ namespace ContractHome.Controllers
 
         }
 
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<ActionResult> Trust(string token)
+        {
+            _contractServices.SetModels(models);
+            (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile)
+                    = _contractServices.TokenValidate(JwtTokenValidator.Base64UrlDecodeToString(token).DecryptData());
+            if (resp.HasError)
+            {
+                //return View("SignatureTrust",resp);
+                throw new ArgumentException(resp.Message);
+            }
 
-        public ActionResult AffixPdfSeal(SignatureRequestViewModel viewModel)
+            if (string.IsNullOrEmpty(jwtTokenObj.ContractID))
+            {
+                throw new ArgumentException("contractID is null.");
+            }
+
+            //wait to do:Trust進來可能沒有正常user權限,
+            //但因為controller都有用var profile = await HttpContext.GetUserAsync();, 暫時先用
+            HttpContext.SignOnAsync(userProfile);
+
+            if (jwtTokenObj.EmailTemplate==EmailBody.EmailTemplate.NotifySeal)
+            {
+                return await AffixPdfSeal(new SignatureRequestViewModel() { IsTrust =true,KeyID = jwtTokenObj.ContractID });
+            }
+
+            if (jwtTokenObj.EmailTemplate == EmailBody.EmailTemplate.NotifySign)
+            {
+
+                _contractServices.SetModels(models);
+                ( resp, Contract contract, userProfile) =
+                     _contractServices.CanPdfDigitalSign(contractID: jwtTokenObj.ContractID.DecryptKeyValue());
+
+                if (resp.HasError)
+                {
+                    resp.Url = $"{Settings.Default.WebAppDomain}";
+                    return View("~/Views/Shared/CustomMessage.cshtml", resp);
+                }
+
+                DigitalSignModal digitalSignModal = new DigitalSignModal()
+                {
+
+                    ContractNo = contract.ContractNo,
+                    ContractTitle = contract.Title,
+                    CompanyName = userProfile.CompanyName,
+                    ContractID = jwtTokenObj.ContractID
+                };
+
+
+                return View("~/Views/Shared/DigitalSignModal.cshtml", digitalSignModal);
+
+            }
+
+            this.HttpContext.Logout();
+            return RedirectToAction("Login", "Account");
+        }
+
+
+        public async Task<ActionResult> AffixPdfSeal(SignatureRequestViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
 
@@ -838,16 +911,21 @@ namespace ContractHome.Controllers
                 contractID = viewModel.DecryptKeyValue();
             }
 
-            var item = models.GetTable<Contract>()
-                                .Where(c => c.ContractID == contractID)
-                                .FirstOrDefault();
+            _contractServices.SetModels(models);
+            (BaseResponse resp, Contract contract, UserProfile userProfile) = 
+                 _contractServices.CanPdfSeal(contractID: contractID);
 
-            if (item == null)
+            if (resp.HasError)
             {
-                return new BadRequestResult();
+                resp.Url = $"{Settings.Default.ContractListUrl}";
+                if (viewModel.IsTrust!=null&&viewModel.IsTrust==true)
+                {
+                    resp.Url = $"{Settings.Default.WebAppDomain}";
+                }
+                return View("~/Views/Shared/CustomMessage.cshtml", resp);
             }
 
-            return View("~/Views/ContractConsole/AffixPdfSealImage.cshtml", item);
+            return View("~/Views/ContractConsole/AffixPdfSealImage.cshtml", contract);
 
         }
 
@@ -990,7 +1068,7 @@ namespace ContractHome.Controllers
                 return Json(new { result = false, message = "請設定上邊界位置!!" });
             }
 
-            ViewResult? result = AffixPdfSeal(viewModel) as ViewResult;
+            ViewResult? result = await AffixPdfSeal(viewModel) as ViewResult;
             if (result == null)
             {
                 return Json(new { result = false, message = "資料錯誤!!" });
@@ -998,7 +1076,7 @@ namespace ContractHome.Controllers
 
             var profile = await HttpContext.GetUserAsync();
 
-            void ApplyNote(Contract contract,int? uid,int? pageIndex)
+            void ApplyNote(Contract contract, int? uid, int? pageIndex)
             {
                 ContractNoteRequest item = new ContractNoteRequest
                 {
@@ -1065,7 +1143,7 @@ namespace ContractHome.Controllers
                 return Json(new { result = false, message = "請設定上邊界位置!!" });
             }
 
-            ViewResult? result = AffixPdfSeal(viewModel) as ViewResult;
+            ViewResult? result = await AffixPdfSeal(viewModel) as ViewResult;
             if (result == null)
             {
                 return Json(new { result = false, message = "資料錯誤!!" });
@@ -1115,7 +1193,7 @@ namespace ContractHome.Controllers
 
         public async Task<ActionResult> ResetPdfSignatureAsync(SignatureRequestViewModel viewModel)
         {
-            ViewResult? result = AffixPdfSeal(viewModel) as ViewResult;
+            ViewResult? result = await AffixPdfSeal(viewModel) as ViewResult;
             if (result == null)
             {
                 return Json(new { result = false, message = "資料錯誤!!" });
@@ -1152,7 +1230,7 @@ namespace ContractHome.Controllers
 
         public async Task<ActionResult> AbortContractAsync(SignatureRequestViewModel viewModel)
         {
-            ViewResult? result = AffixPdfSeal(viewModel) as ViewResult;
+            ViewResult? result = await AffixPdfSeal(viewModel) as ViewResult;
             if (result == null)
             {
                 return Json(new { result = false, message = "資料錯誤!!" });
@@ -1173,7 +1251,7 @@ namespace ContractHome.Controllers
 
         public async Task<ActionResult> DeleteContract(SignatureRequestViewModel viewModel)
         {
-            ViewResult? result = AffixPdfSeal(viewModel) as ViewResult;
+            ViewResult? result = await AffixPdfSeal(viewModel) as ViewResult;
             if (result == null)
             {
                 return Json(new { result = false, message = "資料錯誤!!" });
@@ -1190,35 +1268,57 @@ namespace ContractHome.Controllers
         {
             var result = await LoadSignatureRequestAsync(viewModel);
             Contract? contract = ViewBag.Contract as Contract;
-            ContractSignatureRequest ? item = ViewBag.SignatureRequest as ContractSignatureRequest;
+            ContractSignatureRequest? item = ViewBag.SignatureRequest as ContractSignatureRequest;
 
             if (item == null)
             {
                 return result;
             }
 
-            if (contract.InProgress??false)
-            {
-                return Json(new { result = false });
-            }
+            #region 測試後再打開
+            //if (contract.InProgress ?? false)
+            //{
+            //    return Json(new { result = false });
+            //}
 
-            contract.InProgress = true;
-            models.SubmitChanges();
-
+            //contract.InProgress = true;
+            //models.SubmitChanges();
+            #endregion
+            
             UserProfile profile = (UserProfile)ViewBag.Profile;
+
             if (!item.SignerID.HasValue)
             {
                 bool isSigned = false;
-                if (item.Organization.CHT_Token != null)
+                if (item.Organization.DigitalSignBy() == DigitalSignCerts.Enterprise)
                 {
                     isSigned = models.CHT_SignPdfByEnterprise(item, profile);
                 }
-                else if (item.Organization.OrganizationToken?.PKCS12 != null)
+                else if (item.Organization.DigitalSignBy() == DigitalSignCerts.UXB2B)
                 {
                     isSigned = models.SignPdfByLocalUser(item, profile);
                 }
                 else
                 {
+                    //iris:目前未使用
+                    //if (Properties.Settings.Default.IsIdentityCertCheck)
+                    //{
+                    //    IdentityCertRepo identityCertRepo = new(models);
+                    //    var identityCert = identityCertRepo.GetByUid(profile.UID).FirstOrDefault();
+                    //    if (identityCert == null)
+                    //    {
+                    //        ModelState.AddModelError("Signature", "使用者未註冊憑證");
+                    //        return BadRequest();
+                    //    }
+
+                    //    IdentityCertHelper identityCertHelper = new(x509PemString: identityCert.X509Certificate);
+                    //    if (!identityCertHelper.IsSignatureValid(profile.PID, viewModel.Signature))
+                    //    {
+                    //        ModelState.AddModelError("Signature", "驗章失敗");
+                    //        return BadRequest();
+                    //    }
+                    //}
+
                     ViewBag.DataItem = item;
                     var content = profile.CHT_UserRequestTicket();
                     var tid = ((String)content["tid"]).GetEfficientString();
@@ -1239,6 +1339,10 @@ namespace ContractHome.Controllers
                             {
                                 return View("~/Views/ContractConsole/PromptToAcquireCertificate.cshtml", content);
                             }
+                        }
+                        else
+                        {
+                            return Json(new BaseResponse(haserror: true, error: $"錯誤代碼: {content["result"]}"));
                         }
                     }
                 }
@@ -1274,7 +1378,7 @@ namespace ContractHome.Controllers
                     if (item.Contract.isAllDigitalSignatureDone())
                     {
                         item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.DigitalSigned);
-                    } 
+                    }
                     else
                     {
                         item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.DigitalSigning);
@@ -1287,12 +1391,7 @@ namespace ContractHome.Controllers
                     {
                         item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Committed);
                         _contractServices?.SetModels(models);
-                        await foreach (var mailData in 
-                            _contractServices?.GetAllContractUsersNotifyEmailAsync(
-                            new List<Contract>() { item?.Contract }, EmailBody.EmailTemplate.FinishContract))
-                        {
-                            _mailService?.SendMailAsync(mailData, default);
-                        }
+                        _contractServices?.SendContractNotifyEmailAsync(item?.Contract, EmailBody.EmailTemplate.FinishContract);
                     }
 
                     if (contract.InProgress != null && contract.InProgress == true)
@@ -1301,18 +1400,22 @@ namespace ContractHome.Controllers
                         models.SubmitChanges();
                     }
 
-                    return Json(new { result = true });
+                    return Json(baseResponse);
+
                 }
-            }
-
-
-            if (contract.InProgress != null && contract.InProgress == true)
+            } 
+            else
             {
-                contract.InProgress = null;
-                models.SubmitChanges();
+                return Json(new BaseResponse(haserror: true, error: "合約已有簽署記錄, 無法再次簽署."));
             }
 
-            return Json(new { result = false });
+            if (viewModel.IsTrust != null && viewModel.IsTrust == true)
+            {
+                baseResponse.Url = $"{Settings.Default.WebAppDomain}";
+                return View("~/Views/Shared/CustomMessage.cshtml", baseResponse);
+            }
+
+            return Json(baseResponse);
 
         }
 
@@ -1462,8 +1565,14 @@ namespace ContractHome.Controllers
             return Content("");
         }
 
-        public IActionResult InitialContract(IFormFile file)
+        [RequestSizeLimit(200 * 1024 * 1024)]
+        public async Task<IActionResult> InitialContract(IFormFile file)
         {
+            var profile = (await HttpContext.GetUserAsync()).LoadInstance(models);
+            if (profile == null || profile.OrganizationUser == null)
+            {
+                return Json(new { result = false, message = "請重新登入" });
+            }
             if (file == null)
             {
                 return Json(new { result = false, message = "請選擇檔案!!" });
@@ -1478,6 +1587,7 @@ namespace ContractHome.Controllers
             Contract contract = new Contract
             {
                 FilePath = file.StoreContractDocument(),
+                CompanyID = profile.OrganizationUser.CompanyID,
                 ContractNo = String.Empty,
                 CDS_Document = new CDS_Document
                 {
@@ -1501,7 +1611,206 @@ namespace ContractHome.Controllers
 
         }
 
+        [HttpPost]
+        //是否有Contract產製修改權限ContractHome.Security.Authorization
+        public async Task<ActionResult> ConfigAsync([FromBody] PostConfigRequest req)
+        {
+            var profile = await HttpContext.GetUserAsync();
+            #region add for postman test
+            if (profile == null && req.EncUID!=null)
+            {
+                profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
+            }
+            #endregion
+            try
+            {
+                _contractServices.SetModels(models);
+                var contractID = req.ContractID.ToString().DecryptKeyValue();
+                Contract contract = _contractServices.GetContractByID(contractID: contractID);
+                if (contract == null)
+                {
+                    ModelState.AddModelError("", "合約不存在");
+                    return BadRequest();
+                }
+                //wait to do...獨立控管每項作業可執行step
+                if (contract.CDS_Document.CurrentStep >= 2)
+                {
+                    ModelState.AddModelError("", "合約已進行中,無法修改資料");
+                    return BadRequest();
+                }
+                _contractServices.SetConfig(contract, req);
+                contract.CDS_Document.TransitStepTest(models, profile!.UID, CDS_Document.StepEnum.Config, 
+                    ClientIP: _contractServices.GetClientIP, 
+                    ClientDevice: _contractServices.GetClientDevice);
+                models.SubmitChanges();
+                return Content(baseResponse.JsonStringify());
+            }
+            catch (Exception ex)
+            {
+                FileLogger.Logger.Error($"{req.ToString()} {ex.ToString()}");
+                return Content(new BaseResponse(true, "").JsonStringify());
+            }
+
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AvailableSignatoriesAsync([FromBody] GetSignatoriesRequest req)
+        {
+            var profile = await HttpContext.GetUserAsync();
+            #region add for postman test
+            if (profile == null && req.EncUID != null)
+            {
+                profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
+            }
+            #endregion
+            if (profile == null)
+            {
+                return Json(new BaseResponse(true, "請重新登入"));
+            }
+
+            _contractServices.SetModels(models);
+            Contract contract = _contractServices.GetContractByID(contractID: req.ContractID.DecryptKeyValue());
+            if (contract == null)
+            {
+                return Json(new BaseResponse(true, "無此權限"));
+            }
+
+            IEnumerable <Organization> signatories
+                = _contractServices.GetAvailableSignatories(contract.CompanyID);
+
+            baseResponse.Data = signatories.Select(x =>
+                new
+                {
+                    id = x.CompanyID.EncryptKey(),
+                    companyName = x.CompanyName,
+                    receiptNo = x.ReceiptNo
+                });
+
+            return Json(baseResponse);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> FeildSettingsAsync([FromBody] GetFieldSettingRequest req)
+        {
+            _contractServices.SetModels(models);
+            Contract contract = _contractServices.GetContractByID(contractID: req.ContractID.DecryptKeyValue());
+
+            baseResponse.Data =
+                contract
+                .ContractSignaturePositionRequest
+                .Where(y => y.ContractorID == req.CompanyID.DecryptKeyValue())
+                .Select(x => new ContractSignaturePositionRequest()
+                {
+                    RequestID = x.RequestID,
+                    CompanyID = x.ContractorID.EncryptKey(),
+                    PositionID = x.PositionID,
+                    ScaleWidth = x.ScaleWidth,
+                    ScaleHeight = x.ScaleHeight,
+                    MarginTop = x.MarginTop,
+                    MarginLeft = x.MarginLeft,
+                    Type = x.Type,
+                    PageIndex = x.PageIndex
+                });
+
+            return Json(baseResponse);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> FeildSettingsUpdateAsync([FromBody] PostFieldSettingRequest req)
+        {
+            var profile = await HttpContext.GetUserAsync();
+            #region add for postman test
+            if (profile == null)
+            {
+                profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
+            }
+            #endregion
+            _contractServices.SetModels(models);
+            var contractID = req.ContractID.DecryptKeyValue();
+            Contract contract = _contractServices.GetContractByID(contractID: contractID);
+            //wait to do...獨立控管每項作業可執行step
+            if (contract.CDS_Document.CurrentStep >= 5)
+            {
+                return Json(new BaseResponse(true, "合約已進行中,無法修改資料"));
+            }
+            //wait to do..contract business 物件
+            foreach (var tt in req.FieldSettings)
+            {
+                if (!_contractServices.IsContractHasCompany(contract: contract, companyID: tt.CompanyID.DecryptKeyValue()))
+                    return Json(new BaseResponse(false, $"{tt.CompanyID.DecryptKeyValue()} not belonged."));
+            }
+            //wait to do..檢查currentStep是否可進行UpdateFieldSetting
+            //contract.CDS_Document.CheckIfCanGo
+            _contractServices.UpdateFieldSetting(contract, req.FieldSettings);
+            models.SubmitChanges();
+            contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.FieldSet);
+            models.SubmitChanges();
+            return Json(baseResponse);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> EstablishAsync([FromBody] GetSignatoriesRequest req)
+        {
+            var profile = await HttpContext.GetUserAsync();
+            #region add for postman test
+            if (profile == null&& req.EncUID.Length>0)
+            {
+                profile = models.GetTable<UserProfile>().Where(x => x.UID == 4).FirstOrDefault();
+            }
+            #endregion
+            _contractServices?.SetModels(models: models);
+            var contract = _contractServices?.GetContractByID(req.ContractID.DecryptKeyValue());
+            //wait to do...獨立控管每項作業可執行step
+            if (contract.CDS_Document.CurrentStep >= 5)
+            {
+                return Json(new BaseResponse(true, "合約已進行中,無法修改資料"));
+            }
+            if (contract?.FilePath == null || !System.IO.File.Exists(contract.FilePath))
+            {
+                return Json(new BaseResponse(true, "合約資料錯誤!!"));
+            }
+            contract.ContractContent = new Binary(System.IO.File.ReadAllBytesAsync(contract.FilePath).Result);
+            contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Establish);
+            
+            if (contract.IsPassStamp==true)
+            {
+                contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Sealed);
+            }
+
+            models.SubmitChanges();
+
+            //2.如果是大量發送, 複製合約
+            //var newContract = _contractServices.CreateAndSaveContractByOld(contract);
+
+            //_contractServices.CreateAndSaveParty(
+            //    initiatorID: initiatorID,
+            //    contractorID: contractorID ?? 0,
+            //    contract: newContract,
+            //    viewModel.Contractors[i].SignaturePositions,
+            //    uid ?? 0
+            //);
+
+            //3.發送通知(one by one)
+            _contractServices?.SendContractNotifyEmailAsync(contract,
+                        (contract.IsPassStamp == true) ?
+                            EmailBody.EmailTemplate.NotifySign :
+                            EmailBody.EmailTemplate.NotifySeal);
+
+            return Json(baseResponse);
+        }
+
+        public class ContractSignaturePositionRequest
+        {
+            public string CompanyID { get; set; }
+            public string PositionID { get; set; }
+            public int RequestID { get; set; }
+            public double? ScaleWidth { get; set; }
+            public double? ScaleHeight { get; set; }
+            public double? MarginTop { get; set; }
+            public double? MarginLeft { get; set; }
+            public int? PageIndex { get; set; }
+            //0:default 1:文字 2.地址 3.電話 4.日期 5.公司Title 6.印章 7.簽名 8.圖片 ... 擴充?
+            public int? Type { get; set; }
+        }
     }
-
-
 }

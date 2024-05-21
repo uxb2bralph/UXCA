@@ -45,7 +45,7 @@
             <li class="nav-item">
               <a class="nav-link fs-5 fw-bolder" href="@Html.Raw(Url.Action("ListToStampIndex","ContractConsole"))">
                 <i class="fas fa-file-signature"></i>
-                合約
+                文件
               </a>
             </li>
             <li class="nav-item">
@@ -56,11 +56,11 @@
             </li>
           </ul>
 
-          <ul class="navbar-nav mb-2 mb-lg-0">
+          <ul class="navbar-nav mb-2 mb-lg-0 ps-3 d-none d-lg-block">
             <li class="fw-bolder">@Html.Raw(profile.OrganizationUser?.Organization.CompanyName)
               @Html.Raw(profile.UserName) 您好！</li>
           </ul>
-          <ul class="navbar-nav mb-2 mb-lg-0">
+          <ul class="navbar-nav mb-2 mb-lg-0 ps-3">
             <li class="nav-item dropdown">
               <a class="d-flex align-items-center nav-link dropdown-toggle" href="#" id="navbarDropdown"
                 data-bs-toggle="dropdown" aria-expanded="false">
@@ -68,15 +68,15 @@
               </a>
               <ul class="dropdown-menu dropdown-menu-end shadow__card" aria-labelledby="navbarDropdown">
                 @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.SystemAdmin))
-                { 
-                <li>
-                  <a class="dropdown-item" href="@Html.Raw(Url.Action("MaintainData","UserProfile"))">
-                    使用者管理
-                  </a>
-                </li>
-                <li>
-                  <hr class="dropdown-divider">
-                </li>
+                {
+                  <li>
+                    <a class="dropdown-item" href="@Html.Raw(Url.Action("MaintainData","UserProfile"))">
+                      使用者管理
+                    </a>
+                  </li>
+                  <li>
+                    <hr class="dropdown-divider">
+                  </li>
                 }
                 @* @if (profile.IsSysAdmin()) *@
                 @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.SystemAdmin))
@@ -85,12 +85,12 @@
                     <a class="dropdown-item" href="@Html.Raw(Url.Action("MaintainData","Organization"))">公司資料管理</a>
                   </li>
                 }
-                @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.MemberAdmin, 
+                @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.MemberAdmin,
                 (int)UserRoleDefinition.RoleEnum.User))
                 {
-                    <li>
-                                        <a class="dropdown-item" href="@Html.Raw(Url.Action("PasswordChangeView","UserProfile"))">密碼變更</a>
-                    </li>
+                  <li>
+                    <a class="dropdown-item" href="@Html.Raw(Url.Action("PasswordChangeView","UserProfile"))">密碼變更</a>
+                  </li>
                 }
                 <li><a class="dropdown-item" href="@Html.Raw(Url.Action("MaintainSeal","Organization"))">印鑑檔管理</a></li>
                 <li>

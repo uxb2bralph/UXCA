@@ -1,4 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8"?><Database Name="DigitalContract" Class="DCDataContext" Serialization="Unidirectional" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Database Name="DigitalContract" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
   <Table Name="dbo.CDS_Document" Member="CDS_Document">
     <Type Name="CDS_Document">
       <Column Name="DocID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
@@ -7,8 +8,19 @@
       <Column Name="CurrentStep" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="ChannelID" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="ProcessType" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Association Name="CDS_Document_Contract" Member="Contract" ThisKey="DocID" OtherKey="ContractID" Type="Contract" Cardinality="One" />
-      <Association Name="CDS_Document_DocumentProcessLog" Member="DocumentProcessLog" ThisKey="DocID" OtherKey="DocID" Type="DocumentProcessLog" />
+      <Association Name="FK_Contract_CDS_Document" Member="Contract" ThisKey="DocID" OtherKey="ContractID" Type="Contract" Cardinality="One" DeleteRule="CASCADE" />
+      <Association Name="FK_DocumentProcessLog_CDS_Document" Member="DocumentProcessLog" ThisKey="DocID" OtherKey="DocID" Type="DocumentProcessLog" DeleteRule="CASCADE" />
+    </Type>
+  </Table>
+  <Table Name="dbo.CHT_Token" Member="CHT_Token">
+    <Type Name="CHT_Token">
+      <Column Name="CompanyID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="Email" Type="System.String" DbType="NVarChar(64) NOT NULL" CanBeNull="false" />
+      <Column Name="Token" Type="System.String" DbType="NVarChar(64) NOT NULL" CanBeNull="false" />
+      <Column Name="ClusterID" Type="System.String" DbType="NVarChar(64) NOT NULL" CanBeNull="false" />
+      <Column Name="ApplicationKey" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" UpdateCheck="Never" />
+      <Column Name="ThirdPartyClusterID" Type="System.String" DbType="NVarChar(64) NOT NULL" CanBeNull="false" />
+      <Association Name="FK_CHT_Token_Organization" Member="Organization" ThisKey="CompanyID" OtherKey="CompanyID" Type="Organization" IsForeignKey="true" DeleteOnNull="true" />
     </Type>
   </Table>
   <Table Name="dbo.Contract" Member="Contract">
@@ -18,92 +30,134 @@
       <Column Name="ContractNo" Type="System.String" DbType="NVarChar(64) NOT NULL" CanBeNull="false" />
       <Column Name="Title" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
       <Column Name="ContractContent" Type="System.Data.Linq.Binary" DbType="VarBinary(MAX)" CanBeNull="true" UpdateCheck="Never" />
-      <Column Name="IsJointContracting" Type="System.Boolean" DbType="Bit" CanBeNull="false" />
-      <Association Name="Contract_ContractingParty" Member="ContractingParty" ThisKey="ContractID" OtherKey="ContractID" Type="ContractingParty" />
-      <Association Name="Contract_ContractSignature" Member="ContractSignature" ThisKey="ContractID" OtherKey="ContractID" Type="ContractSignature" Cardinality="One" />
-      <Association Name="Contract_ContractSignatureRequest" Member="ContractSignatureRequest" ThisKey="ContractID" OtherKey="ContractID" Type="ContractSignatureRequest" />
-      <Association Name="Contract_ContractSealRequest" Member="ContractSealRequest" ThisKey="ContractID" OtherKey="ContractID" Type="ContractSealRequest" />
-      <Association Name="Contract_ContractNoteRequest" Member="ContractNoteRequest" ThisKey="ContractID" OtherKey="ContractID" Type="ContractNoteRequest" />
-      <Association Name="CDS_Document_Contract" Member="CDS_Document" ThisKey="ContractID" OtherKey="DocID" Type="CDS_Document" IsForeignKey="true" />
+      <Column Name="IsPassStamp" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
+      <Column Name="InProgress" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
+      <Column Name="CompanyID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Association Name="FK_Contract_CDS_Document" Member="CDS_Document" ThisKey="ContractID" OtherKey="DocID" Type="CDS_Document" IsForeignKey="true" DeleteOnNull="true" />
+      <Association Name="FK_ContractingParty_Contract" Member="ContractingParty" ThisKey="ContractID" OtherKey="ContractID" Type="ContractingParty" DeleteRule="CASCADE" />
+      <Association Name="FK_ContractNoteRequest_Contract" Member="ContractNoteRequest" ThisKey="ContractID" OtherKey="ContractID" Type="ContractNoteRequest" DeleteRule="CASCADE" />
+      <Association Name="FK_ContractSealRequest_Contract" Member="ContractSealRequest" ThisKey="ContractID" OtherKey="ContractID" Type="ContractSealRequest" DeleteRule="CASCADE" />
+      <Association Name="FK_ContractSignature_Contract" Member="ContractSignature" ThisKey="ContractID" OtherKey="ContractID" Type="ContractSignature" Cardinality="One" DeleteRule="CASCADE" />
+      <Association Name="FK_ContractSignaturePositionRequest_Contract" Member="ContractSignaturePositionRequest" ThisKey="ContractID" OtherKey="ContractID" Type="ContractSignaturePositionRequest" DeleteRule="CASCADE" />
+      <Association Name="FK_ContractSignatureRequest_Contract" Member="ContractSignatureRequest" ThisKey="ContractID" OtherKey="ContractID" Type="ContractSignatureRequest" DeleteRule="CASCADE" />
     </Type>
   </Table>
   <Table Name="dbo.ContractingIntent" Member="ContractingIntent">
     <Type Name="ContractingIntent">
       <Column Name="IntentID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
       <Column Name="Description" Type="System.String" DbType="NVarChar(64) NOT NULL" CanBeNull="false" />
-      <Association Name="ContractingIntent_ContractingParty" Member="ContractingParty" ThisKey="IntentID" OtherKey="IntentID" Type="ContractingParty" />
-      <Association Name="ContractingIntent_SealTemplate" Member="SealTemplate" ThisKey="IntentID" OtherKey="IntentID" Type="SealTemplate" />
+      <Association Name="FK_ContractingParty_ContractingIntent" Member="ContractingParty" ThisKey="IntentID" OtherKey="IntentID" Type="ContractingParty" DeleteRule="NO ACTION" />
+      <Association Name="FK_SealTemplate_ContractingIntent" Member="SealTemplate" ThisKey="IntentID" OtherKey="IntentID" Type="SealTemplate" DeleteRule="NO ACTION" />
     </Type>
   </Table>
   <Table Name="dbo.ContractingParty" Member="ContractingParty">
     <Type Name="ContractingParty">
       <Column Name="ContractID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
       <Column Name="CompanyID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
-      <Column Name="IntentID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="IntentID" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="IsInitiator" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
-      <Association Name="Contract_ContractingParty" Member="Contract" ThisKey="ContractID" OtherKey="ContractID" Type="Contract" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-      <Association Name="ContractingIntent_ContractingParty" Member="ContractingIntent" ThisKey="IntentID" OtherKey="IntentID" Type="ContractingIntent" IsForeignKey="true" />
-      <Association Name="Organization_ContractingParty" Member="Organization" ThisKey="CompanyID" OtherKey="CompanyID" Type="Organization" IsForeignKey="true" />
+      <Association Name="FK_ContractingParty_Contract" Member="Contract" ThisKey="ContractID" OtherKey="ContractID" Type="Contract" IsForeignKey="true" DeleteOnNull="true" />
+      <Association Name="FK_ContractingParty_ContractingIntent" Member="ContractingIntent" ThisKey="IntentID" OtherKey="IntentID" Type="ContractingIntent" IsForeignKey="true" />
+      <Association Name="FK_ContractingParty_Organization" Member="Organization" ThisKey="CompanyID" OtherKey="CompanyID" Type="Organization" IsForeignKey="true" />
     </Type>
   </Table>
-  <Table Name="dbo.OrganizationUser" Member="OrganizationUser">
-    <Type Name="OrganizationUser">
-      <Column Name="UID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+  <Table Name="dbo.ContractNoteRequest" Member="ContractNoteRequest">
+    <Type Name="ContractNoteRequest">
+      <Column Name="RequestID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="ContractID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="StampDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Note" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" UpdateCheck="Never" />
+      <Column Name="StampUID" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="SealScale" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="MarginTop" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="MarginLeft" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="PageIndex" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Association Name="FK_ContractNoteRequest_Contract" Member="Contract" ThisKey="ContractID" OtherKey="ContractID" Type="Contract" IsForeignKey="true" DeleteOnNull="true" />
+      <Association Name="FK_ContractNoteRequest_UserProfile" Member="UserProfile" ThisKey="StampUID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.ContractSealRequest" Member="ContractSealRequest">
+    <Type Name="ContractSealRequest">
+      <Column Name="RequestID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="ContractID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="SealID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="StampDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="SealImage" Type="System.Data.Linq.Binary" DbType="VarBinary(MAX)" CanBeNull="true" UpdateCheck="Never" />
+      <Column Name="StampUID" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="SealScale" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="MarginTop" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="MarginLeft" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="PageIndex" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Association Name="FK_ContractSealRequest_Contract" Member="Contract" ThisKey="ContractID" OtherKey="ContractID" Type="Contract" IsForeignKey="true" DeleteOnNull="true" />
+      <Association Name="FK_ContractSealRequest_SealTemplate" Member="SealTemplate" ThisKey="SealID" OtherKey="SealID" Type="SealTemplate" IsForeignKey="true" />
+      <Association Name="FK_ContractSealRequest_UserProfile" Member="UserProfile" ThisKey="StampUID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.ContractSignature" Member="ContractSignature">
+    <Type Name="ContractSignature">
+      <Column Name="ContractID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
       <Column Name="CompanyID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Association Name="UserProfile_OrganizationUser" Member="UserProfile" ThisKey="UID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-      <Association Name="Organization_OrganizationUser" Member="Organization" ThisKey="CompanyID" OtherKey="CompanyID" Type="Organization" IsForeignKey="true" />
+      <Association Name="FK_ContractSignature_Contract" Member="Contract" ThisKey="ContractID" OtherKey="ContractID" Type="Contract" IsForeignKey="true" DeleteOnNull="true" />
+      <Association Name="FK_ContractSignature_ContractSignatureRequest" Member="ContractSignatureRequest" ThisKey="ContractID,CompanyID" OtherKey="ContractID,CompanyID" Type="ContractSignatureRequest" IsForeignKey="true" />
     </Type>
   </Table>
-  <Table Name="dbo.UserProfile" Member="UserProfile">
-    <Type Name="UserProfile">
-      <Column Name="UID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="UserName" Type="System.String" DbType="NVarChar(40) NOT NULL" CanBeNull="false" />
-      <Column Name="PID" Type="System.String" DbType="NVarChar(64) NOT NULL" CanBeNull="false" />
-      <Column Name="Password" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
-      <Column Name="ContactTitle" Type="System.String" DbType="NVarChar(30)" CanBeNull="true" />
-      <Column Name="Address" Type="System.String" DbType="NVarChar(128)" CanBeNull="true" />
-      <Column Name="City" Type="System.String" DbType="NVarChar(16)" CanBeNull="true" />
-      <Column Name="Region" Type="System.String" DbType="NVarChar(16)" CanBeNull="true" />
-      <Column Name="PostalCode" Type="System.String" DbType="NVarChar(16)" CanBeNull="true" />
-      <Column Name="Country" Type="System.String" DbType="NVarChar(16)" CanBeNull="true" />
-      <Column Name="MobilePhone" Type="System.String" DbType="NVarChar(24)" CanBeNull="true" />
-      <Column Name="Phone" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
-      <Column Name="Phone2" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
-      <Column Name="Fax" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
-      <Column Name="EMail" Type="System.String" DbType="NVarChar(512)" CanBeNull="true" />
-      <Column Name="Expiration" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
-      <Column Name="Creator" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="AuthID" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="LevelID" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="ThemeName" Type="System.String" DbType="NVarChar(16)" CanBeNull="true" />
-      <Column Name="Password2" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
-      <Column Name="MailID" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
-      <Association Name="UserProfile_OrganizationUser" Member="OrganizationUser" ThisKey="UID" OtherKey="UID" Type="OrganizationUser" Cardinality="One" />
-      <Association Name="UserProfile_UserProfile" Member="UserProfile2" ThisKey="UID" OtherKey="Creator" Type="UserProfile" />
-      <Association Name="UserProfile_UserProfile1" Member="UserProfile4" ThisKey="UID" OtherKey="AuthID" Type="UserProfile" />
-      <Association Name="UserProfile_UserRole" Member="UserRole" ThisKey="UID" OtherKey="UID" Type="UserRole" />
-      <Association Name="UserProfile_ContractSignatureRequest" Member="ContractSignatureRequest" ThisKey="UID" OtherKey="SignerID" Type="ContractSignatureRequest" />
-      <Association Name="UserProfile_ContractSealRequest" Member="ContractSealRequest" ThisKey="UID" OtherKey="StampUID" Type="ContractSealRequest" />
-      <Association Name="UserProfile_DocumentProcessLog" Member="DocumentProcessLog" ThisKey="UID" OtherKey="ActorID" Type="DocumentProcessLog" />
-      <Association Name="UserProfile_SealTemplate" Member="SealTemplate" ThisKey="UID" OtherKey="UID" Type="SealTemplate" />
-      <Association Name="UserProfile_ContractNoteRequest" Member="ContractNoteRequest" ThisKey="UID" OtherKey="StampUID" Type="ContractNoteRequest" />
-      <Association Name="UserProfile_UserProfile" Member="UserProfile1" ThisKey="Creator" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
-      <Association Name="UserProfile_UserProfile1" Member="UserProfile3" ThisKey="AuthID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
+  <Table Name="dbo.ContractSignaturePositionRequest" Member="ContractSignaturePositionRequest">
+    <Type Name="ContractSignaturePositionRequest">
+      <Column Name="RequestID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="ContractID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="ContractorID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="PositionID" Type="System.String" DbType="VarChar(32) NOT NULL" CanBeNull="false" />
+      <Column Name="ScaleWidth" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="ScaleHeight" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="MarginTop" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="MarginLeft" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="Type" Type="System.Int16" DbType="SmallInt NOT NULL" CanBeNull="false" />
+      <Column Name="PageIndex" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Association Name="FK_ContractSignaturePositionRequest_Contract" Member="Contract" ThisKey="ContractID" OtherKey="ContractID" Type="Contract" IsForeignKey="true" DeleteOnNull="true" />
     </Type>
   </Table>
-  <Table Name="dbo.UserRole" Member="UserRole">
-    <Type Name="UserRole">
-      <Column Name="UID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
-      <Column Name="RoleID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
-      <Association Name="UserProfile_UserRole" Member="UserProfile" ThisKey="UID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-      <Association Name="UserRoleDefinition_UserRole" Member="UserRoleDefinition" ThisKey="RoleID" OtherKey="RoleID" Type="UserRoleDefinition" IsForeignKey="true" />
+  <Table Name="dbo.ContractSignatureRequest" Member="ContractSignatureRequest">
+    <Type Name="ContractSignatureRequest">
+      <Column Name="ContractID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="CompanyID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="SignerID" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="SignatureDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="RequestPath" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
+      <Column Name="ResponsePath" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
+      <Column Name="SealScale" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="SealImage" Type="System.Data.Linq.Binary" DbType="VarBinary(MAX)" CanBeNull="true" UpdateCheck="Never" />
+      <Column Name="MarginTop" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="MarginLeft" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="PageIndex" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="StampDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="RequestTicket" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
+      <Association Name="FK_ContractSignature_ContractSignatureRequest" Member="ContractSignature" ThisKey="ContractID,CompanyID" OtherKey="ContractID,CompanyID" Type="ContractSignature" DeleteRule="NO ACTION" />
+      <Association Name="FK_ContractSignatureRequest_Contract" Member="Contract" ThisKey="ContractID" OtherKey="ContractID" Type="Contract" IsForeignKey="true" DeleteOnNull="true" />
+      <Association Name="FK_ContractSignatureRequest_Organization" Member="Organization" ThisKey="CompanyID" OtherKey="CompanyID" Type="Organization" IsForeignKey="true" />
+      <Association Name="FK_ContractSignatureRequest_UserProfile" Member="UserProfile" ThisKey="SignerID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
     </Type>
   </Table>
-  <Table Name="dbo.UserRoleDefinition" Member="UserRoleDefinition">
-    <Type Name="UserRoleDefinition">
-      <Column Name="RoleID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
-      <Column Name="Role" Type="System.String" DbType="NVarChar(64) NOT NULL" CanBeNull="false" />
-      <Association Name="UserRoleDefinition_UserRole" Member="UserRole" ThisKey="RoleID" OtherKey="RoleID" Type="UserRole" />
+  <Table Name="dbo.DocumentProcessLog" Member="DocumentProcessLog">
+    <Type Name="DocumentProcessLog">
+      <Column Name="LogID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="DocID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="LogDate" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
+      <Column Name="Status" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="StepID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="ActorID" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="ClientIP" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="ClientDevice" Type="System.String" DbType="NVarChar(512)" CanBeNull="true" />
+      <Association Name="FK_DocumentProcessLog_CDS_Document" Member="CDS_Document" ThisKey="DocID" OtherKey="DocID" Type="CDS_Document" IsForeignKey="true" DeleteOnNull="true" />
+      <Association Name="FK_DocumentProcessLog_UserProfile" Member="UserProfile" ThisKey="ActorID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.IdentityCert" Member="IdentityCert">
+    <Type Name="IdentityCert">
+      <Column Name="SeqNo" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="X509Certificate" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" UpdateCheck="Never" />
+      <Column Name="CertificateType" Type="System.String" DbType="NChar(10) NOT NULL" CanBeNull="false" />
+      <Column Name="BindingUID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Association Name="FK_IdentityCert_UserProfile" Member="UserProfile" ThisKey="BindingUID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
     </Type>
   </Table>
   <Table Name="dbo.Organization" Member="Organization">
@@ -132,92 +186,39 @@
       <Column Name="UndertakerID" Type="System.String" DbType="NVarChar(16)" CanBeNull="true" />
       <Column Name="ContactTitle" Type="System.String" DbType="NVarChar(16)" CanBeNull="true" />
       <Column Name="CompanyBelongTo" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="CanCreateContract" Storage="_CompanyBelongTo" Type="System.Boolean" DbType="Int" CanBeNull="true" />
-      <Association Name="Organization_ContractingParty" Member="ContractingParty" ThisKey="CompanyID" OtherKey="CompanyID" Type="ContractingParty" />
-      <Association Name="Organization_OrganizationUser" Member="OrganizationUser" ThisKey="CompanyID" OtherKey="CompanyID" Type="OrganizationUser" />
-      <Association Name="Organization_CHT_Token" Member="CHT_Token" ThisKey="CompanyID" OtherKey="CompanyID" Type="CHT_Token" Cardinality="One" />
-      <Association Name="Organization_ContractSignatureRequest" Member="ContractSignatureRequest" ThisKey="CompanyID" OtherKey="CompanyID" Type="ContractSignatureRequest" />
-      <Association Name="Organization_OrganizationToken" Member="OrganizationToken" ThisKey="CompanyID" OtherKey="CompanyID" Type="OrganizationToken" Cardinality="One" />
+      <Column Name="CanCreateContract" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
+      <Association Name="FK_CHT_Token_Organization" Member="CHT_Token" ThisKey="CompanyID" OtherKey="CompanyID" Type="CHT_Token" Cardinality="One" DeleteRule="CASCADE" />
+      <Association Name="FK_ContractingParty_Organization" Member="ContractingParty" ThisKey="CompanyID" OtherKey="CompanyID" Type="ContractingParty" DeleteRule="NO ACTION" />
+      <Association Name="FK_ContractSignatureRequest_Organization" Member="ContractSignatureRequest" ThisKey="CompanyID" OtherKey="CompanyID" Type="ContractSignatureRequest" DeleteRule="NO ACTION" />
+      <Association Name="FK_OrganizationStatus_Organization" Member="OrganizationStatus" ThisKey="CompanyID" OtherKey="CompanyID" Type="OrganizationStatus" Cardinality="One" DeleteRule="CASCADE" />
+      <Association Name="FK_OrganizationToken_Organization" Member="OrganizationToken" ThisKey="CompanyID" OtherKey="CompanyID" Type="OrganizationToken" Cardinality="One" DeleteRule="CASCADE" />
+      <Association Name="FK_OrganizationUser_Organization" Member="OrganizationUser" ThisKey="CompanyID" OtherKey="CompanyID" Type="OrganizationUser" DeleteRule="NO ACTION" />
     </Type>
   </Table>
-  <Table Name="dbo.CHT_Token" Member="CHT_Token">
-    <Type Name="CHT_Token">
+  <Table Name="dbo.OrganizationStatus" Member="OrganizationStatus">
+    <Type Name="OrganizationStatus">
       <Column Name="CompanyID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
-      <Column Name="Email" Type="System.String" DbType="NVarChar(64) NOT NULL" CanBeNull="false" />
-      <Column Name="Token" Type="System.String" DbType="NVarChar(64) NOT NULL" CanBeNull="false" />
-      <Column Name="ClusterID" Type="System.String" DbType="NVarChar(64) NOT NULL" CanBeNull="false" />
-      <Column Name="ApplicationKey" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
-      <Column Name="ThirdPartyClusterID" Type="System.String" DbType="NVarChar(64) NOT NULL" CanBeNull="false" />
-      <Association Name="Organization_CHT_Token" Member="Organization" ThisKey="CompanyID" OtherKey="CompanyID" Type="Organization" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-    </Type>
-  </Table>
-  <Table Name="dbo.ContractSignature" Member="ContractSignature">
-    <Type Name="ContractSignature">
-      <Column Name="ContractID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
-      <Column Name="CompanyID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Association Name="Contract_ContractSignature" Member="Contract" ThisKey="ContractID" OtherKey="ContractID" Type="Contract" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-      <Association Name="ContractSignatureRequest_ContractSignature" Member="ContractSignatureRequest" ThisKey="ContractID,CompanyID" OtherKey="ContractID,CompanyID" Type="ContractSignatureRequest" IsForeignKey="true" />
-    </Type>
-  </Table>
-  <Table Name="dbo.ContractSignatureRequest" Member="ContractSignatureRequest">
-    <Type Name="ContractSignatureRequest">
-      <Column Name="ContractID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
-      <Column Name="CompanyID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
-      <Column Name="SignerID" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="SignatureDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
-      <Column Name="RequestPath" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
-      <Column Name="ResponsePath" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
-      <Column Name="SealScale" Type="System.Double" DbType="Float" CanBeNull="true" />
-      <Column Name="SealImage" Type="System.Data.Linq.Binary" DbType="VarBinary(MAX)" CanBeNull="true" UpdateCheck="Never" />
-      <Column Name="MarginTop" Type="System.Double" DbType="Float" CanBeNull="true" />
-      <Column Name="MarginLeft" Type="System.Double" DbType="Float" CanBeNull="true" />
-      <Column Name="PageIndex" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="StampDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
-      <Column Name="RequestTicket" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
-      <Association Name="ContractSignatureRequest_ContractSignature" Member="ContractSignature" ThisKey="ContractID,CompanyID" OtherKey="ContractID,CompanyID" Type="ContractSignature" />
-      <Association Name="Contract_ContractSignatureRequest" Member="Contract" ThisKey="ContractID" OtherKey="ContractID" Type="Contract" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-      <Association Name="Organization_ContractSignatureRequest" Member="Organization" ThisKey="CompanyID" OtherKey="CompanyID" Type="Organization" IsForeignKey="true" />
-      <Association Name="UserProfile_ContractSignatureRequest" Member="UserProfile" ThisKey="SignerID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
+      <Column Name="LevelID" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Association Name="FK_OrganizationStatus_Organization" Member="Organization" ThisKey="CompanyID" OtherKey="CompanyID" Type="Organization" IsForeignKey="true" DeleteOnNull="true" />
     </Type>
   </Table>
   <Table Name="dbo.OrganizationToken" Member="OrganizationToken">
     <Type Name="OrganizationToken">
       <Column Name="CompanyID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
-      <Column Name="X509Certificate" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+      <Column Name="X509Certificate" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" UpdateCheck="Never" />
       <Column Name="Thumbprint" Type="System.String" DbType="NVarChar(256) NOT NULL" CanBeNull="false" />
-      <Column Name="PKCS12" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="PKCS12" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" UpdateCheck="Never" />
       <Column Name="KeyID" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
       <Column Name="IsActivated" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
-      <Association Name="Organization_OrganizationToken" Member="Organization" ThisKey="CompanyID" OtherKey="CompanyID" Type="Organization" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+      <Association Name="FK_OrganizationToken_Organization" Member="Organization" ThisKey="CompanyID" OtherKey="CompanyID" Type="Organization" IsForeignKey="true" DeleteOnNull="true" />
     </Type>
   </Table>
-  <Table Name="dbo.ContractSealRequest" Member="ContractSealRequest">
-    <Type Name="ContractSealRequest">
-      <Column Name="RequestID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="ContractID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="SealID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="StampDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
-      <Column Name="SealImage" Type="System.Data.Linq.Binary" DbType="VarBinary(MAX)" CanBeNull="true" UpdateCheck="Never" />
-      <Column Name="StampUID" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="SealScale" Type="System.Double" DbType="Float" CanBeNull="true" />
-      <Column Name="MarginTop" Type="System.Double" DbType="Float" CanBeNull="true" />
-      <Column Name="MarginLeft" Type="System.Double" DbType="Float" CanBeNull="true" />
-      <Column Name="PageIndex" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Association Name="Contract_ContractSealRequest" Member="Contract" ThisKey="ContractID" OtherKey="ContractID" Type="Contract" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-      <Association Name="UserProfile_ContractSealRequest" Member="UserProfile" ThisKey="StampUID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
-      <Association Name="SealTemplate_ContractSealRequest" Member="SealTemplate" ThisKey="SealID" OtherKey="SealID" Type="SealTemplate" IsForeignKey="true" />
-    </Type>
-  </Table>
-  <Table Name="dbo.DocumentProcessLog" Member="DocumentProcessLog">
-    <Type Name="DocumentProcessLog">
-      <Column Name="LogID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="DocID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="LogDate" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
-      <Column Name="Status" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="StepID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="ActorID" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Association Name="CDS_Document_DocumentProcessLog" Member="CDS_Document" ThisKey="DocID" OtherKey="DocID" Type="CDS_Document" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-      <Association Name="UserProfile_DocumentProcessLog" Member="UserProfile" ThisKey="ActorID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
+  <Table Name="dbo.OrganizationUser" Member="OrganizationUser">
+    <Type Name="OrganizationUser">
+      <Column Name="UID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="CompanyID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Association Name="FK_OrganizationUser_Organization" Member="Organization" ThisKey="CompanyID" OtherKey="CompanyID" Type="Organization" IsForeignKey="true" />
+      <Association Name="FK_OrganizationUser_UserProfile" Member="UserProfile" ThisKey="UID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" DeleteOnNull="true" />
     </Type>
   </Table>
   <Table Name="dbo.SealTemplate" Member="SealTemplate">
@@ -231,40 +232,62 @@
       <Column Name="UID" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="SealImage" Type="System.Data.Linq.Binary" DbType="VarBinary(MAX)" CanBeNull="true" UpdateCheck="Never" />
       <Column Name="Disabled" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
-      <Association Name="SealTemplate_ContractSealRequest" Member="ContractSealRequest" ThisKey="SealID" OtherKey="SealID" Type="ContractSealRequest" />
-      <Association Name="ContractingIntent_SealTemplate" Member="ContractingIntent" ThisKey="IntentID" OtherKey="IntentID" Type="ContractingIntent" IsForeignKey="true" />
-      <Association Name="UserProfile_SealTemplate" Member="UserProfile" ThisKey="UID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
+      <Association Name="FK_ContractSealRequest_SealTemplate" Member="ContractSealRequest" ThisKey="SealID" OtherKey="SealID" Type="ContractSealRequest" DeleteRule="NO ACTION" />
+      <Association Name="FK_SealTemplate_ContractingIntent" Member="ContractingIntent" ThisKey="IntentID" OtherKey="IntentID" Type="ContractingIntent" IsForeignKey="true" />
+      <Association Name="FK_SealTemplate_UserProfile" Member="UserProfile" ThisKey="UID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
     </Type>
   </Table>
-  <Table Name="dbo.ContractNoteRequest" Member="ContractNoteRequest">
-    <Type Name="ContractNoteRequest">
-      <Column Name="RequestID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="ContractID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="StampDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
-      <Column Name="Note" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
-      <Column Name="StampUID" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="SealScale" Type="System.Double" DbType="Float" CanBeNull="true" />
-      <Column Name="MarginTop" Type="System.Double" DbType="Float" CanBeNull="true" />
-      <Column Name="MarginLeft" Type="System.Double" DbType="Float" CanBeNull="true" />
-      <Column Name="PageIndex" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Association Name="Contract_ContractNoteRequest" Member="Contract" ThisKey="ContractID" OtherKey="ContractID" Type="Contract" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-      <Association Name="UserProfile_ContractNoteRequest" Member="UserProfile" ThisKey="StampUID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
+  <Table Name="dbo.UserProfile" Member="UserProfile">
+    <Type Name="UserProfile">
+      <Column Name="UID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="UserName" Type="System.String" DbType="NVarChar(40) NOT NULL" CanBeNull="false" />
+      <Column Name="PID" Type="System.String" DbType="NVarChar(64) NOT NULL" CanBeNull="false" />
+      <Column Name="Password" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
+      <Column Name="ContactTitle" Type="System.String" DbType="NVarChar(30)" CanBeNull="true" />
+      <Column Name="Address" Type="System.String" DbType="NVarChar(128)" CanBeNull="true" />
+      <Column Name="City" Type="System.String" DbType="NVarChar(16)" CanBeNull="true" />
+      <Column Name="Region" Type="System.String" DbType="NVarChar(16)" CanBeNull="true" />
+      <Column Name="PostalCode" Type="System.String" DbType="NVarChar(16)" CanBeNull="true" />
+      <Column Name="Country" Type="System.String" DbType="NVarChar(16)" CanBeNull="true" />
+      <Column Name="MobilePhone" Type="System.String" DbType="NVarChar(24)" CanBeNull="true" />
+      <Column Name="Phone" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
+      <Column Name="Phone2" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
+      <Column Name="Fax" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
+      <Column Name="EMail" Type="System.String" DbType="NVarChar(512)" CanBeNull="true" />
+      <Column Name="Expiration" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Creator" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="AuthID" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="LevelID" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="ThemeName" Type="System.String" DbType="NVarChar(16)" CanBeNull="true" />
+      <Column Name="Password2" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
+      <Column Name="MailID" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
+      <Association Name="FK_ContractNoteRequest_UserProfile" Member="ContractNoteRequest" ThisKey="UID" OtherKey="StampUID" Type="ContractNoteRequest" DeleteRule="NO ACTION" />
+      <Association Name="FK_ContractSealRequest_UserProfile" Member="ContractSealRequest" ThisKey="UID" OtherKey="StampUID" Type="ContractSealRequest" DeleteRule="NO ACTION" />
+      <Association Name="FK_ContractSignatureRequest_UserProfile" Member="ContractSignatureRequest" ThisKey="UID" OtherKey="SignerID" Type="ContractSignatureRequest" DeleteRule="NO ACTION" />
+      <Association Name="FK_DocumentProcessLog_UserProfile" Member="DocumentProcessLog" ThisKey="UID" OtherKey="ActorID" Type="DocumentProcessLog" DeleteRule="NO ACTION" />
+      <Association Name="FK_IdentityCert_UserProfile" Member="IdentityCert" ThisKey="UID" OtherKey="BindingUID" Type="IdentityCert" DeleteRule="NO ACTION" />
+      <Association Name="FK_OrganizationUser_UserProfile" Member="OrganizationUser" ThisKey="UID" OtherKey="UID" Type="OrganizationUser" Cardinality="One" DeleteRule="CASCADE" />
+      <Association Name="FK_SealTemplate_UserProfile" Member="SealTemplate" ThisKey="UID" OtherKey="UID" Type="SealTemplate" DeleteRule="NO ACTION" />
+      <Association Name="FK_UserProfile_UserProfile" Member="CreatorUserProfile" ThisKey="Creator" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
+      <Association Name="FK_UserProfile_UserProfile" Member="UserProfile_UserProfile" ThisKey="UID" OtherKey="Creator" Type="UserProfile" DeleteRule="NO ACTION" />
+      <Association Name="FK_UserProfile_UserProfile1" Member="Auth" ThisKey="AuthID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
+      <Association Name="FK_UserProfile_UserProfile1" Member="UserProfile_UserProfile1" ThisKey="UID" OtherKey="AuthID" Type="UserProfile" DeleteRule="NO ACTION" />
+      <Association Name="FK_UserRole_UserProfile" Member="UserRole" ThisKey="UID" OtherKey="UID" Type="UserRole" DeleteRule="CASCADE" />
     </Type>
   </Table>
-  <Table Name="dbo.ContractNoteRequest" Member="ContractSignaturePositionRequests">
-    <Type Name="ContractSignaturePositionRequest">
-      <Column Name="RequestID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="ContractID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="ContractorID" Type="System.Int32" DbType="varchar" CanBeNull="false" />
-      <Column Name="SealScale" Member="ScaleWidth" Type="System.Double" DbType="Float" CanBeNull="true" />
-      <Column Name="MarginTop" Type="System.Double" DbType="Float" CanBeNull="true" />
-      <Column Name="MarginLeft" Type="System.Double" DbType="Float" CanBeNull="true" />
-      <Column Name="PageIndex" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="PositionID" Type="System.String" DbType="NVarChar(32)" CanBeNull="false" />
-      <Column Name="SealScale" Member="ScaleHeight" Type="System.Double" DbType="Float" CanBeNull="true" />
-      <Column Name="Type" Storage="_ContractID" Type="System.Int32" DbType="Int" CanBeNull="false" />
-      <Association Name="Contract_ContractSignaturePositionRequest" Member="Contract" ThisKey="ContractID" OtherKey="ContractID" Type="Contract" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-      <Association Name="Organization_ContractSignaturePositionRequest" Member="Organization" ThisKey="ContractorID" OtherKey="CompanyID" Type="Organization" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+  <Table Name="dbo.UserRole" Member="UserRole">
+    <Type Name="UserRole">
+      <Column Name="UID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="RoleID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Association Name="FK_UserRole_UserProfile" Member="UserProfile" ThisKey="UID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" DeleteOnNull="true" />
+      <Association Name="FK_UserRole_UserRoleDefinition" Member="UserRoleDefinition" ThisKey="RoleID" OtherKey="RoleID" Type="UserRoleDefinition" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.UserRoleDefinition" Member="UserRoleDefinition">
+    <Type Name="UserRoleDefinition">
+      <Column Name="RoleID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="Role" Type="System.String" DbType="NVarChar(64) NOT NULL" CanBeNull="false" />
+      <Association Name="FK_UserRole_UserRoleDefinition" Member="UserRole" ThisKey="RoleID" OtherKey="RoleID" Type="UserRole" DeleteRule="NO ACTION" />
     </Type>
   </Table>
 </Database>

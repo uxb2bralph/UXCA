@@ -1,31 +1,31 @@
 @charset "UTF-8";
 
 @mixin sm {
-  @media(max-width: 576px) {
+  @media(min-width: 576px) {
     @content
   }
 }
 
 @mixin md {
-  @media(max-width: 768px) {
+  @media(min-width: 768px) {
     @content
   }
 }
 
 @mixin lg {
-  @media(max-width: 992px) {
+  @media(min-width: 992px) {
     @content
   }
 }
 
 @mixin xl {
-  @media(max-width: 1200px) {
+  @media(min-width: 1200px) {
     @content
   }
 }
 
 @mixin xxl {
-  @media(max-width: 1400px) {
+  @media(min-width: 1400px) {
     @content
   }
 }
@@ -168,7 +168,6 @@ html, body {
 .login {
   &__wrapper {
     display: flex;
-    align-items: center;
     justify-content: center;
     height: 100vh;
     background-color: #2c70a6;
@@ -176,26 +175,17 @@ html, body {
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;
+    @include xl {
+      align-items: center;
+    }
   }
 
   &__signin {
     width: 100%;
-    max-width: 1280px;
-    margin: auto;
+    margin: 0 auto;
 
-    @include xxl {
-      max-width: 80%;
-    }
-
-    @include md {
-      max-width: 80%;
-    }
-
-    @include sm {
-      max-width: 90%;
-    }
-    .card {
-      border-radius: 0.5rem;
+    @include lg {
+      max-width: 1200px;
     }
   }
   &__forgetPassword {
@@ -205,18 +195,18 @@ html, body {
   }
 
   &__intro {
-    min-height: 450px;
+    min-height: 300px;
     background-image: url('../images/login-banner.png');
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
-    border-bottom-left-radius: 0.5rem;
-    border-top-left-radius: 0.5rem;
-
-    @include xl {
-      min-height: 300px;
-      border-top-right-radius: 0.5rem;
-      border-bottom-left-radius: 0;
+    border-radius: 0;
+    
+    @include lg {
+      min-height: 450px;
+      border-top-left-radius: 0.25rem;
+      border-top-right-radius: 0;
+      border-bottom-left-radius: 0.25rem;
     }
     img {
       height: 72px;
@@ -272,10 +262,10 @@ html, body {
 
   // 搜尋
   &__height {
-    height: 62px;
-
+    height: auto;
+    
     @include md {
-      height: auto;
+      height: 62px;
     }
   }
 }
@@ -448,7 +438,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 250px;
+  min-height: 300px;
   border: 3px dotted rgba(0, 0, 0, .3);
   border-radius: 1rem;
   background: #f1f6ff;
@@ -462,6 +452,7 @@ html, body {
 
 .uploadFile {
   &__message {
+    width: 80%;
     position: absolute;
     bottom: 18px;
     left: 50%;
@@ -695,8 +686,13 @@ html, body {
 
 .contract {
   &__wrapper {
-    height: 100%;
+    width: 100%;
+    height: calc(100% - 40px);
     position: relative;
+    @include xl {
+      width: calc(100% - 400px);
+      height: 100%;
+    }
   }
 
   &__arrow {
@@ -715,19 +711,27 @@ html, body {
     }
   }
 
-  &__list {
-    max-height: 145px;
-    overflow: hidden;
-    overflow-y: auto;
-  }
+  //&__list {
+  //  max-height: 145px;
+  //  overflow: hidden;
+  //  overflow-y: auto;
+  //}
 }
 
 .options {
   &__wrapper {
-    width: 300px;
-    height: 100%;
+    width: 100%;
     overflow: hidden;
     overflow-y: auto;
+    @include xl {
+      width: 400px;
+    }
+  }
+  &--show {
+    display: none;
+    @include xl {
+      display: flex;
+    }
   }
 }
 
@@ -743,7 +747,6 @@ html, body {
     padding: 30px 10px;
     height: 100%;
     display: block;
-    // text-align: center;
     overflow-y: auto;
     background-color: #fbf8f8;
   }
@@ -841,8 +844,8 @@ html, body {
   &__wrapper {
     padding: 2px;
     display: flex;
-    height: 50px;
-    width: 220px;
+    height: 120px;
+    width: 120px;
     align-items: center;
     justify-content: center;
     border: 2px dashed #0d6efd;
@@ -852,21 +855,33 @@ html, body {
     position: absolute;
     cursor: move;    
     &--bg00 {
-      border: 2px dashed #0d6efd;
+      border: 2px dashed #4e90f1;
       background: rgba(132, 181, 253, .5);
     }
     &--bg01 {
-      border: 2px dashed #fdad0d;
+      border: 2px dashed #f9a657;
       background: rgba(253, 227, 132, 0.584);
     }
     &--bg02 {
-      border: 2px dashed #13e232;
-      background: rgba(142, 253, 132, 0.5);
+      border: 2px dashed #35b451;
+      background: rgba(160, 228, 154, 0.5);
+    }
+    &--bg03 {
+      border: 2px dashed #fa73e7;
+      background: rgba(243, 160, 225, 0.5);
+    }
+    &--bg04 {
+      border: 2px dashed #a696ff;
+      background: rgba(216, 182, 243, 0.5);
+    }
+    &--bg05 {
+      border: 2px dashed #df9b7d;
+      background: rgba(224, 210, 197, 0.5);
     }
   }
   &__compantEdit {
     align-items: start;
-    justify-content: start;
+    //justify-content: start;
     border-style: solid;
     cursor: default;
     .vmBox__note {
@@ -878,14 +893,30 @@ html, body {
     }
   }
   &__note {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
     color: #FFFFFF;
     font-weight: 700;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  &__text {
+    display: block;
+    width: 100%;
+    height: 100%;
+    //font-family: 標楷體, 'DFKai-sb';
+    //color: #FFFFFF;
+    //font-weight: 700;
+    //font-size: 1.5rem;
   }
   &__subtext {
     position: absolute;
     bottom: -22px;
-    left: 0;
+    //left: 0;
     white-space: nowrap;
     font-size: 13px;
     color: #666666;
@@ -1123,4 +1154,45 @@ a {
   display: flex;
   justify-content: center;
   height: calc(100vh - 65px);
+}
+
+// 設定簽署人
+.signator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  color: #FFFFFF;
+  &--colorDefault {
+    background-color: #b5b5b5;
+  }
+  &--color0 {
+    background-color: #4e90f1;
+  }
+  &--color1 {
+    background-color: #f9a657;
+  }
+  &--color2 {
+    background-color: #35b451;
+  }
+  &--color3 {
+    background-color: #fa73e7;
+  }
+  &--color4 {
+    background-color: #a696ff;
+  }
+  &--color5 {
+    background-color: #df9b7d;
+  }
+  &__mover {
+    cursor: move;
+  }
+}
+
+.link {
+  text-decoration: none;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
 }

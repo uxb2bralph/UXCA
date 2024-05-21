@@ -1,0 +1,51 @@
+﻿@*
+For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model ContractHome.Models.Dto.BaseResponse
+@{
+
+}
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge" />
+  <title>安心簽 UX SIGN 數位簽章管理系統</title>
+  <!-- MDB icon -->
+  <link rel="icon" href="~/images/uxSign.ico" type="image/x-icon" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="~/css/fontawesome/all.css" />
+  <!-- Google Fonts Roboto -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
+  <!-- Boostrap -->
+  <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+  <script type="text/javascript" src="~/lib/jquery/dist/jquery.js"></script>
+  <script type="text/javascript" src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body>
+  <input id="url" value="@(Model.Url)" type="hidden">
+  <div class="container mt-5">
+    <div class="card pt-2 pb-4">
+      <div class="card-body">
+        <div class="card-text text-center h5 fw-bolder">
+          <div class="pb-2 text-danger opacity-75" style="font-size: 4rem">
+            <i class="far fa-exclamation-circle"></i>
+          </div>
+          <div class="lh-base">@(Model.Message)</div>
+        </div>
+      </div>
+      <div class="d-flex justify-content-center">
+        <button type="button" id="backToSomewhere" type="button" class="btn btn-secondary mx-1"
+          data-bs-dismiss="modal">關閉</button>
+      </div>
+    </div>
+  </div>
+</body>
+<script>
+  $(function () {
+    $("#backToSomewhere").on("click", function () {
+      window.location.href = $("#url").val();
+    });
+  });
+</script>

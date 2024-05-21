@@ -1,5 +1,9 @@
-﻿using ContractHome.Models.ViewModel;
+using ContractHome.Models.DataEntity;
+using ContractHome.Models.ViewModel;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Text;
+using static ContractHome.Models.Helper.ContractServices;
+
 
 namespace ContractHome.Helper
 {
@@ -60,5 +64,31 @@ namespace ContractHome.Helper
             return BitConverter.GetBytes(keyID).EncryptKey();
         }
 
+        public static void ForEach<T>(this IEnumerable<T> source, Action<T> action)
+        {
+            foreach (T item in source)
+                action(item);
+        }
+
+        public static string ReportDateTimeString(this DateTime date)
+        {
+            return $"{date:yyyy/MM/dd HH:mm:ss}";
+        }
+
+        public static DigitalSignCerts DigitalSignBy(this Organization organization)
+        {
+            if (organization.CHT_Token != null)
+            {
+                return DigitalSignCerts.Enterprise;
+            }
+            else if (organization.OrganizationToken?.PKCS12 != null)
+            {
+                return DigitalSignCerts.UXB2B;
+            }
+            else
+            {
+                return DigitalSignCerts.Exchange;
+            }
+        }
     }
 }

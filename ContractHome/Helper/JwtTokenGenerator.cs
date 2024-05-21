@@ -1,20 +1,38 @@
-﻿using Newtonsoft.Json;
+﻿using CommonLib.Core.Utility;
+using ContractHome.Models.DataEntity;
+using ContractHome.Models.Email.Template;
+using DocumentFormat.OpenXml.Office2010.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
+using Newtonsoft.Json;
+using System.Data.Linq.SqlClient;
+using System.Diagnostics.Contracts;
 using System.Security.Cryptography;
 using System.Text;
+using static ContractHome.Helper.JwtTokenGenerator;
 
 namespace ContractHome.Helper
 {
     public class JwtTokenGenerator
     {
-        internal static string secretKey = "XulpspCzuyL1fmCWxfw9g2o8qyMKHAUl";
+        internal readonly static string secretKey = "XulpspCzuyL1fmCWxfw9g2o8qyMKHAUl";
+        internal readonly static int tokenTTLMins = 10;
         public class JwtToken
         {
             public JwtHeader headerObj { get; set; }
-            public string header { get; set; }
+            internal string header { get; set; }
             public JwtPayload payloadObj { get; set; }
-            public string payload { get; set; }
-            public byte[] signature { get; set; }
+            internal string payload { get; set; }
+            internal byte[] signature { get; set; }
 
+            public string Email => payloadObj.data.Email;
+            public string ContractID => payloadObj.data.ContractID;
+            public string UID => payloadObj.data.UID;
+            public EmailBody.EmailTemplate? EmailTemplate => payloadObj.data.EmailTemplate;  
+
+            public override string? ToString()
+            {
+                return payloadObj.ToString();
+            }
         }
 
         public class JwtHeader
@@ -27,8 +45,15 @@ namespace ContractHome.Helper
         {
             public long exp { get; set; }
             public long iat { get; set; }
-            public string id { get; set; }
-            public string email { get; set; }
+            //public string id { get; set; }
+            //public string email { get; set; }
+            //public string contractId { get; set; }
+            public JwtPayloadData data { get; set; }
+
+            public override string? ToString()
+            {
+                return $"exp={exp} iat={iat} id={data.UID} email={data.Email} contractId={data.ContractID}";
+            }
         }
 
         public static string GetTicket(string data, string key)
@@ -51,8 +76,29 @@ namespace ContractHome.Helper
                 return BitConverter.ToString(hash).Replace("-", "").ToUpper();
             }
         }
+        public class JwtPayloadData
+        {
+            public string UID { get; set; }
+            public string? Email { get; set; }
+            public string? ContractID { get; set; }
+            public EmailBody.EmailTemplate? EmailTemplate { get; set; }
 
-        public static string GenerateJwtToken(object payload, string secretKey)
+            public override string? ToString()
+            {
+                return $"UID={UID} Email={Email} contractId={ContractID} EmailTemplate={EmailTemplate}";
+            }
+        }
+
+        public static string GenerateJwtToken(JwtPayloadData jwtTokenData, int tokenTTLMins = 1)
+        {
+            JwtPayload jwtPayload = JwtTokenGenerator.GetJwtPayload(
+                payloadData: jwtTokenData,
+                tokenTTLMins: tokenTTLMins);
+
+            return CreateJwtToken(jwtPayload);
+        }
+
+        public static string CreateJwtToken(JwtPayload payload)
         {
             var header = new { alg = "HS256", typ = "JWT" };
             var encodedHeader = Base64UrlEncode(Encoding.UTF8.GetBytes(Newtonsoft.Json.JsonConvert.SerializeObject(header)));
@@ -78,11 +124,28 @@ namespace ContractHome.Helper
             }
         }
 
+        internal static string Base64UrlEncode(string input)
+        {
+            var base64Bytes = Encoding.UTF8.GetBytes(input);
+            return Base64UrlEncode(base64Bytes);
+        }
+
         private static string Base64UrlEncode(byte[] input)
         {
             var base64 = Convert.ToBase64String(input);
             var base64Url = base64.Replace("+", "-").Replace("/", "_").TrimEnd('=');
             return base64Url;
+        }
+
+        public static JwtPayload GetJwtPayload(JwtPayloadData payloadData, int tokenTTLMins=1)
+        {
+            DateTimeOffset now = DateTime.Now;
+            return new JwtPayload()
+            {
+                data = payloadData,
+                iat = now.Ticks,
+                exp = now.AddMinutes(tokenTTLMins).Ticks
+            };
         }
 
     }

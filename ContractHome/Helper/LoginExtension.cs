@@ -99,6 +99,13 @@ namespace ContractHome.Helper
             context.ClearCache();
         }
 
+        public static async void TrustLogout(this HttpContext context)
+        {
+            context.Response.Cookies.Delete("userID");
+            await context.SignOutAsync();
+            context.ClearCache();
+        }
+
         public static UserProfile GetUser(this HttpContext context)
         {
             var result = context.GetUserAsync();

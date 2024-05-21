@@ -11,75 +11,73 @@
 @using Newtonsoft.Json
 @using Newtonsoft.Json.Linq;
 @{
-    Layout = "~/Views/Shared/Module/CenterModalTemplate.cshtml";
+  Layout = "~/Views/Shared/Module/CenterModalTemplate.cshtml";
 
-    ModelStateDictionary _modelState;
-    ModelSource? models;
-    JObject _model = (JObject)this.Model;
-    ContractSignatureRequest? _item = ViewBag.DataItem as ContractSignatureRequest;
+  ModelStateDictionary _modelState;
+  ModelSource? models;
+  JObject _model = (JObject)this.Model;
+  ContractSignatureRequest? _item = ViewBag.DataItem as ContractSignatureRequest;
 
-    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
-    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+  models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+  _modelState = (ModelStateDictionary)ViewBag.ModelState;
 
-    SignatureRequestViewModel _viewModel = (SignatureRequestViewModel)ViewBag.ViewModel;
-    _viewModel.DialogID = $"sign{DateTime.Now.Ticks}";
+  SignatureRequestViewModel _viewModel = (SignatureRequestViewModel)ViewBag.ViewModel;
+  _viewModel.DialogID = $"sign{DateTime.Now.Ticks}";
 
 }
 
 @section ModalHeader
 {
-    <h5 class="modal-title">合約數位簽章</h5>
+  <h5 class="modal-title">數位簽章</h5>
 }
 
 <div class="card">
-    <div class="card-body">
-        <h5 class="card-title">合約編號：@(_item?.Contract.ContractNo)</h5>
-        <p class="card-text">請先簽章授權後，再完成簽章。</p>
-    </div>
+  <div class="card-body">
+    <h5 class="card-title text-primary opacity-75">文件編號：@(_item?.Contract.ContractNo)</h5>
+    <p class="card-text">請先簽章授權後，再完成簽章。</p>
+  </div>
 </div>
 
 @section ModalFooter
-    {
-    <button type="button" class="btn btn-primary btn-auth">1、簽章授權</button>
-    <button type="button" class="btn btn-light waves-effect btn-confirm">2、完成簽章</button>
-    <script nonce="Y2hiY29kZQ==">
-        $(function () {
+{
+  <button type="button" class="btn btn-primary btn-auth">1、簽章授權</button>
+  <button type="button" class="btn btn-light waves-effect btn-confirm">2、完成簽章</button>
+  <script nonce="Y2hiY29kZQ==">
+    $(function () {
 
-            var $currentModal = $('#@(_viewModel.DialogID)');
-            $('#@(_viewModel.DialogID) button.btn-auth').on('click', function () {
-                window.open('@Html.Raw($"{Settings.Default.CHTSigning.AuthorizeUserTicket}{_item?.RequestTicket}")', '_blank', 'popup');
-            });
+      var $currentModal = $('#@(_viewModel.DialogID)');
+      $('#@(_viewModel.DialogID) button.btn-auth').on('click', function () {
+        window.open('@Html.Raw($"{Settings.Default.CHTSigning.AuthorizeUserTicket}{_item?.RequestTicket}")', '_blank', 'popup');
+      });
 
-            $('#@(_viewModel.DialogID) button.btn-confirm').on('click', function () {
+      $('#@(_viewModel.DialogID) button.btn-confirm').on('click', function () {
 
-                if(!confirm('確認已授權簽章？')) {
-                    return;
-                }
+        if (!confirm('確認已授權簽章？')) {
+          return;
+        }
 
-                var $formData = $currentModal.find('input,select,textarea').serializeObject();
-                $formData.KeyID = '@Html.Raw(_item?.ContractID.EncryptKey())';
+        var $formData = $currentModal.find('input,select,textarea').serializeObject();
+        $formData.KeyID = '@Html.Raw(_item?.ContractID.EncryptKey())';
 
-                showLoading();
-                clearErrors();
-                $.post('@Html.Raw(Url.Action("CommitUserSignature", "ContractConsole"))', $formData, function (data) {
-                    hideLoading();
-                    if ($.isPlainObject(data)) {
-                        if (data.result) {
-                            alertModal('簽章完成!!');
-                            setTimeout(() => {
-                              window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
-                            }, 3000);
-                        } else {
-                            alertModal('簽章失敗!!');
-                        }
-                    } else {
-                        $currentModal.modal('hide');
-                        $(data).appendTo($('body'));
-                    }
-                });
-            });
+        showLoading();
+        clearErrors();
+        $.post('@Html.Raw(Url.Action("CommitUserSignature", "ContractConsole"))', $formData, function (data) {
+          hideLoading();
+          if ($.isPlainObject(data)) {
+            if (data.result) {
+              alertModal('<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base">簽署完成！ 返回文件清單</div>');
+              setTimeout(() => {
+                window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+              }, 3000);
+            } else {
+              alertModal('<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> 簽章失敗！ </div>');
+            }
+          } else {
+            $currentModal.modal('hide');
+            $(data).appendTo($('body'));
+          }
         });
-    </script>
+      });
+    });
+  </script>
 }
-
-

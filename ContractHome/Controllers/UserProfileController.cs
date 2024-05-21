@@ -1,32 +1,19 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
-using System.IO;
-using ContractHome.Models;
+﻿using Microsoft.AspNetCore.Mvc;
 using ContractHome.Models.DataEntity;
 using ContractHome.Models.ViewModel;
 using CommonLib.Utility;
 using Newtonsoft.Json;
 using ContractHome.Helper;
-using ContractHome.Properties;
 using CommonLib.Core.Utility;
-using System.Xml;
-using GemBox.Document;
-using System.Net;
-using Microsoft.Extensions.Primitives;
 using System.Drawing;
-using System.Drawing.Imaging;
-using Microsoft.AspNetCore.WebUtilities;
 using System.Linq.Dynamic.Core;
-using System.Reflection;
 using System.Data.Linq;
 using ContractHome.Security.Authorization;
-using Irony.Parsing;
-using DocumentFormat.OpenXml.Spreadsheet;
-using DocumentFormat.OpenXml.InkML;
 using ContractHome.Helper.Security.MembershipManagement;
-using System.ComponentModel.DataAnnotations;
-using Microsoft.EntityFrameworkCore;
+using ContractHome.Models.Dto;
+using static ContractHome.Models.Helper.ContractServices;
+using ContractHome.Helper.DataQuery;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ContractHome.Controllers
 {
@@ -229,8 +216,13 @@ namespace ContractHome.Controllers
 
       try
       {
-        profile.Password = null;
-        profile.Password2 = userPasswordChange.NewPassword.HashPassword();
+        UserProfile userProfile
+            = models.GetTable<UserProfile>()
+                .Where(x => x.UID.Equals(profile.UID))
+                .FirstOrDefault();
+
+        userProfile.Password = null;
+        userProfile.Password2 = userPasswordChange.NewPassword.HashPassword();
 
         models.SubmitChanges();
 
@@ -297,7 +289,6 @@ namespace ContractHome.Controllers
 
       UserProfile item = dataItem ?? UserProfile.PrepareNewItem(models.DataContext);
 
-      item.OrganizationUser.CompanyID = companyID!.Value;
       item.PID = viewModel.PID;
       item.EMail = viewModel.EMail;
       item.UserName = viewModel.UserName.GetEfficientString();
@@ -312,6 +303,11 @@ namespace ContractHome.Controllers
       try
       {
         models.SubmitChanges();
+
+                models.GetTable<OrganizationUser>().InsertOnSubmit(
+                    new OrganizationUser() { UID = item.UID, CompanyID = companyID ?? 0 });
+
+                models.SubmitChanges();
         if (viewModel.RoleID.HasValue)
         {
           models.ExecuteCommand(@"DELETE FROM UserRole WHERE (UID = {0})", item.UID);
@@ -623,6 +619,43 @@ namespace ContractHome.Controllers
 
     }
 
+        [Authorize]
+        [HttpGet]
+        [AutoValidateAntiforgeryToken]
+        public async Task<ActionResult> GetUserAsync()
+        {
+            var profile = (await HttpContext.GetUserAsync()).LoadInstance(models);
+            if (profile == null)
+            {
+                return Json(new BaseResponse(true, "驗證失敗"));
+            }
 
-  }
+            var isSignExchange = true;
+            var companyName = string.Empty;
+            if (profile.IsSysAdmin())
+            {
+                isSignExchange = false;
+            }
+            else
+            {
+                isSignExchange = (profile.OrganizationUser.Organization.DigitalSignBy() == DigitalSignCerts.Exchange);
+                companyName = profile.OrganizationUser.Organization.CompanyName;
+            }
+
+            ClientUserInfo userResponse = new()
+            {
+                CompanyName = companyName,
+                IsMemberAdmin = profile.IsMemberAdmin(),
+                IsSysAdmin = profile.IsSysAdmin(),
+                UserName = profile.PID,
+                EUID = profile.UID.EncryptKey(),
+                IsSignExchange = isSignExchange ? true : false
+            };
+
+            return Json(new BaseResponse() { Data= userResponse });
+
+        }
+
+
+    }
 }

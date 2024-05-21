@@ -78,12 +78,17 @@
 <script>
   /** 設定不顯示 MainNavBar 的頁面*/
   const pathName = location.pathname;
-  // 登入首頁
-  const isHomePage = pathName === '/' || pathName === '/Home';
-  const isForgetPassWord = pathName === '/Account/ForgetPassword';
+  /** 
+   * param {boolean} isHomePage 登入首頁
+   * param {boolean} isForgetPassWord 忘記密碼
+   * param {boolean} isTrust 密碼變更
+   */
+  const isHomePage = pathName === '/' || pathName === '/Home' || pathName === '/ContractHome' || pathName === '/ContractHome/Home';
+  const isForgetPassWord = pathName === '/Account/ForgetPassword' || pathName === '/ContractHome/Account/ForgetPassword';
+  const isTrust = pathName === '/Account/Trust' || pathName === '/ContractHome/Account/Trust';
   const mainNavBar = document.querySelector('#mainNavBar');
   if (mainNavBar) {
-    mainNavBar.style.display = isHomePage || isForgetPassWord ? 'none' : null;
+    mainNavBar.style.display = isHomePage || isForgetPassWord || isTrust ? 'none' : null;
   }
 
   // 初始化 網頁導覽

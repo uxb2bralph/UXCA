@@ -6,11 +6,12 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using ContractHome.Properties;
 using ContractHome.Models.Email;
 using ContractHome.Models.Email.Template;
-using CommonLib.DataAccess;
-using ContractHome.Models.DataEntity;
 using ContractHome.Models.Helper;
+using FluentValidation.AspNetCore;
+using ContractHome.Models.Cache;
+using Microsoft.Extensions.Caching.Memory;
 
-namespace WebHome
+namespace ContractHome
 {
     public class Startup
     {
@@ -44,7 +45,17 @@ namespace WebHome
             //var webHome = Configuration.GetSection("WebHome");
 
             //services.AddControllersWithViews();
+            services.AddHttpContextAccessor();
+#region Caching
             services.AddMemoryCache();
+
+            var cachingConfigEnum = this.Configuration.GetSection("Caching").GetChildren();
+            Dictionary<string, TimeSpan> cachingExpirationConfig =
+                cachingConfigEnum.ToDictionary(child => child.Key, child => TimeSpan.Parse(child.Value));
+
+            services.AddSingleton<ICacheStore>(x => 
+                new MemoryCacheStore(x.GetService<IMemoryCache>(), cachingExpirationConfig));
+#endregion
 
             services.AddSession(options =>
             {
@@ -57,13 +68,15 @@ namespace WebHome
             {
                 config.Filters.Add(new SampleResultFilter());
                 config.Filters.Add(new ExceptionFilter());
+                config.Filters.Add(new ModelStateResultFilter());
             }).ConfigureApiBehaviorOptions(options =>
             {
                 options.SuppressMapClientErrors = true;
                 options.SuppressModelStateInvalidFilter = true;
             })
             .AddRazorRuntimeCompilation();
-                
+
+            services.AddFluentValidation(validation => validation.RegisterValidatorsFromAssemblyContaining<Startup>());
             //services.AddDbContext<BFDataContext>(options =>
             //    {
             //        options
@@ -96,13 +109,16 @@ namespace WebHome
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
             services.AddOptions<MailSettings>().BindConfiguration("MailSettings");
-            services.AddScoped<IMailService, MailService>();
+            services.AddSingleton<IMailService, MailService>();
             services.AddScoped<EmailFactory>();
             services.AddScoped<EmailBody>();
+            services.AddScoped<IEmailBodyBuilder, EmailBodyBuilder>();
+            
             services.AddScoped<ContractServices>();
-            //services.AddSingleton<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
-            //services.AddSingleton<GenericManager<DCDataContext>>();
-            //services.AddScoped<ContractRepository>();
+            // Add detection services container and device resolver service.
+            services.AddDetection();
+
+           
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

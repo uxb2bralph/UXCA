@@ -104,7 +104,6 @@ html, body {
 
 .login__wrapper {
   display: flex;
-  align-items: center;
   justify-content: center;
   height: 100vh;
   background-color: #2c70a6;
@@ -113,28 +112,19 @@ html, body {
   background-position: center;
   background-size: cover;
 }
+@media (min-width: 1200px) {
+  .login__wrapper {
+    align-items: center;
+  }
+}
 .login__signin {
   width: 100%;
-  max-width: 1280px;
-  margin: auto;
+  margin: 0 auto;
 }
-@media (max-width: 1400px) {
+@media (min-width: 992px) {
   .login__signin {
-    max-width: 80%;
+    max-width: 1200px;
   }
-}
-@media (max-width: 768px) {
-  .login__signin {
-    max-width: 80%;
-  }
-}
-@media (max-width: 576px) {
-  .login__signin {
-    max-width: 90%;
-  }
-}
-.login__signin .card {
-  border-radius: 0.5rem;
 }
 .login__forgetPassword {
   width: 100%;
@@ -142,19 +132,19 @@ html, body {
   margin: auto;
 }
 .login__intro {
-  min-height: 450px;
+  min-height: 300px;
   background-image: url("../images/login-banner.png");
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
-  border-bottom-left-radius: 0.5rem;
-  border-top-left-radius: 0.5rem;
+  border-radius: 0;
 }
-@media (max-width: 1200px) {
+@media (min-width: 992px) {
   .login__intro {
-    min-height: 300px;
-    border-top-right-radius: 0.5rem;
-    border-bottom-left-radius: 0;
+    min-height: 450px;
+    border-top-left-radius: 0.25rem;
+    border-top-right-radius: 0;
+    border-bottom-left-radius: 0.25rem;
   }
 }
 .login__intro img {
@@ -202,11 +192,11 @@ html, body {
   padding-bottom: 0;
 }
 .input__height {
-  height: 62px;
+  height: auto;
 }
-@media (max-width: 768px) {
+@media (min-width: 768px) {
   .input__height {
-    height: auto;
+    height: 62px;
   }
 }
 
@@ -347,7 +337,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 250px;
+  min-height: 300px;
   border: 3px dotted rgba(0, 0, 0, 0.3);
   border-radius: 1rem;
   background: #f1f6ff;
@@ -358,6 +348,7 @@ html, body {
 }
 
 .uploadFile__message {
+  width: 80%;
   position: absolute;
   bottom: 18px;
   left: 50%;
@@ -549,8 +540,15 @@ html, body {
 }
 
 .contract__wrapper {
-  height: 100%;
+  width: 100%;
+  height: calc(100% - 40px);
   position: relative;
+}
+@media (min-width: 1200px) {
+  .contract__wrapper {
+    width: calc(100% - 400px);
+    height: 100%;
+  }
 }
 .contract__arrow--left {
   position: absolute;
@@ -564,17 +562,24 @@ html, body {
   right: 70px;
   z-index: 10;
 }
-.contract__list {
-  max-height: 145px;
+
+.options__wrapper {
+  width: 100%;
   overflow: hidden;
   overflow-y: auto;
 }
-
-.options__wrapper {
-  width: 300px;
-  height: 100%;
-  overflow: hidden;
-  overflow-y: auto;
+@media (min-width: 1200px) {
+  .options__wrapper {
+    width: 400px;
+  }
+}
+.options--show {
+  display: none;
+}
+@media (min-width: 1200px) {
+  .options--show {
+    display: flex;
+  }
 }
 
 #signatureCanvas > canvas {
@@ -671,8 +676,8 @@ html, body {
 .vmBox__wrapper {
   padding: 2px;
   display: flex;
-  height: 50px;
-  width: 220px;
+  height: 120px;
+  width: 120px;
   align-items: center;
   justify-content: center;
   border: 2px dashed #0d6efd;
@@ -682,20 +687,31 @@ html, body {
   cursor: move;
 }
 .vmBox__wrapper--bg00 {
-  border: 2px dashed #0d6efd;
+  border: 2px dashed #4e90f1;
   background: rgba(132, 181, 253, 0.5);
 }
 .vmBox__wrapper--bg01 {
-  border: 2px dashed #fdad0d;
+  border: 2px dashed #f9a657;
   background: rgba(253, 227, 132, 0.584);
 }
 .vmBox__wrapper--bg02 {
-  border: 2px dashed #13e232;
-  background: rgba(142, 253, 132, 0.5);
+  border: 2px dashed #35b451;
+  background: rgba(160, 228, 154, 0.5);
+}
+.vmBox__wrapper--bg03 {
+  border: 2px dashed #fa73e7;
+  background: rgba(243, 160, 225, 0.5);
+}
+.vmBox__wrapper--bg04 {
+  border: 2px dashed #a696ff;
+  background: rgba(216, 182, 243, 0.5);
+}
+.vmBox__wrapper--bg05 {
+  border: 2px dashed #df9b7d;
+  background: rgba(224, 210, 197, 0.5);
 }
 .vmBox__compantEdit {
   align-items: start;
-  justify-content: start;
   border-style: solid;
   cursor: default;
 }
@@ -707,14 +723,25 @@ html, body {
   justify-content: center;
 }
 .vmBox__note {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
   color: #FFFFFF;
   font-weight: 700;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.vmBox__text {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 .vmBox__subtext {
   position: absolute;
   bottom: -22px;
-  left: 0;
   white-space: nowrap;
   font-size: 13px;
   color: #666666;
@@ -925,4 +952,44 @@ a {
   display: flex;
   justify-content: center;
   height: calc(100vh - 65px);
+}
+
+.signator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  color: #FFFFFF;
+}
+.signator--colorDefault {
+  background-color: #b5b5b5;
+}
+.signator--color0 {
+  background-color: #4e90f1;
+}
+.signator--color1 {
+  background-color: #f9a657;
+}
+.signator--color2 {
+  background-color: #35b451;
+}
+.signator--color3 {
+  background-color: #fa73e7;
+}
+.signator--color4 {
+  background-color: #a696ff;
+}
+.signator--color5 {
+  background-color: #df9b7d;
+}
+.signator__mover {
+  cursor: move;
+}
+
+.link {
+  text-decoration: none;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
 }/*# sourceMappingURL=site.css.map */
