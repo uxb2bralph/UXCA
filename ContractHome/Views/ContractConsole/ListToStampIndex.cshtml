@@ -697,8 +697,7 @@
             <div class="pt-3 text-center">
               <span>如同意簽署，則您的個人資訊紕露亦遵循 服務條款 及 隱私權政策 的規範。</span>
               <div class="d-flex align-items-center justify-content-center pt-2 fs-6 fw-bold">
-                <input v-model="agree" class="form-check-input mt-0 me-2" type="checkbox" id="agree" :true-value="true"
-                  :false-value="false">
+                <input v-model="agree" class="form-check-input mt-0 me-2" type="checkbox" id="agree" :true-value="true" :false-value="false">
                 <label class="form-check-label text-primary" for="agree">
                   我已閱讀並同意遵守 <a class="link" href="@Url.Action("Personal", "Home")">個資保護</a> 及 <a class="link"
                     href="@Url.Action("Privacy", "Home")">隱私政策</a>
@@ -1181,12 +1180,12 @@
       window.addEventListener("message", receiveMessage, false);
 
       // 若為第一次登入，顯示歡迎視窗並進入導覽流程
-      if (!localStorage.getItem("isContractTour")) {
-        setTimeout(() => {
-          $("#welcomModal").modal('show');
-          localStorage.setItem("isContractTour", true);
-        }, 100);
-      };
+      //if (!localStorage.getItem("isContractTour")) {
+      //  setTimeout(() => {
+      //    $("#welcomModal").modal('show');
+      //    localStorage.setItem("isContractTour", true);
+      //  }, 100);
+      //};
 
       // 初始化新增文件表單
       this.initContract();

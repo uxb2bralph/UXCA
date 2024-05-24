@@ -57,7 +57,7 @@
     <use xlink:href="#exclamation-triangle-fill" />
   </svg>
   <div>
-    <span class="fs-14 pt-2">系統已發送「雲端簽署憑證」授權訊息到您的信箱，請依訊息指示操作並取得簽章授權後，再點擊<span
+    <span class="fs-14 pt-2">系統已發送「雲端簽署憑證」授權訊息到您的信箱，請依訊息指示操作並取得簽署憑證授權後，再點擊<span
         class="text-primary">「執行簽署」</span>進行文件簽署的動作。
     </span>
   </div>
@@ -72,26 +72,35 @@
       var $currentModal = $('#@(_viewModel.DialogID)');
       $('#@(_viewModel.DialogID) button.btn-confirm').on('click', function () {
 
-        if (!confirm('確認已取得簽章授權？')) {
+        if (!confirm('確認已取得簽署憑證授權？')) {
           return;
         }
 
         var $formData = $currentModal.find('input,select,textarea').serializeObject();
         $formData.KeyID = '@Html.Raw(_item?.ContractID.EncryptKey())';
 
-        showLoading();
+        showLoading();        
+        $currentModal.modal('hide');          
         clearErrors();
         $.post('@Html.Raw(Url.Action("CommitUserSignature", "ContractConsole"))', $formData, function (res) {
           hideLoading();
-          const { result } = res;
+          const { hasError, result, message } = res;
           if ($.isPlainObject(res)) {
-            if (result) {
+            if (!hasError) {
               alertModal('<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base">簽署完成！ 即將返回文件清單</div>');
               setTimeout(() => {
                 window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
               }, 3000);
-            } else {
-              alertModal('<div style="height:215px"><div class="pb-4 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> 簽章失敗，請確認是否已取得憑證調用授權！</div></div>');
+            } else {   
+              switch (message) {
+                case '060':
+                  alertModal('<div class="pb-4 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> 簽署失敗，請先確認是否已取得簽署憑證調用授權，再執行簽署！</div>');
+                  break;
+                default:
+                  alertModal(`<div class="pb-4 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ( ${message} )簽署失敗！</div>`);
+                
+              }
+              const agree = document.querySelector('#agree').checked = false;
             }
           } else {
             $currentModal.modal('hide');
