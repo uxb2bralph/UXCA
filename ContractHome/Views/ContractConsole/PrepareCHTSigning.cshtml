@@ -31,28 +31,48 @@
   <h5 class="modal-title">數位簽章</h5>
 }
 
-<div class="card">
+<div class="card mb-3">
   <div class="card-body">
-    <h5 class="card-title text-primary opacity-75">文件編號：@(_item?.Contract.ContractNo)</h5>
-    <p class="card-text">請先簽章授權後，再完成簽章。</p>
+    <span class="fs-13 text-muted">文件編號：@(_item?.Contract.ContractNo)</span>
+    <h6 class="card-title fw-bolder text-primary">@(_item?.Contract.Title)</h6>
+  </div>
+</div>
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
+    <path
+      d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
+  </symbol>
+  <symbol id="info-fill" fill="currentColor" viewBox="0 0 16 16">
+    <path
+      d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" />
+  </symbol>
+  <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
+    <path
+      d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+  </symbol>
+</svg>
+
+<div class="alert alert-warning d-flex align-items-center" role="alert">
+  <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Warning:">
+    <use xlink:href="#exclamation-triangle-fill" />
+  </svg>
+  <div>
+    <span class="fs-14 pt-2">系統已發送「雲端簽署憑證」授權訊息到您的信箱，請依訊息指示操作並取得簽章授權後，再點擊<span
+        class="text-primary">「執行簽署」</span>進行文件簽署的動作。
+    </span>
   </div>
 </div>
 
 @section ModalFooter
 {
-  <button type="button" class="btn btn-primary btn-auth">1、簽章授權</button>
-  <button type="button" class="btn btn-light waves-effect btn-confirm">2、完成簽章</button>
+  <button type="button" class="btn btn-primary waves-effect btn-confirm">執行簽署</button>
   <script nonce="Y2hiY29kZQ==">
     $(function () {
 
       var $currentModal = $('#@(_viewModel.DialogID)');
-      $('#@(_viewModel.DialogID) button.btn-auth').on('click', function () {
-        window.open('@Html.Raw($"{Settings.Default.CHTSigning.AuthorizeUserTicket}{_item?.RequestTicket}")', '_blank', 'popup');
-      });
-
       $('#@(_viewModel.DialogID) button.btn-confirm').on('click', function () {
 
-        if (!confirm('確認已授權簽章？')) {
+        if (!confirm('確認已取得簽章授權？')) {
           return;
         }
 
@@ -61,20 +81,21 @@
 
         showLoading();
         clearErrors();
-        $.post('@Html.Raw(Url.Action("CommitUserSignature", "ContractConsole"))', $formData, function (data) {
+        $.post('@Html.Raw(Url.Action("CommitUserSignature", "ContractConsole"))', $formData, function (res) {
           hideLoading();
-          if ($.isPlainObject(data)) {
-            if (data.result) {
-              alertModal('<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base">簽署完成！ 返回文件清單</div>');
+          const { result } = res;
+          if ($.isPlainObject(res)) {
+            if (result) {
+              alertModal('<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base">簽署完成！ 即將返回文件清單</div>');
               setTimeout(() => {
                 window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
               }, 3000);
             } else {
-              alertModal('<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> 簽章失敗！ </div>');
+              alertModal('<div style="height:215px"><div class="pb-4 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> 簽章失敗，請確認是否已取得憑證調用授權！</div></div>');
             }
           } else {
             $currentModal.modal('hide');
-            $(data).appendTo($('body'));
+            $(res).appendTo($('body'));
           }
         });
       });
