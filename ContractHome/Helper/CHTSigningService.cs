@@ -2,8 +2,11 @@
 using CommonLib.DataAccess;
 using CommonLib.Utility;
 using ContractHome.Models.DataEntity;
+using ContractHome.Models.Dto;
 using ContractHome.Properties;
 using Irony.Parsing;
+using Microsoft.AspNetCore.Http.HttpResults;
+using MimeKit.Cryptography;
 using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Crypto.Tls;
 using System.Net;
@@ -187,11 +190,11 @@ namespace ContractHome.Helper
             }
         }
 
-        public static bool CHT_SignPdfByUser(this GenericManager<DCDataContext> models, ContractSignatureRequest request, UserProfile signer)
+        public static (bool,string) CHT_SignPdfByUser(this GenericManager<DCDataContext> models, ContractSignatureRequest request, UserProfile signer)
         {
             if (_DefaultToken == null)
             {
-                return false;
+                return (false,string.Empty);
             }
 
             var data = new
@@ -223,11 +226,13 @@ namespace ContractHome.Helper
                 if ((String)content["code"] == "0")
                 {
                     request.ResponsePath = responsePath;
-                    return true;
+                    return (true, string.Empty);
+                } 
+                else
+                {
+                    return (false, (String)content["code"]);
                 }
             }
-
-            return false;
         }
 
         public static CHT_Token? SystemToken => _DefaultToken;

@@ -1484,7 +1484,8 @@ namespace ContractHome.Controllers
             UserProfile profile = (UserProfile)ViewBag.Profile;
             if (!item.SignerID.HasValue)
             {
-                if (models.CHT_SignPdfByUser(item, profile))
+                (bool signOk, string code) = models.CHT_SignPdfByUser(item, profile);
+                if (signOk)
                 {
                     item.Contract.ContractSignature = new ContractSignature
                     {
@@ -1495,11 +1496,15 @@ namespace ContractHome.Controllers
                     item.SignatureDate = DateTime.Now;
 
                     models.SubmitChanges();
-                    return Json(new { result = true });
+                    return Json(new BaseResponse());
+                } 
+                else
+                {
+                    return Json(new BaseResponse(haserror: true, error: code));
                 }
             }
 
-            return Json(new { result = false });
+            return Json(new BaseResponse());
 
         }
 
