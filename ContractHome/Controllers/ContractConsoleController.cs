@@ -1228,6 +1228,7 @@ namespace ContractHome.Controllers
 
         }
 
+        //2024.05.29 iris:用印畫面的[退回合約], 和[TerminateContractAsync]結果一樣, 更新文件狀態為[CDS_Document.StepEnum.Revoked], 暫改用印畫面的[退回合約]為[終止文件]
         public async Task<ActionResult> AbortContractAsync(SignatureRequestViewModel viewModel)
         {
             ViewResult? result = await AffixPdfSeal(viewModel) as ViewResult;
@@ -1419,6 +1420,7 @@ namespace ContractHome.Controllers
 
         }
 
+        //2024.05.29 iris:查詢畫面的[終止文件], 和[AbortContractAsync]結果一樣, 更新文件狀態為[CDS_Document.StepEnum.Revoked]
         public async Task<ActionResult> TerminateContractAsync(SignatureRequestViewModel viewModel)
         {
             var result = LoadContract(viewModel);
