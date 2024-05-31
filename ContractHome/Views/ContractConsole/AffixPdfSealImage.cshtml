@@ -143,44 +143,36 @@
                     <i class="fad fa-tasks-alt me-1"></i>
                     簽署選項
                   </h6>
-                  <div class="pb-3">
+                  <div>
                     <label class="form-label fw-bolder fs-13" for="PageIndex">選擇簽署所在頁碼</label>
                     <select v-model="selectedPage" id="PageIndex" name="PageIndex" class="form-select form-select-sm"
                       v-on:change="pageHandler">
                       <option v-for="(page, index) in PageCount" :key="index" :value="page">第{{ page }}頁</option>
                     </select>
                   </div>
+                  <div class="divider border-primary opacity-50"></div>
                   <div>
                     <div class="card rounded-0 rounded-top p-2">
                       <div class="row">
                         <div class="col mt-0 d-flex align-items-center">
-                          <input v-model="stampType" type="radio" class="form-check-input my-1 me-2" id="company"
-                            name="stampType" value="company" />
-                          <label class="form-check-label fs-14 fw-bolder" for="company">
-                            公司印章
-                          </label>
+                          <label for="defaultWidth" class="fw-bolder pe-2">寬</label>
+                          <input v-model.trim="defaultWidth" type="number" min="0" id="defaultWidth"
+                            class="form-control form-control-sm" v-on:keyup="checkNumber('defaultWidth', defaultWidth)">
                         </div>
                         <div class="col mt-0 d-flex align-items-center">
-                          <input v-model="stampType" type="radio" class="form-check-input my-1 me-2" id="personal"
-                            name="stampType" value="personal" />
-                          <label class="form-check-label fs-14 fw-bolder" for="personal">
-                            個人印章
-                          </label>
-                        </div>
-                        <div class="col mt-0 d-flex align-items-center">
-                          <input v-model="stampType" type="radio" class="form-check-input my-1 me-2" id="signature"
-                            name="stampType" value="signature" />
-                          <label class="form-check-label fs-14 fw-bolder" for="signature">
-                            簽名
-                          </label>
+                          <label for="defaultHeight" class="fw-bolder pe-2">高</label>
+                          <input v-model.trim="defaultHeight" type="number" min="0" id="defaultHeight"
+                            class="form-control form-control-sm"
+                            v-on:keyup="checkNumber('defaultHeight', defaultHeight)">
                         </div>
                       </div>
                     </div>
                     <button type="button" v-on:click="setSealHandler('1')"
                       class="btn rounded-0 rounded-bottom btn-brown w-100">
-                      <i class="fas fa-stamp"></i> 簽名 或 蓋章
+                      <i class="fas fa-stamp"></i> 簽章
                     </button>
-                    <button type="button" v-on:click="setSealHandler('2')" class="btn btn-brown w-100 mt-2">
+                    <div class="divider border-primary opacity-50"></div>
+                    <button type="button" v-on:click="setSealHandler('2')" class="btn btn-brown w-100">
                       <i class="fas fa-calendar-alt"></i> 日期
                     </button>
                     <button type="button" v-on:click="setSealHandler('3')" class="btn btn-brown w-100 mt-2">
@@ -253,31 +245,6 @@
                 </button>
               </div>
             </div>
-            <!--
-            <div class="row g-2 my-0">
-              <div v-if="isEdit && editStep === '1'" class="col py-1">
-                <button type="button" v-on:click="editStepHandler('2')"
-                  class="btn btn-lg btn-primary opacity-75 w-100 fw-bolder">
-                  下一步
-                </button>
-              </div>
-            </div>
-            -->
-            <!--
-            <div v-if="!isEdit" class="row g-2 my-0">
-              <div class="col-12 py-1 mb-2">
-                <button type="button" class="btn btn-primary opacity-75 w-100 fw-bolder" v-on:click="commitContract">
-                  送出合約
-                </button>
-              </div>
-              <div class="divider "></div>
-              <div class="col-12 py-1">
-                <button type="button" class="btn btn-light w-100" v-on:click="backSearch">
-                  <span class="text-black-50">返回合約查詢</span>
-                </button>
-              </div>
-            </div>
-              -->
           </form>
         </div>
       </div>
@@ -500,6 +467,8 @@
         isReject: false,
         sealTempList: [],
         stampType: 'company',
+        defaultWidth: 130,
+        defaultHeight: 130
       };
     },
     computed: {
@@ -1427,22 +1396,8 @@
         if (type === '3') {
           this.stampType = 'text';
         }
-        if (this.stampType === 'company') {
-          textBox.setAttribute('style', `width: 130px; height: 130px; top: calc(${(contractArea.offsetTop + Number(self.scrolly))}px); left: calc(${(contractArea.offsetWidth - 130) / 2}px);`);
-        };
-        if (this.stampType === 'personal') {
-          textBox.setAttribute('style', `width: 60px; height: 60px; top: calc(${(contractArea.offsetTop + Number(self.scrolly))}px); left: calc(${(contractArea.offsetWidth - 60) / 2}px);`);
-        };
-        if (this.stampType === 'signature') {
-          textBox.setAttribute('style', `width: 200px; height: 60px; top: calc(${(contractArea.offsetTop + Number(self.scrolly))}px); left: calc(${(contractArea.offsetWidth - 200) / 2}px);`);
-        };
-        if (this.stampType === 'date') {
-          textBox.setAttribute('style', `width: 250px; height: 35px; top: calc(${(contractArea.offsetTop + Number(self.scrolly))}px); left: calc(${(contractArea.offsetWidth - 250) / 2}px);`);
-        };
-        if (this.stampType === 'text') {
-          textBox.setAttribute('style', `width: 300px; height: 35px; top: calc(${(contractArea.offsetTop + Number(self.scrolly))}px); left: calc(${(contractArea.offsetWidth - 300) / 2}px);`);
-        };
 
+        textBox.setAttribute('style', `width: ${self.defaultWidth}px; height: ${self.defaultHeight}px; top: ${(contractArea.offsetTop + Number.parseInt(self.scrolly, 10))}px; left: ${(contractArea.offsetWidth - self.defaultWidth) / 2}px;`);
 
         const typeText = this.inputType.filter(item => item.value === type)[0].text;
 
@@ -1469,44 +1424,16 @@
           Type: type,
           PageIndex: this.selectedPage - 1,
           SealScale: 100,
-          ScaleWidth: 130,
-          ScaleHeight: 130,
-          MarginLeft: ((contractArea.offsetWidth - 130) / 2).toFixed(2),
-          MarginTop: (contractArea.offsetTop + Number(self.scrolly)).toFixed(2),
+          ScaleWidth: this.defaultWidth,
+          ScaleHeight: this.defaultHeight,
+          MarginLeft: `${(contractArea.offsetWidth - self.defaultWidth) / 2}`,
+          MarginTop: `${(contractArea.offsetTop + Number.parseInt(self.scrolly, 10))}`,
           canEdit: true,
           UserId: this.currentSignator.KeyID || null,
           ItemClass: this.currentSignator.ItemClass || null,
         };
 
-        // 預設尺寸
-        if (this.stampType === 'company') {
-          vmSeal.ScaleWidth = 130;
-          vmSeal.ScaleHeight = 130;
-          vmSeal.MarginLeft = ((contractArea.offsetWidth - 130) / 2).toFixed(2);
-        };
-        if (this.stampType === 'personal') {
-          vmSeal.ScaleWidth = 60;
-          vmSeal.ScaleHeight = 60;
-          vmSeal.MarginLeft = ((contractArea.offsetWidth - 60) / 2).toFixed(2);
-        };
-        if (this.stampType === 'signature') {
-          vmSeal.ScaleWidth = 200;
-          vmSeal.ScaleHeight = 60;
-          vmSeal.MarginLeft = ((contractArea.offsetWidth - 200) / 2).toFixed(2);
-        };
-        if (this.stampType === 'date') {
-          vmSeal.ScaleWidth = 250;
-          vmSeal.ScaleHeight = 35;
-          vmSeal.MarginLeft = ((contractArea.offsetWidth - 250) / 2).toFixed(2);
-        };
-        if (this.stampType === 'text') {
-          vmSeal.ScaleWidth = 300;
-          vmSeal.ScaleHeight = 35;
-          vmSeal.MarginLeft = ((contractArea.offsetWidth - 300) / 2).toFixed(2);
-        };
-
         this.signaturePositionsTemp.push(vmSeal);
-
         this.operator({ uuid, contractArea, textBox, removeBox, scaleBox, useBox, editBox, subtext });
       },
 
@@ -1611,7 +1538,7 @@
         };
         contractArea.onmousemove = function (ev) {
           ev.preventDefault();
-          // 設置區塊的最小縮放為100*30
+          // 設置區塊的最小縮放為 35*35
           let w = Math.max(35, ev.clientX - pos.x + pos.w);
           let h = Math.max(35, ev.clientY - pos.y + pos.h);
 
@@ -1623,8 +1550,10 @@
             self.signaturePositionsTemp.forEach(item => {
               if (item.Id === uuid) {
                 item.ScaleWidth = w;
-                item.ScaleHeight = h
+                item.ScaleHeight = h;
               }
+              self.defaultWidth = w;
+              self.defaultHeight = h;
             })
           }
         }
@@ -1731,6 +1660,13 @@
       // 返回文件查詢
       backSearch() {
         window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+      },
+
+      // 檢核輸入寬高，預設最小寬高為 35
+      checkNumber(key, value) {
+        if (!value) {
+          this[key] = 35;
+        }
       }
     },
   });
