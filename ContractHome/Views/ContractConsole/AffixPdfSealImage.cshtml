@@ -119,19 +119,19 @@
                       </small>
                     </p>
                     <template>
-                      <div class="input-group w-100 bg-white">
+                      <div class="input-group flex-nowrap bg-white ">
                         <span class="input-group-text">
                           <span class="fs-12 signator" :class="currentSignator.btnClass">
                           </span>
                         </span>
                         <button
-                          class="btn btn-outline-secondary d-flex align-items-center justify-content-between opacity-75 dropdown-toggle flex-fill"
+                          class="btn btn-outline-secondary d-flex align-items-center justify-content-between  dropdown-toggle flex-fill fs-14"
                           data-bs-toggle="dropdown" aria-expanded="false">
-                          {{ currentSignator.Name || '請選擇簽署人' }}
+                          {{ nameFilter(currentSignator.Name) || '請選擇簽署人' }}
                         </button>
                         <ul class="dropdown-menu">
                           <li v-for="(item, idx) in signatories" :key=" idx">
-                            <a class="dropdown-item" v-on:click="selectCompany(item)">{{ item.Name }}</a>
+                            <a class="dropdown-item fs-14" v-on:click="selectCompany(item)">{{ item.Name }}</a>
                           </li>
                         </ul>
                       </div>
@@ -1667,6 +1667,11 @@
         if (!value) {
           this[key] = 35;
         }
+      },
+
+      // 文字轉換
+      nameFilter(name) {
+        return name?.length > 18 ? `${name.substring(0, 18)}...` : name;
       }
     },
   });
