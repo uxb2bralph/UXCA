@@ -160,19 +160,6 @@ namespace ContractHome.Models.Helper
             return contract;
         }
 
-        public class FeildSetting
-        {
-            public int CompanyID { get; set; }
-            public string ID { get; set; }
-            public double ScaleWidth { get; set; }
-            public double ScaleHeight { get; set; }
-            public double MarginTop { get; set; }
-            public double MarginLeft { get; set; }
-            public int PageIndex { get; set; }
-            //0:default 1:文字 2.地址 3.電話 4.日期 5.公司Title 6.印章 7.簽名 8.圖片 ... 擴充?
-            public int Type { get; set; }
-        }
-
         public Contract UpdateFieldSetting(Contract contract, IEnumerable<PostFieldSettingRequestFields> feildSettings)
         {
             _models.DeleteAll<ContractSignaturePositionRequest>(x => x.ContractID == contract.ContractID);

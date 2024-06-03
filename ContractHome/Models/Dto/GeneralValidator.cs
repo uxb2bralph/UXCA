@@ -30,6 +30,12 @@ namespace ContractHome.Models.Dto
                 && (dateValue.CompareTo(DateTime.Now)>=0);
         }
 
+        public static bool MustBeforeToday(string dateTimeString)
+        {
+            return DateTime.TryParse(dateTimeString, out DateTime dateValue)
+                && (dateValue.CompareTo(DateTime.Now) < 0);
+        }
+
         public static bool TryFromBase64String(string bs64String)
         {
             return Convert.TryFromBase64String(bs64String, new Span<byte>(new byte[bs64String.Length]), out int bytesParsed);

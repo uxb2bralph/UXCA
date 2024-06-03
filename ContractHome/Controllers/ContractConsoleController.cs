@@ -14,21 +14,22 @@ using ContractHome.Helper.DataQuery;
 using System.Web;
 using Newtonsoft.Json;
 using ContractHome.Models.Email.Template;
-using ContractHome.Models.Email;
 using static ContractHome.Models.DataEntity.CDS_Document;
 using ContractHome.Models.Dto;
 using FluentValidation;
 using static ContractHome.Models.Helper.ContractServices;
 using static ContractHome.Helper.JwtTokenGenerator;
 using ContractHome.Models.Cache;
-using Org.BouncyCastle.Ocsp;
 using ContractHome.Properties;
-using ContractHome.Controllers.Filters;
+using static CommonLib.Utility.PredicateBuilder;
+using Newtonsoft.Json.Linq;
+using System.Reflection;
+using ClosedXML.Excel;
 
 namespace ContractHome.Controllers
 {
     //remark for testing by postman
-    [Authorize]
+    //[Authorize]
     public class ContractConsoleController : SampleController
     {
         private readonly ILogger<HomeController> _logger;
@@ -1226,6 +1227,66 @@ namespace ContractHome.Controllers
 
             return Json(new { result = false });
 
+        }
+
+        public async Task<ActionResult> RptSignatureListAsync([FromBody] PostRptSignatureListRequest req)
+        {
+
+            var filters = new Dictionary<string, object>();
+            if (!string.IsNullOrEmpty(req.CompanyID))
+            {
+                filters.Add("CompanyID", req.CompanyID.DecryptKeyValue());
+            }
+
+            var items = models.GetTable<ContractSignatureRequest>()
+                //分頁處理-->先pass,直接轉excel
+                .Where(x => x.SignatureDate != null)
+                .AsQueryable<ContractSignatureRequest>()
+                //.EqualMultiple(filters)
+                .Between("SignatureDate"
+                    , string.IsNullOrEmpty(req.QueryDateEndString)?DateTime.Now.AddDays(-90).StartOfDay() : req.QueryDateFromString.ConvertToDateTime("yyyy/MM/dd").StartOfDay()
+                    , string.IsNullOrEmpty(req.QueryDateEndString)?DateTime.Now.StartOfDay() : req.QueryDateEndString.ConvertToDateTime("yyyy/MM/dd").EndOfDay())
+                .OrderByMultiple(new List<OrderByCol>()
+                {
+                    new OrderByCol(){
+                    colName = nameof(ContractSignatureRequest.SignatureDate),
+                    sortType = OrderbyType.Desc}
+                })
+                .Select(x => new
+                {
+                    createCompany = x.Contract.CompanyID,
+                    companyName = $"{x.Organization.CompanyName}({x.Organization.CompanyID})",
+                    date = x.SignatureDate,
+                    signerUID = x.SignerID,
+                    contractID = x.Contract.ContractID,
+                    contractNoTitle = $"{x.Contract.ContractNo}-{x.Contract.Title}",
+                    ContractStatus = x.Contract.CDS_Document.CurrentStep!.Value //直接套CDS_Document.StepNamin會報錯
+                }).AsEnumerable()
+                .Join(models.GetTable<Organization>(),
+                    c => c.createCompany, o => o.CompanyID, (c, o) => (c, o))
+                .Join(models.GetTable<UserProfile>(),
+                    a => a.c.signerUID, u => u.UID, (a, u) => (a,u))
+                .Select(x => new {
+                    date = string.Format("{0:yyyy/MM/dd HH:mm:dd}", x.a.c.date!),
+                    companyName = x.a.c.companyName,
+                    signer = x.u.UserName,
+                    createCompany = $"{x.a.o.CompanyName}({x.a.o.CompanyID})",
+                    contractID = x.a.c.contractID,
+                    contractNoTitle = x.a.c.contractNoTitle,
+                    contractStatus = CDS_Document.StepNaming[x.a.c.ContractStatus],
+                });
+
+
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                using (XLWorkbook xls = new XLWorkbook())
+                {
+                    var abc = items.ConvertToExcel(xls, new string[7] { "簽章日期", "簽署方", "簽署人員", "起約方", "文件系統編號", "文件名稱", "文件狀態" });
+                    abc.SaveAs(memoryStream);
+                    memoryStream.Seek(0, SeekOrigin.Begin);
+                    return this.File(memoryStream.ToArray(), "application/vnd.ms-excel", $"RptSignatureList-{Guid.NewGuid().ToString()}.xlsx");
+                }
+            }
         }
 
         //2024.05.29 iris:用印畫面的[退回合約], 和[TerminateContractAsync]結果一樣, 更新文件狀態為[CDS_Document.StepEnum.Revoked], 暫改用印畫面的[退回合約]為[終止文件]

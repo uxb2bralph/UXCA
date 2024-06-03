@@ -110,6 +110,7 @@ namespace ContractHome.Models.DataEntity
         {
             Initial = 0,
             Config = 1,
+            Undefind =2,
             FieldSet = 3,
             Establish = 5,
             Sealing = 6,
@@ -124,26 +125,27 @@ namespace ContractHome.Models.DataEntity
 
         public static readonly String[] StepNaming =
             {
-                "開始",
-                "設定",
-                "",
-                "欄位設定",
-                "",
-                "建立",
-                "用印中",
-                "用印完成",
-                "",
-                "",
-                "簽章中",
-                "簽章完成",
-                "",
-                "",
-                "",
-                "",
-                "瀏覽",
-                "已終止",
-                "完成",
-                "撤銷"
+                "開始",//0
+                "設定",//1
+                "無法定義",//2
+                "欄位設定",//3
+                "",//4
+                "建立",//5
+                "用印中",//6
+                "用印完成",//7
+                "--",//8
+                "",//9
+                "簽章中",//10
+                "簽章完成",//11
+                "",//12
+                "",//13
+                "",//14
+                "",//15
+                "瀏覽",//16
+                "已終止",//17
+                "完成",//18
+                "撤銷",//19
+                ""//20
             };
 
         public bool IsPendingState() => (this.CurrentStep==null) ? 
