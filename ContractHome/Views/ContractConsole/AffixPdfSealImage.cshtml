@@ -143,23 +143,23 @@
                     <i class="fad fa-tasks-alt me-1"></i>
                     簽署選項
                   </h6>
-                  <div class="pb-2">
+                  <div>
                     <label class="form-label fw-bolder fs-13" for="PageIndex">選擇簽署所在頁碼</label>
                     <select v-model="selectedPage" id="PageIndex" name="PageIndex" class="form-select form-select-sm"
                       v-on:change="pageHandler">
                       <option v-for="(page, index) in PageCount" :key="index" :value="page">第{{ page }}頁</option>
                     </select>
                   </div>
-                  <div class="divider border-primary opacity-50"></div>
+                  <div class="divider border-primary opacity-50 my-3"></div>
                   <div>
-                    <div class="card rounded-0 rounded-top p-2">
+                    <div class="card p-2 border-primary opacity-75">
                       <div class="row">
-                        <div class="col mt-0 d-flex align-items-center">
+                        <div class="col mt-0 py-1 d-flex align-items-center">
                           <label for="defaultWidth" class="fw-bolder pe-2">寬</label>
                           <input v-model.trim="defaultWidth" type="number" min="0" id="defaultWidth"
                             class="form-control form-control-sm" v-on:keyup="checkNumber('defaultWidth', defaultWidth)">
                         </div>
-                        <div class="col mt-0 d-flex align-items-center">
+                        <div class="col mt-0 py-1 d-flex align-items-center">
                           <label for="defaultHeight" class="fw-bolder pe-2">高</label>
                           <input v-model.trim="defaultHeight" type="number" min="0" id="defaultHeight"
                             class="form-control form-control-sm"
@@ -167,12 +167,13 @@
                         </div>
                       </div>
                     </div>
-                    <button type="button" v-on:click="setSealHandler('1')"
-                      class="btn rounded-0 rounded-bottom btn-brown w-100">
+                    <!--
+                    <div class="divider border-primary opacity-50"></div>
+                    -->
+                    <button type="button" v-on:click="setSealHandler('1')" class="btn btn-brown w-100 mt-3">
                       <i class="fas fa-stamp"></i> 簽章
                     </button>
-                    <div class="divider border-primary opacity-50"></div>
-                    <button type="button" v-on:click="setSealHandler('2')" class="btn btn-brown w-100">
+                    <button type="button" v-on:click="setSealHandler('2')" class="btn btn-brown w-100 mt-2">
                       <i class="fas fa-calendar-alt"></i> 日期
                     </button>
                     <button type="button" v-on:click="setSealHandler('3')" class="btn btn-brown w-100 mt-2">
