@@ -1,6 +1,7 @@
 using ContractHome.Models.DataEntity;
 using ContractHome.Models.ViewModel;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System.Text;
 using static ContractHome.Models.Helper.ContractServices;
 
@@ -73,6 +74,26 @@ namespace ContractHome.Helper
         public static string ReportDateTimeString(this DateTime date)
         {
             return $"{date:yyyy/MM/dd HH:mm:ss}";
+        }
+
+        public static DateTime ConvertToDateTime(this string dateTimeString, string dateTimeFormat)
+        {
+            DateTime outputDateTimeValue;
+            DateTime.TryParseExact(dateTimeString, dateTimeFormat,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None,
+                    out outputDateTimeValue);
+            return outputDateTimeValue;
+        }
+
+        public static DateTime StartOfDay(this DateTime theDate)
+        {
+            return theDate.Date;
+        }
+
+        public static DateTime EndOfDay(this DateTime theDate)
+        {
+            return theDate.Date.AddDays(1).AddTicks(-1);
         }
 
         public static DigitalSignCerts DigitalSignBy(this Organization organization)

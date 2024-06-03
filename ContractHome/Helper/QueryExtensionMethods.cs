@@ -1,7 +1,11 @@
-﻿using CommonLib.DataAccess;
+﻿using ClosedXML;
+using ClosedXML.Excel;
+using CommonLib.DataAccess;
 using ContractHome.Models.DataEntity;
+using System.Collections;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq.Dynamic.Core;
 
 namespace ContractHome.Helper
 {
@@ -77,7 +81,26 @@ namespace ContractHome.Helper
             return xls;
         }
 
-
+        public static XLWorkbook ConvertToExcel(this IEnumerable queryable, XLWorkbook xls, string[]? columnName=null)
+        {
+            try
+            {
+                IXLWorksheet ws = xls.AddWorksheet("item1");
+                if (columnName != null)
+                {
+                    for (int j = 1; j < columnName.Length + 1; j++)
+                    {
+                        ws.Cell(1, j).Value = columnName[j - 1];
+                    }
+                }
+                ws.Cell(2, 1).InsertData(queryable);
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogging.CreateLogger("QueryExtensionMethods").LogError(ex, ex.Message);
+            }
+            return xls;
+        }
     }
 
 }
