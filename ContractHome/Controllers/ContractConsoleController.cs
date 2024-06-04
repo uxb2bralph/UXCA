@@ -1233,7 +1233,8 @@ namespace ContractHome.Controllers
         {
 
             var filters = new Dictionary<string, object>();
-            if (!string.IsNullOrEmpty(req.CompanyID))
+            if (!string.IsNullOrWhiteSpace(req.CompanyID)
+                &&(GeneralValidator.TryDecryptKeyValue(req.CompanyID)))
             {
                 filters.Add("CompanyID", req.CompanyID.DecryptKeyValue());
             }
@@ -1242,7 +1243,7 @@ namespace ContractHome.Controllers
                 //分頁處理-->先pass,直接轉excel
                 .Where(x => x.SignatureDate != null)
                 .AsQueryable<ContractSignatureRequest>()
-                //.EqualMultiple(filters)
+                .EqualMultiple(filters)
                 .Between("SignatureDate"
                     , string.IsNullOrEmpty(req.QueryDateEndString)?DateTime.Now.AddDays(-90).StartOfDay() : req.QueryDateFromString.ConvertToDateTime("yyyy/MM/dd").StartOfDay()
                     , string.IsNullOrEmpty(req.QueryDateEndString)?DateTime.Now.StartOfDay() : req.QueryDateEndString.ConvertToDateTime("yyyy/MM/dd").EndOfDay())
