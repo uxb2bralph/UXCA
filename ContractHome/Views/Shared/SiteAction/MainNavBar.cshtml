@@ -85,7 +85,7 @@
                     <a class="dropdown-item" href="@Html.Raw(Url.Action("MaintainData","Organization"))">公司資料管理</a>
                   </li>
                   <li>
-                    <a class="dropdown-item" href="@Html.Raw(Url.Action("HistoryReport","Organization"))">歷程報表</a>
+                    <a class="dropdown-item" href="@Html.Raw(Url.Action("HistoryReport","Organization"))">簽署文件報表</a>
                   </li>
                 }
                 @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.MemberAdmin,
