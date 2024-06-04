@@ -17,16 +17,15 @@ namespace ContractHome.Models.Dto
         {
             public Validator()
             {
-                this.RuleFor(x => x.CompanyID)
-                    .Must(y => (string.IsNullOrEmpty(y))?true:GeneralValidator.TryDecryptKeyValue(y));
+                //this.When(x => (!string.IsNullOrEmpty(x.CompanyID)), () => {
+                //    this.RuleFor(x => GeneralValidator.TryDecryptKeyValue(x.CompanyID));
+                //});
 
                 this.RuleFor(x => x.QueryDateFromString)
-                    .Must(y => (string.IsNullOrEmpty(y)) ? true : (y.ConvertToDateTime("yyyy/MM/dd") != DateTime.MinValue))
-                    .Must(y => (string.IsNullOrEmpty(y)) ? true : (GeneralValidator.MustBeforeToday(y)));
+                    .Must(y => (string.IsNullOrEmpty(y)) ? true : (y.ConvertToDateTime("yyyy/MM/dd") != DateTime.MinValue));
 
                 this.RuleFor(x => x.QueryDateEndString)
-                    .Must(y => (string.IsNullOrEmpty(y))?true:(y.ConvertToDateTime("yyyy/MM/dd") != DateTime.MinValue))
-                    .Must(y => (string.IsNullOrEmpty(y))?true:(GeneralValidator.MustBeforeToday(y)));
+                    .Must(y => (string.IsNullOrEmpty(y)) ? true : (y.ConvertToDateTime("yyyy/MM/dd") != DateTime.MinValue));
             }
         }
     }
