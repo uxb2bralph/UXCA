@@ -85,6 +85,7 @@ namespace CommonLib.Utility
         // 依據mapping表對應物件property並給值比對
         public static IQueryable<T> EqualMultiple<T>(this IQueryable<T> query, IDictionary<string, object> filters)
         {
+            if (filters == null||filters.Count()==0) return query;
             var param = Expression.Parameter(typeof(T), "p");
             Expression body = null;
             foreach (var pair in filters)
