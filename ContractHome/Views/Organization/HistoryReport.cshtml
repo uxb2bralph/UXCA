@@ -192,11 +192,11 @@
           QueryDateEndString,
           CompanyID
         };
-        const fromDate = new Date(QueryDateFromString);
-        const endDate = new Date(QueryDateEndString);
+        const fromDate = QueryDateFromString && new Date(QueryDateFromString);
+        const endDate = QueryDateEndString && new Date(QueryDateEndString);
 
         // 輸入欄位檢核
-        if (currentDate.getTime() < fromDate.getTime()) {
+        if (fromDate && (currentDate.getTime() < fromDate.getTime())) {
           this.infoMsg = `
             <div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="fas fa-exclamation-circle"></i></div>
             <div>簽約起日不得大於今天</div>`;
@@ -204,7 +204,7 @@
           return;
         };
 
-        if (currentDate.getTime() < endDate.getTime()) {
+        if (endDate && (currentDate.getTime() < endDate.getTime())) {
           this.infoMsg = `
             <div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="fas fa-exclamation-circle"></i></div>
             <div>簽約迄日不得大於今天</div>`;
@@ -212,7 +212,7 @@
           return;
         };
 
-        if (endDate.getTime() < fromDate.getTime()) {
+        if (fromDate && endDate && (endDate.getTime() < fromDate.getTime())) {
           this.infoMsg = `
             <div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="fas fa-exclamation-circle"></i></div>
             <div>簽約迄日不得小於簽約起日</div>`;
@@ -230,28 +230,39 @@
           type: "POST",
           contentType: "application/json;charset=utf-8",
           xhrFields: {
-            responseType: 'blob', //'arraybuffer'
+            responseType: 'blob', // 'arraybuffer'|'blob'
           },
           success: function (res, _, xhr) {
-            const fileName = xhr
-              .getResponseHeader("content-disposition")
-              .split(";")[1]
-              .split("filename=")[1];
-            const fileNameFormat = `${fileName.split('-')[0]}-${fromString || 0}-${endString || 0}_${CompanyName || 0}`;
-            let blob = new Blob([res], {
-              // 對於 BIFF .xls 文件
-              // type: "application/vnd.ms-excel",
-              // 對於Excel2007以上版本的.xlsx文件
-              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            });
-            let link = document.createElement('a');
-            link.href = window.URL.createObjectURL(blob);
-            // 設定下載的檔名
-            link.download = fileNameFormat;
-            link.click();
-            // 5 秒後清除
-            setTimeout(() => window.URL.revokeObjectURL(link.href), 5000);
-            hideLoading();
+            console.log({ res, xhr })
+            const xhrResponseHeader = xhr.getResponseHeader("content-disposition");
+
+            if (xhrResponseHeader) {
+              const fileName = xhrResponseHeader
+                .split(";")[1]
+                .split("filename=")[1];
+              const fileNameFormat = `${fileName.split('-')[0]}-${fromString || 0}-${endString || 0}_${CompanyName || 0}`;
+              let blob = new Blob([res], {
+                // 對於 BIFF .xls 文件
+                // type: "application/vnd.ms-excel",
+                // 對於Excel2007以上版本的.xlsx文件
+                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              });
+              let link = document.createElement('a');
+              link.href = window.URL.createObjectURL(blob);
+              // 設定下載的檔名
+              link.download = fileNameFormat;
+              link.click();
+              // 5 秒後清除
+              setTimeout(() => window.URL.revokeObjectURL(link.href), 5000);
+              hideLoading();
+            } else {
+              hideLoading();
+              console.log('null');
+              self.infoMsg = `
+              <div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="fas fa-exclamation-circle"></i></div>
+              <div>資料庫問題，請洽系統管理員</div>`;
+              $('#infoModal').modal('show');
+            }
           },
           error: function (xhr, status, thrownError) {
             hideLoading();
