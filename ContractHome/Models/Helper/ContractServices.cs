@@ -428,6 +428,7 @@ namespace ContractHome.Models.Helper
 
         }
 
+//<<<<<<< HEAD
 
         public (BaseResponse, JwtToken, UserProfile) TokenValidate(string token)
         {
@@ -463,7 +464,21 @@ namespace ContractHome.Models.Helper
 
         }
 
+        public void JobTest()
+        {
+            //_contractServices.GetContractByID()
+            //await foreach (var mailData in
+            //    _contractServices?.GetNotifyEmailBodyAsync(contract, users, EmailBody.EmailTemplate.NotifySeal))
+            //{
+            //    _mailService.SendMailAsync(mailData, default);
+            //}
+            FileLogger.Logger.Error("JobTest");
+        }
+
         public async void SendAllContractUsersNotifyEmailDIAsync(
+//=======
+//        public async IAsyncEnumerable<MailData> GetNotifyEmailBodyAsync(
+//>>>>>>> feat/v3_Hangfire
             Contract contract,
             IEmailContent emailContent)
         {

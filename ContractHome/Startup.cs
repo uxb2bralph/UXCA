@@ -10,6 +10,9 @@ using ContractHome.Models.Helper;
 using FluentValidation.AspNetCore;
 using ContractHome.Models.Cache;
 using Microsoft.Extensions.Caching.Memory;
+using ContractHome.Services.Jobs;
+using Hangfire;
+using Hangfire.Dashboard;
 
 namespace ContractHome
 {
@@ -124,7 +127,13 @@ namespace ContractHome
             // Add detection services container and device resolver service.
             services.AddDetection();
 
-           
+            #region Hangfire
+            services.AddJobManager()
+                    .AddrecurringJob<TestJob>();
+
+            #endregion
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -172,6 +181,15 @@ namespace ContractHome
 
             });
 
+            #region Hangfire
+            app.UseHangfireDashboard("/dashboard", options: new DashboardOptions
+            {
+                IsReadOnlyFunc = (DashboardContext context) =>
+                    DashboardAccessAuthFilter.IsReadOnly(context),
+                Authorization = new[] { new DashboardAccessAuthFilter() }
+            });
+            app.StartRecurringJobs();
+            #endregion
 
             //call ConfigureLogger in a centralized place in the code
             ApplicationLogging.ConfigureLogger(loggerFactory);
