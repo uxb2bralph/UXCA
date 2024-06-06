@@ -191,34 +191,35 @@ namespace ContractHome.Helper
         //    return 0;
         //}
 
-        public static ContractingParty? GetInitiator(this Contract contract)
-        {
-            return contract.ContractingParty.Where(x => x.IsInitiator == true).FirstOrDefault();
-        }
+        //resplace by Contract.CompanyID
+        //public static ContractingParty? GetInitiator(this Contract contract)
+        //{
+        //    return contract.ContractingParty.Where(x => x.IsInitiator == true).FirstOrDefault();
+        //}
 
-        public static Organization? GetOrganization(this ContractingParty contract, 
-            GenericManager<DCDataContext> models)
-        {
-            return models.GetTable<Organization>()
-                .Where(c => c.CompanyID == contract.CompanyID)
-                .FirstOrDefault();
-        }
+        //public static Organization? GetOrganization(this ContractingParty contract, 
+        //    GenericManager<DCDataContext> models)
+        //{
+        //    return models.GetTable<Organization>()
+        //        .Where(c => c.CompanyID == contract.CompanyID)
+        //        .FirstOrDefault();
+        //}
 
-        public static IEnumerable<UserProfile>? GetUsers(this ContractingParty contract,
-            GenericManager<DCDataContext> models)
-        {
-            return models.GetTable<OrganizationUser>()
-                .Where(c => c.CompanyID == contract.CompanyID)
-                .Select(y=>y.UserProfile);
+        //public static IEnumerable<UserProfile>? GetUsers(this ContractingParty contract,
+        //    GenericManager<DCDataContext> models)
+        //{
+        //    return models.GetTable<OrganizationUser>()
+        //        .Where(c => c.CompanyID == contract.CompanyID)
+        //        .Select(y=>y.UserProfile);
 
-        }
+        //}
 
-        public static IEnumerable<ContractingParty>? GetContractor(this Contract contract)
-        {
-            return
-                contract.ContractingParty
-                    .Where(x => (x.IsInitiator==null)|| (x.IsInitiator == false));
-        }
+        //public static IEnumerable<ContractingParty>? GetContractor(this Contract contract)
+        //{
+        //    return
+        //        contract.ContractingParty
+        //            .Where(x => (x.IsInitiator==null)|| (x.IsInitiator == false));
+        //}
 
         public static bool isAllStamped(this Contract contract)
         {

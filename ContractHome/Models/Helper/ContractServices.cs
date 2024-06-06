@@ -25,7 +25,6 @@ namespace ContractHome.Models.Helper
         protected internal GenericManager<DCDataContext> _models;
         //protected internal Contract? _contract;
         private readonly EmailFactory _emailFactory;
-        private readonly IEmailBodyBuilder _emailBody;
         private readonly IDetectionService _detectionService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ICacheStore _cacheStore;
@@ -34,10 +33,10 @@ namespace ContractHome.Models.Helper
         public ContractServices(IEmailBodyBuilder emailBody,
             EmailFactory emailFactory,
             IDetectionService detectionService,
-            IHttpContextAccessor httpContextAccessor, ICacheStore cacheStore
+            IHttpContextAccessor httpContextAccessor, 
+            ICacheStore cacheStore
             ) 
         {
-            _emailBody = emailBody;
             _emailFactory = emailFactory;
             _detectionService = detectionService;
             _httpContextAccessor = httpContextAccessor;
@@ -464,50 +463,55 @@ namespace ContractHome.Models.Helper
 
         }
 
-        public async void SendContractNotifyEmailAsync(
+        public async void SendAllContractUsersNotifyEmailDIAsync(
             Contract contract,
-            EmailBody.EmailTemplate emailTemplate)
+            IEmailContent emailContent)
         {
             var initiatorOrg = GetOrganization(contract);
             var userProfiles = GetUsersbyContract(contract);
-
 
             if (initiatorOrg != null)
             {
                 foreach (var user in userProfiles)
                 {
+                    EmailContentBodyDto emailContentBodyDto =
+                        new EmailContentBodyDto(contract: contract, initiatorOrg: initiatorOrg, userProfile: user);
 
-                    JwtTokenGenerator.JwtPayloadData jwtPayloadData = new JwtTokenGenerator.JwtPayloadData()
-                    {
-                        UID = user.UID.EncryptKey(),
-                        Email = user.EMail,
-                        ContractID = contract.ContractID.EncryptKey(),
-                        EmailTemplate = emailTemplate
-                    };
+//<<<<<<< HEAD
+//                    JwtTokenGenerator.JwtPayloadData jwtPayloadData = new JwtTokenGenerator.JwtPayloadData()
+//                    {
+//                        UID = user.UID.EncryptKey(),
+//                        Email = user.EMail,
+//                        ContractID = contract.ContractID.EncryptKey(),
+//                        EmailTemplate = emailTemplate
+//                    };
 
-                    var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData, 4320);
-                    var clickLink = $"{Settings.Default.WebAppDomain}/ContractConsole/Trust?token={Base64UrlEncode(jwtToken.EncryptData())}";
+//                    var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData, 4320);
+//                    var clickLink = $"{Settings.Default.WebAppDomain}/ContractConsole/Trust?token={Base64UrlEncode(jwtToken.EncryptData())}";
 
-                    var emailBody =
-                        _emailBody
-                        .SetTemplateItem(emailTemplate)
-                        .SetContractNo(contract.ContractNo)
-                        .SetTitle(contract.Title)
-                        .SetUserName(initiatorOrg.CompanyName)
-                        .SetRecipientUserName($"{user.CompanyName} {user.UserName}")
-                        .SetRecipientUserEmail(user.EMail)
-                        .SetContractLink(clickLink)
-                        .Build();
+//                    var emailBody =
+//                        _emailBody
+//                        .SetTemplateItem(emailTemplate)
+//                        .SetContractNo(contract.ContractNo)
+//                        .SetTitle(contract.Title)
+//                        .SetUserName(initiatorOrg.CompanyName)
+//                        .SetRecipientUserName($"{user.CompanyName} {user.UserName}")
+//                        .SetRecipientUserEmail(user.EMail)
+//                        .SetContractLink(clickLink)
+//                        .Build();
 
-                    _emailFactory.SendEmailToCustomer(
-                        emailBody.RecipientUserEmail,
-                        _emailFactory.GetEmailTitle(emailTemplate),
-                        await emailBody.GetViewRenderString());
+//                    _emailFactory.SendEmailToCustomer(
+//                        emailBody.RecipientUserEmail,
+//                        _emailFactory.GetEmailTitle(emailTemplate),
+//                        await emailBody.GetViewRenderString());
 
+//=======
+                    emailContent.CreateBody(emailContentBodyDto);
+                    _emailFactory.SendEmailToCustomer(mailTo: user.EMail, 
+                        emailContent: emailContent);
+//>>>>>>> feat/v3_EmailFactory
                 }
             }
-
-
         }
 
         public void SaveContract()

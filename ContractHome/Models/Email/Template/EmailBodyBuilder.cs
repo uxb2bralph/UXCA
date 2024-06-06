@@ -6,12 +6,6 @@ namespace ContractHome.Models.Email.Template
     public class EmailBodyBuilder : IEmailBodyBuilder
     {
         private EmailBody _emailTemplate;
-        private string _contractNo;
-        private string _title;
-        private string _initiatorUserName;
-        private string _userEmail;
-        private string _userName;
-        private string _templateItem;
 
         public EmailBodyBuilder(EmailBody emailBodyTemplate) 
         {
@@ -51,9 +45,9 @@ namespace ContractHome.Models.Email.Template
             return this;
         }
 
-        public IEmailBodyBuilder SetTemplateItem(EmailTemplate emailTemplate)
+        public IEmailBodyBuilder SetTemplateItem(string item)
         {
-            _emailTemplate.SetTemplateItem(emailTemplate);
+            _emailTemplate.SetTemplateItem(item);
             return this;
         }
 
@@ -63,13 +57,13 @@ namespace ContractHome.Models.Email.Template
             return this;
         }
 
-        public IEmailBodyBuilder SetUserEmail(string userEmail)
+        public IEmailBodyBuilder SetSendUserEmail(string userEmail)
         {
             _emailTemplate.SetUserEmail(userEmail);
             return this;
         }
 
-        public IEmailBodyBuilder SetUserName(string userName)
+        public IEmailBodyBuilder SetSendUserName(string userName)
         {
             _emailTemplate.SetUserName(userName);
             return this;

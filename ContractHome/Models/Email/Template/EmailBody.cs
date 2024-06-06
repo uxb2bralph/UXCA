@@ -22,8 +22,8 @@ namespace ContractHome.Models.Email.Template
         public string RecipientUserEmail { get; set; }
         public string ContractLink { get; set; }
         public string VerifyLink { get; set; }
-        [DefaultValue(EmailTemplate.Undefined)]
-        public EmailTemplate TemplateItem { get; set; }
+
+        public string TemplateItem { get; set; }
 
         public enum EmailTemplate
         {
@@ -31,7 +31,7 @@ namespace ContractHome.Models.Email.Template
             NotifySeal = 2, //v2用印
             NotifySign = 5, //v2簽章
             NotifySignature = 6, //v3可視簽章
-            FinishContract =8,
+            FinishContract = 8,
             LoginFailed = 9,
             LoginSuccessed = 10,
             PasswordUpdated = 14,   //密碼變更
@@ -78,14 +78,14 @@ namespace ContractHome.Models.Email.Template
             this.VerifyLink = verifyLink;
         }
 
-        public void SetTemplateItem(EmailTemplate emailTemplate)
+        public void SetTemplateItem(string item)
         {
-            this.TemplateItem = emailTemplate;
+            this.TemplateItem = item;
         }
 
         public string GetTemplateView()
         {
-            if (this.TemplateItem== EmailTemplate.Undefined) 
+            if (string.IsNullOrEmpty(this.TemplateItem)) 
             { 
                 return string.Empty;
             }
