@@ -1,14 +1,28 @@
-﻿namespace ContractHome.Services.Jobs
+﻿using CommonLib.Core.Utility;
+using ContractHome.Models.Helper;
+using Org.BouncyCastle.Asn1.Ocsp;
+
+namespace ContractHome.Services.Jobs
 {
     public class TestJob : IRecurringJob
     {
+        private ContractServices? _contractServices;
+
+        public TestJob(IServiceProvider serviceProvider)
+        {
+            _contractServices = serviceProvider.CreateScope().ServiceProvider.GetService<ContractServices>(); ;
+        }
+
+
+        //every minute
         public string CronExpression => "*/1 * * * *";
 
         public string JobId => "TestJobId";
 
-        public Task Execute()
+        public async Task Execute()
         {
-            return new Task(()=>Console.WriteLine("this is Test."));
+            //File.WriteAllText(Path.Combine(FileLogger.Logger.LogDailyPath, $"IRecurringJob-{Guid.NewGuid()}.json"), "ttt");
+            _contractServices.JobTest();
         }
     }
 }

@@ -372,6 +372,18 @@ namespace ContractHome.Models.Helper
 
         }
 
+        public void JobTest()
+        {
+            //_contractServices.GetContractByID()
+            //await foreach (var mailData in
+            //    _contractServices?.GetNotifyEmailBodyAsync(contract, users, EmailBody.EmailTemplate.NotifySeal))
+            //{
+            //    _mailService.SendMailAsync(mailData, default);
+            //}
+            FileLogger.Logger.Error("JobTest");
+        }
+
+
         public async IAsyncEnumerable<MailData> GetNotifyEmailBodyAsync(
             Contract contract,
             IEnumerable<UserProfile> userProfiles,
