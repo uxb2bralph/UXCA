@@ -119,6 +119,14 @@ namespace ContractHome.Models.Email.Template
             return emailContent;
         }
 
+        public IEmailContent GetApplyPassword(EmailContentBodyDto dto)
+        {
+            var emailContent = _emailContents.OfType<ApplyPassword>()
+                .FirstOrDefault()!;
+            emailContent.CreateBody(dto);
+            return emailContent;
+        }
+
         public IEmailContent GetLoginSuccessed(string emailUserName, string email)
         {
             var emailContent = _emailContents.OfType<LoginSuccessed>()

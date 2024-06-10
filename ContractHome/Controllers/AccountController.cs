@@ -37,12 +37,15 @@ namespace ContractHome.Controllers
 
         public AccountController(ILogger<HomeController> logger, IServiceProvider serviceProvider, 
             ICacheStore cacheStore,
-            Models.Email.Template.EmailFactory emailContentFactories) : base(serviceProvider)
+            EmailFactory emailContentFactories,
+            ContractServices contractServices
+            ) : base(serviceProvider)
     {
           _logger = logger;
           _cacheStore = cacheStore;
         _emailFactory = emailContentFactories;
-    }
+            _contractServices = contractServices;
+        }
 
     [HttpPost]
     [AllowAnonymous]
@@ -210,42 +213,42 @@ namespace ContractHome.Controllers
     {
             Logout();
             token = token.GetEfficientString();
-            token = JwtTokenValidator.Base64UrlDecodeToString(token);
-
-            var result = _cacheStore.Get(new TrustPasswordApplyTokenCahceKey(token));
+            FileLogger.Logger.Info($"{this.GetType().Name}-Trust-Token={token}");
+            var trustPasswordApplyTokenCahceKey = new TrustPasswordApplyTokenCahceKey(token);
+            var result = _cacheStore.Get(trustPasswordApplyTokenCahceKey);
             if (result != null)
             {
-                throw new InvalidOperationException($"Token已失效，請重新申請。");
+                TempData["message"] += $"Token已失效，請重新申請。";
             }
 
+            var tokenBase64UrlDecode = JwtTokenValidator.Base64UrlDecodeToString(token);
             _contractServices.SetModels(models);
             (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile) = 
-                _contractServices.TokenValidate(token.DecryptData());
-      if (resp.HasError)
-      {
-        TempData["message"] += resp.Message;
-      }
+                _contractServices.TokenValidate(tokenBase64UrlDecode.DecryptData());
+              if (resp.HasError)
+              {
+                TempData["message"] += resp.Message;
+              }
 
-      PasswordResetViewModel passwordResetViewModel = new PasswordResetViewModel() { Token = token };
-      return View("PasswordReset", passwordResetViewModel);
-
+            PasswordResetViewModel passwordResetViewModel = new PasswordResetViewModel() { Token = token };
+            return View("PasswordReset", passwordResetViewModel);
     }
 
     [AllowAnonymous]
     [HttpPost]
     public async Task<BaseResponse> PasswordReset([FromBody] PasswordResetViewModel viewModel)
     {
-
       var token = viewModel.Token.GetEfficientString();
-      var password = viewModel.Password.GetEfficientString();
+            FileLogger.Logger.Info($"{this.GetType().Name}-PasswordReset-Base64UrlEncodeToken={token}");
+            var password = viewModel.Password.GetEfficientString();
       var pid = viewModel.PID.GetEfficientString();
-
-            var result = _cacheStore.Get(new TrustPasswordApplyTokenCahceKey(token));
+            var trustPasswordApplyTokenCahceKey = new TrustPasswordApplyTokenCahceKey(token);
+            var result = _cacheStore.Get(trustPasswordApplyTokenCahceKey);
             if (result != null)
             {
                 return new BaseResponse(true, $"Token已失效，請重新申請。");
             }
-
+            
             _contractServices.SetModels(models);
             (BaseResponse resp, JwtToken jwtTokenObj, UserProfile tokenUserProfile) 
                 = _contractServices.TokenValidate(JwtTokenValidator.Base64UrlDecodeToString(token).DecryptData());
@@ -254,6 +257,7 @@ namespace ContractHome.Controllers
       var viewModelUserProfile
           = models.GetTable<UserProfile>()
               .Where(x => x.EMail.Equals(jwtTokenObj.payloadObj.data.Email))
+              .Where(x=>x.PID.Equals(pid))
               .FirstOrDefault();
 
       if (viewModelUserProfile == null)
@@ -272,8 +276,8 @@ namespace ContractHome.Controllers
 
       models.SubmitChanges();
 
-            var usedTokenCahceKey = new TrustPasswordApplyTokenCahceKey($"{token}");
-            _cacheStore.Add(new Default(), usedTokenCahceKey);
+            var usedTokenCahceKey = new TrustPasswordApplyTokenCahceKey(token);
+            _cacheStore.Add(new Default() { ID = viewModelUserProfile.UID.ToString() }, usedTokenCahceKey);
 
             _emailFactory.SendEmailToCustomer(
                 _emailFactory.GetPasswordUpdated(emailUserName: tokenUserProfile.UserName, email: tokenUserProfile.EMail));
@@ -302,7 +306,10 @@ namespace ContractHome.Controllers
       }
 
       UserProfile userProfile
-          = models.GetTable<UserProfile>().Where(x => x.EMail.Equals(email)).FirstOrDefault();
+          = models.GetTable<UserProfile>()
+                .Where(x => x.EMail.Equals(email))
+                .Where(x => x.PID.Equals(viewModel.PID))
+                .FirstOrDefault();
       if (userProfile == null)
       {
         return new BaseResponse(true, "驗證資料有誤，請檢查輸入欄位是否正確。");
@@ -316,33 +323,11 @@ namespace ContractHome.Controllers
             return new BaseResponse(true, $"通知信已寄發，請查看電子信箱，或稍後重新申請。");
         }
 
-        //<<<<<<< HEAD
-            //JwtPayloadData jwtPayloadData = new JwtPayloadData() { 
-            //    ContractID=string.Empty, Email=email, UID= userProfile.UID.EncryptKey() };
-            //var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData, 4320);
-            //var clickLink = $"{Settings.Default.WebAppDomain}/Account/Trust?token={Base64UrlEncode(jwtToken.EncryptData())}";
+            EmailContentBodyDto emailContentBodyDto =
+                new EmailContentBodyDto(contract: null, initiatorOrg: null, userProfile: userProfile);
 
-        //=======
-        //wait to add
-      //      JwtPayloadData jwtPayloadData = new JwtPayloadData() { 
-      //          ContractID=string.Empty, Email=email, UID= userProfile.UID.EncryptKey() };
-      //      var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData);
-      //      var clickLink = $"{Settings.Default.WebAppDomain}/Account/TrustPasswordReset?token={JwtTokenGenerator.Base64UrlEncode(jwtToken)}";
-        //>>>>>>> feat/v3_EmailFactory
-
-      //      FileLogger.Logger.Error($"clickLink={clickLink}");
-      //      var emailTemp = EmailBody.EmailTemplate.WelcomeUser;
-      //if (viewModel.Item!=null&&viewModel.Item.Equals("forgetPassword")) { emailTemp = EmailBody.EmailTemplate.ApplyPassword; }
-
-      //var emailBody =
-      //    new EmailBodyBuilder(_emailBody)
-      //    .SetTemplateItem(emailTemp)
-      //    .SetUserName(userProfile.UserName)
-      //    .SetUserEmail(userProfile.EMail)
-      //    .SetVerifyLink(clickLink)
-      //    .Build();
-
-      //  _emailFactory.SendEmailToCustomer(emailBody);
+            _emailFactory.SendEmailToCustomer(
+            _emailFactory.GetApplyPassword(dto: emailContentBodyDto));
 
         //wait to do:新token產生後, 設定舊token為失效
         _cacheStore.Add(new Default() { ID = userProfile.UID.ToString() }, redoLimitCahceKey);

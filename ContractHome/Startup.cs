@@ -122,6 +122,7 @@ namespace ContractHome
             services.AddScoped<IEmailContent, LoginFailed>();
             services.AddScoped<IEmailContent, LoginSuccessed>();
             services.AddScoped<IEmailContent, PasswordUpdated>();
+            services.AddScoped<IEmailContent, ApplyPassword>();
             
             services.AddScoped<ContractServices>();
             // Add detection services container and device resolver service.

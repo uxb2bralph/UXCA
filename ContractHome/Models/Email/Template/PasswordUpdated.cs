@@ -6,12 +6,34 @@ using static ContractHome.Models.Email.Template.EmailBody;
 
 namespace ContractHome.Models.Email.Template
 {
-    public class PasswordUpdated : LoginFailed
+    public class PasswordUpdated : IEmailContent
     {
-        public PasswordUpdated(IEmailBodyBuilder emailBodyBuilder) : base(emailBodyBuilder)
+        EmailBody IEmailContent.GetBody => this.EmailBody;
+
+        private EmailBody EmailBody;
+
+        private IEmailBodyBuilder _emailBodyBuilder;
+
+        public PasswordUpdated(IEmailBodyBuilder emailBodyBuilder)
         {
+            _emailBodyBuilder = emailBodyBuilder;
         }
 
-        public string Subject => @"[安心簽]密碼更新通知信";
+        public void CreateBody(string emailUserName, string mailTo)
+        {
+            EmailBody = _emailBodyBuilder
+                .SetTemplateItem(this.GetType().Name)
+                .SetSendUserName(emailUserName)
+                .SetSendUserEmail(mailTo)
+            .Build();
+
+        }
+
+        public void CreateBody(EmailContentBodyDto emailContentBodyDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string Subject => @"[安心簽]密碼更新完成通知信";
     }
 }
