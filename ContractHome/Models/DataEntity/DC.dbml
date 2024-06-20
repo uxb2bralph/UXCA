@@ -261,6 +261,8 @@
       <Column Name="ThemeName" Type="System.String" DbType="NVarChar(16)" CanBeNull="true" />
       <Column Name="Password2" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
       <Column Name="MailID" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
+      <Column Name="LoginFailedCount" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="PasswordUpdatedDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
       <Association Name="FK_ContractNoteRequest_UserProfile" Member="ContractNoteRequest" ThisKey="UID" OtherKey="StampUID" Type="ContractNoteRequest" DeleteRule="NO ACTION" />
       <Association Name="FK_ContractSealRequest_UserProfile" Member="ContractSealRequest" ThisKey="UID" OtherKey="StampUID" Type="ContractSealRequest" DeleteRule="NO ACTION" />
       <Association Name="FK_ContractSignatureRequest_UserProfile" Member="ContractSignatureRequest" ThisKey="UID" OtherKey="SignerID" Type="ContractSignatureRequest" DeleteRule="NO ACTION" />

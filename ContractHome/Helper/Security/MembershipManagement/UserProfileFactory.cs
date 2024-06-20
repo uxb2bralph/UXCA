@@ -7,6 +7,7 @@ namespace ContractHome.Helper.Security.MembershipManagement
 {
     public static class UserProfileFactory
     {
+        internal static string PasswordRegex => @"^(?=.*\d)(?=.*[a-zA-Z])(?=.*\W).{8,30}$";
         public static UserProfile? CreateInstance(int uid)
         {
             using UserProfileManager mgr = new UserProfileManager();
@@ -36,19 +37,33 @@ namespace ContractHome.Helper.Security.MembershipManagement
             }
             return result;
         }
-        public static UserProfile? CreateInstance(string pid, string password)
+
+
+        public static UserProfile? LoginProfileCheck(string pid, string password, out int? loginFailedCount)
         {
-            UserProfile? profile = CreateInstance(pid);
-            if (profile != null)
+            //UserProfile? profile = CreateInstance(pid);
+            using UserProfileManager mgr = new();
+            UserProfile profile = mgr.GetUserProfileByPID(pid);
+            loginFailedCount = 0;
+            if (profile.LoginFailedCount>=3)
             {
-                if (VerifyPassword(profile, password))
-                {
-                    profile.Password = password;
-                    return profile;
-                }
+                loginFailedCount = profile.LoginFailedCount;
+                profile = null;
+            }
+            else if (profile != null && VerifyPassword(profile, password))
+            {
+                profile.Password = password.HashPassword();
+                profile.LoginFailedCount = loginFailedCount;
+            }
+            else
+            {
+                profile.LoginFailedCount = profile.LoginFailedCount+1;
+                loginFailedCount = profile.LoginFailedCount;
+                profile = null;
             }
 
-            return null;
+            mgr.SubmitChanges();
+            return profile;
         }
 
         public static UserProfile? CreateInstance(string pid)

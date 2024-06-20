@@ -260,12 +260,8 @@ namespace ContractHome.Models.ViewModel
 
   public class UserPasswordChangeViewModel : QueryViewModel
   {
-    [RegularExpression(@"^(?=.*\d)(?=.*[a-zA-Z])(?=.*\W).{8,30}$",
-     ErrorMessage = "舊密碼格式有誤，請確認")]
     public string? OldPassword { get; set; }
 
-    [RegularExpression(@"^(?=.*\d)(?=.*[a-zA-Z])(?=.*\W).{8,30}$",
-     ErrorMessage = "新密碼格式有誤，請確認")]
     public string? NewPassword { get; set; }
 
     public string? EncPID { get; set; }

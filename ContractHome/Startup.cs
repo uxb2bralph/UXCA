@@ -13,6 +13,7 @@ using Microsoft.Extensions.Caching.Memory;
 using ContractHome.Services.Jobs;
 using Hangfire;
 using Hangfire.Dashboard;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ContractHome
 {

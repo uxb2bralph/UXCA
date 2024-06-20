@@ -5547,6 +5547,10 @@ namespace ContractHome.Models.DataEntity
 		
 		private string _MailID;
 		
+		private System.Nullable<int> _LoginFailedCount;
+		
+		private System.Nullable<System.DateTime> _PasswordUpdatedDate;
+		
 		private EntitySet<ContractNoteRequest> _ContractNoteRequest;
 		
 		private EntitySet<ContractSealRequest> _ContractSealRequest;
@@ -5619,6 +5623,10 @@ namespace ContractHome.Models.DataEntity
     partial void OnPassword2Changed();
     partial void OnMailIDChanging(string value);
     partial void OnMailIDChanged();
+    partial void OnLoginFailedCountChanging(System.Nullable<int> value);
+    partial void OnLoginFailedCountChanged();
+    partial void OnPasswordUpdatedDateChanging(System.Nullable<System.DateTime> value);
+    partial void OnPasswordUpdatedDateChanged();
     #endregion
 		
 		public UserProfile()
@@ -6082,6 +6090,46 @@ namespace ContractHome.Models.DataEntity
 					this._MailID = value;
 					this.SendPropertyChanged("MailID");
 					this.OnMailIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_LoginFailedCount", DbType="Int")]
+		public System.Nullable<int> LoginFailedCount
+		{
+			get
+			{
+				return this._LoginFailedCount;
+			}
+			set
+			{
+				if ((this._LoginFailedCount != value))
+				{
+					this.OnLoginFailedCountChanging(value);
+					this.SendPropertyChanging();
+					this._LoginFailedCount = value;
+					this.SendPropertyChanged("LoginFailedCount");
+					this.OnLoginFailedCountChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PasswordUpdatedDate", DbType="DateTime")]
+		public System.Nullable<System.DateTime> PasswordUpdatedDate
+		{
+			get
+			{
+				return this._PasswordUpdatedDate;
+			}
+			set
+			{
+				if ((this._PasswordUpdatedDate != value))
+				{
+					this.OnPasswordUpdatedDateChanging(value);
+					this.SendPropertyChanging();
+					this._PasswordUpdatedDate = value;
+					this.SendPropertyChanged("PasswordUpdatedDate");
+					this.OnPasswordUpdatedDateChanged();
 				}
 			}
 		}

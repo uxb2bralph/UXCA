@@ -14,6 +14,8 @@ using ContractHome.Models.Dto;
 using static ContractHome.Models.Helper.ContractServices;
 using ContractHome.Helper.DataQuery;
 using Microsoft.AspNetCore.Authorization;
+using System.Text.RegularExpressions;
+using ContractHome.Models.Email.Template;
 
 namespace ContractHome.Controllers
 {
@@ -181,27 +183,32 @@ namespace ContractHome.Controllers
         return Json(new { result = false, message = ModelState.ErrorMessage() });
       }
 
-      var PID = userPasswordChange.PID.DecryptData();
-      var profile = UserProfileFactory.CreateInstance(
-          pid: PID,
-          password: userPasswordChange.OldPassword);
+        var isPasswordValid = Regex.IsMatch(userPasswordChange.NewPassword, UserProfileFactory.PasswordRegex);
+        if (!isPasswordValid)
+        {
+                ModelState.AddModelError("NewPassword", "新密碼不符合格式");
+                return Json(new { result = false, message = ModelState.ErrorMessage() });
+            }
 
-      if (profile == null)
-      {
-        ModelState.AddModelError("PID", "認證失敗");
-        return Json(new { result = false, message = ModelState.ErrorMessage() });
-      }
+            var PID = userPasswordChange.PID.DecryptData();
+            UserProfile profile = UserProfileFactory.LoginProfileCheck(
+                  pid: PID,
+                  password: userPasswordChange.OldPassword,
+                  out int? loginFailedCount);
 
-      var passwordValidated = UserProfileFactory.VerifyPassword(
-              profile,
-              userPasswordChange.OldPassword);
-      if (!passwordValidated)
-      {
-        ModelState.AddModelError("OldPassword", "帳號密碼有誤");
-        return Json(new { result = false, message = ModelState.ErrorMessage() });
-      }
+            if (loginFailedCount>=3)
+            {
+                ModelState.AddModelError("PID", "帳號已鎖定");
+                return Json(new { result = false, message = ModelState.ErrorMessage() });
+            }
 
-      var result = UserProfileFactory.CompareEncryptedPassword(
+            if (profile == null)
+            {
+                ModelState.AddModelError("PID", "認證失敗");
+                return Json(new { result = false, message = ModelState.ErrorMessage() });
+            }
+
+            var result = UserProfileFactory.CompareEncryptedPassword(
                   userPasswordChange.NewPassword,
                   profile.Password2);
       if (result)
@@ -216,20 +223,23 @@ namespace ContractHome.Controllers
 
       try
       {
-        UserProfile userProfile
-            = models.GetTable<UserProfile>()
-                .Where(x => x.UID.Equals(profile.UID))
-                .FirstOrDefault();
+                UserProfile userProfile
+                    = models.GetTable<UserProfile>()
+                        .Where(x => x.UID.Equals(profile.UID))
+                        .FirstOrDefault();
 
-        userProfile.Password = null;
-        userProfile.Password2 = userPasswordChange.NewPassword.HashPassword();
+                userProfile.LoginFailedCount = 0;
+                userProfile.Password = null;
+                userProfile.Password2 = userPasswordChange.NewPassword.HashPassword();
+                userProfile.PasswordUpdatedDate = DateTime.Now;
 
-        models.SubmitChanges();
-
-        //wait to do...變更email通知
-        //wait to do...連線（Session/cookie)失效
-      }
-      catch (Exception ex)
+                models.SubmitChanges();
+                //wait to do...和Account/PasswordReset的密碼更新作業合併
+                //_emailFactory.SendEmailToCustomer(
+                //    _emailFactory.GetPasswordUpdated(emailUserName: tokenUserProfile.UserName, email: tokenUserProfile.EMail));
+                //wait to do...連線(Session/cookie)失效
+            }
+        catch (Exception ex)
       {
         FileLogger.Logger.Error(ex);
         return Ok(new { result = false });
@@ -298,6 +308,7 @@ namespace ContractHome.Controllers
       {
         item.Password = null;
         item.Password2 = viewModel.Password.HashPassword();
+                item.PasswordUpdatedDate = DateTime.Now;
       }
 
       try
@@ -381,6 +392,7 @@ namespace ContractHome.Controllers
       {
         item.Password = null;
         item.Password2 = viewModel.Password.HashPassword();
+        item.PasswordUpdatedDate = DateTime.Now;    
       }
 
       try

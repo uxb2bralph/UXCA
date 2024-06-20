@@ -21,8 +21,22 @@ namespace ContractHome.Helper
 
         public bool ProcessLogin(string pid, string password, out string msg)
         {
-            UserProfile up = UserProfileFactory.CreateInstance(pid, password);
-            bool auth = processLoginUsingRole(out msg, up);
+            bool auth = false;
+            using UserProfileManager mgr = new();
+            UserProfile user = mgr.GetUserProfileByPID(pid);
+            if (user?.LoginFailedCount >= 3)
+            {
+                msg = "帳號已鎖定";
+                return auth;
+            }
+
+            user = UserProfileFactory.LoginProfileCheck(pid, password, out int? loginFailedCount);
+            if (user == null) 
+            {
+                msg = "帳號密碼有誤";
+                return auth;
+            }
+            return processLoginUsingRole(out msg, user);
             //if (up != null)
             //{
             //   if (up.Profile.UserProfileStatus.CurrentLevel == (int)Naming.MemberStatusDefinition.Wait_For_Check)

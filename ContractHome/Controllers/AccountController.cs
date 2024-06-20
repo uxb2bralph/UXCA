@@ -1,41 +1,34 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using CommonLib.Core.Utility;
+using CommonLib.Utility;
+using ContractHome.Helper;
+using ContractHome.Helper.Security.MembershipManagement;
+using ContractHome.Models.Cache;
+using ContractHome.Models.DataEntity;
+using ContractHome.Models.Dto;
+using ContractHome.Models.Email.Template;
+using ContractHome.Models.Helper;
+using ContractHome.Models.ViewModel;
+using ContractHome.Properties;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq.Dynamic.Core;
 using System.Drawing;
 using System.Drawing.Imaging;
-using ContractHome.Models.DataEntity;
-using ContractHome.Models.ViewModel;
-using ContractHome.Helper;
-using ContractHome.Properties;
-using CommonLib.Utility;
-//using Microsoft.Extensions.Primitives;
-using Color = System.Drawing.Color;
-using ContractHome.Models.Email.Template;
-using ContractHome.Models.Email;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.Extensions.Caching.Memory;
+using System.Linq.Dynamic.Core;
+using System.Text.RegularExpressions;
 using static ContractHome.Helper.JwtTokenGenerator;
-using DocumentFormat.OpenXml.Spreadsheet;
-using DocumentFormat.OpenXml.Drawing;
-using Newtonsoft.Json;
-using CommonLib.Core.Utility;
-using ContractHome.Models.Dto;
-using ContractHome.Models.Cache;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using ContractHome.Models.Helper;
-using static ContractHome.Models.Email.Template.EmailBody;
+using Color = System.Drawing.Color;
 
 namespace ContractHome.Controllers
 {
-  public class AccountController : SampleController
+    public class AccountController : SampleController
   {
     private readonly ILogger<HomeController> _logger;
-    private readonly Models.Email.Template.EmailFactory _emailFactory;
+    private readonly EmailFactory _emailFactory;
     private readonly ICacheStore _cacheStore;
         private ContractServices? _contractServices;
 
-        public AccountController(ILogger<HomeController> logger, IServiceProvider serviceProvider, 
+        public AccountController(ILogger<HomeController> logger, 
+            IServiceProvider serviceProvider, 
             ICacheStore cacheStore,
             EmailFactory emailContentFactories,
             ContractServices contractServices
@@ -51,33 +44,39 @@ namespace ContractHome.Controllers
     [AllowAnonymous]
     public async Task<ActionResult> CheckLogin([FromBody] LoginViewModel viewModel)
     {
-      LoginHandler login = new LoginHandler(this);
-      if (!login.ProcessLogin(viewModel.PID, viewModel.Password, out string msg))
-      {
-        ModelState.AddModelError("PID", msg);
-      }
+        LoginHandler login = new LoginHandler(this);
+        var userprofile = models.GetTable<UserProfile>().Where(x => x.PID == viewModel.PID).FirstOrDefault();
+        if (!login.ProcessLogin(viewModel.PID, viewModel.Password, out string msg))
+        {
+            return Json(new { result = false, message = msg });
+        }
 
-      var userprofile = models.GetTable<UserProfile>().Where(x => x.PID == viewModel.PID).FirstOrDefault();
-
-      if (!ModelState.IsValid)
-      {
-                //wait to do...甲方的公司UserEmail登入失敗通知信
-                if (userprofile.CanCreateContract())
-                {
-                    _emailFactory.SendEmailToCustomer(
-                        _emailFactory.GetLoginFailed(emailUserName: userprofile.UserName, email: userprofile.EMail));
-                }
+        if (!ModelState.IsValid)
+        {
+        //wait to do...甲方的公司UserEmail登入失敗通知信
+        if (userprofile.CanCreateContract())
+        {
+            _emailFactory.SendEmailToCustomer(
+                _emailFactory.GetLoginFailed(emailUserName: userprofile.UserName, email: userprofile.EMail));
+        }
 
         return Json(new { result = false, message = ModelState.ErrorMessage() });
-      }
+        }
 
-      if (userprofile.CanCreateContract())
-      {
-                _emailFactory.SendEmailToCustomer(
-                    _emailFactory.GetLoginSuccessed(emailUserName: userprofile.UserName, email: userprofile.EMail));
-            }
+        if (userprofile.CanCreateContract())
+        {
+            _emailFactory.SendEmailToCustomer(
+                _emailFactory.GetLoginSuccessed(emailUserName: userprofile.UserName, email: userprofile.EMail));
+        }
 
-      return Json(new { result = true, message = Url.Action("ListToStampIndex", "ContractConsole") });
+        var dateNeedToUpdatePassword = DateTime.Now.AddMonths(-3);
+        var res = DateTime.Compare(userprofile.PasswordUpdatedDate?? dateNeedToUpdatePassword, dateNeedToUpdatePassword);
+        if (res<=0 && !userprofile.IsSysAdmin())
+        {
+            return Json(new { result = true, message = Url.Action("PasswordChangeView", "UserProfile") });
+        } 
+        return Json(new { result = true, message = Url.Action("ListToStampIndex", "ContractConsole") });
+
     }
 
     // GET: Account
@@ -95,7 +94,7 @@ namespace ContractHome.Controllers
 
       LoginHandler login = new LoginHandler(this);
       String msg;
-      if (!login.ProcessLogin(viewModel.PID, viewModel.Password, out msg))
+            if (!login.ProcessLogin(viewModel.PID, viewModel.Password, out msg))
       {
         ModelState.AddModelError("PID", msg);
         return View("~/Views/Account/Login.cshtml");
@@ -216,6 +215,7 @@ namespace ContractHome.Controllers
             FileLogger.Logger.Info($"{this.GetType().Name}-Trust-Token={token}");
             var trustPasswordApplyTokenCahceKey = new TrustPasswordApplyTokenCahceKey(token);
             var result = _cacheStore.Get(trustPasswordApplyTokenCahceKey);
+
             if (result != null)
             {
                 TempData["message"] += $"Token已失效，請重新申請。";
@@ -225,6 +225,7 @@ namespace ContractHome.Controllers
             _contractServices.SetModels(models);
             (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile) = 
                 _contractServices.TokenValidate(tokenBase64UrlDecode.DecryptData());
+
               if (resp.HasError)
               {
                 TempData["message"] += resp.Message;
@@ -254,7 +255,14 @@ namespace ContractHome.Controllers
                 = _contractServices.TokenValidate(JwtTokenValidator.Base64UrlDecodeToString(token).DecryptData());
       if (resp.HasError) { return resp; }
 
-      var viewModelUserProfile
+
+            var isPasswordValid = Regex.IsMatch(password, UserProfileFactory.PasswordRegex);
+            if (!isPasswordValid) 
+            {
+                return new BaseResponse(true, $"新密碼不符合格式");
+            }
+
+            var viewModelUserProfile
           = models.GetTable<UserProfile>()
               .Where(x => x.EMail.Equals(jwtTokenObj.payloadObj.data.Email))
               .Where(x=>x.PID.Equals(pid))
@@ -265,14 +273,10 @@ namespace ContractHome.Controllers
         return new BaseResponse(true, "驗證資料有誤。");
       }
 
-      if (!viewModelUserProfile.UID.Equals(viewModelUserProfile.UID))
-      {
-        return new BaseResponse(true, "驗證資料有誤。");
-      }
-
-      //wait to do...//[RegularExpression(@"^(?=.*\d)(?=.*[a-zA-Z])(?=.*\W).{8,30}$",ErrorMessage = "新密碼格式有誤，請確認")]
       tokenUserProfile.Password = null;
-      tokenUserProfile.Password2 = password.HashPassword();
+        tokenUserProfile.LoginFailedCount = 0;
+        tokenUserProfile.Password2 = password.HashPassword();
+        tokenUserProfile.PasswordUpdatedDate = DateTime.Now; 
 
       models.SubmitChanges();
 
@@ -310,6 +314,7 @@ namespace ContractHome.Controllers
                 .Where(x => x.EMail.Equals(email))
                 .Where(x => x.PID.Equals(viewModel.PID))
                 .FirstOrDefault();
+
       if (userProfile == null)
       {
         return new BaseResponse(true, "驗證資料有誤，請檢查輸入欄位是否正確。");
