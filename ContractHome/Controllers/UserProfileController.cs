@@ -23,10 +23,13 @@ namespace ContractHome.Controllers
   public class UserProfileController : SampleController
   {
     private readonly ILogger<UserProfileController> _logger;
+    private readonly EmailFactory _emailFactory;
 
-    public UserProfileController(ILogger<UserProfileController> logger, IServiceProvider serviceProvider) : base(serviceProvider)
+    public UserProfileController(ILogger<UserProfileController> logger, IServiceProvider serviceProvider,
+                    EmailFactory emailContentFactories) : base(serviceProvider)
     {
-      _logger = logger;
+        _logger = logger;
+        _emailFactory = emailContentFactories;
     }
 
     //remark for testing by postman
@@ -235,9 +238,8 @@ namespace ContractHome.Controllers
 
                 models.SubmitChanges();
                 //wait to do...和Account/PasswordReset的密碼更新作業合併
-                //_emailFactory.SendEmailToCustomer(
-                //    _emailFactory.GetPasswordUpdated(emailUserName: tokenUserProfile.UserName, email: tokenUserProfile.EMail));
-                //wait to do...連線(Session/cookie)失效
+                _emailFactory.SendEmailToCustomer(
+                    _emailFactory.GetPasswordUpdated(emailUserName: userProfile.UserName, email: userProfile.EMail));
             }
         catch (Exception ex)
       {
