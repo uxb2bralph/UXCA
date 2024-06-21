@@ -1,0 +1,170 @@
+﻿@{
+  Layout = "~/Views/Shared/MasterPage.cshtml";
+
+  <script src="~/js/api.js"></script>
+}
+<div id="webSocket">
+  <div class="container-lg">
+    <section class="queryform">
+      <!-- 標題 -->
+      <h4 class="mb-2 pt-4 fw-bolder">WebSocket 連線測試</h4>
+      <!-- 文件搜尋 -->
+      <div class="card shadow-sm">
+        <form v-on:submit.prevent>
+          <div class="container">
+            <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-2 m-3 mb-lg-0 data-item">
+              <div class="col input__height">
+                <div class="row">
+                  <label for="webSocketMsg" class="col-sm-12 col-md-3 col-form-label fs-14 fw-bolder">發送訊息</label>
+                  <div class="col-sm-12 col-md-7">
+                    <input v-model="webSocketMsg" type="text" class="form-control" id="webSocketMsg" />
+                  </div>
+                  <div class="col-sm-12 col-md-2 col-form-label py-0">
+                    <button type="button" class="btn btn-success opacity-75" v-on:click="echo">
+                      Send
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="col input__height">
+                <div class="row">
+                  <div class="col-sm-12 col-md-2 col-form-label py-0 me-2">
+                    <button type="button" class="btn btn-danger opacity-75" v-on:click="disconnectWebSocket">
+                      DisConnect
+                    </button>
+                  </div>
+                  <div class="col-sm-12 col-md-2 col-form-label py-0 me-2">
+                    <button type="button" class="btn btn-success opacity-75" v-on:click="connectWebSocket">
+                      Connect
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="card shadow-sm bg-light mt-3">
+        <div class="col-12 hstack gap-3 py-3">
+          <div class="card-body">
+            <h6 class="card-title">回傳訊息：</h6>
+            <p class="card-text" v-html="returnMsg"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section>
+      <p class="fs-13 pt-3">
+        參考資料：<a
+          href="https://hackmd.io/@@Heidi-Liu/javascript-websocket#21-%E6%AF%94%E8%BC%83%EF%BC%9ASocket--WebSocket--SocketIO"
+          target="_blank">淺談 WebSocket 協定：實作一個簡單的即時聊天室吧！</a>
+      </p>
+      <h6>WebSocket Server</h6>
+      <p class="fs-13">WebSocket Server 需執行在 Node 環境，因此請先安裝 Node 及 Npm 套件管理工具 </p>
+      <p class="fs-13 mb-0 fw-bolder">1. 軟體需求：</p>
+      <p class="fs-13 mb-0">Node：v18.18.2</p>
+      <p class="fs-13 mb-0">npm：9.8.1</p>
+      <p class="fs-13 mb-0">
+        github：<a href="https://github.com/peterhsj/uxsignSocket"
+          target="_blank">https://github.com/peterhsj/uxsignSocket</a>
+      </p>
+      <p class="fs-13 mb-0 pt-3 fw-bolder">2. 安裝：</p>
+      <p class="fs-13 mb-0">■ 請先安裝 Node 及 Npm，安裝後請於終端機輸入 node -v 和 npm -v，若有出現版本號才代表安裝成功。</p>
+      <p class="fs-13">VS Code 範例：</p>
+      <code>
+        $ node -v<br>v18.18.2
+      </code>
+      <br>
+      <code>
+        $ npm -v<br>9.8.1
+      </code>
+      <p class="fs-13 pt-3">■ 請從 github 複製專案並在本機端執行安裝，若是下載ZIP檔請在專案目錄中解壓縮ZIP檔，如果是以 git clone 方式則請先安裝 git 軟體。</p>
+      <p class="fs-13">■ 專案目錄準備完畢後，請到專案目錄內開啟終端機視窗，執行 npm install安裝express 及 ws 套件。</p>
+      <p class="fs-13">■ express 及 ws 套件安裝完畢後，執行 node server.js 啟動 WebSocket Server。啟動成功會看到：<br>
+        <code>
+        $ node server.js <br>
+        [Server] Listening on https://localhost:8080
+      </code>
+      </p>
+      <p class="fs-13 mb-0 fw-bolder">3. 設定：</p>
+      <p class="fs-13 mb-0">■ 預設監聽網址及 port 為 https://localhost:8080 ，請依據實際需求調整編輯 server.js 檔案。</p>
+
+    </section>
+  </div>
+</div>
+<script>
+  var ws = null;
+  var app = new Vue({
+    el: '#webSocket',
+    data: {
+      webSocketMsg: null,
+      returnMsg: null,
+    },
+    created() {
+      this.initWebSocket();
+      setTimeout(() => {
+        this.disconnectWebSocket();
+      }, 1000);
+    },
+    methods: {
+      echo() {
+        if (!this.webSocketMsg) return;
+        console.log(`WebSocket發送訊息：${this.webSocketMsg}`);
+        ws.send(this.webSocketMsg);
+      },
+
+      // WebSocket
+      initWebSocket() {
+        const self = this;
+        ws = new WebSocket('ws://localhost:8080');
+        ws.onopen = (e) => {
+          console.log('WebSocket已經打開');
+          console.log('打開:', e);
+        }
+        ws.onmessage = (e) => {
+          console.log('WebSocket收到訊息：' + e.data);
+          console.log('訊息:', e);
+        }
+
+        ws.onclose = (e) => {
+          console.log('WebSocket關閉');
+          console.log('關閉:', e);
+        }
+
+        ws.onerror = (e) => {
+          console.log('WebSocket發生錯誤');
+          console.log('錯誤:', e);
+        }
+
+      },
+
+      // 連線
+      connectWebSocket() {
+        // Create WebSocket connection
+        ws = new WebSocket('ws://localhost:8080');
+        // 在開啟連線時執行
+        ws.onopen = () => {
+          console.log('[open connection]')
+          this.returnMsg = '[open connection]';
+          // Listen for messages from Server
+          ws.onmessage = event => {
+            //console.log(`[Message from server]:\n %c${event.data}`, 'color: blue');
+            console.log(`[Message from server]:\n ${event.data}`);
+            this.returnMsg = `[Message from server]:\n ${event.data}`;
+          }
+          console.log()
+        }
+      },
+
+      // 離線
+      disconnectWebSocket() {
+        ws.close();
+        // 在關閉連線時執行
+        ws.onclose = () => {
+          console.log('[close connection]');
+          this.returnMsg = '[close connection]';
+        }
+      },
+    }
+  });
+</script>
