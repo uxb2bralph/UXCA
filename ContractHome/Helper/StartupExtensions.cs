@@ -11,8 +11,8 @@ namespace ContractHome.Helper
         {
             services.AddHangfire(config =>
             {
-                //config.UseMemoryStorage();
-                config.UseSqlServerStorage("Data Source=NBT031112\\SQLEXPRESS;Initial Catalog = DigitalContract;User Id=iris;Password=iris;Connect Timeout=30;encrypt=false;");
+                config.UseMemoryStorage();
+                //config.UseSqlServerStorage("Data Source=;Initial Catalog = ;User Id=;Password=;Connect Timeout=30;encrypt=false;");
                 //config.UseSerilogLogProvider();
             });
             services.AddHangfireServer();

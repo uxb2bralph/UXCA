@@ -25,7 +25,7 @@ namespace ContractHome.Helper
         public static async Task SignOnAsync(this HttpContext context, UserProfile profile, bool remeberMe = true)
         {
             //帳密都輸入正確，ASP.net Core要多寫三行程式碼 
-            Claim[] claims = new[] { new Claim("Name", profile.PID) }; //Key取名"Name"，在登入後的頁面，讀取登入者的帳號會用得到，自己先記在大腦
+            Claim[] claims = new[] { new Claim("Name", profile.PID), new Claim("IsAdmin", profile.IsSysAdmin().ToString()) }; //Key取名"Name"，在登入後的頁面，讀取登入者的帳號會用得到，自己先記在大腦
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);//Scheme必填
             ClaimsPrincipal principal = new ClaimsPrincipal(claimsIdentity);
 

@@ -51,6 +51,7 @@ namespace ContractHome.Controllers.Filters
                     Model = new BaseResponse()
                     {
                         Message = $"ErrorID-{Activity.Current?.Id ?? filterContext.HttpContext.TraceIdentifier}",
+                        //wait to do...UrlHelper
                         Url = $"{Settings.Default.WebAppDomain}"
                     }
                 };
