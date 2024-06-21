@@ -8,6 +8,8 @@ using ContractHome.Helper;
 using ContractHome.Models;
 using System.Diagnostics;
 using CommonLib.Core.Utility;
+using ContractHome.Models.Dto;
+using ContractHome.Properties;
 
 namespace ContractHome.Controllers.Filters
 {
@@ -30,17 +32,31 @@ namespace ContractHome.Controllers.Filters
                 //wait to merge into LogError
                 FileLogger.Logger.Error($"{Activity.Current?.Id ?? filterContext.HttpContext.TraceIdentifier}  {filterContext.Exception.Message}");
 
+                //ViewDataDictionary viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
+                //{
+                //    Model = new ErrorViewModel
+                //    {
+                //        RequestId = Activity.Current?.Id ?? filterContext.HttpContext.TraceIdentifier,
+                //        Exception = filterContext.Exception,
+                //    }
+                //};
+                //filterContext.Result = new ViewResult
+                //{
+                //    ViewName = "~/Views/Shared/Error.cshtml",
+                //    ViewData = viewData,
+                //};
+
                 ViewDataDictionary viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
                 {
-                    Model = new ErrorViewModel
+                    Model = new BaseResponse()
                     {
-                        RequestId = Activity.Current?.Id ?? filterContext.HttpContext.TraceIdentifier,
-                        Exception = filterContext.Exception,
+                        Message = $"ErrorID-{Activity.Current?.Id ?? filterContext.HttpContext.TraceIdentifier}",
+                        Url = $"{Settings.Default.WebAppDomain}"
                     }
                 };
                 filterContext.Result = new ViewResult
                 {
-                    ViewName = "~/Views/Shared/Error.cshtml",
+                    ViewName = "~/Views/Shared/CustomMessage.cshtml",
                     ViewData = viewData,
                 };
             }
