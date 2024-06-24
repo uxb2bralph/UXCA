@@ -99,6 +99,7 @@
     data: {
       webSocketMsg: null,
       returnMsg: null,
+      type: null,
     },
     created() {
       this.initWebSocket();
@@ -134,6 +135,7 @@
         ws.onerror = (e) => {
           console.log('WebSocket發生錯誤');
           console.log('錯誤:', e);
+          this.type = e.type;
         }
 
       },
@@ -161,7 +163,10 @@
         ws.close();
         // 在關閉連線時執行
         ws.onclose = () => {
-          console.log('[close connection]');
+          if (this.type === 'error') {
+            this.returnMsg = 'WebSocket發生錯誤，請先檢查WebSocket是否已連線';
+            return;
+          }
           this.returnMsg = '[close connection]';
         }
       },
