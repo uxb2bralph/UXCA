@@ -414,21 +414,10 @@ namespace ContractHome.Models.Helper
                 }
             }
 
-            //if (contract.CDS_Document.CurrentStep.Equals((int)CDS_Document.StepEnum.DigitalSigned))
-            //{
-
-            //}
-
-            //if (contract.CDS_Document.CurrentStep.Equals((int)CDS_Document.StepEnum.Committed))
-            //{
-
-            //}
-
             return null;
 
         }
 
-//<<<<<<< HEAD
 
         public (BaseResponse, JwtToken, UserProfile) TokenValidate(string token)
         {
@@ -476,9 +465,6 @@ namespace ContractHome.Models.Helper
         }
 
         public async void SendAllContractUsersNotifyEmailDIAsync(
-//=======
-//        public async IAsyncEnumerable<MailData> GetNotifyEmailBodyAsync(
-//>>>>>>> feat/v3_Hangfire
             Contract contract,
             IEmailContent emailContent)
         {
@@ -492,39 +478,9 @@ namespace ContractHome.Models.Helper
                     EmailContentBodyDto emailContentBodyDto =
                         new EmailContentBodyDto(contract: contract, initiatorOrg: initiatorOrg, userProfile: user);
 
-//<<<<<<< HEAD
-//                    JwtTokenGenerator.JwtPayloadData jwtPayloadData = new JwtTokenGenerator.JwtPayloadData()
-//                    {
-//                        UID = user.UID.EncryptKey(),
-//                        Email = user.EMail,
-//                        ContractID = contract.ContractID.EncryptKey(),
-//                        EmailTemplate = emailTemplate
-//                    };
-
-//                    var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData, 4320);
-//                    var clickLink = $"{Settings.Default.WebAppDomain}/ContractConsole/Trust?token={Base64UrlEncode(jwtToken.EncryptData())}";
-
-//                    var emailBody =
-//                        _emailBody
-//                        .SetTemplateItem(emailTemplate)
-//                        .SetContractNo(contract.ContractNo)
-//                        .SetTitle(contract.Title)
-//                        .SetUserName(initiatorOrg.CompanyName)
-//                        .SetRecipientUserName($"{user.CompanyName} {user.UserName}")
-//                        .SetRecipientUserEmail(user.EMail)
-//                        .SetContractLink(clickLink)
-//                        .Build();
-
-//                    _emailFactory.SendEmailToCustomer(
-//                        emailBody.RecipientUserEmail,
-//                        _emailFactory.GetEmailTitle(emailTemplate),
-//                        await emailBody.GetViewRenderString());
-
-//=======
                     emailContent.CreateBody(emailContentBodyDto);
                     _emailFactory.SendEmailToCustomer(mailTo: user.EMail, 
                         emailContent: emailContent);
-//>>>>>>> feat/v3_EmailFactory
                 }
             }
         }
