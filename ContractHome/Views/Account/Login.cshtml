@@ -53,7 +53,7 @@
                   <label for="userPwd" class="fw-bolder">密碼</label>
                   <input v-model.trim="formData.password" type="password" id="userPwd"
                     class="form-control form-control-sm" :class="{'is-invalid': !isPassword}"
-                    v-on:keyup="checkPassword()" name="Password">
+                    v-on:keyup="checkPassword()" name="Password" autocomplete="on">
                   <div class="invalid-feedback text-end">
                     請輸入密碼
                   </div>
