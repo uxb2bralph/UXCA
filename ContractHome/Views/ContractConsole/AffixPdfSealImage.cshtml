@@ -1334,10 +1334,11 @@
         const self = this;
         clearErrors();
         const { Id, Note, currentItem, MarginTop, MarginLeft, SealScale, Width, Height, PageIndex } = noteData
+        // 目前IronPdf文字區塊的 width 是取 SealScale 的值，所以 SealScale 先定義 Width 的值
         const payload = {
           Id,
           Note,
-          SealScale,
+          SealScale: (Number(Width) / 37.795).toFixed(2),
           MarginTop,
           MarginLeft,
           Width: (Number(Width) / 37.795).toFixed(2),
