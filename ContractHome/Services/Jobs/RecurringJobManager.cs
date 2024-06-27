@@ -20,7 +20,7 @@ namespace ContractHome.Services.Jobs
         {
             foreach (var job in jobs)
             {
-                manager.AddOrUpdate(job.JobId, () => job.Execute(), job.CronExpression);
+                manager.AddOrUpdate(job.JobId, () => job.Execute(), job.CronExpression, timeZone: TimeZoneInfo.Local);
             }
         }
     }
