@@ -10,13 +10,15 @@ namespace ContractHome.Models.Email
     public class MailService : IMailService
     {
         private readonly MailSettings _mailSettings;
-        public MailService(IOptions<MailSettings> mailSettingsOptions)
+        public MailService(IOptionsMonitor<MailSettings> mailSettingsOptions)
         {
-            _mailSettings = mailSettingsOptions.Value;
+            _mailSettings = mailSettingsOptions.CurrentValue;
+            //_mailSettings = mailSettingsOptions.Value;
         }
 
         public async Task<bool> SendMailAsync(MailData mailData, CancellationToken ct = default)
         {
+            
             if (_mailSettings.Enable==false) { return false; }
 
             try

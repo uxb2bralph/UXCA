@@ -17,6 +17,9 @@ using static ContractHome.Helper.JwtTokenGenerator;
 using ContractHome.Helper.DataQuery;
 using ContractHome.Properties;
 using System.Text;
+using System.Linq;
+using System.Linq.Expressions;
+using static ContractHome.Models.DataEntity.CDS_Document;
 
 namespace ContractHome.Models.Helper
 {
@@ -29,18 +32,21 @@ namespace ContractHome.Models.Helper
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ICacheStore _cacheStore;
         private BaseResponse normal = new BaseResponse();
+        private readonly EmailFactory _emailContentFactories;
 
         public ContractServices(IEmailBodyBuilder emailBody,
             EmailFactory emailFactory,
             IDetectionService detectionService,
             IHttpContextAccessor httpContextAccessor, 
-            ICacheStore cacheStore
+            ICacheStore cacheStore,
+            EmailFactory emailContentFactories
             ) 
         {
             _emailFactory = emailFactory;
             _detectionService = detectionService;
             _httpContextAccessor = httpContextAccessor;
             _cacheStore = cacheStore;
+            _emailContentFactories = emailContentFactories;
         }
 
         public string GetClientDevice => $"{_detectionService.Platform.Name} {_detectionService.Platform.Version.ToString()}/{_detectionService.Browser.Name}";
@@ -392,6 +398,21 @@ namespace ContractHome.Models.Helper
                 .Select(y => y.UserProfile);
         }
 
+        public IQueryable<UserProfile>? GetUsersByWhoNotFinished(Contract contract, 
+            int currentStep)
+        {
+            if ((currentStep == 0) || (!CDS_Document.RegularNotifyState.Contains((CDS_Document.StepEnum)currentStep!)))
+                return null;
+
+            bool isSigning = (contract.CurrentStep == (int)StepEnum.DigitalSigning || contract.CurrentStep == (int)StepEnum.Sealed);
+            bool isStamping = (contract.CurrentStep == (int)StepEnum.Sealing);
+
+            return _models.GetTable<OrganizationUser>()
+                .Where(x => ((isSigning) ? contract.whoNotDigitalSigned():contract.whoNotStamped())
+                            .Select(x => x.CompanyID).Contains(x.CompanyID))
+                .Select(y => y.UserProfile);
+        }
+
         public IEnumerable<UserProfile>? GetNotifyUsersAsync(Contract contract)
         {
             //EmailBody.EmailTemplate template = EmailBody.EmailTemplate.NotifySeal;
@@ -453,27 +474,19 @@ namespace ContractHome.Models.Helper
 
         }
 
-        public void JobTest()
-        {
-            //_contractServices.GetContractByID()
-            //await foreach (var mailData in
-            //    _contractServices?.GetNotifyEmailBodyAsync(contract, users, EmailBody.EmailTemplate.NotifySeal))
-            //{
-            //    _mailService.SendMailAsync(mailData, default);
-            //}
-            FileLogger.Logger.Error("JobTest");
-        }
-
-        public async void SendAllContractUsersNotifyEmailDIAsync(
+        public async void SendUsersNotifyEmailAboutContractAsync(
             Contract contract,
-            IEmailContent emailContent)
+            IEmailContent emailContent,
+            IQueryable<UserProfile> targetUsers)
         {
-            var initiatorOrg = GetOrganization(contract);
-            var userProfiles = GetUsersbyContract(contract);
+            if ((contract == null) || (targetUsers.Count() == 0) || (targetUsers == null)) return;
 
-            if (initiatorOrg != null)
+            var initiatorOrg = GetOrganization(contract);
+            //var userProfiles = GetUsersbyContract(contract);
+
+            if (targetUsers != null)
             {
-                foreach (var user in userProfiles)
+                foreach (var user in targetUsers)
                 {
                     EmailContentBodyDto emailContentBodyDto =
                         new EmailContentBodyDto(contract: contract, initiatorOrg: initiatorOrg, userProfile: user);
@@ -488,6 +501,40 @@ namespace ContractHome.Models.Helper
         public void SaveContract()
         {
             _models.SubmitChanges();
+        }
+
+        public void NotifyWhoNotFinishedContract()
+        {
+            try
+            {
+                _models = new GenericManager<DCDataContext>();
+
+                var contracts = _models
+                    .GetTable<Contract>()
+                    .Where(d => !d.CDS_Document.CurrentStep.HasValue
+                            || CDS_Document.RegularNotifyState.Contains((CDS_Document.StepEnum)d.CDS_Document.CurrentStep!))
+                    .Where(x => x.NotifyUntilDate != null)
+                    .Where(x => x.NotifyUntilDate >= DateTime.Now.Date)
+                    .ToList();
+
+                contracts.ForEach(contract =>
+                {
+                    var users = GetUsersByWhoNotFinished(contract, contract.CurrentStep);
+                    SendUsersNotifyEmailAboutContractAsync(
+                            contract,
+                            _emailContentFactories.GetNotifySign(),
+                            users
+                    );
+                    var usersString = string.Join(" ", users.Select(x => $"{x.UID}"));
+                    FileLogger.Logger.Info($"{contract.ContractID} {(CDS_Document.StepEnum)contract.CurrentStep} UID: {usersString}");
+                });
+            }
+            catch (Exception ex)
+            {
+                FileLogger.Logger.Error(ex);
+                throw;
+            }
+
         }
     }
 

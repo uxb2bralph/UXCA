@@ -131,7 +131,7 @@ namespace ContractHome
 
             #region Hangfire
             services.AddJobManager()
-                    .AddrecurringJob<TestJob>();
+                    .AddrecurringJob<JobNotifyWhoNotFinishedContract>();
 
             #endregion
 

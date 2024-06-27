@@ -763,6 +763,8 @@ namespace ContractHome.Models.DataEntity
 		
 		private int _CompanyID;
 		
+		private System.Nullable<System.DateTime> _NotifyUntilDate;
+		
 		private EntityRef<CDS_Document> _CDS_Document;
 		
 		private EntitySet<ContractingParty> _ContractingParty;
@@ -797,6 +799,8 @@ namespace ContractHome.Models.DataEntity
     partial void OnInProgressChanged();
     partial void OnCompanyIDChanging(int value);
     partial void OnCompanyIDChanged();
+    partial void OnNotifyUntilDateChanging(System.Nullable<System.DateTime> value);
+    partial void OnNotifyUntilDateChanged();
     #endregion
 		
 		public Contract()
@@ -971,6 +975,26 @@ namespace ContractHome.Models.DataEntity
 					this._CompanyID = value;
 					this.SendPropertyChanged("CompanyID");
 					this.OnCompanyIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_NotifyUntilDate", DbType="DateTime")]
+		public System.Nullable<System.DateTime> NotifyUntilDate
+		{
+			get
+			{
+				return this._NotifyUntilDate;
+			}
+			set
+			{
+				if ((this._NotifyUntilDate != value))
+				{
+					this.OnNotifyUntilDateChanging(value);
+					this.SendPropertyChanging();
+					this._NotifyUntilDate = value;
+					this.SendPropertyChanged("NotifyUntilDate");
+					this.OnNotifyUntilDateChanged();
 				}
 			}
 		}

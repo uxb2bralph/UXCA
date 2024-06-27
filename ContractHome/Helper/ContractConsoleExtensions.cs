@@ -226,10 +226,19 @@ namespace ContractHome.Helper
             return (contract.ContractSignatureRequest.Where(x => x.StampDate == null).Count() == 0);
         }
 
+        public static IEnumerable<ContractSignatureRequest> whoNotStamped(this Contract contract)
+        {
+            return (contract.ContractSignatureRequest.Where(x => x.StampDate == null).AsEnumerable());
+        }
+
         public static bool isAllDigitalSignatureDone(this Contract contract)
         {
             return (contract.ContractSignatureRequest.Where(x => x.SignatureDate == null).Count() == 0);
         }
 
+        public static IEnumerable<ContractSignatureRequest> whoNotDigitalSigned(this Contract contract)
+        {
+            return (contract.ContractSignatureRequest.Where(x => x.SignatureDate == null).AsEnumerable());
+        }
     }
 }

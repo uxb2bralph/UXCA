@@ -37,12 +37,12 @@ namespace ContractHome.Controllers
         private ContractServices? _contractServices;
         private BaseResponse baseResponse = new BaseResponse();
         private readonly ICacheStore _cacheStore;
-        private readonly Models.Email.Template.EmailFactory _emailContentFactories;
+        private readonly EmailFactory _emailContentFactories;
         public ContractConsoleController(ILogger<HomeController> logger,
             IServiceProvider serviceProvider,
             ICacheStore cacheStore,
             ContractServices contractServices,
-            Models.Email.Template.EmailFactory emailContentFactories
+            EmailFactory emailContentFactories
           ) : base(serviceProvider)
         {
             _logger = logger;
@@ -379,7 +379,10 @@ namespace ContractHome.Controllers
             {
                 contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Sealed);
                 _contractServices?.SetModels(models);
-                _contractServices?.SendAllContractUsersNotifyEmailDIAsync(contract,_emailContentFactories.GetNotifySign());
+                _contractServices?.SendUsersNotifyEmailAboutContractAsync(
+                    contract,
+                    _emailContentFactories.GetNotifySign(),
+                    _contractServices?.GetUsersbyContract(contract));
             }
 
             return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
@@ -1865,9 +1868,10 @@ namespace ContractHome.Controllers
 
             //3.發送通知(one by one)
 
-            _contractServices?.SendAllContractUsersNotifyEmailDIAsync(
+            _contractServices?.SendUsersNotifyEmailAboutContractAsync(
                 contract, 
-                (contract.IsPassStamp == true)? _emailContentFactories.GetNotifySign():_emailContentFactories.GetNotifySeal());
+                (contract.IsPassStamp == true)? _emailContentFactories.GetNotifySign():_emailContentFactories.GetNotifySeal(),
+                _contractServices?.GetUsersbyContract(contract));
 
             return Json(baseResponse);
         }

@@ -51,7 +51,7 @@ namespace ContractHome.Models.Email.Template
                 bcc: null,
                 cc: null
             );
-            FileLogger.Logger.Error(emailTo);
+            //FileLogger.Logger.Error(emailTo);
             await _mailService.SendMailAsync(mailData, default);
 
         }
