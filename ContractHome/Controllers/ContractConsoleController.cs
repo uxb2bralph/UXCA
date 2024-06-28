@@ -1409,7 +1409,7 @@ namespace ContractHome.Controllers
                         }
                     }
                 }
-
+                //wait to do...CommitUserSignatureAsync if (!item.SignerID.HasValue), 動作一樣
                 if (isSigned)
                 {
                     item.Contract.ContractSignature = new ContractSignature
@@ -1438,14 +1438,16 @@ namespace ContractHome.Controllers
                     //    }
                     //}
 
+                    item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.DigitalSigning);
+
                     if (item.Contract.isAllDigitalSignatureDone())
                     {
                         item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.DigitalSigned);
                     }
-                    else
-                    {
-                        item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.DigitalSigning);
-                    }
+                    //else
+                    //{
+                    //    item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.DigitalSigning);
+                    //}
 
                     if (!models.GetTable<ContractSignatureRequest>()
                         .Where(c => c.ContractID == item.ContractID)
@@ -1546,6 +1548,7 @@ namespace ContractHome.Controllers
             }
 
             UserProfile profile = (UserProfile)ViewBag.Profile;
+            //wait to do...合併CommitDigitalSignatureAsync if(Signed), 動作一樣
             if (!item.SignerID.HasValue)
             {
                 (bool signOk, string code) = models.CHT_SignPdfByUser(item, profile);
@@ -1560,6 +1563,28 @@ namespace ContractHome.Controllers
                     item.SignatureDate = DateTime.Now;
 
                     models.SubmitChanges();
+
+                    item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.DigitalSigning);
+
+                    if (item.Contract.isAllDigitalSignatureDone())
+                    {
+                        item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.DigitalSigned);
+                    }
+                    //else
+                    //{
+                    //    item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.DigitalSigning);
+                    //}
+
+                    if (!models.GetTable<ContractSignatureRequest>()
+                        .Where(c => c.ContractID == item.ContractID)
+                        .Where(c => !c.SignerID.HasValue)
+                        .Any())
+                    {
+                        item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Committed);
+                        _contractServices?.SetModels(models);
+                        _contractServices?.SendContractNotifyEmailAsync(item?.Contract, EmailBody.EmailTemplate.FinishContract);
+                    }
+
                     return Json(new BaseResponse());
                 } 
                 else
