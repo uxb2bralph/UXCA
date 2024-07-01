@@ -496,7 +496,8 @@ namespace ContractHome.Controllers
                 ;
 
             //待簽
-            //若本人已用印, 但要等對方完成用印才能簽, 現行會顯示此筆, 但無法簽署
+            //待自己簽:若本人用印, 對方未印, 現行會顯示此筆, 但無法簽署
+            //待他人簽:若本人未印, 對方已印, 現行會顯示此筆, 可用印
             if ((Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.UnSigned)))
             {
                 contractSignatureRequestItems = contractSignatureRequestItems
