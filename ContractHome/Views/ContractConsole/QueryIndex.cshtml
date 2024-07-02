@@ -277,9 +277,11 @@
                     :class="{ 'progresses__steps--signActived': canSigner(contract) && item.IsCurrentUserCompany }">
                     <i class="fas fa-signature"></i>
                   </button>
-                  <div class="progresses__company">
-                    <span class=" progresses__name" :class="{ 'bg-lightBlue': item.IsCurrentUserCompany }">
-                      {{ formatName(item.Name) }}
+                  <div class="progresses__company" v-on:mouseover="tipHandler(`in_${index}_${idx}`)">
+                    <span data-bs-toggle="tooltip" :id="`in_${index}_${idx}`" :title="item.Name">
+                      <span class=" progresses__name" :class="{ 'bg-lightBlue': item.IsCurrentUserCompany }">
+                        {{ formatName(item.Name) }}
+                      </span>
                     </span>
                   </div>
                 </div>
@@ -324,10 +326,12 @@
                         <i class="fas fa-signature"></i>
                       </button>
                     </div>
-                    <div class="progresses__company">
-                      <span class=" progresses__name"
-                        :class="{ 'bg-warning opacity-75 text-dark': item.IsCurrentUserCompany }">
-                        {{ formatName(item.Name) }}
+                    <div class="progresses__company" v-on:mouseover="tipHandler(`co_${index}_${idx}`)">
+                      <span data-bs-toggle="tooltip" :id="`co_${index}_${idx}`" :title="item.Name">
+                        <span class=" progresses__name"
+                          :class="{ 'bg-warning opacity-75 text-dark': item.IsCurrentUserCompany }">
+                          {{ formatName(item.Name) }}
+                        </span>
                       </span>
                     </div>
                   </div>
@@ -1004,7 +1008,14 @@
 
       layoutHandler(value) {
         this.isLayoutCard = value;
-      }
+      },
+
+      // Tooltip
+      tipHandler(event) {
+        this.$nextTick(() => {
+          $(`#${event}`).tooltip({ placement: "bottom" });
+        });
+      },
     }
   });
 
