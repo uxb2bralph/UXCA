@@ -71,6 +71,7 @@ namespace ContractHome.Helper
             using (WebClientEx client = new WebClientEx())
             {
                 client.Headers[HttpRequestHeader.ContentType] = "application/json";
+                //3partypdfencsign加密簽只能在第一次簽章使用，第二次開始請用3partypdfsign(沒加密)
                 String result = client.UploadString(models.GetTable<ContractSignatureRequest>()
                                     .Where(r=>r.ContractID==request.ContractID).Where(r=>r.SignatureDate.HasValue)
                                     .Any() 
@@ -217,7 +218,14 @@ namespace ContractHome.Helper
             using (WebClientEx client = new WebClientEx())
             {
                 client.Headers[HttpRequestHeader.ContentType] = "application/json";
-                String result = client.UploadString(Settings.Default.CHTSigning.User_SignPDF_Encrypt, dataToSign);
+                //3partypdfencsign加密簽只能在第一次簽章使用，第二次開始請用3partypdfsign(沒加密)
+                //String result = client.UploadString(Settings.Default.CHTSigning.User_SignPDF_Encrypt, dataToSign);
+                String result = client.UploadString(models.GetTable<ContractSignatureRequest>()
+                    .Where(r => r.ContractID == request.ContractID).Where(r => r.SignatureDate.HasValue)
+                    .Any()
+                        ? Settings.Default.CHTSigning.User_SignPDF
+                        : Settings.Default.CHTSigning.User_SignPDF_Encrypt, dataToSign);
+
 
                 String responsePath = Path.Combine(FileLogger.Logger.LogDailyPath, $"response-{Guid.NewGuid()}.json");
                 File.WriteAllText(responsePath, result);
