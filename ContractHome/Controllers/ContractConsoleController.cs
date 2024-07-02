@@ -487,6 +487,9 @@ namespace ContractHome.Controllers
             //    //StepEnum.DigitalSigning,4
             //    //StepEnum.DigitalSigned 5
 
+            items = items.Where(d => !d.CDS_Document.CurrentStep.HasValue
+                 || CDS_Document.DocumentEditable.Contains((CDS_Document.StepEnum)d.CDS_Document.CurrentStep!));
+
             var contractSignatureRequestItems = items
                 .SelectMany(x => x.ContractSignatureRequest)
                 //判斷是查詢登入者的合約, 或是其他人的合約

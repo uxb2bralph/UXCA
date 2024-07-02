@@ -160,6 +160,14 @@ namespace ContractHome.Models.DataEntity
             StepEnum.DigitalSigned
         };
 
+        public static StepEnum[] DocumentEditable =
+{
+            StepEnum.Establish,
+            StepEnum.Sealing,
+            StepEnum.Sealed,
+            StepEnum.DigitalSigning
+        };
+
         public bool IsPDF => ProcessType == (int)ProcessTypeEnum.PDF;
 
         public DocumentProcessLog? CurrentLog => this.DocumentProcessLog
