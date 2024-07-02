@@ -601,16 +601,16 @@
                         </label>
                       </div>
                       -->
-                      <div class="alert alert-warning" role="alert">
-                        <draggable v-model="selectedContractor" chosen-class="chosen" force-fallback="true"
-                          group="company" animation="300" :disabled="!isDraggable" v-on:start="onStart" v-on:end="onEnd"
-                          handle=".signator__mover">
-                          <template v-for="(item, index) in selectedContractor">
-                            <div class="my-0 col-md-12 input__height">
-                              <!--
-                              <span class="fs-12 text-muted opacity-75">{{ index === 0 ? '起約人' : '簽約人' }}</span>
-                              -->
-                              <div :key="index" :id="`company_${index}`" class="input-group w-100 bg-white">
+                      <draggable v-model="selectedContractor" chosen-class="chosen" force-fallback="true"
+                        group="company" animation="300" :disabled="!isDraggable" v-on:start="onStart" v-on:end="onEnd"
+                        handle=".signator__mover">
+                        <template v-for="(item, index) in selectedContractor">
+                          <div :key="index" :id="`company_${index}`" class="mb-1 alert"
+                            :class="[index === 0 ? 'alert-warning' : 'alert-primary', index === 0 ? 'pt-2' : 'pt-3']"
+                            role="alert">
+                            <div class="my-0 col-md-12">
+                              <span class="fs-12 text-muted opacity-75">{{ index === 0 ? '文件發起者' : '' }}</span>
+                              <div class="input-group w-100 bg-white">
                                 <span class="input-group-text">
                                   <span class="fs-12 signator" :class="signatorColor(index)">
                                     <span v-if="index !== 0 && isDraggable">{{ index }}</span>
@@ -651,9 +651,11 @@
                               <div v-if="index === 0 && selectedContractor.length > 1" class="dropdown-divider mt-4"></div>
                               -->
                             </div>
-                          </template>
-                        </draggable>
-                      </div>
+                          </div>
+
+                        </template>
+                      </draggable>
+
                       <!--<pre>{{selectedContractor}}</pre>-->
                     </div>
                   </div>
