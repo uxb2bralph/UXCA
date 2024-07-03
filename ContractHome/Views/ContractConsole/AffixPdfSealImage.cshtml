@@ -226,21 +226,23 @@
             </div>
             <div v-else class="row g-2 my-0">
               <div class="col-lg-3 col-xl-6 py-1">
-                <button type="button" class="btn btn-secondary opacity-50 w-100" v-on:click="resetSignature">
+                <button type="button" class="btn btn-danger opacity-75 w-100" v-on:click="resetSignature">
                   <i class="fas fa-eraser"></i> 清除用印
                 </button>
               </div>
+              <!--
               <div class="col-lg-3 col-xl-6 py-1">
                 <button type="button" class="btn btn-danger opacity-75 w-100" v-on:click="abortHandler">
                   <i class="fas fa-share"></i> 終止文件
                 </button>
               </div>
-              <div class="col-lg-3 col-xl-5 py-1">
+              -->
+              <div class="col-lg-3 col-xl-6 py-1">
                 <button type="button" class="btn btn-secondary opacity-50 w-100" v-on:click="backSearch">
                   返回文件列表
                 </button>
               </div>
-              <div class="col-lg-3 col-xl-7 py-1">
+              <div class="col py-1">
                 <button type="button" class="btn btn-primary opacity-75 w-100 fw-bolder" v-on:click="commitContract">
                   送出合約
                 </button>

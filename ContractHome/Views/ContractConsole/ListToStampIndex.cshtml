@@ -212,7 +212,7 @@
                         下載檔案
                       </button>
                     </li>
-                    <li v-if="!contract.isContractor">
+                    <li v-if="showStopCase(contract)">
                       <button class="dropdown-item d-flex align-items-center fs-13"
                         v-on:click="openStopContractModal(contract)">
                         <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
@@ -1438,6 +1438,14 @@
             console.log(thrownError);
           }
         });
+      },
+
+      // 是否可終止文件
+      showStopCase(contract) {
+        console.log({ contract })
+        const partyFilter = contract.Parties.filter(item => item.Name.includes(this.currentUserInfo.companyName) && item.isInitiator);
+        console.log({ partyFilter })
+        return partyFilter.length > 0;
       },
 
       // 是否可簽署
