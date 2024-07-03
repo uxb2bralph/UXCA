@@ -171,6 +171,16 @@
           <div :id="`contractNo-${index}`" class="card justify-content-between p-2 pb-2 h-100 shadow-sm"
             :class="{ 'd-flex flex-row' : !isLayoutCard }">
             <div class="d-flex justify-content-between" :class="{ 'col-4' : !isLayoutCard }">
+              <!-- 已完成 -->
+              <span v-if="contract.CurrentStep === 18" class="fs-4 text-success opacity-75"
+                style="position: absolute;left: 24px; top: 25px;">
+                <i class="fas fa-check-circle"></i>
+              </span>
+              <!-- 已終止 -->
+              <span v-if="contract.CurrentStep === 19" class="fs-4 text-danger opacity-75"
+                style="position: absolute;left: 24px; top: 25px;">
+                <i class="fas fa-ban"></i>
+              </span>
               <div class="d-flex">
                 <div class="fs-1 px-2 text-secondary opacity-50">
                   <i class="fad fa-file-contract fa-lg"></i>
