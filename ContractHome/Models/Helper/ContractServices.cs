@@ -20,6 +20,7 @@ using System.Text;
 using System.Linq;
 using System.Linq.Expressions;
 using static ContractHome.Models.DataEntity.CDS_Document;
+using DocumentFormat.OpenXml.Drawing;
 
 namespace ContractHome.Models.Helper
 {
@@ -503,8 +504,10 @@ namespace ContractHome.Models.Helper
             _models.SubmitChanges();
         }
 
-        public void NotifyWhoNotFinishedContract()
+        public void NotifyWhoNotFinishedDoc()
         {
+            StringBuilder sb = new StringBuilder();
+
             try
             {
                 _models = new GenericManager<DCDataContext>();
@@ -517,17 +520,28 @@ namespace ContractHome.Models.Helper
                     .Where(x => x.NotifyUntilDate >= DateTime.Now.Date)
                     .ToList();
 
-                contracts.ForEach(contract =>
+                if (contracts.Count()>0)
                 {
-                    var users = GetUsersByWhoNotFinished(contract, contract.CurrentStep);
-                    SendUsersNotifyEmailAboutContractAsync(
-                            contract,
-                            _emailContentFactories.GetNotifySign(),
-                            users
-                    );
-                    var usersString = string.Join(" ", users.Select(x => $"{x.UID}"));
-                    FileLogger.Logger.Info($"{contract.ContractID} {(CDS_Document.StepEnum)contract.CurrentStep} UID: {usersString}");
-                });
+                    sb.AppendLine($"NotifyWhoNotFinishedDoc:contracts.Count()={contracts.Count()}");
+
+                    contracts.ForEach(contract =>
+                    {
+                        var users = GetUsersByWhoNotFinished(contract, contract.CurrentStep);
+                        SendUsersNotifyEmailAboutContractAsync(
+                                contract,
+                                _emailContentFactories.GetNotifySign(),
+                                users
+                        );
+                        var usersString = string.Join(" ", users.Select(x => $"{x.UID}"));
+                        sb.Append($" ContractID: {contract.ContractID} {(CDS_Document.StepEnum)contract.CurrentStep} UID: {usersString}");
+                    });
+                } 
+                else
+                {
+                    sb.AppendLine("NotifyWhoNotFinishedDoc:contracts.Count()=0");
+                }
+                FileLogger.Logger.Info(sb.ToString());
+
             }
             catch (Exception ex)
             {

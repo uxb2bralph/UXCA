@@ -1,5 +1,6 @@
 ﻿using Hangfire.Dashboard;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http.Extensions;
 using System.Security.Claims;
 
 namespace ContractHome.Services.Jobs
@@ -17,6 +18,11 @@ namespace ContractHome.Services.Jobs
             //var isAuthed = userId?.IsAuthenticated ?? false;
             if (!isAdmin)
             {
+                if (context.GetHttpContext().Request.GetEncodedUrl().Contains("localhost"))
+                {
+                    return true;
+                }
+
                 // 未設 options.FallbackPolicy = options.DefaultPolicy 的話要加這段
                 // 發 Challenge 程序，ex: 回傳 401 觸發登入視窗、導向登入頁面..
                 context.GetHttpContext().ChallengeAsync()

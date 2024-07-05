@@ -130,8 +130,10 @@ namespace ContractHome
             services.AddDetection();
 
             #region Hangfire
+            services.Configure<List<JobSetting>>(this.Configuration.GetSection("JobSetting"));
             services.AddJobManager()
-                    .AddrecurringJob<JobNotifyWhoNotFinishedContract>();
+                    .AddrecurringJob<JobNotifyWhoNotFinishedDoc>()
+                    .AddrecurringJob<JobTouchWebEveryday>();
 
             #endregion
 
@@ -184,7 +186,7 @@ namespace ContractHome
             });
 
             #region Hangfire
-            app.UseHangfireDashboard("/dashboard", options: new DashboardOptions
+            app.UseHangfireDashboard("/jobs/dashboard", options: new DashboardOptions
             {
                 IsReadOnlyFunc = (DashboardContext context) =>
                     DashboardAccessAuthFilter.IsReadOnly(context),

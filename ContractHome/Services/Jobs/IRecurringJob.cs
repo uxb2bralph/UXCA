@@ -6,6 +6,8 @@
 
         string JobId { get; }
 
+        bool IsEnable { get; }
+
         Task Execute();
     }
 }
