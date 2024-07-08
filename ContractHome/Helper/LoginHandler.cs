@@ -26,7 +26,7 @@ namespace ContractHome.Helper
             UserProfile user = mgr.GetUserProfileByPID(pid);
             if (user?.LoginFailedCount >= 3)
             {
-                msg = "帳號已鎖定";
+                msg = "帳號密碼有誤";
                 return auth;
             }
 

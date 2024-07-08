@@ -325,7 +325,7 @@ namespace ContractHome.Controllers
         var uid = _cacheStore.Get(redoLimitCahceKey);
         if (uid!=null)
         {
-            return new BaseResponse(true, $"通知信已寄發，請查看電子信箱，或稍後重新申請。");
+            return new BaseResponse(true, $"通知信已寄發，請查看電子信箱，或三分鐘後重新申請。");
         }
 
             EmailContentBodyDto emailContentBodyDto =

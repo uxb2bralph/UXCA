@@ -201,7 +201,7 @@ namespace ContractHome.Controllers
 
             if (loginFailedCount>=3)
             {
-                ModelState.AddModelError("PID", "帳號已鎖定");
+                ModelState.AddModelError("PID", "帳號密碼有誤");
                 return Json(new { result = false, message = ModelState.ErrorMessage() });
             }
 

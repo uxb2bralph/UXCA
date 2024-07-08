@@ -1235,7 +1235,7 @@ namespace ContractHome.Controllers
             {
                 filters.Add("CompanyID", req.CompanyID.DecryptKeyValue());
             }
-
+            //沒傳CompanyID就查全部
             var items = models.GetTable<ContractSignatureRequest>()
                 //分頁處理-->先pass,直接轉excel
                 .Where(x => x.SignatureDate != null)
