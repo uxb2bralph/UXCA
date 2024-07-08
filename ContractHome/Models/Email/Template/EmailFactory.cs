@@ -127,6 +127,14 @@ namespace ContractHome.Models.Email.Template
             return emailContent;
         }
 
+        public IEmailContent GetFinishContract(EmailContentBodyDto dto)
+        {
+            var emailContent = _emailContents.OfType<FinishContract>()
+                .FirstOrDefault()!;
+            emailContent.CreateBody(dto);
+            return emailContent;
+        }
+
         public IEmailContent GetLoginSuccessed(string emailUserName, string email)
         {
             var emailContent = _emailContents.OfType<LoginSuccessed>()

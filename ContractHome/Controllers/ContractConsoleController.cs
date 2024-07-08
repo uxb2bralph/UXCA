@@ -27,6 +27,7 @@ using System.Reflection;
 using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
 
+
 namespace ContractHome.Controllers
 {
     //remark for testing by postman
@@ -383,6 +384,11 @@ namespace ContractHome.Controllers
                     contract,
                     _emailContentFactories.GetNotifySign(),
                     _contractServices?.GetUsersbyContract(contract));
+            } 
+            else
+            {
+                contract.CDS_Document.AddDocumentProcessLog(models, profile!.UID, CDS_Document.StepEnum.Sealed);
+
             }
 
             return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
@@ -468,8 +474,8 @@ namespace ContractHome.Controllers
             var organizationUser = models
                 .GetTable<OrganizationUser>()
                 .Where(x => x.UID == profile.UID);
-            
-            if (organizationUser != null&&organizationUser.FirstOrDefault() != null) 
+
+            if (organizationUser != null && organizationUser.FirstOrDefault() != null)
             {
                 profileCompanyID = organizationUser.FirstOrDefault().CompanyID;
             }
@@ -478,64 +484,48 @@ namespace ContractHome.Controllers
 
             IQueryable<Contract> items = PromptContractItems(profile);
 
-            //IQueryable<CDS_Document> docItems =
-            //    models.GetTable<CDS_Document>()
-            //        .Where(d => !d.CurrentStep.HasValue || CDS_Document.PendingState.Contains((CDS_Document.StepEnum)d.CurrentStep!));
+            //    //沒有查詢條件預設:0000=0
+            //    //是登入者未印:0011=3
+            //    //是登入者未簽:0101=5   
+            //    //非登入者未印:0010=2
+            //    //非登入者未簽:0100=4    
 
-            //items = items.Where(c => docItems.Any(d => d.DocID == c.ContractID));
+            //    //StepEnum.Sealing,2
+            //    //StepEnum.Sealed,3
+            //    //StepEnum.DigitalSigning,4
+            //    //StepEnum.DigitalSigned 5
 
             items = items.Where(d => !d.CDS_Document.CurrentStep.HasValue
-                || CDS_Document.PendingState.Contains((CDS_Document.StepEnum)d.CDS_Document.CurrentStep!));
+                 || CDS_Document.DocumentEditable.Contains((CDS_Document.StepEnum)d.CDS_Document.CurrentStep!));
 
-            #region 處理查詢條件:是否為登入者/是否已用印/是否已用簽
-            if (viewModel.ContractQueryStep >= 2 && viewModel.ContractQueryStep <= 5)
+            var contractSignatureRequestItems = items
+                .SelectMany(x => x.ContractSignatureRequest)
+                //判斷是查詢登入者的合約, 或是其他人的合約
+                .Where(y => (Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.CurrentUser)) ?
+                    (y.CompanyID == profileCompanyID) : //登入者的合約
+                    (y.CompanyID != profileCompanyID))  //其他人的合約
+                ;
+
+            //待簽
+            //待自己簽:若本人用印, 對方未印, 現行會顯示此筆, 但無法簽署
+            //待他人簽:若本人未印, 對方已印, 現行會顯示此筆, 可用印
+            if ((Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.UnSigned)))
             {
-
-                //沒有查詢條件預設:0000=0
-                //是登入者未印:0011=3
-                //是登入者未簽:0101=5   
-                //非登入者未印:0010=2
-                //非登入者未簽:0100=4    
-
-                //StepEnum.Sealing,2
-                //StepEnum.Sealed,3
-                //StepEnum.DigitalSigning,4
-                //StepEnum.DigitalSigned 5
-
-                //FileLogger.Logger.Error(String.Join(",", items.Select(x => x.ContractID)));
-                List<int> removeContractID = new List<int>();
-
-                var removeContract = items
-                    .SelectMany(x => x.ContractSignatureRequest)
-                    //判斷是查詢登入者的合約, 或是其他人的合約
-                    .Where(y => (Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.CurrentUser)) ?
-                        (y.CompanyID == profileCompanyID) :
-                        (y.CompanyID != profileCompanyID))
-                    ;
-
-                //if StepEnum.Sealing and StampDate!=null then 已印->移除contract
-                //if StepEnum.Sealing and StampDate==null then 未印->不移除contract
-                if ((Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.UnStamped)))
-                {
-                    removeContract = removeContract.Where(y => y.StampDate != null);
-                }
-
-                if ((Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.UnSigned)))
-                {
-                    removeContract = removeContract
-                        .Where(y => ((y.SignatureDate != null) || (y.StampDate == null)))
-                        .Where(y => (y.Contract.CDS_Document.CurrentStep == (int)StepEnum.Sealing));
-                }
-
-                removeContractID = removeContract.Select(x => x.Contract.ContractID).Distinct().ToList();
-
-
-                //FileLogger.Logger.Error(String.Join(",", removeContractID.Select(x => x)));
-                items = items.Where(y => !removeContractID.Contains(y.ContractID));
-                //FileLogger.Logger.Error(String.Join(",", items.Select(x => x.ContractID)));
-
+                contractSignatureRequestItems = contractSignatureRequestItems
+                        .Where(x => (x.SignatureDate == null)&&(x.StampDate!=null));
             }
-            #endregion
+
+            //待用印
+            if ((Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.UnStamped)))
+            {
+                contractSignatureRequestItems = contractSignatureRequestItems
+                    .Where(x => x.StampDate == null);
+            }
+
+            var contractIDs = contractSignatureRequestItems.Select(x => x.ContractID).ToList();
+            //符合條件的Contracts
+            items = items.Where(y => contractIDs.Contains(y.ContractID));
+
             viewModel.RecordCount = items?.Count();
 
             var userprofile = models.GetTable<UserProfile>().Where(x => x.PID == profile.PID).FirstOrDefault();
@@ -1115,6 +1105,7 @@ namespace ContractHome.Controllers
                 {
                     ApplyNote(contract, profile.UID, viewModel.PageIndex);
                 }
+
                 return Json(new { result = true });
             }
 
@@ -1415,7 +1406,7 @@ namespace ContractHome.Controllers
                         }
                     }
                 }
-
+                //wait to do...CommitUserSignatureAsync if (!item.SignerID.HasValue), 動作一樣
                 if (isSigned)
                 {
                     item.Contract.ContractSignature = new ContractSignature
@@ -1428,29 +1419,12 @@ namespace ContractHome.Controllers
 
                     models.SubmitChanges();
 
-                    //var party = models.GetTable<ContractingParty>()
-                    //    .Where(p => p.ContractID == item.ContractID)
-                    //    .Where(p => p.CompanyID == item.CompanyID).FirstOrDefault();
-
-                    //if (party?.IsInitiator == true)
-                    //{
-                    //    item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.InitiatorDigitalSigned);
-                    //}
-                    //else
-                    //{
-                    //    if (item.Contract.ifDigitalSignatureFlowFinished())
-                    //    { 
-                    //        item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.ContractorDigitalSigned);
-                    //    }
-                    //}
+                    item.Contract.CDS_Document.AddDocumentProcessLog(models, profile!.UID, CDS_Document.StepEnum.DigitalSigned);
+                    item.Contract.CDS_Document.UpdateCurrentStep(models, CDS_Document.StepEnum.DigitalSigning);
 
                     if (item.Contract.isAllDigitalSignatureDone())
                     {
-                        item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.DigitalSigned);
-                    }
-                    else
-                    {
-                        item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.DigitalSigning);
+                        item.Contract.CDS_Document.UpdateCurrentStep(models, CDS_Document.StepEnum.DigitalSigned);
                     }
 
                     if (!models.GetTable<ContractSignatureRequest>()
@@ -1553,6 +1527,7 @@ namespace ContractHome.Controllers
             }
 
             UserProfile profile = (UserProfile)ViewBag.Profile;
+            //wait to do...合併CommitDigitalSignatureAsync if(Signed), 動作一樣
             if (!item.SignerID.HasValue)
             {
                 (bool signOk, string code) = models.CHT_SignPdfByUser(item, profile);
@@ -1567,6 +1542,32 @@ namespace ContractHome.Controllers
                     item.SignatureDate = DateTime.Now;
 
                     models.SubmitChanges();
+
+                    item.Contract.CDS_Document.AddDocumentProcessLog(models, profile!.UID, CDS_Document.StepEnum.DigitalSigned);
+                    item.Contract.CDS_Document.UpdateCurrentStep(models, CDS_Document.StepEnum.DigitalSigning);
+
+                    if (item.Contract.isAllDigitalSignatureDone())
+                    {
+                        item.Contract.CDS_Document.UpdateCurrentStep(models, CDS_Document.StepEnum.DigitalSigned);
+                    }
+
+                    if (!models.GetTable<ContractSignatureRequest>()
+                        .Where(c => c.ContractID == item.ContractID)
+                        .Where(c => !c.SignerID.HasValue)
+                        .Any())
+                    {
+                        item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Committed);
+                        _contractServices?.SetModels(models);
+
+                        EmailContentBodyDto emailContentBodyDto =
+                            new EmailContentBodyDto(contract: item?.Contract, initiatorOrg: null, userProfile: profile);
+
+                        _contractServices?.SendUsersNotifyEmailAboutContractAsync(
+                            item?.Contract,
+                            _emailContentFactories.GetFinishContract(emailContentBodyDto),
+                            _contractServices?.GetUsersbyContract(item?.Contract));
+                    }
+
                     return Json(new BaseResponse());
                 } 
                 else

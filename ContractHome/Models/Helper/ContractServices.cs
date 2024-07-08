@@ -402,7 +402,7 @@ namespace ContractHome.Models.Helper
         public IQueryable<UserProfile>? GetUsersByWhoNotFinished(Contract contract, 
             int currentStep)
         {
-            if ((currentStep == 0) || (!CDS_Document.RegularNotifyState.Contains((CDS_Document.StepEnum)currentStep!)))
+            if ((currentStep == 0) || (!CDS_Document.DocumentEditable.Contains((CDS_Document.StepEnum)currentStep!)))
                 return null;
 
             bool isSigning = (contract.CurrentStep == (int)StepEnum.DigitalSigning || contract.CurrentStep == (int)StepEnum.Sealed);
@@ -515,7 +515,7 @@ namespace ContractHome.Models.Helper
                 var contracts = _models
                     .GetTable<Contract>()
                     .Where(d => !d.CDS_Document.CurrentStep.HasValue
-                            || CDS_Document.RegularNotifyState.Contains((CDS_Document.StepEnum)d.CDS_Document.CurrentStep!))
+                            || CDS_Document.DocumentEditable.Contains((CDS_Document.StepEnum)d.CDS_Document.CurrentStep!))
                     .Where(x => x.NotifyUntilDate != null)
                     .Where(x => x.NotifyUntilDate >= DateTime.Now.Date)
                     .ToList();

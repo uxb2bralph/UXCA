@@ -160,8 +160,9 @@ namespace ContractHome.Models.DataEntity
             StepEnum.DigitalSigned
         };
 
-        public static StepEnum[] RegularNotifyState =
+        public static StepEnum[] DocumentEditable =
         {
+            StepEnum.Establish,
             StepEnum.Sealing,
             StepEnum.Sealed,
             StepEnum.DigitalSigning
