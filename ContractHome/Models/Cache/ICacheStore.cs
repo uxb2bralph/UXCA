@@ -2,9 +2,10 @@
 {
     public interface ICacheStore
     {
-        void Add<TItem>(TItem item, ICacheKey<TItem> key);
+        void Add<TItem>(TItem item);
 
-        TItem Get<TItem>(ICacheKey<TItem> key) where TItem : class;
+        //TItem Get<TItem>(ICacheKey<TItem> key) where TItem : class;
+        TItem Get<TItem>(TItem key) where TItem : class;
 
     }
 }

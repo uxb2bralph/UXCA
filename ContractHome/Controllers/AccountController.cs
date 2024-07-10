@@ -9,6 +9,7 @@ using ContractHome.Models.Email.Template;
 using ContractHome.Models.Helper;
 using ContractHome.Models.ViewModel;
 using ContractHome.Properties;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Drawing;
@@ -24,18 +25,18 @@ namespace ContractHome.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly EmailFactory _emailFactory;
-        private readonly ICacheStore _cacheStore;
+        private readonly CacheFactory _cacheFactory;
         private ContractServices? _contractServices;
 
         public AccountController(ILogger<HomeController> logger,
             IServiceProvider serviceProvider,
-            ICacheStore cacheStore,
+            CacheFactory cacheFactory,
             EmailFactory emailContentFactories,
             ContractServices contractServices
             ) : base(serviceProvider)
         {
             _logger = logger;
-            _cacheStore = cacheStore;
+            _cacheFactory = cacheFactory;
             _emailFactory = emailContentFactories;
             _contractServices = contractServices;
         }
@@ -212,11 +213,8 @@ namespace ContractHome.Controllers
         {
             Logout();
             token = token.GetEfficientString();
-            FileLogger.Logger.Info($"{this.GetType().Name}-Trust-Token={token}");
-            var trustPasswordApplyTokenCahceKey = new TrustPasswordApplyTokenCahceKey(token);
-            var result = _cacheStore.Get(trustPasswordApplyTokenCahceKey);
-
-            if (result != null)
+            var cahceKey = _cacheFactory.GetTrustPasswordApplyToken(token);
+            if (cahceKey != null)
             {
                 TempData["message"] += $"Token已失效，請重新申請。";
             }
@@ -228,6 +226,7 @@ namespace ContractHome.Controllers
 
             if (resp.HasError)
             {
+                FileLogger.Logger.Error($"{this.GetType().Name}-{resp.Message}-TrustToken={token}");
                 TempData["message"] += resp.Message;
             }
 
@@ -243,9 +242,8 @@ namespace ContractHome.Controllers
             FileLogger.Logger.Info($"{this.GetType().Name}-PasswordReset-Base64UrlEncodeToken={token}");
             var password = viewModel.Password.GetEfficientString();
             var pid = viewModel.PID.GetEfficientString();
-            var trustPasswordApplyTokenCahceKey = new TrustPasswordApplyTokenCahceKey(token);
-            var result = _cacheStore.Get(trustPasswordApplyTokenCahceKey);
-            if (result != null)
+            var cahceKey = _cacheFactory.GetTrustPasswordApplyToken(token);
+            if (cahceKey != null)
             {
                 return new BaseResponse(true, $"Token已失效，請重新申請。");
             }
@@ -280,15 +278,13 @@ namespace ContractHome.Controllers
 
             models.SubmitChanges();
 
-            var usedTokenCahceKey = new TrustPasswordApplyTokenCahceKey(token);
-            _cacheStore.Add(new Default() { ID = viewModelUserProfile.UID.ToString() }, usedTokenCahceKey);
+            _cacheFactory.SetTrustPasswordApplyToken(token);
 
             _emailFactory.SendEmailToCustomer(
                 _emailFactory.GetPasswordUpdated(emailUserName: tokenUserProfile.UserName, email: tokenUserProfile.EMail));
 
             Logout();
             return new BaseResponse(false, "密碼更新完成。");
-
         }
 
         [AllowAnonymous]
@@ -320,10 +316,8 @@ namespace ContractHome.Controllers
                 return new BaseResponse(true, "驗證資料有誤，請檢查輸入欄位是否正確。");
             }
 
-            //wait to do..如果email控管重覆?
-            var redoLimitCahceKey = new RedoLimitCahceKey(email);
-            var uid = _cacheStore.Get(redoLimitCahceKey);
-            if (uid != null)
+            var resentCahceKey = _cacheFactory.GetPasswordApplyEmailResentLimit(email);
+            if (resentCahceKey != null)
             {
                 return new BaseResponse(true, $"通知信已寄發，請查看電子信箱，或三分鐘後重新申請。");
             }
@@ -334,47 +328,11 @@ namespace ContractHome.Controllers
             _emailFactory.SendEmailToCustomer(
             _emailFactory.GetApplyPassword(dto: emailContentBodyDto));
 
-            //wait to do:新token產生後, 設定舊token為失效
-            _cacheStore.Add(new Default() { ID = userProfile.UID.ToString() }, redoLimitCahceKey);
+            _cacheFactory.SetPasswordApplyEmailResentLimit(email);
 
             return new BaseResponse(false, "");
 
         }
 
-        //private void SetValueToCache(string cacheItem, string cacheValue, int expirateionMin = 5, int slidingExpirateionMin = 5)
-        //{
-        //  var cacheExpiryOptions = new MemoryCacheEntryOptions
-        //  {
-        //    AbsoluteExpiration = DateTime.Now.AddMinutes(expirateionMin),
-        //    //SlidingExpiration = TimeSpan.FromMinutes(slidingExpirateionMin),
-        //    Priority = CacheItemPriority.Low
-        //  };
-        //  _memCache.Set(cacheItem, cacheValue, cacheExpiryOptions);
-        //}
-
-        //[AllowAnonymous]
-        //[HttpGet]
-        //public async Task<IActionResult> SignatureTrust(string token)
-        //{
-        //    (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile)
-        //            = _contractServices.TokenValidate(token);
-        //    if (resp.HasError)
-        //    {
-        //        return View(resp);
-        //    }
-        //    //wait to do:Trust進來可能沒有正常user權限,
-        //    //但因為controller都有用var profile = await HttpContext.GetUserAsync();, 暫時先用
-        //    HttpContext.SignOnAsync(userProfile);
-
-        //    return RedirectToAction("AffixPdfSealForTrust", "ContractConsole"
-        //        , new
-        //        {
-        //            KeyID = Int32.Parse(jwtTokenObj.payloadObj.contractId).EncryptKey(),
-        //            UID = jwtTokenObj.payloadObj.id
-        //        });
-        //}
-
     }
-
-
 }

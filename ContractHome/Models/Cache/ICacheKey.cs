@@ -1,8 +1,8 @@
 ﻿namespace ContractHome.Models.Cache
 {
-    public interface ICacheKey<TItem>
+    public interface ICacheKey
     {
-        string CacheKey { get; }
-        string DurationSetting { get; }
+        string CreateCacheKey(string keyID);
+        //string DurationSetting { get; }
     }
 }

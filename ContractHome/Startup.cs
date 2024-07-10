@@ -50,7 +50,7 @@ namespace ContractHome
 
             //services.AddControllersWithViews();
             services.AddHttpContextAccessor();
-#region Caching
+            #region Caching
             services.AddMemoryCache();
 
             var cachingConfigEnum = this.Configuration.GetSection("Caching").GetChildren();
@@ -59,7 +59,12 @@ namespace ContractHome
 
             services.AddSingleton<ICacheStore>(x => 
                 new MemoryCacheStore(x.GetService<IMemoryCache>(), cachingExpirationConfig));
-#endregion
+
+            services.AddScoped<CacheFactory>();
+            services.AddScoped<ICacheKey, PasswordApplyEmailResentLimitCahceKey>();
+            services.AddScoped<ICacheKey, TrustPasswordApplyTokenCahceKey>();
+
+            #endregion
 
             services.AddSession(options =>
             {
@@ -125,6 +130,8 @@ namespace ContractHome
             services.AddScoped<IEmailContent, PasswordUpdated>();
             services.AddScoped<IEmailContent, ApplyPassword>();
             
+
+
             services.AddScoped<ContractServices>();
             // Add detection services container and device resolver service.
             services.AddDetection();

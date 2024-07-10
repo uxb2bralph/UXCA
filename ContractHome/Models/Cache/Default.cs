@@ -4,4 +4,10 @@
     {
         public string ID { get; set; }
     }
+
+
+    public class PasswordApplyUsedToken: Default
+    {
+
+    }
 }
