@@ -31,7 +31,7 @@ using DocumentFormat.OpenXml.Spreadsheet;
 namespace ContractHome.Controllers
 {
     //remark for testing by postman
-    //[Authorize]
+    [Authorize]
     public class ContractConsoleController : SampleController
     {
         private readonly ILogger<HomeController> _logger;
@@ -39,17 +39,20 @@ namespace ContractHome.Controllers
         private BaseResponse baseResponse = new BaseResponse();
         private readonly ICacheStore _cacheStore;
         private readonly EmailFactory _emailContentFactories;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         public ContractConsoleController(ILogger<HomeController> logger,
             IServiceProvider serviceProvider,
             ICacheStore cacheStore,
             ContractServices contractServices,
-            EmailFactory emailContentFactories
+            EmailFactory emailContentFactories,
+            IHttpContextAccessor httpContextAccessor
           ) : base(serviceProvider)
         {
             _logger = logger;
             _contractServices = contractServices;
             _cacheStore = cacheStore;
             _emailContentFactories = emailContentFactories;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public IActionResult ApplyContract(TemplateResourceViewModel viewModel)
@@ -375,6 +378,12 @@ namespace ContractHome.Controllers
 
             requestItem.StampDate = DateTime.Now;
             models.SubmitChanges();
+
+            if ((UserSession.Get(_httpContextAccessor)!=null)&&(UserSession.Get(_httpContextAccessor).IsTrust))
+            {
+                UserSession.Remove(_httpContextAccessor);
+                HttpContext.Logout();
+            }
 
             if (contract.isAllStamped())
             {
@@ -860,6 +869,7 @@ namespace ContractHome.Controllers
             //wait to do:Trust進來可能沒有正常user權限,
             //但因為controller都有用var profile = await HttpContext.GetUserAsync();, 暫時先用
             HttpContext.SignOnAsync(userProfile);
+            var userSession = UserSession.Create(_httpContextAccessor);
 
             if (jwtTokenObj.IsSeal)
             {
@@ -1438,6 +1448,12 @@ namespace ContractHome.Controllers
                         //_contractServices?.SendContractNotifyEmailAsync(item?.Contract, EmailBody.EmailTemplate.FinishContract);
                     }
 
+                    if ((UserSession.Get(_httpContextAccessor) != null) && (UserSession.Get(_httpContextAccessor).IsTrust))
+                    {
+                        UserSession.Remove(_httpContextAccessor);
+                        HttpContext.Logout();
+                    }
+
                     if (contract.InProgress != null && contract.InProgress == true)
                     {
                         contract.InProgress = null;
@@ -1566,6 +1582,12 @@ namespace ContractHome.Controllers
                             item?.Contract,
                             _emailContentFactories.GetFinishContract(emailContentBodyDto),
                             _contractServices?.GetUsersbyContract(item?.Contract));
+
+                        if ((UserSession.Get(_httpContextAccessor) != null) && (UserSession.Get(_httpContextAccessor).IsTrust))
+                        {
+                            UserSession.Remove(_httpContextAccessor);
+                            HttpContext.Logout();
+                        }
                     }
 
                     return Json(new BaseResponse());

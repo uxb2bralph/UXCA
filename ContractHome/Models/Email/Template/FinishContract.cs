@@ -32,7 +32,6 @@ namespace ContractHome.Models.Email.Template
                     .SetTemplateItem(this.GetType().Name)
                     .SetContractNo(emailContentBodyDto.Contract.ContractNo)
                     .SetTitle(emailContentBodyDto.Contract.Title)
-                    .SetSendUserName(emailContentBodyDto.InitiatorOrg.CompanyName)
                     .SetRecipientUserName($"{emailContentBodyDto.UserProfile.CompanyName} {emailContentBodyDto.UserProfile.UserName}")
                     .SetRecipientUserEmail(emailContentBodyDto.UserProfile.EMail)
                     .Build();

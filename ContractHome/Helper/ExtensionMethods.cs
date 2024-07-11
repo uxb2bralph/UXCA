@@ -2,6 +2,7 @@ using ContractHome.Models.DataEntity;
 using ContractHome.Models.ViewModel;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Newtonsoft.Json;
 using System.Text;
 using static ContractHome.Models.Helper.ContractServices;
 
@@ -110,6 +111,17 @@ namespace ContractHome.Helper
             {
                 return DigitalSignCerts.Exchange;
             }
+        }
+
+        public static void SetObject(this ISession session, string key, object value)
+        {
+            session.SetString(key, JsonConvert.SerializeObject(value));
+        }
+
+        public static T GetObject<T>(this ISession session, string key)
+        {
+            var value = session.GetString(key);
+            return value == null ? default(T) : JsonConvert.DeserializeObject<T>(value);
         }
     }
 }

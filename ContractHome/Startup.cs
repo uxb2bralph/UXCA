@@ -129,7 +129,7 @@ namespace ContractHome
             services.AddScoped<IEmailContent, LoginSuccessed>();
             services.AddScoped<IEmailContent, PasswordUpdated>();
             services.AddScoped<IEmailContent, ApplyPassword>();
-            
+            services.AddScoped<IEmailContent, FinishContract>();
 
 
             services.AddScoped<ContractServices>();
