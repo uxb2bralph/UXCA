@@ -2,7 +2,7 @@
 {
     public interface ICacheKey
     {
-        string CreateCacheKey(string keyID);
-        //string DurationSetting { get; }
+        void CreateCacheKey(string keyID);
+        string CacheKey { get; }
     }
 }

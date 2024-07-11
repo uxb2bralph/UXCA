@@ -1,4 +1,5 @@
 ﻿using CommonLib.Core.Utility;
+using ContractHome.Controllers;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Options;
@@ -98,6 +99,7 @@ namespace ContractHome.Models.Email
             }
             catch (Exception ex)
             {
+                //https://stackoverflow.com/questions/31637497/how-to-handle-socket-exception
                 FileLogger.Logger.Error(ex.ToString());
                 return false;
             }

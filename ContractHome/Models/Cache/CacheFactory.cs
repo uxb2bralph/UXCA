@@ -1,4 +1,7 @@
-﻿using DocumentFormat.OpenXml.InkML;
+﻿using ContractHome.Models.Email.Template;
+using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Spreadsheet;
+using MimeKit.Text;
 using System;
 
 namespace ContractHome.Models.Cache
@@ -6,41 +9,41 @@ namespace ContractHome.Models.Cache
     public class CacheFactory
     {
         private readonly ICacheStore _cacheStore;
-        private readonly ICacheKey _passwordApplyEmailResentLimitCahceKey;
-        private readonly ICacheKey _trustPasswordApplyTokenCahceKey;
+        private readonly IEnumerable<ICacheKey> _cacheKeys;
 
-
-        public CacheFactory(ICacheStore cacheStore, 
-            ICacheKey passwordApplyEmailResentLimitCahceKey,
-            ICacheKey trustPasswordApplyTokenCahceKey)
+        public CacheFactory(ICacheStore cacheStore,
+            IEnumerable<ICacheKey> cacheKeys)
         {
             _cacheStore = cacheStore;
-            _passwordApplyEmailResentLimitCahceKey = passwordApplyEmailResentLimitCahceKey;
-            _trustPasswordApplyTokenCahceKey = trustPasswordApplyTokenCahceKey;
+            _cacheKeys = cacheKeys;
         }
 
-        public ICacheKey GetPasswordApplyEmailResentLimit(string email)
+        public ICacheKey GetEmailSentCache(string email)
         {
-            _passwordApplyEmailResentLimitCahceKey.CreateCacheKey(email);
-            return _cacheStore.Get(_passwordApplyEmailResentLimitCahceKey);
+            var aaa = _cacheKeys.OfType<EmailSentCache>().FirstOrDefault();
+            aaa.CreateCacheKey(email);
+            return _cacheStore.Get(aaa);
         }
 
-        public void SetPasswordApplyEmailResentLimit(string email)
+        public void SetEmailSentCache(string email)
         {
-            _passwordApplyEmailResentLimitCahceKey.CreateCacheKey(email);
-            _cacheStore.Add(_passwordApplyEmailResentLimitCahceKey);
+            var aaa = _cacheKeys.OfType<EmailSentCache>().FirstOrDefault();
+            aaa.CreateCacheKey(email);
+            _cacheStore.Add(aaa);
         }
 
-        public ICacheKey GetTrustPasswordApplyToken(string token)
+        public ICacheKey GetTokenCache(string token)
         {
-            _trustPasswordApplyTokenCahceKey.CreateCacheKey(token);
-            return _cacheStore.Get(_trustPasswordApplyTokenCahceKey);
+            var ttt = _cacheKeys.OfType<TokenCache>().FirstOrDefault();
+            ttt.CreateCacheKey(token);
+            return _cacheStore.Get(ttt);
         }
 
-        public void SetTrustPasswordApplyToken(string token)
+        public void SetTokenCache(string token)
         {
-            _trustPasswordApplyTokenCahceKey.CreateCacheKey(token);
-            _cacheStore.Add(_passwordApplyEmailResentLimitCahceKey);
+            var ttt = _cacheKeys.OfType<TokenCache>().FirstOrDefault();
+            ttt.CreateCacheKey(token);
+            _cacheStore.Add(ttt);
         }
 
     }

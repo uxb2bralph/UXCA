@@ -21,6 +21,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using static ContractHome.Models.DataEntity.CDS_Document;
 using DocumentFormat.OpenXml.Drawing;
+using ContractHome.Controllers;
 
 namespace ContractHome.Models.Helper
 {
@@ -443,36 +444,43 @@ namespace ContractHome.Models.Helper
 
         public (BaseResponse, JwtToken, UserProfile) TokenValidate(string token)
         {
-            token = token.GetEfficientString();
-
-            if (string.IsNullOrEmpty(token))
+            try
             {
-                return (new BaseResponse(true, "驗證資料為空值。"), null, null);
-            }
+                token = token.GetEfficientString();
 
-            if (!JwtTokenValidator.ValidateJwtToken(token, JwtTokenGenerator.secretKey))
+                if (string.IsNullOrEmpty(token))
+                {
+                    return (new BaseResponse(true, "驗證資料為空值。"), null, null);
+                }
+
+                if (!JwtTokenValidator.ValidateJwtToken(token, JwtTokenGenerator.secretKey))
+                {
+                    return (new BaseResponse(true, "Token已失效，請重新申請。"), null, null);
+                }
+                var jwtTokenObj = JwtTokenValidator.DecodeJwtToken(token);
+                if (jwtTokenObj == null)
+                {
+                    return (new BaseResponse(true, "Token已失效，請重新申請。"), null, null);
+                }
+
+                UserProfile userProfile
+                    = _models.GetTable<UserProfile>()
+                        .Where(x => x.EMail.Equals(jwtTokenObj.Email))
+                        .Where(x => x.UID.Equals(jwtTokenObj.UID.DecryptKeyValue()))
+                        .FirstOrDefault();
+
+                if (userProfile == null)
+                {
+                    return (new BaseResponse(true, "驗證資料有誤。"), jwtTokenObj, userProfile);
+                }
+
+                return (new BaseResponse(false, ""), jwtTokenObj, userProfile);
+            }
+            catch (Exception ex)
             {
-                return (new BaseResponse(true, "Token已失效，請重新申請。"), null, null);
+                FileLogger.Logger.Error($"TokenValidate failed. JwtToken={token};   {ex}");
+                return (new BaseResponse(true, "驗證資料有誤。"), null, null);
             }
-            var jwtTokenObj = JwtTokenValidator.DecodeJwtToken(token);
-            if (jwtTokenObj == null)
-            {
-                return (new BaseResponse(true, "Token已失效，請重新申請。"), null, null);
-            }
-
-            UserProfile userProfile
-                = _models.GetTable<UserProfile>()
-                    .Where(x => x.EMail.Equals(jwtTokenObj.Email))
-                    .Where(x => x.UID.Equals(jwtTokenObj.UID.DecryptKeyValue()))
-                    .FirstOrDefault();
-
-            if (userProfile == null)
-            {
-                return (new BaseResponse(true, "驗證資料有誤。"), jwtTokenObj, userProfile);
-            }
-
-            return (new BaseResponse(false, ""), jwtTokenObj, userProfile);
-
         }
 
         public async void SendUsersNotifyEmailAboutContractAsync(

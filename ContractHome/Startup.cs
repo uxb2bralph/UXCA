@@ -61,8 +61,8 @@ namespace ContractHome
                 new MemoryCacheStore(x.GetService<IMemoryCache>(), cachingExpirationConfig));
 
             services.AddScoped<CacheFactory>();
-            services.AddScoped<ICacheKey, PasswordApplyEmailResentLimitCahceKey>();
-            services.AddScoped<ICacheKey, TrustPasswordApplyTokenCahceKey>();
+            services.AddScoped<ICacheKey, EmailSentCache>();
+            services.AddScoped<ICacheKey, TokenCache>();
 
             #endregion
 
