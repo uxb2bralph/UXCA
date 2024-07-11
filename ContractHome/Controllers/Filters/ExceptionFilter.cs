@@ -10,6 +10,8 @@ using System.Diagnostics;
 using CommonLib.Core.Utility;
 using ContractHome.Models.Dto;
 using ContractHome.Properties;
+using DocumentFormat.OpenXml.InkML;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ContractHome.Controllers.Filters
 {
@@ -32,34 +34,45 @@ namespace ContractHome.Controllers.Filters
                 //wait to merge into LogError
                 FileLogger.Logger.Error($"{Activity.Current?.Id ?? filterContext.HttpContext.TraceIdentifier}  {filterContext.Exception.Message}");
 
-                //ViewDataDictionary viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
-                //{
-                //    Model = new ErrorViewModel
-                //    {
-                //        RequestId = Activity.Current?.Id ?? filterContext.HttpContext.TraceIdentifier,
-                //        Exception = filterContext.Exception,
-                //    }
-                //};
-                //filterContext.Result = new ViewResult
-                //{
-                //    ViewName = "~/Views/Shared/Error.cshtml",
-                //    ViewData = viewData,
-                //};
+                var baseresponse = new BaseResponse()
+                {
+                    HasError = true,
+                    Message = $"ErrorID-{Activity.Current?.Id ?? filterContext.HttpContext.TraceIdentifier}",
+                    //wait to do...UrlHelper
+                    Url = $"{Settings.Default.WebAppDomain}"
+                };
 
-                ViewDataDictionary viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
+                if (filterContext.Exception.GetType() == typeof(JsonResponseException))
                 {
-                    Model = new BaseResponse()
+                    filterContext.Result = new JsonResult(baseresponse);
+                }
+                else
+                {
+
+                    //ViewDataDictionary viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
+                    //{
+                    //    Model = new ErrorViewModel
+                    //    {
+                    //        RequestId = Activity.Current?.Id ?? filterContext.HttpContext.TraceIdentifier,
+                    //        Exception = filterContext.Exception,
+                    //    }
+                    //};
+                    //filterContext.Result = new ViewResult
+                    //{
+                    //    ViewName = "~/Views/Shared/Error.cshtml",
+                    //    ViewData = viewData,
+                    //};
+
+                    ViewDataDictionary viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
                     {
-                        Message = $"ErrorID-{Activity.Current?.Id ?? filterContext.HttpContext.TraceIdentifier}",
-                        //wait to do...UrlHelper
-                        Url = $"{Settings.Default.WebAppDomain}"
-                    }
-                };
-                filterContext.Result = new ViewResult
-                {
-                    ViewName = "~/Views/Shared/CustomMessage.cshtml",
-                    ViewData = viewData,
-                };
+                        Model = baseresponse
+                    };
+                    filterContext.Result = new ViewResult
+                    {
+                        ViewName = "~/Views/Shared/CustomMessage.cshtml",
+                        ViewData = viewData,
+                    };
+                }
             }
         }
     }

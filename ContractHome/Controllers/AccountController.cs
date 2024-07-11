@@ -213,7 +213,7 @@ namespace ContractHome.Controllers
         {
             Logout();
             token = token.GetEfficientString();
-            var cahceKey = _cacheFactory.GetTrustPasswordApplyToken(token);
+            var cahceKey = _cacheFactory.GetTokenCache(token);
             if (cahceKey != null)
             {
                 TempData["message"] += $"Token已失效，請重新申請。";
@@ -226,7 +226,7 @@ namespace ContractHome.Controllers
 
             if (resp.HasError)
             {
-                FileLogger.Logger.Error($"{this.GetType().Name}-{resp.Message}-TrustToken={token}");
+                FileLogger.Logger.Error($"{resp.Message}-{this.GetType().Name}-Base64Token={token}");
                 TempData["message"] += resp.Message;
             }
 
@@ -239,10 +239,9 @@ namespace ContractHome.Controllers
         public async Task<BaseResponse> PasswordReset([FromBody] PasswordResetViewModel viewModel)
         {
             var token = viewModel.Token.GetEfficientString();
-            FileLogger.Logger.Info($"{this.GetType().Name}-PasswordReset-Base64UrlEncodeToken={token}");
             var password = viewModel.Password.GetEfficientString();
             var pid = viewModel.PID.GetEfficientString();
-            var cahceKey = _cacheFactory.GetTrustPasswordApplyToken(token);
+            var cahceKey = _cacheFactory.GetTokenCache(token);
             if (cahceKey != null)
             {
                 return new BaseResponse(true, $"Token已失效，請重新申請。");
@@ -251,8 +250,12 @@ namespace ContractHome.Controllers
             _contractServices.SetModels(models);
             (BaseResponse resp, JwtToken jwtTokenObj, UserProfile tokenUserProfile)
                 = _contractServices.TokenValidate(JwtTokenValidator.Base64UrlDecodeToString(token).DecryptData());
-            if (resp.HasError) { return resp; }
 
+            if (resp.HasError) 
+            {
+                FileLogger.Logger.Error($"{resp.Message}-{this.GetType().Name}-Base64Token={token}");
+                return resp; 
+            }
 
             var isPasswordValid = Regex.IsMatch(password, UserProfileFactory.PasswordRegex);
             if (!isPasswordValid)
@@ -278,7 +281,7 @@ namespace ContractHome.Controllers
 
             models.SubmitChanges();
 
-            _cacheFactory.SetTrustPasswordApplyToken(token);
+            _cacheFactory.SetTokenCache(token);
 
             _emailFactory.SendEmailToCustomer(
                 _emailFactory.GetPasswordUpdated(emailUserName: tokenUserProfile.UserName, email: tokenUserProfile.EMail));
@@ -316,21 +319,28 @@ namespace ContractHome.Controllers
                 return new BaseResponse(true, "驗證資料有誤，請檢查輸入欄位是否正確。");
             }
 
-            var resentCahceKey = _cacheFactory.GetPasswordApplyEmailResentLimit(email);
-            if (resentCahceKey != null)
+            try
             {
-                return new BaseResponse(true, $"通知信已寄發，請查看電子信箱，或三分鐘後重新申請。");
+                var resentCahceKey = _cacheFactory.GetEmailSentCache(email);
+                if (resentCahceKey != null)
+                {
+                    return new BaseResponse(true, $"通知信已寄發，請查看電子信箱，或三分鐘後重新申請。");
+                }
+
+                EmailContentBodyDto emailContentBodyDto =
+                    new EmailContentBodyDto(contract: null, initiatorOrg: null, userProfile: userProfile);
+
+                _emailFactory.SendEmailToCustomer(
+                    _emailFactory.GetApplyPassword(dto: emailContentBodyDto));
+
+                _cacheFactory.SetEmailSentCache(email);
+
+                return new BaseResponse(false, "");
             }
-
-            EmailContentBodyDto emailContentBodyDto =
-                new EmailContentBodyDto(contract: null, initiatorOrg: null, userProfile: userProfile);
-
-            _emailFactory.SendEmailToCustomer(
-            _emailFactory.GetApplyPassword(dto: emailContentBodyDto));
-
-            _cacheFactory.SetPasswordApplyEmailResentLimit(email);
-
-            return new BaseResponse(false, "");
+            catch (Exception ex)
+            {
+                throw new JsonResponseException(ex);
+            }
 
         }
 
