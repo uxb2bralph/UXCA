@@ -26,10 +26,10 @@
   await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgent.cshtml");
   await Html.RenderPartialAsync("~/Views/Common/Module/InquiryAgentAction.cshtml");
   // vue draggable 套件
-    <script src="~/js/sortable/Sortable.min.js"></script>
-    <script src="~/js/vuedraggable/vuedraggable.umd.min.js"></script>
-    <script src="~/js/moment.min.js"></script>
-    <script src="~/js/api.js"></script>
+  <script src="~/js/sortable/Sortable.min.js"></script>
+  <script src="~/js/vuedraggable/vuedraggable.umd.min.js"></script>
+  <script src="~/js/moment.min.js"></script>
+  <script src="~/js/api.js"></script>
 }
 <div id="listToStamp" class="listToStamp__wrapper">
   <!-- Tab -->
@@ -80,13 +80,13 @@
           @{
             if (ViewBag.CanCreateContract)
             {
-                  <!--<span class="px-3 text-black-50"> | </span>-->
-                  <div id="addContract" class="tooltip__wrapper">
-                    <button type="button" class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="addHandler">
-                      <i class="fal fa-file-plus"></i>
-                    </button>
-                    <div class="tooltip__text">新增文件</div>
-                  </div>
+              <!--<span class="px-3 text-black-50"> | </span>-->
+              <div id="addContract" class="tooltip__wrapper">
+                <button type="button" class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="addHandler">
+                  <i class="fal fa-file-plus"></i>
+                </button>
+                <div class="tooltip__text">新增文件</div>
+              </div>
             }
           }
         </div>
@@ -212,7 +212,7 @@
                         下載檔案
                       </button>
                     </li>
-                    <li v-if="!contract.isContractor">
+                    <li v-if="showStopCase(contract)">
                       <button class="dropdown-item d-flex align-items-center fs-13"
                         v-on:click="openStopContractModal(contract)">
                         <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
@@ -266,9 +266,11 @@
                     v-on:click="signerHandler(contract.KeyID, item.Name, contract.ContractNo, contract.Title)">
                     <i class="fas fa-signature"></i>
                   </button>
-                  <div class="progresses__company">
-                    <span class=" progresses__name" :class="{ 'bg-lightBlue': item.IsCurrentUserCompany }">
-                      {{ formatName(item.Name) }}
+                  <div class="progresses__company" v-on:mouseover="tipHandler(`in_${index}_${idx}`)">
+                    <span data-bs-toggle="tooltip" :id="`in_${index}_${idx}`" :title="item.Name">
+                      <span class=" progresses__name" :class="{ 'bg-lightBlue': item.IsCurrentUserCompany }">
+                        {{ formatName(item.Name) }}
+                      </span>
                     </span>
                   </div>
                 </div>
@@ -314,10 +316,12 @@
                         <i class="fas fa-signature"></i>
                       </button>
                     </div>
-                    <div class="progresses__company">
-                      <span class=" progresses__name"
-                        :class="{ 'bg-warning opacity-75 text-dark': item.IsCurrentUserCompany }">
-                        {{ formatName(item.Name) }}
+                    <div class="progresses__company" v-on:mouseover="tipHandler(`co_${index}_${idx}`)">
+                      <span data-bs-toggle="tooltip" :id="`co_${index}_${idx}`" :title="item.Name">
+                        <span class=" progresses__name"
+                          :class="{ 'bg-warning opacity-75 text-dark': item.IsCurrentUserCompany }">
+                          {{ formatName(item.Name) }}
+                        </span>
                       </span>
                     </div>
                   </div>
@@ -597,16 +601,16 @@
                         </label>
                       </div>
                       -->
-                      <div class="alert alert-warning" role="alert">
-                        <draggable v-model="selectedContractor" chosen-class="chosen" force-fallback="true"
-                          group="company" animation="300" :disabled="!isDraggable" v-on:start="onStart" v-on:end="onEnd"
-                          handle=".signator__mover">
-                          <template v-for="(item, index) in selectedContractor">
-                            <div class="my-0 col-md-12 input__height">
-                              <!--
-                              <span class="fs-12 text-muted opacity-75">{{ index === 0 ? '起約人' : '簽約人' }}</span>
-                              -->
-                              <div :key="index" :id="`company_${index}`" class="input-group w-100 bg-white">
+                      <draggable v-model="selectedContractor" chosen-class="chosen" force-fallback="true"
+                        group="company" animation="300" :disabled="!isDraggable" v-on:start="onStart" v-on:end="onEnd"
+                        handle=".signator__mover">
+                        <template v-for="(item, index) in selectedContractor">
+                          <div :key="index" :id="`company_${index}`" class="mb-1 alert"
+                            :class="[index === 0 ? 'alert-warning' : 'alert-primary', index === 0 ? 'pt-2' : 'pt-3']"
+                            role="alert">
+                            <div class="my-0 col-md-12">
+                              <span class="fs-12 text-muted opacity-75">{{ index === 0 ? '文件發起者' : '' }}</span>
+                              <div class="input-group w-100 bg-white">
                                 <span class="input-group-text">
                                   <span class="fs-12 signator" :class="signatorColor(index)">
                                     <span v-if="index !== 0 && isDraggable">{{ index }}</span>
@@ -647,9 +651,11 @@
                               <div v-if="index === 0 && selectedContractor.length > 1" class="dropdown-divider mt-4"></div>
                               -->
                             </div>
-                          </template>
-                        </draggable>
-                      </div>
+                          </div>
+
+                        </template>
+                      </draggable>
+
                       <!--<pre>{{selectedContractor}}</pre>-->
                     </div>
                   </div>
@@ -695,7 +701,8 @@
             <div class="pt-3 text-center">
               <span>如同意簽署，則您的個人資訊紕露亦遵循 服務條款 及 隱私權政策 的規範。</span>
               <div class="d-flex align-items-center justify-content-center pt-2 fs-6 fw-bold">
-                <input v-model="agree" class="form-check-input mt-0 me-2" type="checkbox" id="agree" :true-value="true" :false-value="false">
+                <input v-model="agree" class="form-check-input mt-0 me-2" type="checkbox" id="agree" :true-value="true"
+                  :false-value="false">
                 <label class="form-check-label text-primary" for="agree">
                   我已閱讀並同意遵守 <a class="link" href="@Url.Action("Personal", "Home")">個資保護</a> 及 <a class="link"
                     href="@Url.Action("Privacy", "Home")">隱私政策</a>
@@ -1433,6 +1440,14 @@
         });
       },
 
+      // 是否可終止文件
+      showStopCase(contract) {
+        console.log({ contract })
+        const partyFilter = contract.Parties.filter(item => item.Name.includes(this.currentUserInfo.companyName) && item.isInitiator);
+        console.log({ partyFilter })
+        return partyFilter.length > 0;
+      },
+
       // 是否可簽署
       canSigner(contract) {
         const { CurrentStep } = contract;
@@ -2000,6 +2015,13 @@
             }
             hideLoading();
           })
+      },
+
+      // Tooltip
+      tipHandler(event) {
+        this.$nextTick(() => {
+          $(`#${event}`).tooltip({ placement: "bottom" });
+        });
       },
     }
   });

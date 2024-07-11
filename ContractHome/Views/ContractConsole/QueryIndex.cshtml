@@ -171,6 +171,21 @@
           <div :id="`contractNo-${index}`" class="card justify-content-between p-2 pb-2 h-100 shadow-sm"
             :class="{ 'd-flex flex-row' : !isLayoutCard }">
             <div class="d-flex justify-content-between" :class="{ 'col-4' : !isLayoutCard }">
+              <!-- 已取消 -->
+              <span v-if="contract.CurrentStep === 1" class="fs-4 text-primary opacity-75"
+                style="position: absolute;left: 24px; top: 25px;">
+                <i class="far fa-trash-alt"></i>
+              </span>
+              <!-- 已完成 -->
+              <span v-if="contract.CurrentStep === 18" class="fs-4 text-success opacity-75"
+                style="position: absolute;left: 24px; top: 25px;">
+                <i class="fas fa-check-circle"></i>
+              </span>
+              <!-- 已終止 -->
+              <span v-if="contract.CurrentStep === 19" class="fs-4 text-danger opacity-75"
+                style="position: absolute;left: 24px; top: 25px;">
+                <i class="fas fa-ban"></i>
+              </span>
               <div class="d-flex">
                 <div class="fs-1 px-2 text-secondary opacity-50">
                   <i class="fad fa-file-contract fa-lg"></i>
@@ -277,9 +292,11 @@
                     :class="{ 'progresses__steps--signActived': canSigner(contract) && item.IsCurrentUserCompany }">
                     <i class="fas fa-signature"></i>
                   </button>
-                  <div class="progresses__company">
-                    <span class=" progresses__name" :class="{ 'bg-lightBlue': item.IsCurrentUserCompany }">
-                      {{ formatName(item.Name) }}
+                  <div class="progresses__company" v-on:mouseover="tipHandler(`in_${index}_${idx}`)">
+                    <span data-bs-toggle="tooltip" :id="`in_${index}_${idx}`" :title="item.Name">
+                      <span class=" progresses__name" :class="{ 'bg-lightBlue': item.IsCurrentUserCompany }">
+                        {{ formatName(item.Name) }}
+                      </span>
                     </span>
                   </div>
                 </div>
@@ -324,10 +341,12 @@
                         <i class="fas fa-signature"></i>
                       </button>
                     </div>
-                    <div class="progresses__company">
-                      <span class=" progresses__name"
-                        :class="{ 'bg-warning opacity-75 text-dark': item.IsCurrentUserCompany }">
-                        {{ formatName(item.Name) }}
+                    <div class="progresses__company" v-on:mouseover="tipHandler(`co_${index}_${idx}`)">
+                      <span data-bs-toggle="tooltip" :id="`co_${index}_${idx}`" :title="item.Name">
+                        <span class=" progresses__name"
+                          :class="{ 'bg-warning opacity-75 text-dark': item.IsCurrentUserCompany }">
+                          {{ formatName(item.Name) }}
+                        </span>
                       </span>
                     </div>
                   </div>
@@ -1004,7 +1023,14 @@
 
       layoutHandler(value) {
         this.isLayoutCard = value;
-      }
+      },
+
+      // Tooltip
+      tipHandler(event) {
+        this.$nextTick(() => {
+          $(`#${event}`).tooltip({ placement: "bottom" });
+        });
+      },
     }
   });
 
