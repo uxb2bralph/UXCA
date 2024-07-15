@@ -14,6 +14,7 @@ using ContractHome.Services.Jobs;
 using Hangfire;
 using Hangfire.Dashboard;
 using Microsoft.Extensions.DependencyInjection;
+using Google.Protobuf.WellKnownTypes;
 
 namespace ContractHome
 {
@@ -47,7 +48,7 @@ namespace ContractHome
         public void ConfigureServices(IServiceCollection services)
         {
             //var webHome = Configuration.GetSection("WebHome");
-
+            FileLogger.Logger.Info($"AppSettingName: {this.Configuration.GetSection("AppSettingName").Value}");
             //services.AddControllersWithViews();
             services.AddHttpContextAccessor();
             #region Caching
