@@ -238,6 +238,7 @@ namespace ContractHome.Controllers
 
                 models.SubmitChanges();
                 //wait to do...和Account/PasswordReset的密碼更新作業合併
+                //wait to do...和UserProfile/VueCommitItem的新增合併
                 _emailFactory.SendEmailToCustomer(
                     _emailFactory.GetPasswordUpdated(emailUserName: userProfile.UserName, email: userProfile.EMail));
             }
@@ -310,6 +311,7 @@ namespace ContractHome.Controllers
       {
         item.Password = null;
         item.Password2 = viewModel.Password.HashPassword();
+                item.LoginFailedCount = 0;
                 item.PasswordUpdatedDate = DateTime.Now;
       }
 
