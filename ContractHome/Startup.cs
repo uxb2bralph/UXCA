@@ -100,8 +100,8 @@ namespace ContractHome
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(option =>
             {
                 //或許要從組態檔讀取，自己斟酌決定
-                option.LoginPath = new PathString(Settings.Default.LoginUrl);//登入頁
-                option.LogoutPath = new PathString(Settings.Default.LogoutUrl);//登出Action
+                option.LoginPath = Path.Combine($"{Settings.Default.WebAppDomain}" ,Settings.Default.LoginUrl);//登入頁
+                option.LogoutPath = Path.Combine($"{Settings.Default.WebAppDomain}", Settings.Default.LogoutUrl);//登出Action
                 //用戶頁面停留太久，登入逾期，或Controller的Action裡用戶登入時，也可以設定↓
                 option.ExpireTimeSpan = TimeSpan.FromMinutes(Settings.Default.LoginExpireMinutes);//沒給預設14天
                 //↓資安建議false，白箱弱掃軟體會要求cookie不能延展效期，這時設false變成絕對逾期時間
