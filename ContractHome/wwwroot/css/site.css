@@ -175,7 +175,7 @@ html, body {
   padding: 20px 30px;
   width: calc(100% - 20px);
   position: fixed;
-  bottom: 10px;
+  top: 10px;
   z-index: 4;
 }
 .infoAlert a {
