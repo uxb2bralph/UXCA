@@ -19,7 +19,7 @@ using ContractHome.Models.Email.Template;
 
 namespace ContractHome.Controllers
 {
-    //[AuthorizedSysAdmin]
+    [AuthorizedSysAdmin]
     public class UserProfileController : SampleController
     {
         private readonly ILogger<UserProfileController> _logger;
@@ -164,16 +164,18 @@ namespace ContractHome.Controllers
             var dataItem = items.FirstOrDefault();
             return View("~/Views/UserProfile/Module/EditItem.cshtml", dataItem);
         }
+
+        [UserAuthorize]
         public async Task<ActionResult> PasswordChangeView(
             UserPasswordChangeViewModel userPasswordChange)
         {
             return View("~/Views/UserProfile/VueModule/PasswordChange.cshtml");
         }
 
-        [HttpPost]
         //[RoleAuthorize(roleID: new int[] {
         //    (int)UserRoleDefinition.RoleEnum.User,
         //    (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
+        [UserAuthorize]
         [HttpPost]
         //[RoleAuthorize(roleID: new int[] {(int)UserRoleDefinition.RoleEnum.User,(int)UserRoleDefinition.RoleEnum.MemberAdmin })]
         public async Task<ActionResult> PasswordChange(
