@@ -19,7 +19,6 @@ using ContractHome.Models.Email.Template;
 
 namespace ContractHome.Controllers
 {
-    [AuthorizedSysAdmin]
     public class UserProfileController : SampleController
     {
         private readonly ILogger<UserProfileController> _logger;
@@ -32,14 +31,14 @@ namespace ContractHome.Controllers
             _emailFactory = emailContentFactories;
         }
 
-        //remark for testing by postman
-        //[RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
+        [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
         public ActionResult MaintainData(QueryViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
             return View("~/Views/UserProfile/MaintainData.cshtml");
         }
 
+        [Authorize]
         public async Task<ActionResult> VueInquireDataAsync([FromBody] UserProfileViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
@@ -114,6 +113,7 @@ namespace ContractHome.Controllers
             return View("~/Views/UserProfile/VueModule/UserProfileList.cshtml", items);
         }
 
+        [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
         public ActionResult InquireData(UserProfileViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
@@ -137,6 +137,7 @@ namespace ContractHome.Controllers
             return View("~/Views/UserProfile/Module/EditItem.cshtml", item);
         }
 
+        [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
         public async Task<ActionResult> DataItemAsync(QueryViewModel viewModel)
         {
             if (ViewBag.ViewModel == null)
@@ -252,6 +253,8 @@ namespace ContractHome.Controllers
 
             return Ok(new { result = true });
         }
+
+        [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
         public ActionResult VueCommitItem([FromBody] UserProfileViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
@@ -341,7 +344,7 @@ namespace ContractHome.Controllers
             }
         }
 
-
+        [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
         public async Task<ActionResult> CommitItemAsync(UserProfileViewModel viewModel)
         {
             viewModel = await PrepareViewModelAsync(viewModel);
@@ -420,6 +423,7 @@ namespace ContractHome.Controllers
             }
         }
 
+        [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
         public async Task<ActionResult> DeleteItemAsync(QueryViewModel viewModel)
         {
             viewModel = await PrepareViewModelAsync(viewModel);
@@ -445,6 +449,7 @@ namespace ContractHome.Controllers
             return Json(new { result = false, message = "資料錯誤！" });
         }
 
+        [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
         public ActionResult VueDeleteItem([FromBody] UserProfileViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
