@@ -10,6 +10,7 @@ namespace ContractHome.Models.Dto
         public bool HasError { get; set; }
         public bool Result { get => !HasError; }
         public dynamic Data { get; set; }
+        public dynamic dataItem { get => Data; }
         public dynamic Message { get; set; }
         public string Url { get; set; }
 

@@ -31,6 +31,9 @@ namespace ContractHome.Models.DataEntity
     {
         public static String ContractStore { get; } = "Contract".WebStoreTargetDailyPath().CheckStoredPath();
         public int CurrentStep => CDS_Document.CurrentStep ?? 0;
+        public bool HasUserInProgress => (this.UserInProgress != null);
+        public bool IsSameUserInProgress(int? userid) =>
+            (userid != null) && (userid == this.UserInProgress);
     }
 
     public partial class UserRoleDefinition

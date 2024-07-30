@@ -759,7 +759,7 @@ namespace ContractHome.Models.DataEntity
 		
 		private System.Nullable<bool> _IsPassStamp;
 		
-		private System.Nullable<bool> _InProgress;
+		private System.Nullable<int> _UserInProgress;
 		
 		private int _CompanyID;
 		
@@ -795,8 +795,8 @@ namespace ContractHome.Models.DataEntity
     partial void OnContractContentChanged();
     partial void OnIsPassStampChanging(System.Nullable<bool> value);
     partial void OnIsPassStampChanged();
-    partial void OnInProgressChanging(System.Nullable<bool> value);
-    partial void OnInProgressChanged();
+    partial void OnUserInProgressChanging(System.Nullable<int> value);
+    partial void OnUserInProgressChanged();
     partial void OnCompanyIDChanging(int value);
     partial void OnCompanyIDChanged();
     partial void OnNotifyUntilDateChanging(System.Nullable<System.DateTime> value);
@@ -939,22 +939,22 @@ namespace ContractHome.Models.DataEntity
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_InProgress", DbType="Bit")]
-		public System.Nullable<bool> InProgress
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UserInProgress", DbType="Int")]
+		public System.Nullable<int> UserInProgress
 		{
 			get
 			{
-				return this._InProgress;
+				return this._UserInProgress;
 			}
 			set
 			{
-				if ((this._InProgress != value))
+				if ((this._UserInProgress != value))
 				{
-					this.OnInProgressChanging(value);
+					this.OnUserInProgressChanging(value);
 					this.SendPropertyChanging();
-					this._InProgress = value;
-					this.SendPropertyChanged("InProgress");
-					this.OnInProgressChanged();
+					this._UserInProgress = value;
+					this.SendPropertyChanged("UserInProgress");
+					this.OnUserInProgressChanged();
 				}
 			}
 		}

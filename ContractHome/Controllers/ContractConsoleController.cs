@@ -26,6 +26,7 @@ using Newtonsoft.Json.Linq;
 using System.Reflection;
 using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
+using ContractHome.Security.Authorization;
 
 
 namespace ContractHome.Controllers
@@ -418,8 +419,22 @@ namespace ContractHome.Controllers
             var profile = (await HttpContext.GetUserAsync()).LoadInstance(models);
             if (profile?.OrganizationUser == null)
             {
-                return Json(new { result = false, message = "合約簽署人資料錯誤!!" });
+                baseResponse.HasError = true;
+                baseResponse.Message = "合約簽署人資料錯誤!!";
+                return Json(baseResponse);
             }
+
+            #region 同文件同時間簽章檢查
+            if (contract.HasUserInProgress && !contract.IsSameUserInProgress(profile.UID))
+            {
+                baseResponse.HasError = true;
+                baseResponse.Message = "其他人簽署中, 請稍後再試!!";
+                return Json(baseResponse);
+            }
+
+            contract.UserInProgress = profile.UID;
+            models.SubmitChanges();
+            #endregion
 
             var requestItem =
                 models.GetTable<ContractSignatureRequest>()
@@ -429,14 +444,17 @@ namespace ContractHome.Controllers
 
             if (requestItem == null)
             {
-                return Json(new { result = false, message = "合約未建立!!" });
+                baseResponse.HasError = true;
+                baseResponse.Message = "合約未建立!!";
+                return Json(baseResponse);
             }
 
             ViewBag.SignatureRequest = requestItem;
             ViewBag.Contract = contract;
             ViewBag.Profile = profile;
 
-            return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
+            baseResponse.Data = new { contract.ContractNo, contract.Title };
+            return Json(baseResponse);
         }
 
         public ActionResult LoadContract(SignContractViewModel viewModel)
@@ -456,12 +474,14 @@ namespace ContractHome.Controllers
 
             if (contract == null)
             {
-                return Json(new { result = false, message = "合約資料錯誤!!" });
+                baseResponse.HasError = true;
+                baseResponse.Message = "合約資料錯誤!!";
+                return Json(baseResponse);
             }
 
             ViewBag.Contract = contract;
-
-            return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
+            baseResponse.Data = new { contract.ContractNo, contract.Title };
+            return Json(baseResponse);
         }
 
         [Flags]
@@ -1345,16 +1365,6 @@ namespace ContractHome.Controllers
                 return result;
             }
 
-            #region 測試後再打開
-            //if (contract.InProgress ?? false)
-            //{
-            //    return Json(new { result = false });
-            //}
-
-            //contract.InProgress = true;
-            //models.SubmitChanges();
-            #endregion
-            
             UserProfile profile = (UserProfile)ViewBag.Profile;
 
             if (!item.SignerID.HasValue)
@@ -1454,9 +1464,9 @@ namespace ContractHome.Controllers
                         HttpContext.Logout();
                     }
 
-                    if (contract.InProgress != null && contract.InProgress == true)
+                    if (contract.HasUserInProgress)
                     {
-                        contract.InProgress = null;
+                        contract.UserInProgress = null;
                         models.SubmitChanges();
                     }
 
@@ -1587,6 +1597,12 @@ namespace ContractHome.Controllers
                         {
                             UserSession.Remove(_httpContextAccessor);
                             HttpContext.Logout();
+                        }
+
+                        if (item.Contract.HasUserInProgress)
+                        {
+                            item.Contract.UserInProgress = null;
+                            models.SubmitChanges();
                         }
                     }
 
