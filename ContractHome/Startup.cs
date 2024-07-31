@@ -15,6 +15,7 @@ using Hangfire;
 using Hangfire.Dashboard;
 using Microsoft.Extensions.DependencyInjection;
 using Google.Protobuf.WellKnownTypes;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace ContractHome
 {
@@ -165,6 +166,19 @@ namespace ContractHome
 
             //app.UsePathBase("/ContractHome");
             app.UseRouting();
+
+            #region 解決未取到客戶IP問題
+            //解決IHttpContextAccessor.HttpContext.Connection.RemoteIpAddress取到IIS Reverse Proxy主機IP問題
+            //https://exfast.me/2018/09/iis-netcore-remoteipaddress-is-wrong-after-iis-reverse-proxy/
+            //此寫法為全部開放, 因現行對外只有一台IIS Reverse Proxy, 暫時用不需設定ip方法處理, 或是用options.KnownProxies.Add(System.Net.IPAddress.Parse("172.16.2.23"));指定
+            var forwardingOptions = new ForwardedHeadersOptions()
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            };
+            forwardingOptions.KnownNetworks.Clear(); //its loopback by default
+            forwardingOptions.KnownProxies.Clear();
+            app.UseForwardedHeaders(forwardingOptions);
+            #endregion
 
             //app.UseAuthorization();
             //留意寫Code順序，先執行驗證...
