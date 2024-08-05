@@ -22,6 +22,7 @@ using System.Linq.Expressions;
 using static ContractHome.Models.DataEntity.CDS_Document;
 using DocumentFormat.OpenXml.Drawing;
 using ContractHome.Controllers;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ContractHome.Models.Helper
 {
@@ -32,27 +33,29 @@ namespace ContractHome.Models.Helper
         private readonly EmailFactory _emailFactory;
         private readonly IDetectionService _detectionService;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly ICacheStore _cacheStore;
-        private BaseResponse normal = new BaseResponse();
+        private readonly BaseResponse _baseResponse;
         private readonly EmailFactory _emailContentFactories;
 
         public ContractServices(IEmailBodyBuilder emailBody,
             EmailFactory emailFactory,
             IDetectionService detectionService,
             IHttpContextAccessor httpContextAccessor, 
-            ICacheStore cacheStore,
-            EmailFactory emailContentFactories
+            EmailFactory emailContentFactories,
+            BaseResponse baseResponse
             ) 
         {
+            _baseResponse = baseResponse;
             _emailFactory = emailFactory;
             _detectionService = detectionService;
             _httpContextAccessor = httpContextAccessor;
-            _cacheStore = cacheStore;
             _emailContentFactories = emailContentFactories;
         }
 
-        public string GetClientDevice => $"{_detectionService.Platform.Name} {_detectionService.Platform.Version.ToString()}/{_detectionService.Browser.Name}";
-        public string GetClientIP => _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+        private string _clientDevice => $"{_detectionService.Platform.Name} {_detectionService.Platform.Version.ToString()}/{_detectionService.Browser.Name}";
+        private string _clientIP => _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+
+        //https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-messages/nullable-warnings?f1url=%3FappId%3Droslyn%26k%3Dk(CS8602)
+        public static bool IsNotNull([NotNullWhen(true)] object? obj) => obj != null;
 
         public void SetModels(GenericManager<DCDataContext> models)
         {
@@ -68,7 +71,7 @@ namespace ContractHome.Models.Helper
             //MOI =3 //自然人憑證
         }
 
-        public Contract? GetContractByID(int? contractID)
+        public Contract GetContractByID(int? contractID)
         {
             return _models.GetTable<Contract>()
                     .Where(c => c.ContractID == contractID)
@@ -126,18 +129,6 @@ namespace ContractHome.Models.Helper
                 FileLogger.Logger.Error(ex.ToString());
                 throw;
             }
-        }
-
-        public Contract SetConfig(Contract contract, PostConfigRequest req)
-        {
-            contract.ContractNo = req.ContractNo;
-            contract.Title = req.Title;
-            contract.IsPassStamp = req.IsPassStamp;
-            req.Signatories.ForEach(x => { 
-                AddParty(contract, x.DecryptKeyValue()); 
-            });
-
-            return contract;
         }
 
         public Contract AddParty(Contract contract, int CompanyID)
@@ -237,7 +228,7 @@ namespace ContractHome.Models.Helper
                 return (new BaseResponse(true, "合約已完成簽署, 無法再次簽署.").AddContractMessage(item), item, profile);
             }
 
-            return (normal, item, profile);
+            return (_baseResponse, item, profile);
         }
 
 
@@ -287,7 +278,7 @@ namespace ContractHome.Models.Helper
             //    return (new BaseResponse(true, "合約已有其他人用印中"), item, profile);
             //}
 
-            return (normal, item, profile);
+            return (_baseResponse, item, profile);
         }
 
         public Contract CreateAndSaveParty(int initiatorID, 
@@ -557,6 +548,57 @@ namespace ContractHome.Models.Helper
                 throw;
             }
 
+        }
+
+        public Contract SetConfigAndSave(Contract contract, PostConfigRequest req, int uid)
+        {
+            contract.ContractNo = req.ContractNo;
+            contract.Title = req.Title;
+            contract.IsPassStamp = req.IsPassStamp;
+            req.Signatories.ForEach(x => {
+                AddParty(contract, x.DecryptKeyValue());
+            });
+            contract.NotifyUntilDate = Convert.ToDateTime(req.ExpiryDateTime);
+            SaveContract();
+
+            CDS_DocumentTransitStep(contract, uid, CDS_Document.StepEnum.Config);
+
+            return contract;
+        }
+
+        public void CDS_DocumentTransitStep(
+            Contract contract, 
+            int uid,
+            CDS_Document.StepEnum step)
+        {
+            contract.CDS_Document.DocumentProcessLog.Add(new DocumentProcessLog
+            {
+                LogDate = DateTime.Now,
+                ActorID = uid,
+                StepID = (int)step,
+                ClientIP = _clientIP,
+                ClientDevice = _clientDevice
+            });
+
+            SaveContract();
+
+            if (step.Equals(CDS_Document.StepEnum.DigitalSigned) && !contract.isAllDigitalSignatureDone())
+            {
+                UpdateCDS_DocumentCurrentStep(contract, CDS_Document.StepEnum.DigitalSigning);
+            }
+            else 
+            {
+                UpdateCDS_DocumentCurrentStep(contract, step);
+            }
+
+        }
+
+        public void UpdateCDS_DocumentCurrentStep(
+            Contract contract,
+            CDS_Document.StepEnum step)
+        {
+            contract.CDS_Document.CurrentStep = (int)step;
+            SaveContract();
         }
     }
 

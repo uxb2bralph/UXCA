@@ -16,6 +16,7 @@ using Hangfire.Dashboard;
 using Microsoft.Extensions.DependencyInjection;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.HttpOverrides;
+using ContractHome.Models.Dto;
 
 namespace ContractHome
 {
@@ -135,7 +136,8 @@ namespace ContractHome
 
 
             services.AddScoped<ContractServices>();
-            // Add detection services container and device resolver service.
+            services.AddScoped<BaseResponse>();
+            // Wangkanai.Detection:Add detection services container and device resolver service.
             services.AddDetection();
 
             #region Hangfire

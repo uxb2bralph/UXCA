@@ -27,6 +27,7 @@ using System.Reflection;
 using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
 using ContractHome.Security.Authorization;
+using System.Diagnostics.CodeAnalysis;
 
 
 namespace ContractHome.Controllers
@@ -36,8 +37,8 @@ namespace ContractHome.Controllers
     public class ContractConsoleController : SampleController
     {
         private readonly ILogger<HomeController> _logger;
-        private ContractServices? _contractServices;
-        private BaseResponse baseResponse = new BaseResponse();
+        private readonly ContractServices _contractServices;
+        private readonly BaseResponse _baseResponse;
         private readonly ICacheStore _cacheStore;
         private readonly EmailFactory _emailContentFactories;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -46,7 +47,8 @@ namespace ContractHome.Controllers
             ICacheStore cacheStore,
             ContractServices contractServices,
             EmailFactory emailContentFactories,
-            IHttpContextAccessor httpContextAccessor
+            IHttpContextAccessor httpContextAccessor,
+            BaseResponse baseResponse
           ) : base(serviceProvider)
         {
             _logger = logger;
@@ -54,6 +56,7 @@ namespace ContractHome.Controllers
             _cacheStore = cacheStore;
             _emailContentFactories = emailContentFactories;
             _httpContextAccessor = httpContextAccessor;
+            _baseResponse = baseResponse;
         }
 
         public IActionResult ApplyContract(TemplateResourceViewModel viewModel)
@@ -386,19 +389,22 @@ namespace ContractHome.Controllers
                 HttpContext.Logout();
             }
 
+            _contractServices.SetModels(models);
             if (contract.isAllStamped())
             {
-                contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Sealed);
-                _contractServices?.SetModels(models);
-                _contractServices?.SendUsersNotifyEmailAboutContractAsync(
-                    contract,
-                    _emailContentFactories.GetNotifySign(),
-                    _contractServices?.GetUsersbyContract(contract));
+                var targetUsers = _contractServices.GetUsersbyContract(contract);
+                if (IsNotNull(targetUsers))
+                {
+                    _contractServices.CDS_DocumentTransitStep(contract, profile!.UID, CDS_Document.StepEnum.Sealed);
+                    _contractServices.SendUsersNotifyEmailAboutContractAsync(
+                        contract,
+                        _emailContentFactories.GetNotifySign(),
+                        targetUsers);
+                }
             } 
             else
             {
-                contract.CDS_Document.AddDocumentProcessLog(models, profile!.UID, CDS_Document.StepEnum.Sealed);
-
+                _contractServices.CDS_DocumentTransitStep(contract, profile!.UID, CDS_Document.StepEnum.Sealing);
             }
 
             return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
@@ -419,17 +425,13 @@ namespace ContractHome.Controllers
             var profile = (await HttpContext.GetUserAsync()).LoadInstance(models);
             if (profile?.OrganizationUser == null)
             {
-                baseResponse.HasError = true;
-                baseResponse.Message = "合約簽署人資料錯誤!!";
-                return Json(baseResponse);
+                return Json(_baseResponse.ErrorMessage("合約簽署人資料錯誤!!"));
             }
 
             #region 同文件同時間簽章檢查
             if (contract.HasUserInProgress && !contract.IsSameUserInProgress(profile.UID))
             {
-                baseResponse.HasError = true;
-                baseResponse.Message = "其他人簽署中, 請稍後再試!!";
-                return Json(baseResponse);
+                return Json(_baseResponse.ErrorMessage("其他人簽署中, 請稍後再試!!"));
             }
 
             contract.UserInProgress = profile.UID;
@@ -444,17 +446,15 @@ namespace ContractHome.Controllers
 
             if (requestItem == null)
             {
-                baseResponse.HasError = true;
-                baseResponse.Message = "合約未建立!!";
-                return Json(baseResponse);
+                return Json(_baseResponse.ErrorMessage("合約未建立!!"));
             }
 
             ViewBag.SignatureRequest = requestItem;
             ViewBag.Contract = contract;
             ViewBag.Profile = profile;
 
-            baseResponse.Data = new { contract.ContractNo, contract.Title };
-            return Json(baseResponse);
+            _baseResponse.Data = new { contract.ContractNo, contract.Title };
+            return Json(_baseResponse);
         }
 
         public ActionResult LoadContract(SignContractViewModel viewModel)
@@ -462,7 +462,7 @@ namespace ContractHome.Controllers
             ViewBag.ViewModel = viewModel;
 
             viewModel.KeyID = viewModel.KeyID.GetEfficientString();
-            if (viewModel.KeyID != null)
+            if (!string.IsNullOrEmpty(viewModel.KeyID))
             {
                 viewModel.ContractID = viewModel.DecryptKeyValue();
             }
@@ -470,18 +470,14 @@ namespace ContractHome.Controllers
             var contract = models.GetTable<Contract>()
                             .Where(c => c.ContractID == viewModel.ContractID)
                             .FirstOrDefault();
-
-
-            if (contract == null)
+            if (!IsNotNull(contract))
             {
-                baseResponse.HasError = true;
-                baseResponse.Message = "合約資料錯誤!!";
-                return Json(baseResponse);
+                return Json(_baseResponse.ErrorMessage("合約資料錯誤!!"));
             }
 
             ViewBag.Contract = contract;
-            baseResponse.Data = new { contract.ContractNo, contract.Title };
-            return Json(baseResponse);
+            _baseResponse.Data = new { contract.ContractNo, contract.Title };
+            return Json(_baseResponse);
         }
 
         [Flags]
@@ -1331,7 +1327,8 @@ namespace ContractHome.Controllers
             if (profile != null)
             {
                 Contract contract = (Contract)result.Model!;
-                contract.CDS_Document.TransitStep(models, profile.UID, CDS_Document.StepEnum.Revoked);
+                _contractServices.SetModels(models);
+                _contractServices.CDS_DocumentTransitStep(contract, profile!.UID, CDS_Document.StepEnum.Revoked);
                 return Json(new { result = true });
             }
 
@@ -1422,7 +1419,7 @@ namespace ContractHome.Controllers
                         }
                         else
                         {
-                            return Json(new BaseResponse(haserror: true, error: $"錯誤代碼: {content["result"]}"));
+                            return Json(_baseResponse.ErrorMessage($"錯誤代碼: {content["result"]}"));
                         }
                     }
                 }
@@ -1439,23 +1436,28 @@ namespace ContractHome.Controllers
 
                     models.SubmitChanges();
 
-                    item.Contract.CDS_Document.AddDocumentProcessLog(models, profile!.UID, CDS_Document.StepEnum.DigitalSigned);
-                    item.Contract.CDS_Document.UpdateCurrentStep(models, CDS_Document.StepEnum.DigitalSigning);
-
-                    if (item.Contract.isAllDigitalSignatureDone())
-                    {
-                        item.Contract.CDS_Document.UpdateCurrentStep(models, CDS_Document.StepEnum.DigitalSigned);
-                    }
+                    _contractServices.SetModels(models);
+                    _contractServices.CDS_DocumentTransitStep(item.Contract, profile!.UID, CDS_Document.StepEnum.DigitalSigned);
 
                     if (!models.GetTable<ContractSignatureRequest>()
                         .Where(c => c.ContractID == item.ContractID)
                         .Where(c => !c.SignerID.HasValue)
                         .Any())
                     {
-                        item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Committed);
-                        //wait to do
-                        //_contractServices?.SetModels(models);
-                        //_contractServices?.SendContractNotifyEmailAsync(item?.Contract, EmailBody.EmailTemplate.FinishContract);
+                        _contractServices.CDS_DocumentTransitStep(item.Contract, profile!.UID, CDS_Document.StepEnum.Committed);
+
+                        EmailContentBodyDto emailContentBodyDto =
+                            new EmailContentBodyDto(contract: item?.Contract, initiatorOrg: null, userProfile: profile);
+
+                        var targetUsers = _contractServices.GetUsersbyContract(item.Contract);
+                        if (targetUsers!=null)
+                        {
+                            _contractServices.SendUsersNotifyEmailAboutContractAsync(
+                                item.Contract,
+                                _emailContentFactories.GetFinishContract(emailContentBodyDto),
+                                targetUsers);
+                        }
+
                     }
 
                     if ((UserSession.Get(_httpContextAccessor) != null) && (UserSession.Get(_httpContextAccessor).IsTrust))
@@ -1470,7 +1472,7 @@ namespace ContractHome.Controllers
                         models.SubmitChanges();
                     }
 
-                    return Json(baseResponse);
+                    return Json(_baseResponse);
 
                 }
             } 
@@ -1481,11 +1483,11 @@ namespace ContractHome.Controllers
 
             if (viewModel.IsTrust != null && viewModel.IsTrust == true)
             {
-                baseResponse.Url = $"{Settings.Default.WebAppDomain}";
-                return View("~/Views/Shared/CustomMessage.cshtml", baseResponse);
+                _baseResponse.Url = $"{Settings.Default.WebAppDomain}";
+                return View("~/Views/Shared/CustomMessage.cshtml", _baseResponse);
             }
 
-            return Json(baseResponse);
+            return Json(_baseResponse);
 
         }
 
@@ -1493,7 +1495,7 @@ namespace ContractHome.Controllers
         public async Task<ActionResult> TerminateContractAsync(SignatureRequestViewModel viewModel)
         {
             var result = LoadContract(viewModel);
-            Contract? item = ViewBag.Contract as Contract;
+            Contract item = ViewBag.Contract as Contract;
 
             if (item == null)
             {
@@ -1505,6 +1507,7 @@ namespace ContractHome.Controllers
                 return Json(new { result = true });
             }
 
+            _contractServices.SetModels(models);
             var profile = (await HttpContext.GetUserAsync()).LoadInstance(models);
             if (profile?.IsSysAdmin() == true)
             {
@@ -1515,7 +1518,7 @@ namespace ContractHome.Controllers
                 }
                 else
                 {
-                    item.CDS_Document.TransitStep(models, profile.UID, CDS_Document.StepEnum.Revoked);
+                    _contractServices.CDS_DocumentTransitStep(item, profile!.UID, CDS_Document.StepEnum.Revoked);
                     return Json(new { result = true });
                 }
             }
@@ -1534,7 +1537,7 @@ namespace ContractHome.Controllers
                     return Json(new { result = false, message = "合約簽署人資料錯誤!!" });
                 }
 
-                item.CDS_Document.TransitStep(models, profile.UID, CDS_Document.StepEnum.Terminated);
+                _contractServices.CDS_DocumentTransitStep(item, profile!.UID, CDS_Document.StepEnum.Terminated);
                 return Json(new { result = true });
             }
 
@@ -1569,29 +1572,24 @@ namespace ContractHome.Controllers
 
                     models.SubmitChanges();
 
-                    item.Contract.CDS_Document.AddDocumentProcessLog(models, profile!.UID, CDS_Document.StepEnum.DigitalSigned);
-                    item.Contract.CDS_Document.UpdateCurrentStep(models, CDS_Document.StepEnum.DigitalSigning);
-
-                    if (item.Contract.isAllDigitalSignatureDone())
-                    {
-                        item.Contract.CDS_Document.UpdateCurrentStep(models, CDS_Document.StepEnum.DigitalSigned);
-                    }
+                    _contractServices.SetModels(models);
+                    _contractServices.CDS_DocumentTransitStep(item.Contract, profile!.UID, CDS_Document.StepEnum.DigitalSigned);
 
                     if (!models.GetTable<ContractSignatureRequest>()
                         .Where(c => c.ContractID == item.ContractID)
                         .Where(c => !c.SignerID.HasValue)
                         .Any())
                     {
-                        item.Contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Committed);
-                        _contractServices?.SetModels(models);
+                        _contractServices.CDS_DocumentTransitStep(item.Contract, profile!.UID, CDS_Document.StepEnum.Committed);
 
                         EmailContentBodyDto emailContentBodyDto =
-                            new EmailContentBodyDto(contract: item?.Contract, initiatorOrg: null, userProfile: profile);
+                            new EmailContentBodyDto(contract: item.Contract, initiatorOrg: null, userProfile: profile);
 
-                        _contractServices?.SendUsersNotifyEmailAboutContractAsync(
-                            item?.Contract,
+                        var targetUsers = _contractServices.GetUsersbyContract(item.Contract);
+                        _contractServices.SendUsersNotifyEmailAboutContractAsync(
+                            item.Contract,
                             _emailContentFactories.GetFinishContract(emailContentBodyDto),
-                            _contractServices?.GetUsersbyContract(item?.Contract));
+                            targetUsers);
 
                         if ((UserSession.Get(_httpContextAccessor) != null) && (UserSession.Get(_httpContextAccessor).IsTrust))
                         {
@@ -1730,42 +1728,36 @@ namespace ContractHome.Controllers
         //是否有Contract產製修改權限ContractHome.Security.Authorization
         public async Task<ActionResult> ConfigAsync([FromBody] PostConfigRequest req)
         {
-            var profile = await HttpContext.GetUserAsync();
-            #region add for postman test
-            if (profile == null && req.EncUID!=null)
+            UserProfile profile = await HttpContext.GetUserAsync();
+            //#if DEBUG
+            //if (profile == null && req.EncUID != null)
+            //{
+            //    profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
+            //}
+            //#endif
+
+            _contractServices.SetModels(models);
+            var contractID = req.ContractID.ToString().DecryptKeyValue();
+            Contract? contract = _contractServices.GetContractByID(contractID: contractID);
+            if (contract == null)
             {
-                profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
+                ModelState.AddModelError("", "合約不存在");
+                return BadRequest();
             }
-            #endregion
-            try
+            //wait to do...獨立控管每項作業可執行step
+            if (contract.CDS_Document.CurrentStep >= 1)
             {
-                _contractServices.SetModels(models);
-                var contractID = req.ContractID.ToString().DecryptKeyValue();
-                Contract contract = _contractServices.GetContractByID(contractID: contractID);
-                if (contract == null)
-                {
-                    ModelState.AddModelError("", "合約不存在");
-                    return BadRequest();
-                }
-                //wait to do...獨立控管每項作業可執行step
-                if (contract.CDS_Document.CurrentStep >= 2)
-                {
-                    ModelState.AddModelError("", "合約已進行中,無法修改資料");
-                    return BadRequest();
-                }
-                _contractServices.SetConfig(contract, req);
-                contract.CDS_Document.TransitStepTest(models, profile!.UID, CDS_Document.StepEnum.Config, 
-                    ClientIP: _contractServices.GetClientIP, 
-                    ClientDevice: _contractServices.GetClientDevice);
-                models.SubmitChanges();
-                return Content(baseResponse.JsonStringify());
-            }
-            catch (Exception ex)
-            {
-                FileLogger.Logger.Error($"{req.ToString()} {ex.ToString()}");
-                return Content(new BaseResponse(true, "").JsonStringify());
+                ModelState.AddModelError("", "合約已進行中,無法修改資料");
+                return BadRequest();
             }
 
+            if (IsNotNull(profile))
+            {
+                _contractServices.SetConfigAndSave(contract, req, profile.UID);
+                return Json(_baseResponse);
+            }
+
+            return Json(_baseResponse.ErrorMessage());
         }
 
         [HttpPost]
@@ -1793,7 +1785,7 @@ namespace ContractHome.Controllers
             IEnumerable <Organization> signatories
                 = _contractServices.GetAvailableSignatories(contract.CompanyID);
 
-            baseResponse.Data = signatories.Select(x =>
+            _baseResponse.Data = signatories.Select(x =>
                 new
                 {
                     id = x.CompanyID.EncryptKey(),
@@ -1801,7 +1793,7 @@ namespace ContractHome.Controllers
                     receiptNo = x.ReceiptNo
                 });
 
-            return Json(baseResponse);
+            return Json(_baseResponse);
         }
 
         [HttpPost]
@@ -1810,7 +1802,7 @@ namespace ContractHome.Controllers
             _contractServices.SetModels(models);
             Contract contract = _contractServices.GetContractByID(contractID: req.ContractID.DecryptKeyValue());
 
-            baseResponse.Data =
+            _baseResponse.Data =
                 contract
                 .ContractSignaturePositionRequest
                 .Where(y => y.ContractorID == req.CompanyID.DecryptKeyValue())
@@ -1827,7 +1819,7 @@ namespace ContractHome.Controllers
                     PageIndex = x.PageIndex
                 });
 
-            return Json(baseResponse);
+            return Json(_baseResponse);
         }
 
         [HttpPost]
@@ -1858,61 +1850,59 @@ namespace ContractHome.Controllers
             //contract.CDS_Document.CheckIfCanGo
             _contractServices.UpdateFieldSetting(contract, req.FieldSettings);
             models.SubmitChanges();
-            contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.FieldSet);
-            models.SubmitChanges();
-            return Json(baseResponse);
+            _contractServices.CDS_DocumentTransitStep(contract, profile!.UID, CDS_Document.StepEnum.FieldSet);
+            return Json(_baseResponse);
         }
 
         [HttpPost]
         public async Task<ActionResult> EstablishAsync([FromBody] GetSignatoriesRequest req)
         {
-            var profile = await HttpContext.GetUserAsync();
-            #region add for postman test
-            if (profile == null&& req.EncUID.Length>0)
+            Contract contract;
+            UserProfile profile = await HttpContext.GetUserAsync();
+            //#region add for postman test
+            //if (profile == null && req.EncUID.Length > 0)
+            //{
+            //    profile = models.GetTable<UserProfile>().Where(x => x.UID == 4).FirstOrDefault();
+            //}
+            //#endregion
+
+            _contractServices.SetModels(models: models);
+            contract = _contractServices.GetContractByID(req.ContractID.DecryptKeyValue());
+
+            if (IsNotNull(profile))
             {
-                profile = models.GetTable<UserProfile>().Where(x => x.UID == 4).FirstOrDefault();
+                _contractServices.CDS_DocumentTransitStep(contract, profile.UID, CDS_Document.StepEnum.Establish);
+
+                if (contract.IsPassStamp == true)
+                {
+                    _contractServices.CDS_DocumentTransitStep(contract, profile.UID, CDS_Document.StepEnum.Sealed);
+                }
+
+                //2.如果是大量發送, 複製合約
+                //var newContract = _contractServices.CreateAndSaveContractByOld(contract);
+
+                //_contractServices.CreateAndSaveParty(
+                //    initiatorID: initiatorID,
+                //    contractorID: contractorID ?? 0,
+                //    contract: newContract,
+                //    viewModel.Contractors[i].SignaturePositions,
+                //    uid ?? 0
+                //);
+
+                //3.發送通知(one by one)
+                var targetUsers = _contractServices.GetUsersbyContract(contract);
+                if (IsNotNull(targetUsers))
+                {
+                    _contractServices.SendUsersNotifyEmailAboutContractAsync(
+                        contract,
+                        (contract.IsPassStamp==true) ? _emailContentFactories.GetNotifySign() : _emailContentFactories.GetNotifySeal(),
+                        targetUsers);
+                }
+
+                return Json(_baseResponse);
             }
-            #endregion
-            _contractServices?.SetModels(models: models);
-            var contract = _contractServices?.GetContractByID(req.ContractID.DecryptKeyValue());
-            //wait to do...獨立控管每項作業可執行step
-            if (contract.CDS_Document.CurrentStep >= 5)
-            {
-                return Json(new BaseResponse(true, "合約已進行中,無法修改資料"));
-            }
-            if (contract?.FilePath == null || !System.IO.File.Exists(contract.FilePath))
-            {
-                return Json(new BaseResponse(true, "合約資料錯誤!!"));
-            }
-            contract.ContractContent = new Binary(System.IO.File.ReadAllBytesAsync(contract.FilePath).Result);
-            contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Establish);
-            
-            if (contract.IsPassStamp==true)
-            {
-                contract.CDS_Document.TransitStep(models, profile!.UID, CDS_Document.StepEnum.Sealed);
-            }
 
-            models.SubmitChanges();
-
-            //2.如果是大量發送, 複製合約
-            //var newContract = _contractServices.CreateAndSaveContractByOld(contract);
-
-            //_contractServices.CreateAndSaveParty(
-            //    initiatorID: initiatorID,
-            //    contractorID: contractorID ?? 0,
-            //    contract: newContract,
-            //    viewModel.Contractors[i].SignaturePositions,
-            //    uid ?? 0
-            //);
-
-            //3.發送通知(one by one)
-
-            _contractServices?.SendUsersNotifyEmailAboutContractAsync(
-                contract, 
-                (contract.IsPassStamp == true)? _emailContentFactories.GetNotifySign():_emailContentFactories.GetNotifySeal(),
-                _contractServices?.GetUsersbyContract(contract));
-
-            return Json(baseResponse);
+            return Json(_baseResponse.ErrorMessage());
         }
 
         public class ContractSignaturePositionRequest

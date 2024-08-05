@@ -319,28 +319,21 @@ namespace ContractHome.Controllers
                 return new BaseResponse(true, "驗證資料有誤，請檢查輸入欄位是否正確。");
             }
 
-            try
+            var resentCahceKey = _cacheFactory.GetEmailSentCache(email);
+            if (resentCahceKey != null)
             {
-                var resentCahceKey = _cacheFactory.GetEmailSentCache(email);
-                if (resentCahceKey != null)
-                {
-                    return new BaseResponse(true, $"通知信已寄發，請查看電子信箱，或三分鐘後重新申請。");
-                }
-
-                EmailContentBodyDto emailContentBodyDto =
-                    new EmailContentBodyDto(contract: null, initiatorOrg: null, userProfile: userProfile);
-
-                _emailFactory.SendEmailToCustomer(
-                    _emailFactory.GetApplyPassword(dto: emailContentBodyDto));
-
-                _cacheFactory.SetEmailSentCache(email);
-
-                return new BaseResponse(false, "");
+                return new BaseResponse(true, $"通知信已寄發，請查看電子信箱，或三分鐘後重新申請。");
             }
-            catch (Exception ex)
-            {
-                throw new JsonResponseException(ex);
-            }
+
+            EmailContentBodyDto emailContentBodyDto =
+                new EmailContentBodyDto(contract: null, initiatorOrg: null, userProfile: userProfile);
+
+            _emailFactory.SendEmailToCustomer(
+                _emailFactory.GetApplyPassword(dto: emailContentBodyDto));
+
+            _cacheFactory.SetEmailSentCache(email);
+
+            return new BaseResponse(false, "");
 
         }
 

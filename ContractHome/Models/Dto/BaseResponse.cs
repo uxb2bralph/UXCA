@@ -39,6 +39,13 @@ namespace ContractHome.Models.Dto
             Url = string.Empty;
         }
 
+        public BaseResponse ErrorMessage(string message="something error.")
+        {
+            HasError = true;
+            Message = message;
+            return this;
+        }
+
         public BaseResponse AddContractMessage(Contract contract)
         {
             Message = $"{contract.Title}({contract.ContractNo}) {this.Message}";

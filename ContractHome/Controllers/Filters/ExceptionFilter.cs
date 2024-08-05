@@ -42,13 +42,10 @@ namespace ContractHome.Controllers.Filters
                     Url = $"{Settings.Default.WebAppDomain}"
                 };
 
-                if (filterContext.Exception.GetType() == typeof(JsonResponseException))
-                {
-                    filterContext.Result = new JsonResult(baseresponse);
-                }
-                else
-                {
+                filterContext.Result = new JsonResult(baseresponse);
 
+                if (filterContext.Exception.GetType() == typeof(RedirectResponseException))
+                {
                     //ViewDataDictionary viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
                     //{
                     //    Model = new ErrorViewModel
