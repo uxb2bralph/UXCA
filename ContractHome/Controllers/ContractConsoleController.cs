@@ -1354,7 +1354,7 @@ namespace ContractHome.Controllers
         public async Task<ActionResult> CommitDigitalSignatureAsync(SignatureRequestViewModel viewModel)
         {
             var result = await LoadSignatureRequestAsync(viewModel);
-            Contract? contract = ViewBag.Contract as Contract;
+            Contract contract = ViewBag.Contract as Contract;
             ContractSignatureRequest? item = ViewBag.SignatureRequest as ContractSignatureRequest;
 
             if (item == null)
@@ -1466,7 +1466,7 @@ namespace ContractHome.Controllers
                         HttpContext.Logout();
                     }
 
-                    if (contract.HasUserInProgress)
+                    if (ContractServices.IsNotNull(contract)&&contract.HasUserInProgress)
                     {
                         contract.UserInProgress = null;
                         models.SubmitChanges();
@@ -1591,17 +1591,18 @@ namespace ContractHome.Controllers
                             _emailContentFactories.GetFinishContract(emailContentBodyDto),
                             targetUsers);
 
-                        if ((UserSession.Get(_httpContextAccessor) != null) && (UserSession.Get(_httpContextAccessor).IsTrust))
-                        {
-                            UserSession.Remove(_httpContextAccessor);
-                            HttpContext.Logout();
-                        }
+                    }
 
-                        if (item.Contract.HasUserInProgress)
-                        {
-                            item.Contract.UserInProgress = null;
-                            models.SubmitChanges();
-                        }
+                    if ((UserSession.Get(_httpContextAccessor) != null) && (UserSession.Get(_httpContextAccessor).IsTrust))
+                    {
+                        UserSession.Remove(_httpContextAccessor);
+                        HttpContext.Logout();
+                    }
+
+                    if (ContractServices.IsNotNull(item.Contract) && item.Contract.HasUserInProgress)
+                    {
+                        item.Contract.UserInProgress = null;
+                        models.SubmitChanges();
                     }
 
                     return Json(new BaseResponse());
