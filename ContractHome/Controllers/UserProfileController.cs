@@ -16,6 +16,7 @@ using ContractHome.Helper.DataQuery;
 using Microsoft.AspNetCore.Authorization;
 using System.Text.RegularExpressions;
 using ContractHome.Models.Email.Template;
+using ContractHome.Models.Helper;
 
 namespace ContractHome.Controllers
 {
@@ -23,12 +24,15 @@ namespace ContractHome.Controllers
     {
         private readonly ILogger<UserProfileController> _logger;
         private readonly EmailFactory _emailFactory;
-
-        public UserProfileController(ILogger<UserProfileController> logger, IServiceProvider serviceProvider,
-                        EmailFactory emailContentFactories) : base(serviceProvider)
+        private readonly BaseResponse _baseResponse;
+        public UserProfileController(ILogger<UserProfileController> logger, 
+                        IServiceProvider serviceProvider,
+                        EmailFactory emailContentFactories,
+                        BaseResponse baseResponse) : base(serviceProvider)
         {
             _logger = logger;
             _emailFactory = emailContentFactories;
+            _baseResponse = baseResponse;   
         }
 
         [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
@@ -278,6 +282,15 @@ namespace ContractHome.Controllers
                 }
             }
 
+            var pidUser = models.GetTable<UserProfile>()
+                .Where(u => u.PID == viewModel.PID)
+                .FirstOrDefault();
+
+            if (ContractServices.IsNotNull(pidUser))
+            {
+                ModelState.AddModelError("PID", "帳號已存在");
+            }
+
             if (!companyID.HasValue)
             {
                 ModelState.AddModelError("EncCompanyID", "請選擇隸屬公司");
@@ -320,28 +333,20 @@ namespace ContractHome.Controllers
                 item.PasswordUpdatedDate = DateTime.Now;
             }
 
-            try
+            models.SubmitChanges();
+
+            models.GetTable<OrganizationUser>().InsertOnSubmit(
+                new OrganizationUser() { UID = item.UID, CompanyID = companyID ?? 0 });
+
+            models.SubmitChanges();
+            if (viewModel.RoleID.HasValue)
             {
-                models.SubmitChanges();
-
-                models.GetTable<OrganizationUser>().InsertOnSubmit(
-                    new OrganizationUser() { UID = item.UID, CompanyID = companyID ?? 0 });
-
-                models.SubmitChanges();
-                if (viewModel.RoleID.HasValue)
-                {
-                    models.ExecuteCommand(@"DELETE FROM UserRole WHERE (UID = {0})", item.UID);
-                    models.ExecuteCommand(@"INSERT INTO UserRole (UID, RoleID)
-                                            VALUES ({0},{1})", item.UID, (int?)viewModel.RoleID);
-                }
-
-                return Json(new { result = true });
+                models.ExecuteCommand(@"DELETE FROM UserRole WHERE (UID = {0})", item.UID);
+                models.ExecuteCommand(@"INSERT INTO UserRole (UID, RoleID)
+                                        VALUES ({0},{1})", item.UID, (int?)viewModel.RoleID);
             }
-            catch (Exception ex)
-            {
-                FileLogger.Logger.Error(ex);
-                return Json(new { result = false, message = ex.Message });
-            }
+
+            return Json(_baseResponse);
         }
 
         [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]

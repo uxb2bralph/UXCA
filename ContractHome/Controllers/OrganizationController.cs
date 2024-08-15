@@ -24,19 +24,23 @@ using ContractHome.Security.Authorization;
 using Irony.Parsing;
 using DocumentFormat.OpenXml.Presentation;
 using System.Web;
+using ContractHome.Models.Dto;
 
 namespace ContractHome.Controllers
 {
-    //[AuthorizedSysAdmin]
+    [AuthorizedSysAdmin]
     public class OrganizationController : SampleController
     {
         private readonly ILogger<OrganizationController> _logger;
+        private readonly BaseResponse _baseResponse;
 
         public OrganizationController(
             ILogger<OrganizationController> logger,
-            IServiceProvider serviceProvider) : base(serviceProvider)
+            IServiceProvider serviceProvider,
+            BaseResponse baseResponse) : base(serviceProvider)
         {
             _logger = logger;
+            _baseResponse = baseResponse;
         }
 
         [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
@@ -217,15 +221,11 @@ namespace ContractHome.Controllers
             var item = models.GetTable<Organization>().Where(o => o.CompanyID == viewModel.CompanyID)
                 .FirstOrDefault();
 
-            if (viewModel.ReceiptNo != null)
+            if ((viewModel.ReceiptNo != null) 
+                && (item == null || item.ReceiptNo != viewModel.ReceiptNo)
+                    && (models.GetTable<Organization>().Any(o => o.ReceiptNo == viewModel.ReceiptNo)))
             {
-                if (item == null || item.ReceiptNo != viewModel.ReceiptNo)
-                {
-                    if (models.GetTable<Organization>().Any(o => o.ReceiptNo == viewModel.ReceiptNo))
-                    {
-                        ModelState.AddModelError("ReceiptNo", "相同的企業統編已存在!!");
-                    }
-                }
+                ModelState.AddModelError("ReceiptNo", "相同的企業統編已存在!!");
             }
 
             if (viewModel.BelongToCompany != null)
@@ -267,13 +267,12 @@ namespace ContractHome.Controllers
             try
             {
                 models.SubmitChanges();
-                return Json()
-              //return Json(new { result = true });
-      }
+                return Json(_baseResponse);
+            }
             catch (Exception ex)
             {
                 FileLogger.Logger.Error(ex);
-                return Json(new { result = false, message = ex.Message });
+                return Json(_baseResponse.ErrorMessage());
             }
         }
 
