@@ -61,6 +61,7 @@
                 </div>
               </div>
             </div>
+            <!--
             <div class="col input__height">
               <div class="row">
                 <label for="UserName" class="col-sm-12 col-md-3 col-form-label fw-bolder">姓名</label>
@@ -70,6 +71,7 @@
                 </div>
               </div>
             </div>
+            -->
             <div class="col input__height">
               <div class="row">
                 <label for="EMail" class="col-sm-12 col-md-3 col-form-label fw-bolder">電子郵件</label>
@@ -130,7 +132,9 @@
             <tr>
               <th scope="col">隸屬公司</th>
               <th scope="col">用戶帳號</th>
+              <!--
               <th scope="col">姓名</th>
+              -->
               <th scope="col">電子郵件</th>
               <th scope="col">角色</th>
               <th scope="col">憑證類型</th>
@@ -142,7 +146,9 @@
             <tr v-for="(user, index) in userList" :key="`c_${index}`">
               <td class="text-nowrap fs-13">{{ user.PID === 'ifsadmin' ? '系統管理員' : user.CompanyName }}</td>
               <td class="text-nowrap fs-13">{{ user.PID }}</td>
+              <!--
               <td class="fs-13">{{ user.UserName }}</td>
+              -->
               <td class="fs-13">{{ user.EMail }}</td>
               <td class="fs-13">{{ formatData(user.RoleID, 'roleList') }}</td>
               <td class="fs-13">{{ formatData(user.Region, 'regionList') }}</td>
@@ -340,6 +346,7 @@
                     </div>
                   </div>
                 </div>
+                <!--
                 <div class="col input__height">
                   <div class="row">
                     <label for="iUserName" class="col-sm-12 col-md-3 col-form-label fw-bolder">姓名</label>
@@ -354,6 +361,7 @@
                     </div>
                   </div>
                 </div>
+                -->
                 <div class="col input__height">
                   <div class="row">
                     <label for="iPassword" class="col-sm-12 col-md-3 col-form-label fw-bolder">密碼</label>
@@ -500,7 +508,7 @@
       regionList,
       // 編輯
       initialFormData: {
-        uuid: null,
+        // uuid: null,
         CompanyName: null,
         PID: null,
         UserName: null,
@@ -598,7 +606,7 @@
         const isNew = type === 'addNew';
         this.editTitle = isNew ? '新增' : '編輯';
         // 新增時加入一筆uuid
-        this.formData.uuid = isNew ? ui_uuid() : this.formData.uuid;
+        // this.formData.uuid = isNew ? ui_uuid() : this.formData.uuid;
         if (type === 'addNew') {
           this.formData = JSON.parse(JSON.stringify(this.initialFormData));
         } else if (type === 'edit') {
@@ -606,15 +614,15 @@
           // 輸入欄位檢核
           this.isCompanyName = !this.formData.CompanyName;
           this.isPID = !this.formData.PID;
-          this.isUserName = !this.formData.UserName;
-          this.isPassword = !this.formData.Password;
+          // this.isUserName = !this.formData.UserName;
+          // this.isPassword = !this.formData.Password;
           this.isEMail = !this.formData.EMail;
           this.isRoleID = !this.formData.RoleID;
           this.isRegion = !this.formData.Region;
           // 檢核email格式是否正確
           this.checkMail('isEMail', this.formData.EMail);
           // 如果檢核通過，就會送出表單
-          if (this.isCompanyName || this.isPID || this.isUserName || /* this.isPassword || */ this.isEMail || this.isRoleID || this.isRegion) return;
+          if (this.isCompanyName || this.isPID || this.isEMail || this.isRoleID || this.isRegion) return;
         }
       },
       // 開啟確認視窗
@@ -623,13 +631,13 @@
         this.currentUserData = item;
         this.editType = type;
         if (type === 'canEditStamp') {
-          this.confirmMsg = `確定開啟 <span class="text-primary opacity-75">"${item.UserName}"</span> 設定印鑑管理權限？`;
+          this.confirmMsg = `確定開啟 <span class="text-primary opacity-75">"${item.PID}"</span> 設定印鑑管理權限？`;
         }
         if (type === 'stop') {
-          this.confirmMsg = `確定停用 <span class="text-primary opacity-75">"${item.UserName}"</span> 使用者權限？`;
+          this.confirmMsg = `確定停用 <span class="text-primary opacity-75">"${item.PID}"</span> 使用者權限？`;
         }
         if (type === 'delete') {
-          this.confirmMsg = `確定刪除 <span class="text-primary opacity-75">"${item.UserName}"</span> 使用者？`;
+          this.confirmMsg = `確定刪除 <span class="text-primary opacity-75">"${item.PID}"</span> 使用者？`;
         }
         $("#confirmModal").modal('show');
       },
@@ -660,7 +668,7 @@
       },
       // 刪除廠商資料串API
       confirmDel() {
-        const { UserName, KeyID } = this.currentUserData;
+        const { PID, KeyID } = this.currentUserData;
 
         showLoading();
         postData('@(Url.Action("VueDeleteItem", "UserProfile"))', { KeyID })
@@ -670,7 +678,7 @@
               // 成功
               $("#confirmModal").modal("hide");
               this.deleteConfirm = true;
-              this.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"> ${UserName} 已成功刪除 </div>`;
+              this.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"> ${PID} 已成功刪除 </div>`;
               $("#infoModal").modal("show");
             } else {
               // 失敗
@@ -724,7 +732,7 @@
         // 輸入欄位檢核
         this.isCompanyName = !this.formData.CompanyName;
         this.isPID = !this.formData.PID;
-        this.isUserName = !this.formData.UserName;
+        // this.isUserName = !this.formData.UserName;
         this.isPassword = !this.formData.Password;
         this.isEMail = !this.formData.EMail;
         this.isRoleID = !this.formData.RoleID;
@@ -732,10 +740,11 @@
         // 檢核email格式是否正確
         this.checkMail('isEMail', this.formData.EMail);
         // 如果檢核通過，就會送出表單
-        if (this.isCompanyName || this.isPID || this.isUserName || /* this.isPassword || */ this.isEMail || this.isRoleID || this.isRegion) return;
+        if (this.isCompanyName || this.isPID || this.isPassword || this.isEMail || this.isRoleID || this.isRegion) return;
 
-        console.log('儲存表單');
-        $('#addNewModal').modal('hide');
+        console.log('儲存表單', this.formData);
+        // return;
+
 
         var viewModel = this.formData;
         viewModel.RoleID = Number(viewModel.RoleID);
@@ -750,6 +759,7 @@
           success: function (data) {
             hideLoading();
             if ($.isPlainObject(data)) {
+              $('#addNewModal').modal('hide');
               if (data.result) {
                 app.infoMsg = `
                   <div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div>
@@ -763,6 +773,7 @@
                 $('#infoModal').modal('show');
               }
             } else {
+              $('#addNewModal').modal('hide');
               $('body').append($(data));
             }
           },
@@ -795,7 +806,7 @@
           pageSize: this.pageSize,
           page: this.page
         }
-        console.log('payload:', payload);
+        // console.log('payload:', payload);
 
         var viewModel = $.extend({
           PageSize: this.pageSize,
@@ -812,7 +823,7 @@
       // 重設查詢
       resetHandler() {
         this.searchFormData = JSON.parse(JSON.stringify(this.initialFormData));
-        delete this.searchFormData.uuid;
+        // delete this.searchFormData.uuid;
       },
 
       // 查詢 email 欄位驗證

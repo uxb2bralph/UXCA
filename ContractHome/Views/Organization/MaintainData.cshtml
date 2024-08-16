@@ -54,6 +54,7 @@
                 </div>
               </div>
             </div>
+            <!--
             <div class="col input__height">
               <div class="row">
                 <label for="Phone" class="col-sm-12 col-md-3 col-form-label fw-bolder">電話</label>
@@ -99,6 +100,7 @@
                 </div>
               </div>
             </div>
+            -->
           </div>
         </div>
       </form>
@@ -134,11 +136,13 @@
             <tr>
               <th scope="col">公司名稱</th>
               <th scope="col">統一編號</th>
+              <!--
               <th scope="col">負責人</th>
               <th scope="col">電話</th>
               <th scope="col">傳真</th>
               <th scope="col">地址</th>
               <th scope="col">電子郵件</th>
+              -->
               <th scope="col"></th>
             </tr>
           </thead>
@@ -146,12 +150,14 @@
             <tr v-for="(company, index) in companyList" :key="`c_${index}`">
               <td class="text-nowrap fs-13">{{ company.CompanyName }}</td>
               <td class="text-nowrap fs-13">{{ company.ReceiptNo }}</td>
+              <!--
               <td class="fs-13">{{ company.UndertakerName }}</td>
               <td class="fs-13">{{ company.Phone }}</td>
               <td class="fs-13">{{ company.Fax }}</td>
               <td class="fs-13">{{ company.Addr }}</td>
               <td class="fs-13">{{ company.ContactEmail }}</td>
-              <td class="text-nowrap text-center">
+              -->
+              <td class="text-nowrap text-center" style="width: 120px">
                 <!-- 編輯 -->
                 <span class="tooltip__wrapper mx-1">
                   <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded"
@@ -282,7 +288,8 @@
                       <input v-model="formData.CompanyName" type="text" class="form-control form-control-sm"
                         :class="{'is-invalid': isCompanyName}" id="CompanyName" maxlength="15"
                         v-on:focus="resetValidate('isCompanyName')"
-                        v-on:blur="validateField('isCompanyName', formData.CompanyName)" v-on:keyup="checkText(formData.CompanyName)" autocomplete="off" />
+                        v-on:blur="validateField('isCompanyName', formData.CompanyName)"
+                        v-on:keyup="checkText(formData.CompanyName)" autocomplete="off" />
                       <div class="invalid-feedback">
                         請輸入公司名稱
                       </div>
@@ -302,6 +309,7 @@
                     </div>
                   </div>
                 </div>
+                <!--
                 <div class="col input__height">
                   <div class="row">
                     <label for="Phone" class="col-sm-12 col-md-3 col-form-label fw-bolder">電話</label>
@@ -309,7 +317,7 @@
                       <input v-model="formData.Phone" type="text" class="form-control form-control-sm"
                         :class="{'is-invalid': isPhone}" name="Phone" id="Phone" placeholder="Ex: 02-12345678"
                         maxlength="12" v-on:focus="resetValidate('isPhone')"
-                        v-on:blur="validateField('isPhone', formData.Phone)" />
+                        v-on:blur="validateField('isPhone', formData.Phone)" :disabled="true" />
                       <div class="invalid-feedback">
                         請輸入電話
                       </div>
@@ -322,7 +330,7 @@
                     <div class="col-sm-12 col-md-9">
                       <input v-model="formData.Fax" type="text" class="form-control form-control-sm" name="Fax" id="Fax"
                         placeholder="Ex: 02-87654321" maxlength="12" v-on:focus="resetValidate('isFax')"
-                        v-on:blur="validateField('isFax', formData.Fax)" />
+                        v-on:blur="validateField('isFax', formData.Fax)" :disabled="true" />
                     </div>
                   </div>
                 </div>
@@ -333,7 +341,8 @@
                       <input v-model="formData.UndertakerName" type="text" class="form-control form-control-sm"
                         :class="{'is-invalid': isUndertakerName}" id="UndertakerName"
                         v-on:focus="resetValidate('isUndertakerName')"
-                        v-on:blur="validateField('isUndertakerName', formData.UndertakerName)" maxlength="10" />
+                        v-on:blur="validateField('isUndertakerName', formData.UndertakerName)" maxlength="10"
+                        :disabled="true" />
                       <div class="invalid-feedback">
                         請輸入負責人姓名
                       </div>
@@ -346,7 +355,8 @@
                     <div class="col-sm-12 col-md-9">
                       <input v-model="formData.Addr" type="text" class="form-control form-control-sm"
                         :class="{'is-invalid': isAddr}" name="Addr" id="Addr" maxlength="30"
-                        v-on:focus="resetValidate('isAddr')" v-on:blur="validateField('isAddr', formData.Addr)" />
+                        v-on:focus="resetValidate('isAddr')" v-on:blur="validateField('isAddr', formData.Addr)"
+                        :disabled="true" />
                       <div class="invalid-feedback">
                         請輸入地址
                       </div>
@@ -360,13 +370,15 @@
                       <input v-model="formData.ContactEmail" type="text" class="form-control form-control-sm"
                         :class="{'is-invalid': isContactEmail}" name="ContactEmail" id="ContactEmail"
                         v-on:focus="resetValidate('isContactEmail')"
-                        v-on:blur="validateField('isContactEmail', formData.ContactEmail);checkMail('isContactEmail', formData.ContactEmail)" />
+                        v-on:blur="validateField('isContactEmail', formData.ContactEmail);checkMail('isContactEmail', formData.ContactEmail)"
+                        :disabled="true" />
                       <div class="invalid-feedback">
                         請輸入有效的電子郵件地址
                       </div>
                     </div>
                   </div>
                 </div>
+                -->
                 <div class="col input__height">
                   <div class="row">
                     <label for="BelongToCompanyName"
@@ -443,11 +455,11 @@
       searchFormData: {
         CompanyName: null,
         ReceiptNo: null,
-        Phone: null,
-        Fax: null,
-        Addr: null,
-        ContactEmail: null,
-        UndertakerName: null,
+        //Phone: null,
+        //Fax: null,
+        //Addr: null,
+        //ContactEmail: null,
+        //UndertakerName: null,
       },
       // 編輯
       initialFormData: {
@@ -458,7 +470,7 @@
         Addr: null,
         ContactEmail: null,
         UndertakerName: null,
-        CreateContract: null,
+        CreateContract: false,
         BelongToCompanyName: null,
         BelongToCompany: null
       },
@@ -603,16 +615,17 @@
       // 儲存表單
       saveHandler() {
         const { CompanyName, ReceiptNo, Phone, Fax, UndertakerName, ContactEmail, Addr, BelongToCompanyName, BelongToCompany } = this.formData;
+        //const { CompanyName, ReceiptNo, BelongToCompanyName, BelongToCompany } = this.formData;
         // 輸入欄位檢核
         this.isCompanyName = !CompanyName;
         this.isReceiptNo = !ReceiptNo;
-        this.isPhone = !Phone;
-        this.isFax = !Fax;
-        this.isUndertakerName = !UndertakerName;
-        this.isContactEmail = !ContactEmail;
-        this.isAddr = !Addr;
+        //this.isPhone = !Phone;
+        //this.isFax = !Fax;
+        //this.isUndertakerName = !UndertakerName;
+        //this.isContactEmail = !ContactEmail;
+        //this.isAddr = !Addr;
         // 檢核email格式是否正確
-        this.checkMail('isContactEmail', ContactEmail);
+        //this.checkMail('isContactEmail', ContactEmail);
 
         // 檢核
         const isCompanyName = BelongToCompanyName && BelongToCompanyName !== '';
@@ -621,16 +634,19 @@
           return;
         }
         // 如果檢核通過，就會送出表單
-        if (this.isCompanyName || this.isReceiptNo || this.isPhone /* || this.isFax */ || this.isUndertakerName || this.isContactEmail || this.isAddr) return;
+        if (this.isCompanyName || this.isReceiptNo /* || this.isPhone || this.isFax || this.isUndertakerName || this.isContactEmail || this.isAddr */) return;
 
-        console.log('儲存表單');
+        // 刪除不需外送的欄位
+        delete this.formData.BelongToCompanyName;
+        console.log('儲存表單', this.formData);
+        // return;
         $('#addNewModal').modal('hide');
 
-        var viewModel = this.formData;
+        const payload = this.formData;
         showLoading();
         $.ajax({
           url: '@(Url.Action("VueCommitItem", "Organization"))',
-          data: JSON.stringify(viewModel),
+          data: JSON.stringify(payload),
           type: "POST",
           //dataType: "json",
           contentType: "application/json;charset=utf-8",
@@ -806,7 +822,7 @@
       },
 
       checkText(companyName) {
-        this.formData.CompanyName = companyName.replace(/[^a-zA-Z0-9\u4E00-\u9FA5 ]/g, '');
+        this.formData.CompanyName = companyName && companyName.replace(/[^a-zA-Z0-9\u4E00-\u9FA5 ]/g, '');
       }
     }
   });
