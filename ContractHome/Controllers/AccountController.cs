@@ -58,7 +58,7 @@ namespace ContractHome.Controllers
                 if (userprofile.CanCreateContract())
                 {
                     _emailFactory.SendEmailToCustomer(
-                        _emailFactory.GetLoginFailed(emailUserName: userprofile.UserName, email: userprofile.EMail));
+                        _emailFactory.GetLoginFailed(emailUserName: userprofile.PID, email: userprofile.EMail));
                 }
 
                 return Json(new { result = false, message = ModelState.ErrorMessage() });
@@ -67,7 +67,7 @@ namespace ContractHome.Controllers
             if (userprofile.CanCreateContract())
             {
                 _emailFactory.SendEmailToCustomer(
-                    _emailFactory.GetLoginSuccessed(emailUserName: userprofile.UserName, email: userprofile.EMail));
+                    _emailFactory.GetLoginSuccessed(emailUserName: userprofile.PID, email: userprofile.EMail));
             }
 
             var dateNeedToUpdatePassword = DateTime.Now.AddMonths(-3);
@@ -284,7 +284,7 @@ namespace ContractHome.Controllers
             _cacheFactory.SetTokenCache(token);
 
             _emailFactory.SendEmailToCustomer(
-                _emailFactory.GetPasswordUpdated(emailUserName: tokenUserProfile.UserName, email: tokenUserProfile.EMail));
+                _emailFactory.GetPasswordUpdated(emailUserName: tokenUserProfile.PID, email: tokenUserProfile.EMail));
 
             Logout();
             return new BaseResponse(false, "密碼更新完成。");

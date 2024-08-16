@@ -247,7 +247,7 @@ namespace ContractHome.Controllers
                 //wait to do...和Account/PasswordReset的密碼更新作業合併
                 //wait to do...和UserProfile/VueCommitItem的新增合併
                 _emailFactory.SendEmailToCustomer(
-                    _emailFactory.GetPasswordUpdated(emailUserName: userProfile.UserName, email: userProfile.EMail));
+                    _emailFactory.GetPasswordUpdated(emailUserName: userProfile.PID, email: userProfile.EMail));
             }
             catch (Exception ex)
             {

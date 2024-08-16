@@ -43,7 +43,7 @@ namespace ContractHome.Models.Email.Template
 
             this.EmailBody = _emailBodyBuilder
                     .SetTemplateItem(this.GetType().Name)
-                    .SetSendUserName(emailContentBodyDto.UserProfile.UserName)
+                    .SetSendUserName(emailContentBodyDto.UserProfile.PID)
                     .SetSendUserEmail(emailContentBodyDto.UserProfile.EMail)
                     .SetVerifyLink(clickLink)
                     .Build();
