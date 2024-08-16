@@ -5690,7 +5690,7 @@ namespace ContractHome.Models.DataEntity
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UserName", DbType="NVarChar(40) NOT NULL", CanBeNull=false)]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UserName", DbType="NVarChar(40)")]
 		public string UserName
 		{
 			get

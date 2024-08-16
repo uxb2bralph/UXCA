@@ -241,7 +241,7 @@
   <Table Name="dbo.UserProfile" Member="UserProfile">
     <Type Name="UserProfile">
       <Column Name="UID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="UserName" Type="System.String" DbType="NVarChar(40) NOT NULL" CanBeNull="false" />
+      <Column Name="UserName" Type="System.String" DbType="NVarChar(40)" CanBeNull="true" />
       <Column Name="PID" Type="System.String" DbType="NVarChar(64) NOT NULL" CanBeNull="false" />
       <Column Name="Password" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
       <Column Name="ContactTitle" Type="System.String" DbType="NVarChar(30)" CanBeNull="true" />
