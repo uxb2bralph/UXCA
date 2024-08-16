@@ -109,7 +109,7 @@
       {
         time = $"{l.LogDate:yyyy/MM/dd HH:mm:ss}",
         action = CDS_Document.StepNaming[l.StepID],
-        role = l.UserProfile?.UserName,
+        role = l.UserProfile?.PID,
       }).ToArray(),
       CurrentStep = item.CDS_Document.CurrentStep,
     };

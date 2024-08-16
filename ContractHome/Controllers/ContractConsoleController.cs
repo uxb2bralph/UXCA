@@ -1293,7 +1293,7 @@ namespace ContractHome.Controllers
                 .Select(x => new {
                     date = string.Format("{0:yyyy/MM/dd HH:mm:dd}", x.a.c.date!),
                     companyName = x.a.c.companyName,
-                    signer = x.u.UserName,
+                    signer = x.u.PID,
                     createCompany = $"{x.a.o.CompanyName}({x.a.o.CompanyID})",
                     contractID = x.a.c.contractID,
                     contractNoTitle = x.a.c.contractNoTitle,

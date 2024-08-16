@@ -32,7 +32,7 @@ namespace ContractHome.Models.Email.Template
                     .SetTemplateItem(this.GetType().Name)
                     .SetContractNo(emailContentBodyDto.Contract.ContractNo)
                     .SetTitle(emailContentBodyDto.Contract.Title)
-                    .SetRecipientUserName($"{emailContentBodyDto.UserProfile.CompanyName} {emailContentBodyDto.UserProfile.UserName}")
+                    .SetRecipientUserName(emailContentBodyDto.UserProfile.PID)
                     .SetRecipientUserEmail(emailContentBodyDto.UserProfile.EMail)
                     .Build();
         }
