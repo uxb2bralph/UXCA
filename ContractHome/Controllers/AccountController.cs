@@ -251,6 +251,11 @@ namespace ContractHome.Controllers
             (BaseResponse resp, JwtToken jwtTokenObj, UserProfile tokenUserProfile)
                 = _contractServices.TokenValidate(JwtTokenValidator.Base64UrlDecodeToString(token).DecryptData());
 
+            if (tokenUserProfile.PID.Equals("ifsadmin"))
+            {
+                return new BaseResponse(true, $"變更失敗。");
+            }
+
             if (resp.HasError) 
             {
                 FileLogger.Logger.Error($"{resp.Message}-{this.GetType().Name}-Base64Token={token}");

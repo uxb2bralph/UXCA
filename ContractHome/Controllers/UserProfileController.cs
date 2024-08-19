@@ -206,6 +206,11 @@ namespace ContractHome.Controllers
                   password: userPasswordChange.OldPassword,
                   out int? loginFailedCount);
 
+            if (PID.Equals("ifsadmin"))
+            {
+                ModelState.AddModelError("PID", "變更失敗");
+            }
+
             if (loginFailedCount >= 3)
             {
                 ModelState.AddModelError("PID", "帳號密碼有誤");
