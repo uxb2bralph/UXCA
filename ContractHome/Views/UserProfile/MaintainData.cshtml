@@ -84,6 +84,7 @@
                 </div>
               </div>
             </div>
+            <!--
             <div class="col input__height">
               <div class="row">
                 <label for="RoleID" class="col-sm-12 col-md-3 col-form-label fw-bolder">角色</label>
@@ -95,6 +96,7 @@
                 </div>
               </div>
             </div>
+            -->
           </div>
         </div>
       </form>
@@ -509,6 +511,7 @@
       // 編輯
       initialFormData: {
         // uuid: null,
+        EncCompanyID: null,
         CompanyName: null,
         PID: null,
         UserName: null,
@@ -814,7 +817,8 @@
         }, this.searchFormData);
 
         if (viewModel.CompanyName == '') {
-          delete viewModel.EncCompanyID;
+          //delete viewModel.EncCompanyID;
+          viewModel.EncCompanyID = null;
         }
 
         fetchDataList(viewModel, '@(Url.Action("VueInquireData", "UserProfile"))');
@@ -823,6 +827,7 @@
       // 重設查詢
       resetHandler() {
         this.searchFormData = JSON.parse(JSON.stringify(this.initialFormData));
+        this.searchFormData.RoleID = null;
         // delete this.searchFormData.uuid;
       },
 
@@ -960,7 +965,7 @@
       setResult(result, type) {
         if (this.searchResults.length > 0) {
           if (type === 'search') {
-            this.searchFormData.CompanyName = result.CompanyName;
+            this.searchFormData.CompanyName = result.CompanyName.split('(')[0];
             this.searchFormData.EncCompanyID = result.KeyID;
           }
           if (type === 'edit') {
