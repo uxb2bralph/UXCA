@@ -704,7 +704,7 @@
       // 重設查詢
       resetHandler() {
         this.searchFormData = JSON.parse(JSON.stringify(this.initialFormData));
-        delete this.searchFormData.uuid;
+        //delete this.searchFormData.uuid;
       },
 
       // 查詢 email 欄位驗證
@@ -798,7 +798,7 @@
       setResult(result, type) {
         if (this.searchResults.length !== 0) {
           if (type === 'search') {
-            this.searchFormData.CompanyName = result.CompanyName;
+            this.searchFormData.CompanyName = result.CompanyName.split('(')[0]; // 取公司全名
             this.searchFormData.ReceiptNo = result.ReceiptNo;
           }
           if (type === 'edit') {
