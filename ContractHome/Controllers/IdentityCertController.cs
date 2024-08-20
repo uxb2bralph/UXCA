@@ -103,15 +103,15 @@ namespace ContractHome.Controllers
                 }
 
                 identityCertHelper = new(x509PemString: req.B64Cert);
-                if (!identityCertHelper.IsSubjectMatch(profile.CompanyName))
-                {
-                    ModelState.AddModelError("CompanyName", "憑證資料不符(O)");
-                }
+                //if (!identityCertHelper.IsSubjectMatch(profile.CompanyName))
+                //{
+                //    ModelState.AddModelError("CompanyName", "憑證資料不符(O)");
+                //}
                 if (identityCertHelper.IsCorporateCert
                     &&
                     !identityCertHelper.IsSubjectMatch(profile.Organization.ReceiptNo))
                 {
-                    ModelState.AddModelError("ReceiptNo", "憑證資料不符(S)");
+                    ModelState.AddModelError("ReceiptNo", "憑證資料不符(ReceiptNo)");
                 }
 
                 if (!identityCertHelper.IsSignatureValid(profile.PID, req.Signature))
