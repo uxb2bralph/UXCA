@@ -314,6 +314,12 @@ For more information on enabling MVC for empty projects, visit https://go.micros
             $('#infoModal').modal('show');
           } else {
             $(res).appendTo($('#signBox'));
+            // 首次驗證
+            // 檢查回傳字串內是否有'promptToAcquireCertificate'即為首次驗證
+            const isFirst = res.includes('promptToAcquireCertificate');
+            if (isFirst) {
+              self.certStatus = 'certValidate';
+            };
           }
         });
       },
@@ -343,6 +349,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
 
       // 憑證綁定
       certRegister() {
+        const self = this;
         this.infoMsg = null;
         const { certb64, signature } = this.signatureInfo;
         const payload = {
@@ -358,13 +365,13 @@ For more information on enabling MVC for empty projects, visit https://go.micros
               // 成功
               $("#userCertModal").modal("hide");
               // 綁定成功後再進行憑證驗證
-              console.log('註冊成功，憑證已綁定');
-              this.certValidate();
+              // console.log('註冊成功，憑證已綁定');
+              self.certValidate();
             } else {
               // 失敗
               const { EUID, Signature, B64Cert } = Message;
               const signatureString = EUID ? EUID.join(', ') : Signature ? Signature.join(', ') : B64Cert ? B64Cert.join(', ') : '資料有誤';
-              this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${signatureString} </div>`;
+              self.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${signatureString} </div>`;
               $("#infoModal").modal("show");
             }
             hideLoading();
@@ -373,6 +380,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
 
       // 憑證驗證
       certValidate() {
+        const self = this;
         this.infoMsg = null;
         const { signature } = this.signatureInfo;
         if (!signature) return;
@@ -385,7 +393,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
             const { HasError, Data, Message } = res;
             if (!HasError) {
               // 憑證驗證ok，開啟導頁視窗
-              console.log('憑證驗證ok');
+              // console.log('憑證驗證ok');
               $('#signModal').modal('show');
             } else {
               // 失敗
@@ -393,11 +401,11 @@ For more information on enabling MVC for empty projects, visit https://go.micros
               if (!!IdentityCert) {
                 const identityCertString = IdentityCert.join(', ');
                 // 未註冊憑證時，執行註冊程序
-                console.log('未註冊憑證');
-                this.certRegister();
+                // console.log('未註冊憑證');
+                self.certRegister();
               } else {
                 const signatureString = EUID ? EUID.join(', ') : Signature ? Signature.join(', ') : B64Cert ? B64Cert.join(', ') : '資料有誤';
-                this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${signatureString} </div>`;
+                self.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${signatureString} </div>`;
                 $("#infoModal").modal("show");
               }
             }
@@ -407,6 +415,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
 
       // 憑證檢查是否和公司或個人登錄資訊相符
       userValidate() {
+        const self = this;
         this.infoMsg = null;
         const { certb64, signature } = this.signatureInfo;
         const payload = {
@@ -418,15 +427,14 @@ For more information on enabling MVC for empty projects, visit https://go.micros
         postData('@(Url.Action("ValidateBySubject", "IdentityCert"))', payload)
           .then((res) => {
             const { hasError, data, message } = res;
-            console.log({ hasError, data, message });
             if (!hasError) {
               // 成功
-              console.log('憑證驗證ok');
+              // console.log('憑證驗證ok');
               // 憑證驗證ok後準備開啟中華電信雲端憑證申請視窗
               $('#acquireCertificate').modal('show');
             } else {
               // 失敗
-              this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${message} </div>`;
+              self.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${message} </div>`;
               $("#infoModal").modal("show");
             }
             hideLoading();
