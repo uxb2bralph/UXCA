@@ -29,7 +29,7 @@ namespace ContractHome
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    webBuilder.UseStartup<Startup>().UseIIS();
                 });
     }
 }
