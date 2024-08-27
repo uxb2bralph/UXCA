@@ -185,7 +185,7 @@
                 <span v-if="user.PID !== 'ifsadmin'" class="tooltip__wrapper mx-1">
                   <button type="button" id="ApplyPassword"
                     class="btn btn-sm btn-success opacity-75 rounded-pill icon__rounded"
-                    v-on:click="sendApplyPassword(user.EMail)">
+                    v-on:click="sendApplyPassword(user.EMail, user.PID)">
                     <i class="far fa-envelope"></i>
                   </button>
                   <div class="tooltip__text">發送密碼修改通知</div>
@@ -692,10 +692,12 @@
           })
       },
       // 發送密碼修改申請
-      sendApplyPassword(emailString) {
+      sendApplyPassword(emailString, pid
+      ) {
         showLoading();
         const payload = {
           Email: emailString,
+          PID:  pid,
           Item: "createPassword"
         };
         $.ajax({
