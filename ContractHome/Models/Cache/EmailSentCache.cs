@@ -2,20 +2,20 @@
 
 namespace ContractHome.Models.Cache
 {
-    public class EmailSentCache : ICacheKey
+    public class EmailSentCache : ICacheKey<EmailSent>
     {
         private string _email;
-        public EmailSentCache()
+        public EmailSentCache(string email)
         {
-
+            _email = email;
         }
 
 
         public string CacheKey => $"{this.GetType().Name}_{this._email}";
 
-        public void CreateCacheKey(string email)
-        {
-            _email = email;
-        }
+    }
+
+    public class EmailSent
+    {
     }
 }

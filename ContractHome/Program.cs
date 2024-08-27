@@ -25,7 +25,6 @@ namespace ContractHome
                 {
                     logging.AddProvider(new FileLoggerProvider());
                     logging.AddDebug();
-                    //logging.AddConsole();
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {

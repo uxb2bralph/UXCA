@@ -25,20 +25,19 @@ namespace ContractHome.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly EmailFactory _emailFactory;
-        private readonly CacheFactory _cacheFactory;
         private ContractServices? _contractServices;
-
+        private readonly ICacheStore _cacheStore;
         public AccountController(ILogger<HomeController> logger,
             IServiceProvider serviceProvider,
-            CacheFactory cacheFactory,
             EmailFactory emailContentFactories,
-            ContractServices contractServices
+            ContractServices contractServices,
+            ICacheStore cacheStore
             ) : base(serviceProvider)
         {
             _logger = logger;
-            _cacheFactory = cacheFactory;
             _emailFactory = emailContentFactories;
             _contractServices = contractServices;
+            _cacheStore = cacheStore;
         }
 
         [HttpPost]
@@ -213,8 +212,10 @@ namespace ContractHome.Controllers
         {
             Logout();
             token = token.GetEfficientString();
-            var cahceKey = _cacheFactory.GetTokenCache(token);
-            if (cahceKey != null)
+            //var cahceKey = _cacheFactory.GetTokenCache(token);
+            TokenCache cacheKey = new TokenCache(token);
+            Token tokenCache = this._cacheStore.Get(cacheKey);
+            if (tokenCache != null)
             {
                 TempData["message"] += $"Token已失效，請重新申請。";
             }
@@ -241,8 +242,9 @@ namespace ContractHome.Controllers
             var token = viewModel.Token.GetEfficientString();
             var password = viewModel.Password.GetEfficientString();
             var pid = viewModel.PID.GetEfficientString();
-            var cahceKey = _cacheFactory.GetTokenCache(token);
-            if (cahceKey != null)
+            TokenCache cacheKey = new TokenCache(token);
+            Token tokenCache = this._cacheStore.Get(cacheKey);
+            if (tokenCache != null)
             {
                 return new BaseResponse(true, $"Token已失效，請重新申請。");
             }
@@ -286,7 +288,8 @@ namespace ContractHome.Controllers
 
             models.SubmitChanges();
 
-            _cacheFactory.SetTokenCache(token);
+            //_cacheFactory.SetTokenCache(token);
+            _cacheStore.Add(new Token(), cacheKey);
 
             _emailFactory.SendEmailToCustomer(
                 _emailFactory.GetPasswordUpdated(emailUserName: tokenUserProfile.PID, email: tokenUserProfile.EMail));
@@ -324,8 +327,10 @@ namespace ContractHome.Controllers
                 return new BaseResponse(true, "驗證資料有誤，請檢查輸入欄位是否正確。");
             }
 
-            var resentCahceKey = _cacheFactory.GetEmailSentCache(email);
-            if (resentCahceKey != null)
+            EmailSentCache cacheKey = new EmailSentCache(email);
+            //var resentCahceKey = _cacheFactory.GetEmailSentCache(email);
+            EmailSent resentCahce = _cacheStore.Get(cacheKey);
+            if (resentCahce != null)
             {
                 return new BaseResponse(true, $"通知信已寄發，請查看電子信箱，或三分鐘後重新申請。");
             }
@@ -336,7 +341,8 @@ namespace ContractHome.Controllers
             _emailFactory.SendEmailToCustomer(
                 _emailFactory.GetApplyPassword(dto: emailContentBodyDto));
 
-            _cacheFactory.SetEmailSentCache(email);
+
+            _cacheStore.Add(new EmailSent(),cacheKey);
 
             return new BaseResponse(false, "");
 

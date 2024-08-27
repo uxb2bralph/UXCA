@@ -22,7 +22,6 @@ namespace ContractHome
 {
     public class Startup
     {
-        //public static IConfigurationSection? Properties { get; private set; }
         public static IWebHostEnvironment? Environment { get; private set; }
         public static  IConfiguration? GlobalConfiguration { get; private set; }
 
@@ -62,10 +61,6 @@ namespace ContractHome
 
             services.AddSingleton<ICacheStore>(x => 
                 new MemoryCacheStore(x.GetService<IMemoryCache>(), cachingExpirationConfig));
-
-            services.AddScoped<CacheFactory>();
-            services.AddScoped<ICacheKey, EmailSentCache>();
-            services.AddScoped<ICacheKey, TokenCache>();
 
             #endregion
 
