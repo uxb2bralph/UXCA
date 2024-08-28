@@ -258,6 +258,11 @@ namespace ContractHome.Controllers
                 return new BaseResponse(true, $"變更失敗。");
             }
 
+            if (!tokenUserProfile.PID.Equals(pid))
+            {
+                return new BaseResponse(true, $"驗證資料有誤(token)。");
+            }
+
             if (resp.HasError) 
             {
                 FileLogger.Logger.Error($"{resp.Message}-{this.GetType().Name}-Base64Token={token}");
@@ -278,7 +283,7 @@ namespace ContractHome.Controllers
 
             if (viewModelUserProfile == null)
             {
-                return new BaseResponse(true, "驗證資料有誤。");
+                return new BaseResponse(true, "驗證資料有誤(user)。");
             }
 
             tokenUserProfile.Password = null;
