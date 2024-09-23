@@ -6,48 +6,48 @@ using static ContractHome.Models.Email.Template.EmailBody;
 
 namespace ContractHome.Models.Email.Template
 {
-    public class NotifySeal : IEmailContent
+  public class NotifySeal : IEmailContent
+  {
+    public string Subject => @"[UX SIGN]用印通知信";
+
+    EmailBody IEmailContent.GetBody => this.EmailBody;
+
+    private EmailBody EmailBody;
+
+    private IEmailBodyBuilder _emailBodyBuilder;
+
+    public NotifySeal(IEmailBodyBuilder emailBodyBuilder)
     {
-        public string Subject => @"[安心簽]用印通知信";
-
-        EmailBody IEmailContent.GetBody => this.EmailBody;
-
-        private EmailBody EmailBody;
-
-        private IEmailBodyBuilder _emailBodyBuilder;
-
-        public NotifySeal(IEmailBodyBuilder emailBodyBuilder)
-        {
-            _emailBodyBuilder = emailBodyBuilder;
-        }
-
-        public void CreateBody(string emailUserName, string mailTo)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void CreateBody(EmailContentBodyDto emailContentBodyDto)
-        {
-            JwtTokenGenerator.JwtPayloadData jwtPayloadData = new JwtTokenGenerator.JwtPayloadData()
-            {
-                UID = emailContentBodyDto.UserProfile.UID.EncryptKey(),
-                Email = emailContentBodyDto.UserProfile.EMail,
-                ContractID = emailContentBodyDto.Contract.ContractID.EncryptKey(),
-                Func = this.GetType().Name
-            };
-
-            var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData, 4320);
-            var clickLink = $"{Settings.Default.WebAppDomain}/ContractConsole/Trust?token={JwtTokenGenerator.Base64UrlEncode((jwtToken.EncryptData()))}";
-
-            this.EmailBody = _emailBodyBuilder
-                    .SetTemplateItem(this.GetType().Name)
-                    .SetContractNo(emailContentBodyDto.Contract.ContractNo)
-                    .SetTitle(emailContentBodyDto.Contract.Title)
-                    .SetSendUserName(emailContentBodyDto.InitiatorOrg.CompanyName)
-                    .SetRecipientUserName(emailContentBodyDto.UserProfile.PID)
-                    .SetRecipientUserEmail(emailContentBodyDto.UserProfile.EMail)
-                    .SetContractLink(clickLink)
-                    .Build();
-        }
+      _emailBodyBuilder = emailBodyBuilder;
     }
+
+    public void CreateBody(string emailUserName, string mailTo)
+    {
+      throw new NotImplementedException();
+    }
+
+    public void CreateBody(EmailContentBodyDto emailContentBodyDto)
+    {
+      JwtTokenGenerator.JwtPayloadData jwtPayloadData = new JwtTokenGenerator.JwtPayloadData()
+      {
+        UID = emailContentBodyDto.UserProfile.UID.EncryptKey(),
+        Email = emailContentBodyDto.UserProfile.EMail,
+        ContractID = emailContentBodyDto.Contract.ContractID.EncryptKey(),
+        Func = this.GetType().Name
+      };
+
+      var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData, 4320);
+      var clickLink = $"{Settings.Default.WebAppDomain}/ContractConsole/Trust?token={JwtTokenGenerator.Base64UrlEncode((jwtToken.EncryptData()))}";
+
+      this.EmailBody = _emailBodyBuilder
+              .SetTemplateItem(this.GetType().Name)
+              .SetContractNo(emailContentBodyDto.Contract.ContractNo)
+              .SetTitle(emailContentBodyDto.Contract.Title)
+              .SetSendUserName(emailContentBodyDto.InitiatorOrg.CompanyName)
+              .SetRecipientUserName(emailContentBodyDto.UserProfile.PID)
+              .SetRecipientUserEmail(emailContentBodyDto.UserProfile.EMail)
+              .SetContractLink(clickLink)
+              .Build();
+    }
+  }
 }

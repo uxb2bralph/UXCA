@@ -42,27 +42,27 @@ For more information on enabling MVC for empty projects, visit https://go.micros
                     <span style="font-size:12pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#333333;">
                       Hello @(Model.RecipientUserName)：
                       <br>
-                                            @(Model.UserName) 寄送了一則簽章邀請 "@(Model.ContractNo)-@(Model.Title)"，請登入安心簽查看，或是點擊以下連結。
+                      @(Model.UserName) 寄送了一則簽章邀請 "@(Model.ContractNo)-@(Model.Title)"，請登入 UX SIGN 查看，或是點擊以下連結。
                       <br>
                       <br>
                     </span>
                   </td>
                 </tr>
                 <tr>
-                    <td align="center" style="padding: 0pt 35pt 20pt 35pt">
-                        <table>
-                            <tbody>
-                                <tr>
-                                    <td height="60" align="center" style="background: #0970d1;padding:0 20px 0 20px">
-                                        <a href="@(Model.ContractLink)" target="_blank"
-                                            style="font-size: 12pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#FFFFFF;text-decoration: none;">
-                                            簽章
-                                        </a>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </td>
+                  <td align="center" style="padding: 0pt 35pt 20pt 35pt">
+                    <table>
+                      <tbody>
+                        <tr>
+                          <td height="60" align="center" style="background: #0970d1;padding:0 20px 0 20px">
+                            <a href="@(Model.ContractLink)" target="_blank"
+                              style="font-size: 12pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#FFFFFF;text-decoration: none;">
+                              簽章
+                            </a>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
                 </tr>
               </tbody>
             </table>
