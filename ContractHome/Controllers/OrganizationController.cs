@@ -28,7 +28,7 @@ using ContractHome.Models.Dto;
 
 namespace ContractHome.Controllers
 {
-    [AuthorizedSysAdmin]
+    [Authorize]
     public class OrganizationController : SampleController
     {
         private readonly ILogger<OrganizationController> _logger;
