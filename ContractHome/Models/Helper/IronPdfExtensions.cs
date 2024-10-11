@@ -126,7 +126,7 @@ namespace ContractHome.Models.Helper
                 {
                     var backgroundStamp = new HtmlStamper()
                     {
-                        Html = $"<img style='mix-blend-mode:multiply;width:{bmp.Width * ((sealScale ?? 100) / 100 * 2.54 / bmp.HorizontalResolution)}cm;' src='data:application/octet-stream;base64,{Convert.ToBase64String(buf)}'/>",
+                        Html = $"<img style='z-index:10; mix-blend-mode:multiply;width:{bmp.Width * (sealScale ?? 1)}px;' src='data:application/octet-stream;base64,{Convert.ToBase64String(buf)}'/>",
                         Opacity = 60,
                         HorizontalOffset = new Length(unit: MeasurementUnit.Centimeter) { Value = marginLeft ?? 0, },
                         VerticalOffset = new Length(unit: MeasurementUnit.Centimeter) { Value = marginTop ?? 0 },
