@@ -1874,14 +1874,16 @@
         sealImg.classList.remove('h-100');
         sealImg.classList.add('w-100');
       }
-      hScale = ((sealImg.width / sealImg.naturalWidth) * 100).toFixed(2);
+      hScale = (sealImg.height / sealImg.naturalHeight).toFixed(2);
+      wScale = (sealImg.width / sealImg.naturalWidth).toFixed(2);
 
       // 將新增的印鑑檔資料暫存
       const sealData = {
         Id: editItem.id,
         SealID: sealID,
         currentItem: editItem,
-        SealScale: stampType === 'seal' ? (hScale * 1.2).toFixed(2) : hScale,
+        // 縮放比以高度為基準
+        SealScale: hScale,
         MarginLeft: (editItem.offsetLeft / 37.7).toFixed(2),
         MarginTop: (editItem.offsetTop / 37.7).toFixed(2),
         stampType: stampType,
