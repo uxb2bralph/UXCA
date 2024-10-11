@@ -82,16 +82,21 @@ namespace ContractHome.Models.Email.Template
                 .FirstOrDefault()!;
         }
 
-        public IEmailContent GetNotifySeal(EmailContentBodyDto dto)
+        public IEmailContent GetTaskNotifySeal()
         {
-            var emailContent = GetNotifySeal();
-            emailContent.CreateBody(dto);
-            return emailContent;
+            return _emailContents.OfType<TaskNotifySeal>()
+                .FirstOrDefault()!;
         }
 
         public IEmailContent GetNotifySign()
         {
             return _emailContents.OfType<NotifySign>()
+                .FirstOrDefault()!;
+        }
+
+        public IEmailContent GetTaskNotifySign()
+        {
+            return _emailContents.OfType<TaskNotifySign>()
                 .FirstOrDefault()!;
         }
 

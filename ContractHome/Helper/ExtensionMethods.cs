@@ -56,14 +56,23 @@ namespace ContractHome.Helper
             return BitConverter.ToInt32(viewModel.DecryptKey(out ticks), 0);
         }
 
-        public static int DecryptKeyValue(this String keyValue)
+        public static int DecryptKeyValue(this string? keyValue)
         {
+            if (string.IsNullOrEmpty(keyValue))
+                return 0;
+
             return BitConverter.ToInt32(AppResource.Instance.DecryptSalted(Convert.FromBase64String(keyValue)), 0);
         }
 
         public static String EncryptKey(this int keyID)
         {
             return BitConverter.GetBytes(keyID).EncryptKey();
+        }
+
+        public static string EncryptKey(this int? keyID)
+        {
+            int id = keyID??0;
+            return BitConverter.GetBytes(id).EncryptKey();
         }
 
         public static void ForEach<T>(this IEnumerable<T> source, Action<T> action)
