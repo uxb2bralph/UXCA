@@ -28,8 +28,10 @@ namespace ContractHome.Helper
             public string ContractID => payloadObj.data.ContractID;
             public string UID => payloadObj.data.UID;
             //public EmailBody.EmailTemplate? EmailTemplate => payloadObj.data.EmailTemplate;
-            public bool IsSeal => payloadObj.data.Func.Equals(typeof(NotifySeal).Name);
-            public bool IsSign => payloadObj.data.Func.Equals(typeof(NotifySign).Name);
+            public bool IsSeal => payloadObj.data.Func.Equals(typeof(NotifySeal).Name)
+                || payloadObj.data.Func.Equals(typeof(TaskNotifySeal).Name);
+            public bool IsSign => payloadObj.data.Func.Equals(typeof(NotifySign).Name)
+                || payloadObj.data.Func.Equals(typeof(TaskNotifySign).Name);
             public override string? ToString()
             {
                 return payloadObj.ToString();

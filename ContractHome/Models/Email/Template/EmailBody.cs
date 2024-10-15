@@ -29,7 +29,9 @@ namespace ContractHome.Models.Email.Template
         {
             Undefined = 0,
             NotifySeal = 2, //v2用印
+            TaskNotifySeal = 3, //task
             NotifySign = 5, //v2簽章
+            TaskNotifySign = 4, //task
             NotifySignature = 6, //v3可視簽章
             FinishContract = 8,
             LoginFailed = 9,

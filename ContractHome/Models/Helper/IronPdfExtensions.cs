@@ -72,30 +72,31 @@ namespace ContractHome.Models.Helper
 
             if (pdf != null)
             {
+                //wait to remove after task
                 // Load Word document from file's path.
-                foreach (var sig in contract.ContractSignatureRequest)
-                {
-                    if (sig.SealImage != null)
-                    {
-                        //String imgUrl = $"{Settings.Default.WebAppDomain}/ContractConsole/GetSignerSeal?ContractID={sig.ContractID}&CompanyID={sig.CompanyID}";
-                        //using (AnyBitmap bmp = new AnyBitmap(sig.SealImage.ToArray()))
-                        //{
-                        //    ImageStamper imgStamper = new ImageStamper(bmp)
-                        //    {
-                        //        //Opacity = 60,
-                        //        HorizontalOffset = new Length(unit: MeasurementUnit.Centimeter) { Value = sig.MarginLeft ?? 0, },
-                        //        VerticalOffset = new Length(unit: MeasurementUnit.Centimeter) { Value = sig.MarginTop ?? 0 },
-                        //        VerticalAlignment = IronPdf.Editing.VerticalAlignment.Top,
-                        //        HorizontalAlignment = IronPdf.Editing.HorizontalAlignment.Left,
-                        //        IsStampBehindContent = true,
-                        //    };
-                        //    pdf.ApplyStamp(imgStamper, sig.PageIndex ?? 0);
-                        //}
-                        byte[] buf = sig.SealImage.ToArray();
-                        ApplyStamp(pdf, buf, sig.MarginLeft, sig.MarginTop, sig.SealScale, sig.PageIndex);
+                //foreach (var sig in contract.ContractSignatureRequest)
+                //{
+                //    if (sig.SealImage != null)
+                //    {
+                //        //String imgUrl = $"{Settings.Default.WebAppDomain}/ContractConsole/GetSignerSeal?ContractID={sig.ContractID}&CompanyID={sig.CompanyID}";
+                //        //using (AnyBitmap bmp = new AnyBitmap(sig.SealImage.ToArray()))
+                //        //{
+                //        //    ImageStamper imgStamper = new ImageStamper(bmp)
+                //        //    {
+                //        //        //Opacity = 60,
+                //        //        HorizontalOffset = new Length(unit: MeasurementUnit.Centimeter) { Value = sig.MarginLeft ?? 0, },
+                //        //        VerticalOffset = new Length(unit: MeasurementUnit.Centimeter) { Value = sig.MarginTop ?? 0 },
+                //        //        VerticalAlignment = IronPdf.Editing.VerticalAlignment.Top,
+                //        //        HorizontalAlignment = IronPdf.Editing.HorizontalAlignment.Left,
+                //        //        IsStampBehindContent = true,
+                //        //    };
+                //        //    pdf.ApplyStamp(imgStamper, sig.PageIndex ?? 0);
+                //        //}
+                //        byte[] buf = sig.SealImage.ToArray();
+                //        ApplyStamp(pdf, buf, sig.MarginLeft, sig.MarginTop, sig.SealScale, sig.PageIndex);
 
-                    }
-                }
+                //    }
+                //}
 
                 foreach (var sig in contract.ContractSealRequest)
                 {

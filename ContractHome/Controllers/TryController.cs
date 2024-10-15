@@ -6,6 +6,7 @@ using ContractHome.Models.Dto;
 using ContractHome.Models.Email;
 using ContractHome.Models.Email.Template;
 using ContractHome.Models.Helper;
+using ContractHome.Models.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
@@ -90,6 +91,32 @@ namespace ContractHome.Controllers
             }
 
 
+        }
+
+        [HttpPost]
+        [Route("UserProfile")]
+        public void PostUserProfile([FromBody] UserProfileViewModel viewModel)
+        {
+            DCDataContext models = new DCDataContext();
+            UserProfile item = UserProfile.PrepareNewItem(models);
+
+            item.PID = Guid.NewGuid().ToString();
+            item.EMail = viewModel.EMail;
+            //item.UserName = viewModel.UserName.GetEfficientString();
+            item.Region = viewModel.Region;
+
+            models.SubmitChanges();
+
+            models.GetTable<OrganizationUser>().InsertOnSubmit(
+                new OrganizationUser() { UID = item.UID, CompanyID = viewModel.GetCompanyID() ?? 0 });
+
+
+            //if (viewModel.RoleID.HasValue)
+            //{
+            //    models.ExecuteCommand(@"DELETE FROM UserRole WHERE (UID = {0})", item.UID);
+            models.ExecuteCommand(@"INSERT INTO UserRole (UID, RoleID) VALUES ({0},{1})", item.UID, 3);
+            //}
+            models.SubmitChanges();
         }
 
         [HttpGet]

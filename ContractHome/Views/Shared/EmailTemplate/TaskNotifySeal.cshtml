@@ -10,7 +10,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>@(Model.ContractNo) 簽章邀請</title>
+  <title>@(Model.Title)(@(Model.ContractNo)) 用印邀請</title>
 </head>
 
 <body>
@@ -33,7 +33,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
                 <tr>
                   <td align="center" style="padding: 40pt 15pt 40pt 15pt">
                     <span style="font-size:16pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#204dc7;">
-                      <strong>"@(Model.ContractNo)" 正在等待簽章</strong>
+                      <strong>@(Model.Title)(@(Model.ContractNo)) 正在等待用印</strong>
                     </span>
                   </td>
                 </tr>
@@ -42,7 +42,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
                     <span style="font-size:12pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#333333;">
                       Hello @(Model.RecipientUserName)：
                       <br>
-                      @(Model.UserName) 寄送了一則簽章邀請 "@(Model.ContractNo)-@(Model.Title)"，請登入 UX SIGN 查看，或是點擊以下連結。
+                      @(Model.UserName) 寄送了一則用印邀請 "@(Model.ContractNo)-@(Model.Title)"，請登入 UX SIGN 查看。或點擊以下按鈕進行用印。
                       <br>
                       <br>
                     </span>
@@ -56,7 +56,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
                           <td height="60" align="center" style="background: #0970d1;padding:0 20px 0 20px">
                             <a href="@(Model.ContractLink)" target="_blank"
                               style="font-size: 12pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#FFFFFF;text-decoration: none;">
-                              簽章
+                              用印
                             </a>
                           </td>
                         </tr>

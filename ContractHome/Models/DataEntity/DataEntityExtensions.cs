@@ -91,14 +91,14 @@ namespace ContractHome.Models.DataEntity
             return item;
         }
 
-        public int CompanyID =>
-            (OrganizationUser!=null)? OrganizationUser.Organization.CompanyID:0;
+        //public int CompanyID =>
+        //    (OrganizationUser!=null)? OrganizationUser.Organization.CompanyID:0;
 
-        public string CompanyName =>
-            (OrganizationUser != null) ? OrganizationUser.Organization.CompanyName : string.Empty;
+        //public string CompanyName =>
+        //    (CompanyID != null) ? Organization.CompanyName : string.Empty;
 
-        public Organization? Organization =>
-            (OrganizationUser != null) ? OrganizationUser.Organization : null;
+        //public Organization? Organization =>
+        //    (CompanyID != null) ? OrganizationUser.Organization : null;
     }
 
     public partial class CDS_Document

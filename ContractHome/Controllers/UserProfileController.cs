@@ -354,6 +354,51 @@ namespace ContractHome.Controllers
             return Json(_baseResponse);
         }
 
+        //[RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.User })]
+        public ActionResult CreateOperator([FromBody] UserProfileViewModel viewModel)
+        {
+            ViewBag.ViewModel = viewModel;
+
+            int? uid = null;
+            if (viewModel.KeyID != null)
+            {
+                uid = viewModel.DecryptKeyValue();
+            }
+
+            var dataItem = models.GetTable<UserProfile>()
+                .Where(u => u.UID == uid)
+                .FirstOrDefault();
+
+            if (dataItem==null|| !dataItem.CompanyID.Equals(viewModel.GetCompanyID()))
+            {
+                return Json(_baseResponse.ErrorMessage("使用者不存在."));
+            };
+
+            var sameEmailInCompany = models.GetTable<UserProfile>()
+                .Where(u => u.EMail == viewModel.EMail)
+                .Where(u => u.CompanyID==viewModel.GetCompanyID())
+                .FirstOrDefault();
+
+            if (sameEmailInCompany!=null)
+            {
+                return Json(_baseResponse.ErrorMessage($"email:{viewModel.EMail} 已存在."));
+            }
+
+            UserProfile item = UserProfile.PrepareNewItem(models.DataContext);
+
+            item.PID = Guid.NewGuid().ToString();
+            item.EMail = viewModel.EMail;
+            item.Region = viewModel.Region;
+            item.CompanyID = viewModel.GetCompanyID();
+            item.OperatorNote = viewModel.Title;
+            models.SubmitChanges();
+
+            models.ExecuteCommand(@"INSERT INTO UserRole (UID, RoleID) VALUES ({0},{1})", item.UID, 3);
+            models.SubmitChanges();
+
+            return Json(_baseResponse);
+        }
+
         [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
         public async Task<ActionResult> CommitItemAsync(UserProfileViewModel viewModel)
         {
@@ -491,7 +536,7 @@ namespace ContractHome.Controllers
             return Json(new { result = false, message = "資料錯誤！" });
         }
 
-        [UserAuthorize]
+        [Authorize]
         public async Task<ActionResult> ShowSealModalAsync([FromBody] QueryViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
@@ -514,7 +559,7 @@ namespace ContractHome.Controllers
             return View("~/Views/UserProfile/VueModule/SealModal.cshtml", items);
         }
 
-        [UserAuthorize]
+        [Authorize]
         public async Task<ActionResult> CommitSealTemplateAsync(QueryViewModel viewModel, IFormFile sealImage)
         {
             if (sealImage == null)
@@ -568,7 +613,7 @@ namespace ContractHome.Controllers
             }
         }
 
-        [UserAuthorize]
+        [Authorize]
         public async Task<ActionResult> CommitSignatureTemplateAsync([FromBody] UserProfileViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;

@@ -14,7 +14,6 @@ using ContractHome.Helper.DataQuery;
 using System.Web;
 using Newtonsoft.Json;
 using ContractHome.Models.Email.Template;
-using static ContractHome.Models.DataEntity.CDS_Document;
 using ContractHome.Models.Dto;
 using FluentValidation;
 using static ContractHome.Models.Helper.ContractServices;
@@ -22,18 +21,13 @@ using static ContractHome.Helper.JwtTokenGenerator;
 using ContractHome.Models.Cache;
 using ContractHome.Properties;
 using static CommonLib.Utility.PredicateBuilder;
-using Newtonsoft.Json.Linq;
-using System.Reflection;
 using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Spreadsheet;
-using ContractHome.Security.Authorization;
-using System.Diagnostics.CodeAnalysis;
 
 
 namespace ContractHome.Controllers
 {
     //remark for testing by postman
-    [Authorize]
+    //[Authorize]
     public class ContractConsoleController : SampleController
     {
         private readonly ILogger<HomeController> _logger;
@@ -163,6 +157,7 @@ namespace ContractHome.Controllers
                 contract.CDS_Document.ProcessType = (int)CDS_Document.ProcessTypeEnum.PDF;
             }
 
+            #region wait to remove after ContractingUser
             contract.ContractingParty.Add(new ContractingParty
             {
                 CompanyID = viewModel.InitiatorID.Value,
@@ -170,11 +165,13 @@ namespace ContractHome.Controllers
                 IsInitiator = true,
             });
 
+
             contract.ContractingParty.Add(new ContractingParty
             {
                 CompanyID = viewModel.ContractorID.Value,
                 IntentID = viewModel.ContractorIntent!.Value,
             });
+            #endregion
 
             models.GetTable<Contract>().InsertOnSubmit(contract);
             models.SubmitChanges();
@@ -183,154 +180,155 @@ namespace ContractHome.Controllers
         }
 
 
-        public async Task<ActionResult> CommitContractAsync([FromBody] SignContractViewModel viewModel)
-        {
-            var profile = await HttpContext.GetUserAsync();
-            int? uid = profile?.UID;
+        //public async Task<ActionResult> CommitContractAsync([FromBody] SignContractViewModel viewModel)
+        //{
+        //    var profile = await HttpContext.GetUserAsync();
+        //    int? uid = profile?.UID;
 
-            if (uid == null)
-            {
-                return Json(new { result = false, message = "身份驗證失敗." });
-            }
+        //    if (uid == null)
+        //    {
+        //        return Json(new { result = false, message = "身份驗證失敗." });
+        //    }
 
-            if (!viewModel.InitiatorID.HasValue)
-            {
-                ModelState.AddModelError("Initiator", "請選擇合約發起人!!");
-            }
+        //    if (!viewModel.InitiatorID.HasValue)
+        //    {
+        //        ModelState.AddModelError("Initiator", "請選擇合約發起人!!");
+        //    }
 
-            if (!(viewModel.Contractors?.Length > 0))
-            {
-                ModelState.AddModelError("Contractor", "請選擇簽約人!!");
-            }
-            else
-            {
-                //wait to do:未做TRANSACTION處理, 檢查提前做, 避免只完成部份Contractor
-                for (int i = 0; i < viewModel.Contractors!.Length; i++)
-                {
-                    if (string.IsNullOrEmpty(viewModel.Contractors[i].Contractor)
-                        || string.IsNullOrEmpty(viewModel.Initiator))
-                    {
-                        ModelState.AddModelError("Initiator", "起約人或簽約人ID空白!!");
-                        break;
-                    }
+        //    if (!(viewModel.Contractors?.Length > 0))
+        //    {
+        //        ModelState.AddModelError("Contractor", "請選擇簽約人!!");
+        //    }
+        //    else
+        //    {
+        //        //wait to do:未做TRANSACTION處理, 檢查提前做, 避免只完成部份Contractor
+        //        for (int i = 0; i < viewModel.Contractors!.Length; i++)
+        //        {
+        //            if (string.IsNullOrEmpty(viewModel.Contractors[i].Contractor)
+        //                || string.IsNullOrEmpty(viewModel.Initiator))
+        //            {
+        //                ModelState.AddModelError("Initiator", "起約人或簽約人ID空白!!");
+        //                break;
+        //            }
 
-                    var contractorID = viewModel.Contractors[i].ContractorID;
-                    var initiatorID = viewModel.InitiatorID!.Value;
+        //            var contractorID = viewModel.Contractors[i].ContractorID;
+        //            var initiatorID = viewModel.InitiatorID!.Value;
 
-                    if (contractorID == initiatorID)
-                    {
-                        ModelState.AddModelError("Initiator", $"起約人{initiatorID}不可和簽約對象{contractorID}相同.");
-                    }
-                }
-            }
+        //            if (contractorID == initiatorID)
+        //            {
+        //                ModelState.AddModelError("Initiator", $"起約人{initiatorID}不可和簽約對象{contractorID}相同.");
+        //            }
+        //        }
+        //    }
 
-            viewModel.KeyID = viewModel.KeyID.GetEfficientString();
-            if (viewModel.KeyID != null)
-            {
-                viewModel.ContractID = viewModel.DecryptKeyValue();
-            }
-
-
-            if (!ModelState.IsValid)
-            {
-                return Json(new { result = false, message = ModelState.ErrorMessage() });
-            }
-
-            DataLoadOptions ops = new DataLoadOptions();
-            ops.LoadWith<CDS_Document>(c => c.Contract);
-            ops.LoadWith<Contract>(c => c.ContractSealRequest);
-            models.LoadOptions = ops;
-
-            var contract = models.GetTable<Contract>()
-                            .Where(c => c.ContractID == viewModel.ContractID)
-                            .FirstOrDefault();
+        //    viewModel.KeyID = viewModel.KeyID.GetEfficientString();
+        //    if (viewModel.KeyID != null)
+        //    {
+        //        viewModel.ContractID = viewModel.DecryptKeyValue();
+        //    }
 
 
-            if (contract?.FilePath == null || !System.IO.File.Exists(contract.FilePath))
-            {
-                return Json(new { result = false, message = "合約資料錯誤!!" });
-            }
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return Json(new { result = false, message = ModelState.ErrorMessage() });
+        //    }
 
-            //remark for postman test
-            if (!contract.ContractSealRequest.Any() && viewModel.IgnoreSeal != true)
-            {
-                return Json(new { result = false, message = "合約未用印!!" });
-            }
+        //    DataLoadOptions ops = new DataLoadOptions();
+        //    ops.LoadWith<CDS_Document>(c => c.Contract);
+        //    ops.LoadWith<Contract>(c => c.ContractSealRequest);
+        //    models.LoadOptions = ops;
 
-            contract.ContractContent = new Binary(System.IO.File.ReadAllBytes(contract.FilePath));
-
-
-            models.SubmitChanges();
-            try
-            {
-                _contractServices?.SetModels(models);
-                List<Contract> notifyList = new List<Contract>() { contract };
-                if (viewModel.Contractors!.Length == 1)
-                {
-                    var contractorID = viewModel.Contractors[0].ContractorID;
-                    var initiatorID = viewModel.InitiatorID!.Value;
-                    _contractServices?.CreateAndSaveParty(
-                        initiatorID: initiatorID,
-                        contractorID: contractorID ?? 0,
-                        contract: contract,
-                        viewModel.Contractors[0].SignaturePositions,
-                        uid ?? 0);
-
-                    //return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
-                }
-                else
-                {
-                    for (int i = 0; i < viewModel.Contractors!.Length; i++)
-                    {
-                        var contractorID = viewModel.Contractors[i].ContractorID;
-                        var initiatorID = viewModel.InitiatorID!.Value;
-                        //wait to do..個別簽署暫關閉待調整
-                        //if ((contract.IsJointContracting == true) || (i == 0))
-                        //{
-                        //    _contractServices?.CreateAndSaveParty(
-                        //        initiatorID: initiatorID,
-                        //        contractorID: contractorID ?? 0,
-                        //        contract: contract,
-                        //        viewModel.Contractors[i].SignaturePositions,
-                        //        uid ?? 0);
-
-                        //}
-                        //else
-                        //{
-                        //    var newContract = _contractServices.CreateAndSaveContractByOld(contract);
-
-                        //    _contractServices.CreateAndSaveParty(
-                        //        initiatorID: initiatorID,
-                        //        contractorID: contractorID ?? 0,
-                        //        contract: newContract,
-                        //        viewModel.Contractors[i].SignaturePositions,
-                        //        uid ?? 0
-                        //    );
-                        //    notifyList.Add(newContract);
-                        //}
-
-                    }
-                }
-
-                _contractServices.SaveContract();
-
-                //wait to do..CommitContractAsync for 個別簽署功能待確認
-                //if (notifyList.Count > 0)
-                //{
-                //    _contractServices.SendNotifyEmailAsync(
-                //        notifyList, EmailBody.EmailTemplate.NotifySeal);
-                //}
-            }
-            catch (Exception ex)
-            {
-                FileLogger.Logger.Error(ex);
-                return Json(new { result = false, message = "合約建立失敗." });
-            }
+        //    var contract = models.GetTable<Contract>()
+        //                    .Where(c => c.ContractID == viewModel.ContractID)
+        //                    .FirstOrDefault();
 
 
+        //    if (contract?.FilePath == null || !System.IO.File.Exists(contract.FilePath))
+        //    {
+        //        return Json(new { result = false, message = "合約資料錯誤!!" });
+        //    }
 
-            return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
-        }
+        //    //remark for postman test
+        //    if (!contract.ContractSealRequest.Any() && viewModel.IgnoreSeal != true)
+        //    {
+        //        return Json(new { result = false, message = "合約未用印!!" });
+        //    }
+
+        //    //contract.ContractContent = new Binary(System.IO.File.ReadAllBytes(contract.FilePath));
+
+
+        //    models.SubmitChanges();
+        //    try
+        //    {
+        //        _contractServices?.SetModels(models);
+        //        List<Contract> notifyList = new List<Contract>() { contract };
+        //        if (viewModel.Contractors!.Length == 1)
+        //        {
+        //            var contractorID = viewModel.Contractors[0].ContractorID;
+        //            var initiatorID = viewModel.InitiatorID!.Value;
+        //            _contractServices?.CreateAndSaveParty(
+        //                initiatorID: initiatorID,
+        //                contractorID: contractorID ?? 0,
+        //                contract: contract,
+        //                viewModel.Contractors[0].SignaturePositions,
+        //                uid ?? 0);
+
+        //            //return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
+        //        }
+        //        //wait to do..個別簽署暫關閉待調整
+        //        //else
+        //        //{
+        //        //    for (int i = 0; i < viewModel.Contractors!.Length; i++)
+        //        //    {
+        //        //        var contractorID = viewModel.Contractors[i].ContractorID;
+        //        //        var initiatorID = viewModel.InitiatorID!.Value;
+        //        //        //wait to do..個別簽署暫關閉待調整
+        //        //        //if ((contract.IsJointContracting == true) || (i == 0))
+        //        //        //{
+        //        //        //    _contractServices?.CreateAndSaveParty(
+        //        //        //        initiatorID: initiatorID,
+        //        //        //        contractorID: contractorID ?? 0,
+        //        //        //        contract: contract,
+        //        //        //        viewModel.Contractors[i].SignaturePositions,
+        //        //        //        uid ?? 0);
+
+        //        //        //}
+        //        //        //else
+        //        //        //{
+        //        //        //    var newContract = _contractServices.CreateAndSaveContractByOld(contract);
+
+        //        //        //    _contractServices.CreateAndSaveParty(
+        //        //        //        initiatorID: initiatorID,
+        //        //        //        contractorID: contractorID ?? 0,
+        //        //        //        contract: newContract,
+        //        //        //        viewModel.Contractors[i].SignaturePositions,
+        //        //        //        uid ?? 0
+        //        //        //    );
+        //        //        //    notifyList.Add(newContract);
+        //        //        //}
+
+        //        //    }
+        //        //}
+
+        //        _contractServices.SaveContract();
+
+        //        //wait to do..CommitContractAsync for 個別簽署功能待確認
+        //        //if (notifyList.Count > 0)
+        //        //{
+        //        //    _contractServices.SendNotifyEmailAsync(
+        //        //        notifyList, EmailBody.EmailTemplate.NotifySeal);
+        //        //}
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        FileLogger.Logger.Error(ex);
+        //        return Json(new { result = false, message = "合約建立失敗." });
+        //    }
+
+
+
+        //    return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
+        //}
 
         public async Task<ActionResult> AcceptContractAsync([FromBody] SignContractViewModel viewModel)
         {
@@ -715,12 +713,12 @@ namespace ContractHome.Controllers
             else
             {
                 items = items.Where(c => models.GetTable<ContractingParty>()
-                            .Where(p => models.GetTable<Organization>()
-                                    .Where(o => models.GetTable<OrganizationUser>()
-                                            .Where(u => u.UID == profile.UID)
-                                        .Any(u => u.CompanyID == o.CompanyID))
-                                .Any(o => o.CompanyID == p.CompanyID))
-                        .Any(p => p.ContractID == c.ContractID));
+                                    .Where(p => models.GetTable<Organization>()
+                                        .Where(o => models.GetTable<OrganizationUser>()
+                                                .Where(u => u.UID == profile.UID)
+                                            .Any(u => u.CompanyID == o.CompanyID))
+                                    .Any(o => o.CompanyID == p.CompanyID))
+                             .Any(p => p.ContractID == c.ContractID));
             }
 
             return items;
@@ -910,7 +908,7 @@ namespace ContractHome.Controllers
 
                     ContractNo = contract.ContractNo,
                     ContractTitle = contract.Title,
-                    CompanyName = userProfile.CompanyName,
+                    CompanyName = userProfile.Organization.CompanyName,
                     ContractID = jwtTokenObj.ContractID
                 };
 
@@ -922,7 +920,6 @@ namespace ContractHome.Controllers
             this.HttpContext.Logout();
             return RedirectToAction("Login", "Account");
         }
-
 
         public async Task<ActionResult> AffixPdfSeal(SignatureRequestViewModel viewModel)
         {
@@ -952,60 +949,60 @@ namespace ContractHome.Controllers
 
         }
 
-        public async Task<ActionResult> CommitSignatureAsync(SealRequestViewModel viewModel, IFormFile sealImage)
-        {
-            if (sealImage == null)
-            {
-                return Json(new { result = false, message = "請選擇印鑑章!!" });
-            }
+        //public async Task<ActionResult> CommitSignatureAsync(SealRequestViewModel viewModel, IFormFile sealImage)
+        //{
+        //    if (sealImage == null)
+        //    {
+        //        return Json(new { result = false, message = "請選擇印鑑章!!" });
+        //    }
 
-            if (!(viewModel.SealScale > 0))
-            {
-                return Json(new { result = false, message = "請輸入正確縮放百分比!!" });
-            }
+        //    if (!(viewModel.SealScale > 0))
+        //    {
+        //        return Json(new { result = false, message = "請輸入正確縮放百分比!!" });
+        //    }
 
-            ViewResult? result = AffixSeal(viewModel) as ViewResult;
-            if (result == null)
-            {
-                return Json(new { result = false, message = "資料錯誤!!" });
-            }
+        //    ViewResult? result = AffixSeal(viewModel) as ViewResult;
+        //    if (result == null)
+        //    {
+        //        return Json(new { result = false, message = "資料錯誤!!" });
+        //    }
 
-            var profile = await HttpContext.GetUserAsync();
+        //    var profile = await HttpContext.GetUserAsync();
 
-            ContractSealRequest item = (ContractSealRequest?)result?.Model ?? new ContractSealRequest { };
-            if (profile != null && models.CanAffixSeal(item, profile.UID))
-            {
-                item.StampDate = DateTime.Now;
-                item.StampUID = profile.UID;
-                item.SealScale = viewModel.SealScale;
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    sealImage.CopyTo(ms);
-                    item.SealImage = new System.Data.Linq.Binary(ms.ToArray());
-                }
-                models.SubmitChanges();
+        //    ContractSealRequest item = (ContractSealRequest?)result?.Model ?? new ContractSealRequest { };
+        //    if (profile != null && models.CanAffixSeal(item, profile.UID))
+        //    {
+        //        item.StampDate = DateTime.Now;
+        //        item.StampUID = profile.UID;
+        //        item.SealScale = viewModel.SealScale;
+        //        using (MemoryStream ms = new MemoryStream())
+        //        {
+        //            sealImage.CopyTo(ms);
+        //            item.SealImage = new System.Data.Linq.Binary(ms.ToArray());
+        //        }
+        //        models.SubmitChanges();
 
-                Contract contract = item.Contract;
-                if (contract.ContractSealRequest.Any(s => !s.StampDate.HasValue) == false)
-                {
-                    contract.ContractSignatureRequest = new EntitySet<ContractSignatureRequest>();
-                    contract.ContractSignatureRequest.AddRange(contract.ContractingParty
-                        .GroupBy(c => new { c.ContractID, c.CompanyID })
-                        .Select(g => new ContractSignatureRequest
-                        {
-                            CompanyID = g.Key.CompanyID,
-                            ContractID = g.Key.ContractID,
-                        }));
+        //        Contract contract = item.Contract;
+        //        if (contract.ContractSealRequest.Any(s => !s.StampDate.HasValue) == false)
+        //        {
+        //            contract.ContractSignatureRequest = new EntitySet<ContractSignatureRequest>();
+        //            contract.ContractSignatureRequest.AddRange(contract.ContractingParty
+        //                .GroupBy(c => new { c.ContractID, c.CompanyID })
+        //                .Select(g => new ContractSignatureRequest
+        //                {
+        //                    CompanyID = g.Key.CompanyID,
+        //                    ContractID = g.Key.ContractID,
+        //                }));
 
-                    models.SubmitChanges();
-                }
+        //            models.SubmitChanges();
+        //        }
 
-                return Json(new { result = true });
-            }
+        //        return Json(new { result = true });
+        //    }
 
-            return Json(new { result = false });
+        //    return Json(new { result = false });
 
-        }
+        //}
 
         //public async Task<ActionResult> CommitPdfSignatureAsync(SignatureRequestViewModel viewModel, IFormFile sealImage)
         //{
@@ -1643,34 +1640,34 @@ namespace ContractHome.Controllers
 
         //}
 
-        [AllowAnonymous]
-        public async Task<ActionResult> GetSignerSealAsync(SignatureRequestViewModel viewModel)
-        {
-            ViewBag.ViewModel = viewModel;
-            SignatureRequestViewModel tmpModel = viewModel;
-            viewModel.KeyID = viewModel.KeyID.GetEfficientString();
-            if (viewModel.KeyID != null)
-            {
-                tmpModel = JsonConvert.DeserializeObject<SignatureRequestViewModel>(viewModel.KeyID.DecryptData()) ?? new SignatureRequestViewModel { };
-            }
+        //[AllowAnonymous]
+        //public async Task<ActionResult> GetSignerSealAsync(SignatureRequestViewModel viewModel)
+        //{
+        //    ViewBag.ViewModel = viewModel;
+        //    SignatureRequestViewModel tmpModel = viewModel;
+        //    viewModel.KeyID = viewModel.KeyID.GetEfficientString();
+        //    if (viewModel.KeyID != null)
+        //    {
+        //        tmpModel = JsonConvert.DeserializeObject<SignatureRequestViewModel>(viewModel.KeyID.DecryptData()) ?? new SignatureRequestViewModel { };
+        //    }
 
-            var item = models.GetTable<ContractSignatureRequest>()
-                        .Where(r => r.ContractID == tmpModel.ContractID)
-                        .Where(r => r.CompanyID == tmpModel.CompanyID)
-                        .FirstOrDefault();
+        //    var item = models.GetTable<ContractSignatureRequest>()
+        //                .Where(r => r.ContractID == tmpModel.ContractID)
+        //                .Where(r => r.CompanyID == tmpModel.CompanyID)
+        //                .FirstOrDefault();
 
-            if (item?.SealImage != null)
-            {
-                Response.Clear();
-                Response.ContentType = "application/octet-stream";
-                Response.Body.Write(item.SealImage.ToArray());
+        //    if (item?.SealImage != null)
+        //    {
+        //        Response.Clear();
+        //        Response.ContentType = "application/octet-stream";
+        //        Response.Body.Write(item.SealImage.ToArray());
 
-                await Response.Body.FlushAsync();
-            }
+        //        await Response.Body.FlushAsync();
+        //    }
 
-            return new EmptyResult();
+        //    return new EmptyResult();
 
-        }
+        //}
 
         [AllowAnonymous]
         public async Task<ActionResult> NotifyClientCertificateAsync(SignatureRequestViewModel viewModel)
@@ -1765,12 +1762,12 @@ namespace ContractHome.Controllers
         public async Task<IActionResult> AvailableSignatoriesAsync([FromBody] GetSignatoriesRequest req)
         {
             var profile = await HttpContext.GetUserAsync();
-            #region add for postman test
-            if (profile == null && req.EncUID != null)
-            {
-                profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
-            }
-            #endregion
+            //#region add for postman test
+            //if (profile == null && req.EncUID != null)
+            //{
+            //    profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
+            //}
+            //#endregion
             if (profile == null)
             {
                 return Json(new BaseResponse(true, "請重新登入"));
@@ -1803,7 +1800,7 @@ namespace ContractHome.Controllers
             _contractServices.SetModels(models);
             Contract contract = _contractServices.GetContractByID(contractID: req.ContractID.DecryptKeyValue());
 
-            _baseResponse.Data =
+            var ttt =
                 contract
                 .ContractSignaturePositionRequest
                 .Where(y => y.ContractorID == req.CompanyID.DecryptKeyValue())
@@ -1817,9 +1814,12 @@ namespace ContractHome.Controllers
                     MarginTop = x.MarginTop,
                     MarginLeft = x.MarginLeft,
                     Type = x.Type,
-                    PageIndex = x.PageIndex
-                });
+                    PageIndex = x.PageIndex,
+                    OperatorID = x.OperatorID
+                }).ToList();
 
+
+            _baseResponse.Data = ttt;
             return Json(_baseResponse);
         }
 
@@ -1918,6 +1918,7 @@ namespace ContractHome.Controllers
             public int? PageIndex { get; set; }
             //0:default 1:文字 2.地址 3.電話 4.日期 5.公司Title 6.印章 7.簽名 8.圖片 ... 擴充?
             public int? Type { get; set; }
+            public int? OperatorID { get; set; }
         }
     }
 }

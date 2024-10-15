@@ -4,25 +4,16 @@ using CommonLib.Utility;
 using ContractHome.Helper;
 using ContractHome.Models.DataEntity;
 using ContractHome.Models.Email.Template;
-using ContractHome.Models.Email;
-using ContractHome.Models.ViewModel;
-using Newtonsoft.Json;
 using ContractHome.Models.Dto;
 using Microsoft.EntityFrameworkCore;
 using static ContractHome.Models.Dto.PostFieldSettingRequest;
 using Wangkanai.Detection.Services;
-using ContractHome.Models.Cache;
-using Microsoft.AspNetCore.Authorization;
 using static ContractHome.Helper.JwtTokenGenerator;
 using ContractHome.Helper.DataQuery;
-using ContractHome.Properties;
 using System.Text;
-using System.Linq;
-using System.Linq.Expressions;
 using static ContractHome.Models.DataEntity.CDS_Document;
-using DocumentFormat.OpenXml.Drawing;
-using ContractHome.Controllers;
 using System.Diagnostics.CodeAnalysis;
+using System.Security.Cryptography.Xml;
 
 namespace ContractHome.Models.Helper
 {
@@ -79,16 +70,21 @@ namespace ContractHome.Models.Helper
         }
 
         //wait to do...replace by Contract.EntitySet<Organization>
-        public Organization? GetOrganization(Contract contract)
-        {
-            return _models?.GetTable<Organization>()
-                .Where(c => c.CompanyID == contract.CompanyID)
-                .FirstOrDefault();
-        }
+        //public Organization? GetOrganization(Contract contract)
+        //{
+        //    return _models?.GetTable<Organization>()
+        //        .Where(c => c.CompanyID == contract.CompanyID)
+        //        .FirstOrDefault();
+        //}
 
         public IEnumerable<Organization>? GetAvailableSignatories(int companyID)
         {
             return _models.GetTable<Organization>().Where(x => x.CompanyBelongTo == companyID);
+        }
+
+        public IEnumerable<UserProfile>? GetOperatorByCompanyID(int companyID)
+        {
+            return _models.GetTable<UserProfile>().Where(x => x.CompanyID == companyID);
         }
 
         public bool IsContractHasCompany(Contract contract, int? companyID)
@@ -96,40 +92,40 @@ namespace ContractHome.Models.Helper
             return contract.ContractingParty.Where(x=>x.CompanyID == companyID).Any();
         }
 
-        //利用原有合約資料新增合約, for非聯合承攬用, 各別成立合約用
-        //同時新增CDS_Document及Contract資料
-        public Contract? CreateAndSaveContractByOld(Contract contract)
-        {
-            var doc = _models.GetTable<CDS_Document>()
-                .Where(d => d.DocID == contract.ContractID).First();
+        ////利用原有合約資料新增合約, for非聯合承攬用, 各別成立合約用
+        ////同時新增CDS_Document及Contract資料
+        //public Contract? CreateAndSaveContractByOld(Contract contract)
+        //{
+        //    var doc = _models.GetTable<CDS_Document>()
+        //        .Where(d => d.DocID == contract.ContractID).First();
 
-            if (doc==null)
-            {
-                throw new NullReferenceException();
-            }
+        //    if (doc==null)
+        //    {
+        //        throw new NullReferenceException();
+        //    }
 
-            try
-            {
-                String json = doc.JsonStringify();
-                doc = JsonConvert.DeserializeObject<CDS_Document>(json);
-                _models.GetTable<CDS_Document>().InsertOnSubmit(doc!);
-                doc!.Contract.ContractSignaturePositionRequest = null;
-                doc!.Contract.ContractingParty = null;
-                doc!.Contract.ContractSignature = null;
-                doc!.Contract.ContractSignatureRequest = null;
-                //甲方起約時的用印也要複製一份到新的獨立合約
-                //doc!.Contract.ContractSealRequest = null;
-                doc!.Contract.ContractNoteRequest = null;
-                _models.GetTable<Contract>().InsertOnSubmit(doc!.Contract);
-                _models.SubmitChanges();
-                return doc!.Contract;
-            }
-            catch (Exception ex)
-            {
-                FileLogger.Logger.Error(ex.ToString());
-                throw;
-            }
-        }
+        //    try
+        //    {
+        //        String json = doc.JsonStringify();
+        //        doc = JsonConvert.DeserializeObject<CDS_Document>(json);
+        //        _models.GetTable<CDS_Document>().InsertOnSubmit(doc!);
+        //        doc!.Contract.ContractSignaturePositionRequest = null;
+        //        doc!.Contract.ContractingParty = null;
+        //        doc!.Contract.ContractSignature = null;
+        //        doc!.Contract.ContractSignatureRequest = null;
+        //        //甲方起約時的用印也要複製一份到新的獨立合約
+        //        //doc!.Contract.ContractSealRequest = null;
+        //        doc!.Contract.ContractNoteRequest = null;
+        //        _models.GetTable<Contract>().InsertOnSubmit(doc!.Contract);
+        //        _models.SubmitChanges();
+        //        return doc!.Contract;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        FileLogger.Logger.Error(ex.ToString());
+        //        throw;
+        //    }
+        //}
 
         public Contract AddParty(Contract contract, int CompanyID)
         {
@@ -158,6 +154,40 @@ namespace ContractHome.Models.Helper
             return contract;
         }
 
+        public Contract DeleteAndCreateFieldPostion(Contract contract, 
+            IEnumerable<PostFieldSettingRequestFields> feildSettings)
+        {
+            _models.DeleteAll<ContractSignaturePositionRequest>(x => x.ContractID == contract.ContractID);
+
+            foreach (var pos in feildSettings)
+            {
+                if (!contract.ContractSignaturePositionRequest
+                    .Where(p => p.ContractID == contract.ContractID)
+                    .Where(p => p.OperatorID ==  pos.OperatorID.DecryptKeyValue())
+                    .Where(p => p.ContractorID == pos.CompanyID.DecryptKeyValue())
+                    .Where(p => p.PositionID == pos.ID)
+                .Any())
+                {
+                    contract.ContractSignaturePositionRequest.Add(new ContractSignaturePositionRequest
+                    {
+                        ContractID = contract.ContractID,
+                        ContractorID = null,
+                        PositionID = pos.ID,
+                        ScaleWidth = pos.ScaleWidth,
+                        ScaleHeight = pos.ScaleHeight,
+                        MarginTop = pos.MarginTop,
+                        MarginLeft = pos.MarginLeft,
+                        Type = (short)pos.Type,
+                        PageIndex = pos.PageIndex,
+                        OperatorID = (string.IsNullOrEmpty(pos.OperatorID)) ? null : pos.OperatorID.DecryptKeyValue()
+                    });
+                }
+
+            }
+
+            return contract;
+        }
+
         public Contract UpdateFieldSetting(Contract contract, IEnumerable<PostFieldSettingRequestFields> feildSettings)
         {
             _models.DeleteAll<ContractSignaturePositionRequest>(x => x.ContractID == contract.ContractID);
@@ -181,7 +211,8 @@ namespace ContractHome.Models.Helper
                         MarginTop = pos.MarginTop,
                         MarginLeft = pos.MarginLeft,
                         Type = (short)pos.Type,
-                        PageIndex = pos.PageIndex
+                        PageIndex = pos.PageIndex,
+                        OperatorID = (string.IsNullOrEmpty(pos.OperatorID)) ? null : pos.OperatorID.DecryptKeyValue()
                     });
                 }
 
@@ -229,6 +260,52 @@ namespace ContractHome.Models.Helper
             }
 
             return (_baseResponse, item, profile);
+        }
+
+        public (BaseResponse, Contract) CanTaskSeal(int contractID, UserProfile userProfile)
+        {
+            if (contractID == null || contractID == 0)
+            {
+                return (new BaseResponse(reason: WebReasonEnum.ContractNotExisted), null);
+            }
+
+            if (userProfile == null)
+            {
+                return (new BaseResponse(reason: WebReasonEnum.Relogin), null);
+            }
+
+            var item = GetContractByID(contractID: contractID);
+            if (item == null)
+            {
+                return (new BaseResponse(reason: WebReasonEnum.Relogin), item);
+            }
+
+            //wait to replace OrganizationUser by ContractingUser FOR Task
+            if (!_models!.GetTable<ContractingUser>().Where(x => x.UserID == userProfile.UID).Any())
+            {
+                if (!_models!.GetTable<ContractingParty>()
+                   .Where(p => p.ContractID == contractID)
+                   .Where(p => _models.GetTable<OrganizationUser>()
+                   .Where(o => o.UID == userProfile.UID).Any(o => o.CompanyID == p.CompanyID))
+                   .Any())
+                {
+                    return (new BaseResponse(reason: WebReasonEnum.Relogin), item);
+                }
+            }
+
+            if (item.CurrentStep >= (int)CDS_Document.StepEnum.Sealed)
+            {
+                return (new BaseResponse(true, "合約已完成用印流程, 無法再次用印.").AddContractMessage(item), item);
+            }
+
+            if (item.ContractUserSignatureRequest
+                        .Where(x => x.UserID == userProfile.UID)
+                        .Where(x => x.StampDate != null).Count() > 0)
+            {
+                return (new BaseResponse(true, "合約已完成用印, 無法再次用印.").AddContractMessage(item), item);
+            }
+
+            return (_baseResponse, item);
         }
 
 
@@ -281,99 +358,98 @@ namespace ContractHome.Models.Helper
             return (_baseResponse, item, profile);
         }
 
-        public Contract CreateAndSaveParty(int initiatorID, 
-            int contractorID, 
-            Contract contract,
-            SignaturePosition[] SignaturePositions,
-            int uid)
-        {
-            if (contract == null) { return null; };
+        //public Contract CreateAndSaveParty(int initiatorID, 
+        //    int contractorID, 
+        //    Contract contract,
+        //    SignaturePosition[] SignaturePositions,
+        //    int uid)
+        //{
+        //    if (contract == null) { return null; };
 
-            #region 新增ContractingParty
-            //移到[建立合約]下一洞新增ContractingParty,for甲方進行[聯合承攬]設定用印位置, 再進入[編輯合約]
-            if (!contract.ContractingParty.Where(p => p.CompanyID == initiatorID)
-                .Where(p => p.IntentID == (int)ContractingIntent.ContractingIntentEnum.Initiator)
-                .Any())
-            {
-                contract.ContractingParty.Add(new ContractingParty
-                {
-                    CompanyID = initiatorID,
-                    IntentID = (int)ContractingIntent.ContractingIntentEnum.Initiator,
-                    IsInitiator = true,
-                });
-            }
+        //    #region 新增ContractingParty
+        //    //移到[建立合約]下一洞新增ContractingParty,for甲方進行[聯合承攬]設定用印位置, 再進入[編輯合約]
+        //    if (!contract.ContractingParty.Where(p => p.CompanyID == initiatorID)
+        //        .Where(p => p.IntentID == (int)ContractingIntent.ContractingIntentEnum.Initiator)
+        //        .Any())
+        //    {
+        //        contract.ContractingParty.Add(new ContractingParty
+        //        {
+        //            CompanyID = initiatorID,
+        //            IntentID = (int)ContractingIntent.ContractingIntentEnum.Initiator,
+        //            IsInitiator = true,
+        //        });
+        //    }
 
-            if (!contract.ContractingParty.Where(p => p.CompanyID == contractorID)
-                                .Where(p => p.IntentID == (int)ContractingIntent.ContractingIntentEnum.Contractor)
-                                .Any())
-            {
-                contract.ContractingParty.Add(new ContractingParty
-                {
-                    CompanyID = contractorID,
-                    IntentID = (int)ContractingIntent.ContractingIntentEnum.Contractor,
-                });
-            }
-            #endregion
+        //    if (!contract.ContractingParty.Where(p => p.CompanyID == contractorID)
+        //                        .Where(p => p.IntentID == (int)ContractingIntent.ContractingIntentEnum.Contractor)
+        //                        .Any())
+        //    {
+        //        contract.ContractingParty.Add(new ContractingParty
+        //        {
+        //            CompanyID = contractorID,
+        //            IntentID = (int)ContractingIntent.ContractingIntentEnum.Contractor,
+        //        });
+        //    }
+        //    #endregion
 
-            #region 新增SignaturePositions
-            //viewModel.SignaturePositions:
-            //[聯合承攬]時, SignaturePositions綁原ContractID,
-            //非[聯合承攬]時, SignaturePositions綁各別新增ContractID-->只能在新合約後做,才有新ContractID
-            //-->要在同一頁指定乙方並挖洞做完, 因為現行找不回主約和其他複製合約的關係
+        //    #region 新增SignaturePositions
+        //    //viewModel.SignaturePositions:
+        //    //[聯合承攬]時, SignaturePositions綁原ContractID,
+        //    //非[聯合承攬]時, SignaturePositions綁各別新增ContractID-->只能在新合約後做,才有新ContractID
+        //    //-->要在同一頁指定乙方並挖洞做完, 因為現行找不回主約和其他複製合約的關係
 
-            foreach (var pos in SignaturePositions)
-            {
+        //    foreach (var pos in SignaturePositions)
+        //    {
 
-                if (!contract.ContractSignaturePositionRequest
-                    .Where(p => p.ContractID == contract.ContractID)
-                    .Where(p => p.ContractorID == contractorID)
-                    .Where(p => p.PositionID == pos.ID)
-                .Any())
-                {
-                    contract.ContractSignaturePositionRequest.Add(new ContractSignaturePositionRequest
-                    {
-                        ContractID = contract.ContractID,
-                        ContractorID = contractorID,
-                        PositionID = pos.ID,
-                        ScaleWidth = pos.ScaleWidth,
-                        ScaleHeight = pos.ScaleHeight,
-                        MarginTop = pos.MarginTop,
-                        MarginLeft = pos.MarginLeft,
-                        Type = (short)pos.Type,
-                        PageIndex = pos.PageIndex
-                    });
-                }
+        //        if (!contract.ContractSignaturePositionRequest
+        //            .Where(p => p.ContractID == contract.ContractID)
+        //            .Where(p => p.ContractorID == contractorID)
+        //            .Where(p => p.PositionID == pos.ID)
+        //        .Any())
+        //        {
+        //            contract.ContractSignaturePositionRequest.Add(new ContractSignaturePositionRequest
+        //            {
+        //                ContractID = contract.ContractID,
+        //                ContractorID = contractorID,
+        //                PositionID = pos.ID,
+        //                ScaleWidth = pos.ScaleWidth,
+        //                ScaleHeight = pos.ScaleHeight,
+        //                MarginTop = pos.MarginTop,
+        //                MarginLeft = pos.MarginLeft,
+        //                Type = (short)pos.Type,
+        //                PageIndex = pos.PageIndex
+        //            });
+        //        }
 
-            }
-            #endregion
+        //    }
+        //    #endregion
 
-            #region 新增ContractSignatureRequest
+        //    #region 新增ContractSignatureRequest
 
-            if (!contract.ContractSignatureRequest.Any(r => r.CompanyID == initiatorID))
-            {
-                contract.ContractSignatureRequest.Add(new ContractSignatureRequest
-                {
-                    CompanyID = initiatorID,
-                    StampDate = DateTime.Now,
-                });
-            }
+        //    if (!contract.ContractSignatureRequest.Any(r => r.CompanyID == initiatorID))
+        //    {
+        //        contract.ContractSignatureRequest.Add(new ContractSignatureRequest
+        //        {
+        //            CompanyID = initiatorID,
+        //            StampDate = DateTime.Now,
+        //        });
+        //    }
 
-            if (!contract.ContractSignatureRequest.Any(r => r.CompanyID == contractorID))
-            {
-                contract.ContractSignatureRequest.Add(new ContractSignatureRequest
-                {
-                    CompanyID = contractorID,
-                });
-            }
-            #endregion
+        //    if (!contract.ContractSignatureRequest.Any(r => r.CompanyID == contractorID))
+        //    {
+        //        contract.ContractSignatureRequest.Add(new ContractSignatureRequest
+        //        {
+        //            CompanyID = contractorID,
+        //        });
+        //    }
+        //    #endregion
 
-            _models.SubmitChanges();
+        //    _models.SubmitChanges();
 
-            contract.CDS_Document.TransitStep(_models, uid, CDS_Document.StepEnum.Sealing);
+        //    contract.CDS_Document.TransitStep(_models, uid, CDS_Document.StepEnum.Sealing);
 
-            return contract;
-        }
-
+        //    return contract;
+        //}
 
         public IQueryable<UserProfile>? GetUsersbyCompanyID(int companyID)
         {
@@ -384,8 +460,13 @@ namespace ContractHome.Models.Helper
             return ttt;
         }
 
-        public IQueryable<UserProfile>? GetUsersbyContract(Contract contract)
+        public IQueryable<UserProfile>? GetUsersbyContract(Contract contract, bool isTask=false)
         {
+            if (isTask)
+            {
+                return contract.ContractingUser.Select(x => x.UserProfile).AsQueryable();
+            }
+
             return _models.GetTable<OrganizationUser>()
                 .Where(x => contract.ContractingParty.Select(x=>x.CompanyID).Contains(x.CompanyID))
                 .Select(y => y.UserProfile);
@@ -481,15 +562,12 @@ namespace ContractHome.Models.Helper
         {
             if ((contract == null) || (targetUsers.Count() == 0) || (targetUsers == null)) return;
 
-            var initiatorOrg = GetOrganization(contract);
-            //var userProfiles = GetUsersbyContract(contract);
-
             if (targetUsers != null)
             {
                 foreach (var user in targetUsers)
                 {
                     EmailContentBodyDto emailContentBodyDto =
-                        new EmailContentBodyDto(contract: contract, initiatorOrg: initiatorOrg, userProfile: user);
+                        new EmailContentBodyDto(contract: contract, initiatorOrg: contract.Organization, userProfile: user);
 
                     emailContent.CreateBody(emailContentBodyDto);
                     _emailFactory.SendEmailToCustomer(mailTo: user.EMail, 
@@ -550,18 +628,50 @@ namespace ContractHome.Models.Helper
 
         }
 
-        public Contract SetConfigAndSave(Contract contract, PostConfigRequest req, int uid)
+        public Contract SetConfigAndSave(Contract contract, PostConfigRequest req, 
+            int uid, bool isTask=false)
         {
             contract.ContractNo = req.ContractNo;
             contract.Title = req.Title;
             contract.IsPassStamp = req.IsPassStamp;
             req.Signatories.ForEach(x => {
-                AddParty(contract, x.DecryptKeyValue());
+                if (isTask)
+                {
+                    AddOperator(contract, x.DecryptKeyValue());
+                }
+                else
+                {
+                    AddParty(contract, x.DecryptKeyValue());
+                }
             });
             contract.NotifyUntilDate = Convert.ToDateTime(req.ExpiryDateTime);
             SaveContract();
 
             CDS_DocumentTransitStep(contract, uid, CDS_Document.StepEnum.Config);
+            return contract;
+        }
+
+        private Contract AddOperator(Contract contract, int OperatorID)
+        {
+
+            if (contract.ContractingUser.Where(p => p.UserID == OperatorID).Any())
+            {
+                return contract;
+            }
+
+            contract.ContractingUser.Add(new ContractingUser
+            {
+                UserID = OperatorID
+            });
+
+            if (!contract.ContractUserSignatureRequest.Any(r => r.UserID == OperatorID))
+            {
+                contract.ContractUserSignatureRequest.Add(new ContractUserSignatureRequest
+                {
+                    UserID = OperatorID,
+                    StampDate = (contract.IsPassStamp == true) ? DateTime.Now : null,
+                });
+            }
 
             return contract;
         }

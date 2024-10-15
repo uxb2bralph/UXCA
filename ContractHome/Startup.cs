@@ -128,7 +128,8 @@ namespace ContractHome
             services.AddScoped<IEmailContent, PasswordUpdated>();
             services.AddScoped<IEmailContent, ApplyPassword>();
             services.AddScoped<IEmailContent, FinishContract>();
-
+            services.AddScoped<IEmailContent, TaskNotifySeal>();
+            services.AddScoped<IEmailContent, TaskNotifySign>();
 
             services.AddScoped<ContractServices>();
             services.AddScoped<BaseResponse>();

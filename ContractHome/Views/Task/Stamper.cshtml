@@ -23,18 +23,18 @@
   QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
 
   var profile = await Context.GetUserAsync();
-  var party = models!.GetTable<ContractingParty>()
-  .Where(p => p.ContractID == _model.ContractID)
-  .Where(p => models.GetTable<OrganizationUser>()
-  .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
-  .FirstOrDefault();
+  // var party = models!.GetTable<ContractingParty>()
+  // .Where(p => p.ContractID == _model.ContractID)
+  // .Where(p => models.GetTable<OrganizationUser>()
+  // .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
+  // .FirstOrDefault();
 
-  var contractRefs = new ContractRefs(_model, "SignaturePositions", party?.CompanyID);
+    var taskRefs = new TaskRefs(_model, "SignaturePositions", profile.UID);
 
   //var contractData = @Html.Raw(_model.JsonStringify());
   //var partyData = @Html.Raw(party.JsonStringify());
   // var pageCount = _model.GetPdfPageCount();
-  var contractRefsJson = @Html.Raw(contractRefs.JsonStringify());
+    var contractRefsJson = @Html.Raw(taskRefs.JsonStringify());
 }
 @{
   await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
@@ -553,16 +553,16 @@
       // 取出當前簽署人簽署區塊資料
       getContractor() {
         const currentUser = this.Parties.filter(item => item.IsCurrentUserCompany)[0];
-        const companyID = currentUser.KeyID;
-        this.getFeildSetting(contractID, companyID);
+                const OperatorID = currentUser.KeyID;
+                this.getFeildSetting(contractID, OperatorID);
       },
 
       // 取得用印範圍資訊
-      getFeildSetting(ContractID, CompanyID) {
+      getFeildSetting(ContractID, OperatorID) {
         //console.log({ ContractID, CompanyID });
-        const payload = { ContractID, CompanyID };
+        const payload = { ContractID, OperatorID };
         showLoading();
-            postData('@(Url.Action("FeildSettings", "ContractConsole"))', payload)
+                postData('@(Url.Action("FeildSettings", "Task"))', payload)
           .then((res) => {
             const { hasError, data, message } = res;
             if (!hasError) {
@@ -984,7 +984,7 @@
               }
             })
         } else {
-          postData('@(Url.Action("AcceptContract", "ContractConsole"))', payload)
+          postData('@(Url.Action("AcceptContract", "Task"))', payload)
             .then((res) => {
               const { result, dataItem, message } = res;
               if (result) {
@@ -1009,7 +1009,7 @@
 
         //showLoading();
         console.log('loading')
-        postData('@(Url.Action("Establish", "ContractConsole"))', payload)
+        postData('@(Url.Action("Establish", "Task"))', payload)
           .then((res) => {
             const { hasError, data, message } = res;
             if (!hasError) {
@@ -1039,7 +1039,7 @@
         showLoading();
         // Post API
         // 解決重複跑三次的問題，不用Form submit的方式做
-        $.post('@Html.Raw(Url.Action("ResetPdfSignature", "ContractConsole"))', payload, function (data) {
+        $.post('@Html.Raw(Url.Action("ResetPdfSignature", "Task"))', payload, function (data) {
           if (data.result) {
             // 成功
             if (self.isEdit) {
@@ -1079,7 +1079,7 @@
         showLoading();
         // Post API
         // 解決重複跑三次的問題，不用Form submit的方式做
-        $.post('@Html.Raw(Url.Action("ResetPdfSignature", "ContractConsole"))', payload, function (data) {
+        $.post('@Html.Raw(Url.Action("ResetPdfSignature", "Task"))', payload, function (data) {
           if (data.result) {
             // 成功
             self.loadPageItem(self.selectedPage - 1);
@@ -1654,7 +1654,7 @@
           this.isCanael = false;
           this.isCreate = false;
           this.isReject = false;
-          window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+          window.location.href = '@(Url.Action("ListToStampIndex", "Task"))';
         };
         if (this.isClear) {
           this.isClear = false;
@@ -1663,7 +1663,7 @@
 
       // 返回文件查詢
       backSearch() {
-        window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+                window.location.href = '@(Url.Action("ListToStampIndex", "Task"))';
       },
 
       // 檢核輸入寬高，預設最小寬高為 35
@@ -1945,7 +1945,7 @@
       KeyID: $global.viewModel.KeyID
     };
     showLoading();
-    $.post('@Html.Raw(Url.Action("CommitPdfSignature", "ContractConsole"))', payload, function (data) {
+    $.post('@Html.Raw(Url.Action("CommitPdfSignature", "Task"))', payload, function (data) {
       hideLoading();
       if ($.isPlainObject(data)) {
         if (data.result) {
