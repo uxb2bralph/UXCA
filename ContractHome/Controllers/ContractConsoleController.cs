@@ -1800,7 +1800,7 @@ namespace ContractHome.Controllers
             _contractServices.SetModels(models);
             Contract contract = _contractServices.GetContractByID(contractID: req.ContractID.DecryptKeyValue());
 
-            var ttt =
+            _baseResponse.Data  =
                 contract
                 .ContractSignaturePositionRequest
                 .Where(y => y.ContractorID == req.CompanyID.DecryptKeyValue())
@@ -1816,10 +1816,7 @@ namespace ContractHome.Controllers
                     Type = x.Type,
                     PageIndex = x.PageIndex,
                     OperatorID = x.OperatorID
-                }).ToList();
-
-
-            _baseResponse.Data = ttt;
+                });
             return Json(_baseResponse);
         }
 
@@ -1908,6 +1905,7 @@ namespace ContractHome.Controllers
 
         public class ContractSignaturePositionRequest
         {
+            public int TmpCompanyID { get; set; }
             public string CompanyID { get; set; }
             public string PositionID { get; set; }
             public int RequestID { get; set; }

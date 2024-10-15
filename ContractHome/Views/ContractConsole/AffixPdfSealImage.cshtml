@@ -562,7 +562,7 @@
         //console.log({ ContractID, CompanyID });
         const payload = { ContractID, CompanyID };
         showLoading();
-            postData('@(Url.Action("FeildSettings", "ContractConsole"))', payload)
+           postData('@(Url.Action("FeildSettings", "Task"))', payload)
           .then((res) => {
             const { hasError, data, message } = res;
             if (!hasError) {
@@ -970,7 +970,7 @@
 
         showLoading();
         if (this.isEdit) {
-            postData('@(Url.Action("FeildSettingsUpdate", "ContractConsole"))', payload)
+                    postData('@(Url.Action("FeildSettingsUpdate", "Task"))', payload)
             .then((res) => {
               const { hasError, data, message } = res;
               if (!hasError) {
