@@ -594,12 +594,12 @@ namespace ContractHome.Controllers
         public async Task<IActionResult> Create(IFormFile file)
         {
             var user = await HttpContext.GetUserAsync();
-            #region add for postman test
-            if (!ContractServices.IsNotNull(user))
-            {
-                user = models.GetTable<UserProfile>().Where(x => x.UID == 4).FirstOrDefault();
-            }
-            #endregion
+            //#region add for postman test
+            //if (!ContractServices.IsNotNull(user))
+            //{
+            //    user = models.GetTable<UserProfile>().Where(x => x.UID == 4).FirstOrDefault();
+            //}
+            //#endregion
             var profile = user.LoadInstance(models);
             if (!ContractServices.IsNotNull(profile)||!ContractServices.IsNotNull(profile.OrganizationUser))
             {
