@@ -594,14 +594,7 @@ namespace ContractHome.Controllers
         public async Task<IActionResult> Create(IFormFile file)
         {
             var user = await HttpContext.GetUserAsync();
-            //#region add for postman test
-            //if (!ContractServices.IsNotNull(user))
-            //{
-            //    user = models.GetTable<UserProfile>().Where(x => x.UID == 4).FirstOrDefault();
-            //}
-            //#endregion
-            var profile = user.LoadInstance(models);
-            if (!ContractServices.IsNotNull(profile)||!ContractServices.IsNotNull(profile.OrganizationUser))
+            if (!ContractServices.IsNotNull(user))
             {
                 return Ok(_baseResponse.ErrorMessage("請重新登入"));
             }
@@ -619,7 +612,7 @@ namespace ContractHome.Controllers
             Contract contract = new Contract
             {
                 FilePath = file.StoreContractDocument(),
-                CompanyID = profile.CompanyID??0,
+                CompanyID = user.CompanyID??0,
                 ContractNo = String.Empty,
                 CDS_Document = new CDS_Document
                 {
