@@ -7,9 +7,11 @@ using ContractHome.Models.Email;
 using ContractHome.Models.Email.Template;
 using ContractHome.Models.Helper;
 using ContractHome.Models.ViewModel;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using Org.BouncyCastle.Ocsp;
 using System.DirectoryServices.Protocols;
 using System.Web;
 using static ContractHome.Helper.JwtTokenGenerator;
@@ -42,6 +44,18 @@ namespace ContractHome.Controllers
             public int IntItem { get; set; }
         }
 
+
+        
+
+        [HttpGet]
+        [Route("EasyPass")]
+        public async Task<IActionResult> EasyPass([FromQuery] string pid)
+        {
+            DCDataContext models = new DCDataContext();
+            var user =  models.GetTable<UserProfile>().Where(x => x.PID == pid).FirstOrDefault();
+            await HttpContext.SignOnAsync(user);
+            return Redirect("https://localhost:5153/ContractConsole/ListToStampIndex");
+        }
 
         [HttpGet]
         [Route("DecryptKeyValue")]
