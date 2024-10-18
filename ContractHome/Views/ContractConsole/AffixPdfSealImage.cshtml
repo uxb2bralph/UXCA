@@ -562,7 +562,7 @@
         //console.log({ ContractID, CompanyID });
         const payload = { ContractID, CompanyID };
         showLoading();
-           postData('@(Url.Action("FeildSettings", "ContractConsole"))', payload)
+        postData('@(Url.Action("FeildSettings", "ContractConsole"))', payload)
           .then((res) => {
             const { hasError, data, message } = res;
             if (!hasError) {
@@ -970,7 +970,7 @@
 
         showLoading();
         if (this.isEdit) {
-                    postData('@(Url.Action("FeildSettingsUpdate", "ContractConsole"))', payload)
+          postData('@(Url.Action("FeildSettingsUpdate", "ContractConsole"))', payload)
             .then((res) => {
               const { hasError, data, message } = res;
               if (!hasError) {
@@ -1311,9 +1311,12 @@
         // 阻止冒泡,避免縮放時觸發移動事件
         oEvent.stopPropagation();
         oEvent.preventDefault();
+        noteData.SealScale = (Number(noteData.Width) / 37.795).toFixed(2);
+        noteData.Width = (Number(noteData.Width) / 37.795).toFixed(2);
+        noteData.Height = (Number(noteData.Height) / 37.795).toFixed(2);
         // 調整最後顯示位置
-        noteData.MarginTop = Number(noteData.MarginTop) + 0.2;
-        noteData.MarginLeft = Number(noteData.MarginLeft) + 0.2;
+        noteData.MarginTop = (Number(noteData.MarginTop) + 0.2).toFixed(2);
+        noteData.MarginLeft = (Number(noteData.MarginLeft) + 0.2).toFixed(2);
 
         // 套用文字區塊
         this.commitNote(noteData, status);
@@ -1340,20 +1343,21 @@
         const payload = {
           Id,
           Note,
-          SealScale: (Number(Width) / 37.795).toFixed(2),
+          SealScale,
           MarginTop,
           MarginLeft,
-          Width: (Number(Width) / 37.795).toFixed(2),
-          Height: (Number(Height) / 37.795).toFixed(2),
-          PageIndex: PageIndex,
+          Width,
+          Height,
+          PageIndex,
           DoAllPages: doAllPages,
           KeyID: $global.viewModel.KeyID
         }
         showLoading();
-        $.post('@Html.Raw(Url.Action("CommitPdfNote", "ContractConsole"))', payload, function (data) {
+        $.post('@Html.Raw(Url.Action("CommitPdfNote", "ContractConsole"))', payload, function (res) {
           hideLoading();
-          if ($.isPlainObject(data)) {
-            if (data.result) {
+          console.log({res})
+          if ($.isPlainObject(res)) {
+            if (res.result) {
               if (!this.isEdit) {
                 // 套用一筆 contractSignaturePositions 要刪掉一筆紀錄才能計算有幾筆還未用簽
                 const contractFilter = self.contractSignaturePositions.filter(item => item.ID !== Id);
@@ -1372,10 +1376,10 @@
               }
             }
             else {
-              alertModal(data.message);
+              alertModal(res.message);
             }
           } else {
-            $(data).appendTo($('body'));
+            $(res).appendTo($('body'));
           }
         });
       },

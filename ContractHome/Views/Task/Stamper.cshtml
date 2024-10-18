@@ -29,12 +29,12 @@
   // .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
   // .FirstOrDefault();
 
-    var taskRefs = new TaskRefs(_model, "SignaturePositions", profile.UID);
+  var taskRefs = new TaskRefs(_model, "SignaturePositions", profile.UID);
 
   //var contractData = @Html.Raw(_model.JsonStringify());
   //var partyData = @Html.Raw(party.JsonStringify());
   // var pageCount = _model.GetPdfPageCount();
-    var contractRefsJson = @Html.Raw(taskRefs.JsonStringify());
+  var contractRefsJson = @Html.Raw(taskRefs.JsonStringify());
 }
 @{
   await Html.RenderPartialAsync("~/Views/Shared/Global/PageResource.cshtml");
@@ -46,7 +46,7 @@
     <div class="d-flex justify-content-between align-items-center pe-5">
       <div class="d-flex align-items-center mb-2">
         <h4 class="mb-0 me-4 py-2 fw-bolder options--show">
-          {{ isEdit ? '編輯文件' : '簽署人用印'}}
+          {{ isEdit ? '編輯文件' : '簽署人用印'}} - isEdit: {{isEdit}} / {{ CurrentStep }}
         </h4>
         <div v-if="getSignaturePage()" class="alert alert-success mb-0 py-2 px-3" role="alert">
           <i class="fas fa-info-circle pe-2"></i>
@@ -97,7 +97,7 @@
                 文件名稱
               </h6>
               <span class="fs-13 text-black-50">
-                文件編號： {{ ContractNo }}
+                文件編號： {{ ContractNo }}<br>( {{ contractID }} )
               </span>
               <span class="fs-14">
                 {{ Title }}
@@ -401,6 +401,7 @@
 <script>
   // 取得上傳 PDF 總頁數
   const { ContractNo, Title, CurrentStep, KeyID: contractID, PageCount, Parties } = @Html.Raw(contractRefsJson);
+  const contract = @Html.Raw(contractRefsJson);
 
   /**
    * param {Number} StepEnum 文件狀態
@@ -421,6 +422,7 @@
     el: '#AffixPdfSealImage',
     data() {
       return {
+        contract,
         ContractNo,
         Title,
         CurrentStep,
@@ -553,8 +555,9 @@
       // 取出當前簽署人簽署區塊資料
       getContractor() {
         const currentUser = this.Parties.filter(item => item.IsCurrentUserCompany)[0];
-                const OperatorID = currentUser.KeyID;
-                this.getFeildSetting(contractID, OperatorID);
+        console.log('Parties:', this.Parties)
+        const OperatorID = currentUser.KeyID;
+        this.getFeildSetting(contractID, OperatorID);
       },
 
       // 取得用印範圍資訊
@@ -562,7 +565,7 @@
         //console.log({ ContractID, CompanyID });
         const payload = { ContractID, OperatorID };
         showLoading();
-                postData('@(Url.Action("FeildSettings", "Task"))', payload)
+        postData('@(Url.Action("FeildSettings", "Task"))', payload)
           .then((res) => {
             const { hasError, data, message } = res;
             if (!hasError) {
@@ -916,9 +919,10 @@
         if (hasVm) {
           positionsMap = this.signaturePositionsTemp.map(item => {
             const { Id, UserId, MarginTop, MarginLeft, ScaleWidth, ScaleHeight, SealScale, PageIndex, Type } = item;
+            console.log('送出合約:', { item })
             return {
               ID: Id,
-              CompanyID: UserId,
+              //CompanyID: UserId,
               TYPE: Type,
               PAGEINDEX: PageIndex,
               SCALEWIDTH: ScaleWidth,
@@ -926,6 +930,7 @@
               MARGINLEFT: MarginLeft,
               MARGINTOP: MarginTop,
               SEALSCALE: SealScale,
+              OperatorID: UserId,
             }
           });
         }
@@ -970,7 +975,7 @@
 
         showLoading();
         if (this.isEdit) {
-            postData('@(Url.Action("FeildSettingsUpdate", "ContractConsole"))', payload)
+          postData('@(Url.Action("FeildSettingsUpdate", "Task"))', payload)
             .then((res) => {
               const { hasError, data, message } = res;
               if (!hasError) {
@@ -986,6 +991,7 @@
         } else {
           postData('@(Url.Action("AcceptContract", "Task"))', payload)
             .then((res) => {
+              console.log({res})  
               const { result, dataItem, message } = res;
               if (result) {
                 // 成功
@@ -1311,9 +1317,12 @@
         // 阻止冒泡,避免縮放時觸發移動事件
         oEvent.stopPropagation();
         oEvent.preventDefault();
+        noteData.SealScale = (Number(noteData.Width) / 37.795).toFixed(2);
+        noteData.Width = (Number(noteData.Width) / 37.795).toFixed(2);
+        noteData.Height = (Number(noteData.Height) / 37.795).toFixed(2);
         // 調整最後顯示位置
-        noteData.MarginTop = Number(noteData.MarginTop) + 0.2;
-        noteData.MarginLeft = Number(noteData.MarginLeft) + 0.2;
+        noteData.MarginTop = (Number(noteData.MarginTop) + 0.2).toFixed(2);
+        noteData.MarginLeft = (Number(noteData.MarginLeft) + 0.2).toFixed(2);
 
         // 套用文字區塊
         this.commitNote(noteData, status);
@@ -1340,21 +1349,23 @@
         const payload = {
           Id,
           Note,
-          SealScale: (Number(Width) / 37.795).toFixed(2),
+          SealScale,
           MarginTop,
           MarginLeft,
-          Width: (Number(Width) / 37.795).toFixed(2),
-          Height: (Number(Height) / 37.795).toFixed(2),
-          PageIndex: PageIndex,
+          Width,
+          Height,
+          PageIndex,
           DoAllPages: doAllPages,
           KeyID: $global.viewModel.KeyID
         }
         showLoading();
-        $.post('@Html.Raw(Url.Action("CommitPdfNote", "ContractConsole"))', payload, function (data) {
+        $.post('@Html.Raw(Url.Action("CommitPdfNote", "Task"))', payload, function (res) {
           hideLoading();
-          if ($.isPlainObject(data)) {
-            if (data.result) {
-              if (!this.isEdit) {
+          console.log({res})
+          const { data, hasError, message, url } = res;
+          if ($.isPlainObject(res)) {
+            if (!hasError) {
+              if (!self.isEdit) {
                 // 套用一筆 contractSignaturePositions 要刪掉一筆紀錄才能計算有幾筆還未用簽
                 const contractFilter = self.contractSignaturePositions.filter(item => item.ID !== Id);
                 self.contractSignaturePositions = contractFilter;
@@ -1372,10 +1383,10 @@
               }
             }
             else {
-              alertModal(data.message);
+              alertModal(message);
             }
           } else {
-            $(data).appendTo($('body'));
+            $(res).appendTo($('body'));
           }
         });
       },
@@ -1654,7 +1665,7 @@
           this.isCanael = false;
           this.isCreate = false;
           this.isReject = false;
-          window.location.href = '@(Url.Action("ListToStampIndex", "Task"))';
+          window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
         };
         if (this.isClear) {
           this.isClear = false;
@@ -1663,7 +1674,7 @@
 
       // 返回文件查詢
       backSearch() {
-                window.location.href = '@(Url.Action("ListToStampIndex", "Task"))';
+        window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
       },
 
       // 檢核輸入寬高，預設最小寬高為 35

@@ -381,7 +381,7 @@ namespace ContractHome.Controllers
             requestItem.StampDate = DateTime.Now;
             models.SubmitChanges();
 
-            if ((UserSession.Get(_httpContextAccessor)!=null)&&(UserSession.Get(_httpContextAccessor).IsTrust))
+            if ((UserSession.Get(_httpContextAccessor) != null) && (UserSession.Get(_httpContextAccessor).IsTrust))
             {
                 UserSession.Remove(_httpContextAccessor);
                 HttpContext.Logout();
@@ -399,7 +399,7 @@ namespace ContractHome.Controllers
                         _emailContentFactories.GetNotifySign(),
                         targetUsers);
                 }
-            } 
+            }
             else
             {
                 _contractServices.CDS_DocumentTransitStep(contract, profile!.UID, CDS_Document.StepEnum.Sealing);
@@ -535,7 +535,7 @@ namespace ContractHome.Controllers
             if ((Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.UnSigned)))
             {
                 contractSignatureRequestItems = contractSignatureRequestItems
-                        .Where(x => (x.SignatureDate == null)&&(x.StampDate!=null));
+                        .Where(x => (x.SignatureDate == null) && (x.StampDate != null));
             }
 
             //待用印
@@ -887,14 +887,14 @@ namespace ContractHome.Controllers
 
             if (jwtTokenObj.IsSeal)
             {
-                return await AffixPdfSeal(new SignatureRequestViewModel() { IsTrust =true,KeyID = jwtTokenObj.ContractID });
+                return await AffixPdfSeal(new SignatureRequestViewModel() { IsTrust = true, KeyID = jwtTokenObj.ContractID });
             }
 
             if (jwtTokenObj.IsSign)
             {
 
                 _contractServices.SetModels(models);
-                ( resp, Contract contract, userProfile) =
+                (resp, Contract contract, userProfile) =
                      _contractServices.CanPdfDigitalSign(contractID: jwtTokenObj.ContractID.DecryptKeyValue());
 
                 if (resp.HasError)
@@ -932,20 +932,20 @@ namespace ContractHome.Controllers
             }
 
             _contractServices.SetModels(models);
-            (BaseResponse resp, Contract contract, UserProfile userProfile) = 
+            (BaseResponse resp, Contract contract, UserProfile userProfile) =
                  _contractServices.CanPdfSeal(contractID: contractID);
 
             if (resp.HasError)
             {
                 resp.Url = $"{Settings.Default.ContractListUrl}";
-                if (viewModel.IsTrust!=null&&viewModel.IsTrust==true)
+                if (viewModel.IsTrust != null && viewModel.IsTrust == true)
                 {
                     resp.Url = $"{Settings.Default.WebAppDomain}";
                 }
                 return View("~/Views/Shared/CustomMessage.cshtml", resp);
             }
 
-            return View("~/Views/ContractConsole/AffixPdfSealImage.cshtml", contract);
+            return View("~/Views/Task/Stamper.cshtml", contract);
 
         }
 
@@ -1254,7 +1254,7 @@ namespace ContractHome.Controllers
 
             var filters = new Dictionary<string, object>();
             if (!string.IsNullOrWhiteSpace(req.CompanyID)
-                &&(GeneralValidator.TryDecryptKeyValue(req.CompanyID)))
+                && (GeneralValidator.TryDecryptKeyValue(req.CompanyID)))
             {
                 filters.Add("CompanyID", req.CompanyID.DecryptKeyValue());
             }
@@ -1265,8 +1265,8 @@ namespace ContractHome.Controllers
                 .AsQueryable<ContractSignatureRequest>()
                 .EqualMultiple(filters)
                 .Between("SignatureDate"
-                    , string.IsNullOrEmpty(req.QueryDateEndString)?DateTime.Now.AddDays(-90).StartOfDay() : req.QueryDateFromString.ConvertToDateTime("yyyy/MM/dd").StartOfDay()
-                    , string.IsNullOrEmpty(req.QueryDateEndString)?DateTime.Now.StartOfDay() : req.QueryDateEndString.ConvertToDateTime("yyyy/MM/dd").EndOfDay())
+                    , string.IsNullOrEmpty(req.QueryDateEndString) ? DateTime.Now.AddDays(-90).StartOfDay() : req.QueryDateFromString.ConvertToDateTime("yyyy/MM/dd").StartOfDay()
+                    , string.IsNullOrEmpty(req.QueryDateEndString) ? DateTime.Now.StartOfDay() : req.QueryDateEndString.ConvertToDateTime("yyyy/MM/dd").EndOfDay())
                 .OrderByMultiple(new List<OrderByCol>()
                 {
                     new OrderByCol(){
@@ -1286,8 +1286,9 @@ namespace ContractHome.Controllers
                 .Join(models.GetTable<Organization>(),
                     c => c.createCompany, o => o.CompanyID, (c, o) => (c, o))
                 .Join(models.GetTable<UserProfile>(),
-                    a => a.c.signerUID, u => u.UID, (a, u) => (a,u))
-                .Select(x => new {
+                    a => a.c.signerUID, u => u.UID, (a, u) => (a, u))
+                .Select(x => new
+                {
                     date = string.Format("{0:yyyy/MM/dd HH:mm:dd}", x.a.c.date!),
                     companyName = x.a.c.companyName,
                     signer = x.u.PID,
@@ -1447,7 +1448,7 @@ namespace ContractHome.Controllers
                             new EmailContentBodyDto(contract: item?.Contract, initiatorOrg: null, userProfile: profile);
 
                         var targetUsers = _contractServices.GetUsersbyContract(item.Contract);
-                        if (targetUsers!=null)
+                        if (targetUsers != null)
                         {
                             _contractServices.SendUsersNotifyEmailAboutContractAsync(
                                 item.Contract,
@@ -1463,7 +1464,7 @@ namespace ContractHome.Controllers
                         HttpContext.Logout();
                     }
 
-                    if (ContractServices.IsNotNull(contract)&&contract.HasUserInProgress)
+                    if (ContractServices.IsNotNull(contract) && contract.HasUserInProgress)
                     {
                         contract.UserInProgress = null;
                         models.SubmitChanges();
@@ -1472,7 +1473,7 @@ namespace ContractHome.Controllers
                     return Json(_baseResponse);
 
                 }
-            } 
+            }
             else
             {
                 return Json(new BaseResponse(haserror: true, error: "合約已有簽署記錄, 無法再次簽署."));
@@ -1603,7 +1604,7 @@ namespace ContractHome.Controllers
                     }
 
                     return Json(new BaseResponse());
-                } 
+                }
                 else
                 {
                     return Json(new BaseResponse(haserror: true, error: code));
@@ -1780,7 +1781,7 @@ namespace ContractHome.Controllers
                 return Json(new BaseResponse(true, "無此權限"));
             }
 
-            IEnumerable <Organization> signatories
+            IEnumerable<Organization> signatories
                 = _contractServices.GetAvailableSignatories(contract.CompanyID);
 
             _baseResponse.Data = signatories.Select(x =>
@@ -1800,7 +1801,7 @@ namespace ContractHome.Controllers
             _contractServices.SetModels(models);
             Contract contract = _contractServices.GetContractByID(contractID: req.ContractID.DecryptKeyValue());
 
-            _baseResponse.Data  =
+            _baseResponse.Data =
                 contract
                 .ContractSignaturePositionRequest
                 .Where(y => y.ContractorID == req.CompanyID.DecryptKeyValue())
@@ -1893,7 +1894,7 @@ namespace ContractHome.Controllers
                 {
                     _contractServices.SendUsersNotifyEmailAboutContractAsync(
                         contract,
-                        (contract.IsPassStamp==true) ? _emailContentFactories.GetNotifySign() : _emailContentFactories.GetNotifySeal(),
+                        (contract.IsPassStamp == true) ? _emailContentFactories.GetNotifySign() : _emailContentFactories.GetNotifySeal(),
                         targetUsers);
                 }
 

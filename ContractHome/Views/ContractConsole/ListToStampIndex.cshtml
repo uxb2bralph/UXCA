@@ -1224,15 +1224,16 @@
           dictFileTooBig: '檔案限制：100MB',
           init: function () {
             var myDropzone = this;
-            this.on("success", function (file, data) {
+            this.on("success", function (file, res) {
               // 文件上傳成功後的處理
               delete self.configFormData.KeyID;
-              if ($.isPlainObject(data)) {
-                if (data.result) {
-                  self.configFormData.KeyID = data.message;
+              const { data, hasError, message, url } = res;
+              if ($.isPlainObject(res)) {
+                if (!hasError) {
+                  self.configFormData.KeyID = data.contractID;
+                  // 可簽署對象查詢
+                  self.getAvailableSignatories();
                 }
-                // 可簽署對象查詢
-                self.getAvailableSignatories();
               }
             });
             this.on("addedfile", function (file) {
@@ -1366,14 +1367,13 @@
       getAvailableSignatories() {
         const { KeyID } = this.configFormData;
         const payload = { ContractID: KeyID };
-        postData('@(Url.Action("AvailableSignatories", "ContractConsole"))', payload)
+        postData('@(Url.Action("GetOperators", "Task"))', payload)
           .then((res) => {
-            const { data, hasError, message } = res;
-
+            const { data, hasError, message, url } = res;
             if (!hasError) {
               // 成功
               this.contractorAllList = data.map(item => {
-                item.text = `${item.companyName} (${item.receiptNo})`;
+                item.text = `${item.title} (${item.email})`;
                 item.value = item.id;
                 return item;
               });
@@ -1490,9 +1490,9 @@
         const payload = { ContractNo, ContractID, Title, Signatories, ExpiryDateTime, IsPassStamp };
 
         showLoading();
-        postData('@(Url.Action("Config", "ContractConsole"))', payload)
+        postData('@(Url.Action("Config", "Task"))', payload)
           .then((res) => {
-            const { hasError, data, message } = res;
+            const { hasError, data, message, url } = res;
             if (!hasError) {
               // 成功
               // 初始化簽署人表單
@@ -1511,10 +1511,10 @@
               }
             } else {
               // 失敗
-              const { ContractID, Signatories } = message;
-              const contractIDString = ContractID ? ContractID.join(', ') : '資料有誤';
-              const signatoriesString = Signatories ? Signatories[0].join(', ') : '資料有誤';
-              this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${contractIDString} <br> ${signatoriesString} </div>`;
+              //const { ContractID, Signatories } = message;
+              //const contractIDString = ContractID ? ContractID.join(', ') : '資料有誤';
+              //const signatoriesString = Signatories ? Signatories[0].join(', ') : '資料有誤';
+              this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${message} </div>`;
               $("#infoModal").modal("show");
 
             }
@@ -2033,7 +2033,7 @@
   }
 
   function affixPdfSeal(keyID) {
-    $('').launchDownload('@Html.Raw(Url.Action("AffixPdfSeal", "ContractConsole"))', { 'KeyID': keyID });
+    $('').launchDownload('@Html.Raw(Url.Action("AffixSeal", "Task"))', { 'KeyID': keyID });
   }
 
   function terminateContract(keyID) {

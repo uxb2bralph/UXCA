@@ -133,7 +133,7 @@ namespace ContractHome.Controllers
             else
             {
                 items = items.Where(c => models.GetTable<ContractingUser>()
-                                    .Where(o=> o.UserID == profile.UID)
+                                    .Where(o => o.UserID == profile.UID)
                                     .Any(p => p.ContractID == c.ContractID));
             }
 
@@ -419,7 +419,7 @@ namespace ContractHome.Controllers
 
                 _contractServices.SetModels(models);
                 (resp, Contract contract, userProfile) =
-                     _contractServices.CanPdfDigitalSign(contractID: jwtTokenObj.ContractID.DecryptKeyValue());
+                    _contractServices.CanPdfDigitalSign(contractID: jwtTokenObj.ContractID.DecryptKeyValue());
 
                 if (resp.HasError)
                 {
@@ -507,7 +507,7 @@ namespace ContractHome.Controllers
                 new
                 {
                     id = x.UID.EncryptKey(),
-                    title = x.OperatorNote??string.Empty,
+                    title = x.OperatorNote ?? string.Empty,
                     email = x.EMail
                 });
 
@@ -559,12 +559,12 @@ namespace ContractHome.Controllers
         public async Task<ActionResult> ConfigAsync([FromBody] PostConfigRequest req)
         {
             UserProfile profile = await HttpContext.GetUserAsync();
-#if DEBUG
-            if (profile == null && req.EncUID != null)
-            {
-                profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
-            }
-#endif
+            // #if DEBUG
+            //       if (profile == null && req.EncUID != null)
+            //       {
+            //         profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
+            //       }
+            // #endif
 
             _contractServices.SetModels(models);
             var contractID = req.ContractID.ToString().DecryptKeyValue();
@@ -590,29 +590,101 @@ namespace ContractHome.Controllers
             return Json(_baseResponse.ErrorMessage());
         }
 
+        public async Task<ActionResult> CommitPdfNoteAsync(SignatureRequestViewModel viewModel)
+        {
+            //viewModel.Note = viewModel.Note?.GetEfficientString();
+            if (viewModel.Note == null)
+            {
+                return Json(new { result = false, message = "請輸入文字內容!!" });
+            }
+
+            if (!(viewModel.PageIndex >= 0))
+            {
+                return Json(new { result = false, message = "請選擇用印頁碼!!" });
+            }
+
+            if (!(viewModel.MarginLeft >= 0))
+            {
+                return Json(new { result = false, message = "請設定左邊界位置!!" });
+            }
+
+            if (!(viewModel.MarginTop >= 0))
+            {
+                return Json(new { result = false, message = "請設定上邊界位置!!" });
+            }
+
+            ViewResult? result = await AffixSeal(viewModel) as ViewResult;
+            if (result == null)
+            {
+                return Json(new { result = false, message = "資料錯誤!!" });
+            }
+
+            var profile = await HttpContext.GetUserAsync();
+
+            void ApplyNote(Contract contract, int? uid, int? pageIndex)
+            {
+                ContractNoteRequest item = new ContractNoteRequest
+                {
+                    ContractID = contract.ContractID,
+                    StampDate = DateTime.Now,
+                    StampUID = profile.UID,
+                    SealScale = viewModel.SealScale,
+                    MarginLeft = viewModel.MarginLeft,
+                    MarginTop = viewModel.MarginTop,
+                    PageIndex = pageIndex,
+                    Note = viewModel.Note,
+                };
+
+                models.GetTable<ContractNoteRequest>().InsertOnSubmit(item);
+                models.SubmitChanges();
+            }
+
+            if (profile != null)
+            {
+                Contract contract = (Contract)result.Model!;
+                if (viewModel.DoAllPages == true)
+                {
+                    for (int pageIdx = 0; pageIdx < contract.GetPdfPageCount(); pageIdx++)
+                    {
+                        ApplyNote(contract, profile.UID, pageIdx);
+                    }
+                }
+                else
+                {
+                    ApplyNote(contract, profile.UID, viewModel.PageIndex);
+                }
+
+                return Json(new { result = true });
+            }
+
+            return Json(new { result = false });
+
+        }
+
         [RequestSizeLimit(200 * 1024 * 1024)]
         public async Task<IActionResult> Create(IFormFile file)
         {
-            var user = await HttpContext.GetUserAsync();
-            if (!ContractServices.IsNotNull(user))
-            {
-                return Ok(_baseResponse.ErrorMessage("請重新登入"));
-            }
-            if (!ContractServices.IsNotNull(file))
-            {
-                return Ok(_baseResponse.ErrorMessage("請選擇檔案!!"));
-            }
+            // var user = await HttpContext.GetUserAsync();
+            // //var profile = user.LoadInstance(models);
+            // if (!ContractServices.IsNotNull(user) || !ContractServices.IsNotNull(user.OrganizationUser))
+            // {
+            //   return Ok(_baseResponse.ErrorMessage("請重新登入"));
+            // }
+            // if (!ContractServices.IsNotNull(file))
+            // {
+            //   return Ok(_baseResponse.ErrorMessage("請選擇檔案!!"));
+            // }
 
-            String extName = Path.GetExtension(file.FileName).ToLower();
-            if (extName != ".pdf")
-            {
-                return Ok(_baseResponse.ErrorMessage("合約檔案類型只能是pdf!!"));
-            }
+            // String extName = Path.GetExtension(file.FileName).ToLower();
+            // if (extName != ".pdf")
+            // {
+            //   return Ok(_baseResponse.ErrorMessage("合約檔案類型只能是pdf!!"));
+            // }
 
             Contract contract = new Contract
             {
                 FilePath = file.StoreContractDocument(),
-                CompanyID = user.CompanyID??0,
+                CompanyID = 1,
                 ContractNo = String.Empty,
                 CDS_Document = new CDS_Document
                 {

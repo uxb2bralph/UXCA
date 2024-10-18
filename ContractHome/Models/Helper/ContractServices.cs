@@ -30,10 +30,10 @@ namespace ContractHome.Models.Helper
         public ContractServices(IEmailBodyBuilder emailBody,
             EmailFactory emailFactory,
             IDetectionService detectionService,
-            IHttpContextAccessor httpContextAccessor, 
+            IHttpContextAccessor httpContextAccessor,
             EmailFactory emailContentFactories,
             BaseResponse baseResponse
-            ) 
+            )
         {
             _baseResponse = baseResponse;
             _emailFactory = emailFactory;
@@ -55,11 +55,11 @@ namespace ContractHome.Models.Helper
 
         public enum DigitalSignCerts
         {
-            Enterprise=0,//企業憑證
-            UXB2B=1,//網優憑證
-            Exchange=2,//以證換證
-            //MOEA= 2,//工商憑證
-            //MOI =3 //自然人憑證
+            Enterprise = 0,//企業憑證
+            UXB2B = 1,//網優憑證
+            Exchange = 2,//以證換證
+                         //MOEA= 2,//工商憑證
+                         //MOI =3 //自然人憑證
         }
 
         public Contract GetContractByID(int? contractID)
@@ -89,7 +89,7 @@ namespace ContractHome.Models.Helper
 
         public bool IsContractHasCompany(Contract contract, int? companyID)
         {
-            return contract.ContractingParty.Where(x=>x.CompanyID == companyID).Any();
+            return contract.ContractingParty.Where(x => x.CompanyID == companyID).Any();
         }
 
         ////利用原有合約資料新增合約, for非聯合承攬用, 各別成立合約用
@@ -130,7 +130,7 @@ namespace ContractHome.Models.Helper
         public Contract AddParty(Contract contract, int CompanyID)
         {
 
-            if (contract.ContractingParty.Where(p => p.CompanyID == CompanyID).Any()) 
+            if (contract.ContractingParty.Where(p => p.CompanyID == CompanyID).Any())
             {
                 return contract;
             }
@@ -138,7 +138,7 @@ namespace ContractHome.Models.Helper
             contract.ContractingParty.Add(new ContractingParty
             {
                 CompanyID = CompanyID,
-                IntentID = (contract.CompanyID.Equals(CompanyID))?1:2,
+                IntentID = (contract.CompanyID.Equals(CompanyID)) ? 1 : 2,
                 IsInitiator = (contract.CompanyID.Equals(CompanyID)),
             });
 
@@ -147,14 +147,14 @@ namespace ContractHome.Models.Helper
                 contract.ContractSignatureRequest.Add(new ContractSignatureRequest
                 {
                     CompanyID = CompanyID,
-                    StampDate = (contract.IsPassStamp==true)?DateTime.Now:null,
+                    StampDate = (contract.IsPassStamp == true) ? DateTime.Now : null,
                 });
             }
 
             return contract;
         }
 
-        public Contract DeleteAndCreateFieldPostion(Contract contract, 
+        public Contract DeleteAndCreateFieldPostion(Contract contract,
             IEnumerable<PostFieldSettingRequestFields> feildSettings)
         {
             _models.DeleteAll<ContractSignaturePositionRequest>(x => x.ContractID == contract.ContractID);
@@ -163,7 +163,7 @@ namespace ContractHome.Models.Helper
             {
                 if (!contract.ContractSignaturePositionRequest
                     .Where(p => p.ContractID == contract.ContractID)
-                    .Where(p => p.OperatorID ==  pos.OperatorID.DecryptKeyValue())
+                    .Where(p => p.OperatorID == pos.OperatorID.DecryptKeyValue())
                     .Where(p => p.ContractorID == pos.CompanyID.DecryptKeyValue())
                     .Where(p => p.PositionID == pos.ID)
                 .Any())
@@ -179,7 +179,7 @@ namespace ContractHome.Models.Helper
                         MarginLeft = pos.MarginLeft,
                         Type = (short)pos.Type,
                         PageIndex = pos.PageIndex,
-                        OperatorID = (string.IsNullOrEmpty(pos.OperatorID)) ? null : pos.OperatorID.DecryptKeyValue()
+                        OperatorID = pos.OperatorID?.DecryptKeyValue()
                     });
                 }
 
@@ -280,18 +280,18 @@ namespace ContractHome.Models.Helper
                 return (new BaseResponse(reason: WebReasonEnum.Relogin), item);
             }
 
-            //wait to replace OrganizationUser by ContractingUser FOR Task
-            if (!_models!.GetTable<ContractingUser>().Where(x => x.UserID == userProfile.UID).Any())
-            {
-                if (!_models!.GetTable<ContractingParty>()
-                   .Where(p => p.ContractID == contractID)
-                   .Where(p => _models.GetTable<OrganizationUser>()
-                   .Where(o => o.UID == userProfile.UID).Any(o => o.CompanyID == p.CompanyID))
-                   .Any())
-                {
-                    return (new BaseResponse(reason: WebReasonEnum.Relogin), item);
-                }
-            }
+            // //wait to replace OrganizationUser by ContractingUser FOR Task
+            // if (!_models!.GetTable<ContractingUser>().Where(x => x.UserID == userProfile.UID).Any())
+            // {
+            //     if (!_models!.GetTable<ContractingParty>()
+            //        .Where(p => p.ContractID == contractID)
+            //        .Where(p => _models.GetTable<OrganizationUser>()
+            //        .Where(o => o.UID == userProfile.UID).Any(o => o.CompanyID == p.CompanyID))
+            //        .Any())
+            //     {
+            //         return (new BaseResponse(reason: WebReasonEnum.Relogin), item);
+            //     }
+            // }
 
             if (item.CurrentStep >= (int)CDS_Document.StepEnum.Sealed)
             {
@@ -309,9 +309,9 @@ namespace ContractHome.Models.Helper
         }
 
 
-        public (BaseResponse, Contract, UserProfile)  CanPdfSeal(int? contractID)
+        public (BaseResponse, Contract, UserProfile) CanPdfSeal(int? contractID)
         {
-            if (contractID==null||contractID == 0)
+            if (contractID == null || contractID == 0)
             {
                 return (new BaseResponse(reason: WebReasonEnum.ContractNotExisted), null, null);
             }
@@ -319,10 +319,10 @@ namespace ContractHome.Models.Helper
             var profile = (_httpContextAccessor.HttpContext.GetUserAsync().Result).LoadInstance(_models);
             if (profile == null)
             {
-                return (new BaseResponse(reason: WebReasonEnum.Relogin),null,null);
+                return (new BaseResponse(reason: WebReasonEnum.Relogin), null, null);
             }
 
-            var item = GetContractByID(contractID:contractID);
+            var item = GetContractByID(contractID: contractID);
 
             var parties = _models!.GetTable<ContractingParty>()
             .Where(p => p.ContractID == contractID)
@@ -460,7 +460,7 @@ namespace ContractHome.Models.Helper
             return ttt;
         }
 
-        public IQueryable<UserProfile>? GetUsersbyContract(Contract contract, bool isTask=false)
+        public IQueryable<UserProfile>? GetUsersbyContract(Contract contract, bool isTask = false)
         {
             if (isTask)
             {
@@ -468,11 +468,11 @@ namespace ContractHome.Models.Helper
             }
 
             return _models.GetTable<OrganizationUser>()
-                .Where(x => contract.ContractingParty.Select(x=>x.CompanyID).Contains(x.CompanyID))
+                .Where(x => contract.ContractingParty.Select(x => x.CompanyID).Contains(x.CompanyID))
                 .Select(y => y.UserProfile);
         }
 
-        public IQueryable<UserProfile>? GetUsersByWhoNotFinished(Contract contract, 
+        public IQueryable<UserProfile>? GetUsersByWhoNotFinished(Contract contract,
             int currentStep)
         {
             if ((currentStep == 0) || (!CDS_Document.DocumentEditable.Contains((CDS_Document.StepEnum)currentStep!)))
@@ -482,7 +482,7 @@ namespace ContractHome.Models.Helper
             bool isStamping = (contract.CurrentStep == (int)StepEnum.Sealing);
 
             return _models.GetTable<OrganizationUser>()
-                .Where(x => ((isSigning) ? contract.whoNotDigitalSigned():contract.whoNotStamped())
+                .Where(x => ((isSigning) ? contract.whoNotDigitalSigned() : contract.whoNotStamped())
                             .Select(x => x.CompanyID).Contains(x.CompanyID))
                 .Select(y => y.UserProfile);
         }
@@ -491,19 +491,19 @@ namespace ContractHome.Models.Helper
         {
             //EmailBody.EmailTemplate template = EmailBody.EmailTemplate.NotifySeal;
 
-            if ((contract.CDS_Document.CurrentStep.Equals((int)CDS_Document.StepEnum.Establish)||
+            if ((contract.CDS_Document.CurrentStep.Equals((int)CDS_Document.StepEnum.Establish) ||
                 (contract.CDS_Document.CurrentStep.Equals((int)CDS_Document.StepEnum.DigitalSigning))))
             {
                 //wait to do...新增簽署人時新增簽署順序,並記錄在ContractSignatureRequest
                 var ttt = contract.ContractSignatureRequest
-                    .Where(x=>x.StampDate==null);
+                    .Where(x => x.StampDate == null);
                 var aaa = ttt.Where(x => x.CompanyID != contract.CompanyID).FirstOrDefault();
                 var bbb = ttt.Where(x => x.CompanyID == contract.CompanyID).FirstOrDefault();
-                if (aaa!=null)
+                if (aaa != null)
                 {
                     return GetUsersbyCompanyID(aaa.CompanyID);
                 }
-                else if (bbb!=null)
+                else if (bbb != null)
                 {
                     return GetUsersbyCompanyID(bbb.CompanyID);
                 }
@@ -570,7 +570,7 @@ namespace ContractHome.Models.Helper
                         new EmailContentBodyDto(contract: contract, initiatorOrg: contract.Organization, userProfile: user);
 
                     emailContent.CreateBody(emailContentBodyDto);
-                    _emailFactory.SendEmailToCustomer(mailTo: user.EMail, 
+                    _emailFactory.SendEmailToCustomer(mailTo: user.EMail,
                         emailContent: emailContent);
                 }
             }
@@ -597,7 +597,7 @@ namespace ContractHome.Models.Helper
                     .Where(x => x.NotifyUntilDate >= DateTime.Now.Date)
                     .ToList();
 
-                if (contracts.Count()>0)
+                if (contracts.Count() > 0)
                 {
                     sb.AppendLine($"NotifyWhoNotFinishedDoc:contracts.Count()={contracts.Count()}");
 
@@ -612,7 +612,7 @@ namespace ContractHome.Models.Helper
                         var usersString = string.Join(" ", users.Select(x => $"{x.UID}"));
                         sb.Append($" ContractID: {contract.ContractID} {(CDS_Document.StepEnum)contract.CurrentStep} UID: {usersString}");
                     });
-                } 
+                }
                 else
                 {
                     sb.AppendLine("NotifyWhoNotFinishedDoc:contracts.Count()=0");
@@ -628,13 +628,14 @@ namespace ContractHome.Models.Helper
 
         }
 
-        public Contract SetConfigAndSave(Contract contract, PostConfigRequest req, 
-            int uid, bool isTask=false)
+        public Contract SetConfigAndSave(Contract contract, PostConfigRequest req,
+            int uid, bool isTask = false)
         {
             contract.ContractNo = req.ContractNo;
             contract.Title = req.Title;
             contract.IsPassStamp = req.IsPassStamp;
-            req.Signatories.ForEach(x => {
+            req.Signatories.ForEach(x =>
+            {
                 if (isTask)
                 {
                     AddOperator(contract, x.DecryptKeyValue());
@@ -677,7 +678,7 @@ namespace ContractHome.Models.Helper
         }
 
         public void CDS_DocumentTransitStep(
-            Contract contract, 
+            Contract contract,
             int uid,
             CDS_Document.StepEnum step)
         {
@@ -696,7 +697,7 @@ namespace ContractHome.Models.Helper
             {
                 UpdateCDS_DocumentCurrentStep(contract, CDS_Document.StepEnum.DigitalSigning);
             }
-            else 
+            else
             {
                 UpdateCDS_DocumentCurrentStep(contract, step);
             }
