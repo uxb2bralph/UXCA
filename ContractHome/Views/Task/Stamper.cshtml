@@ -46,7 +46,7 @@
     <div class="d-flex justify-content-between align-items-center pe-5">
       <div class="d-flex align-items-center mb-2">
         <h4 class="mb-0 me-4 py-2 fw-bolder options--show">
-          {{ isEdit ? '編輯文件' : '簽署人用印'}} - isEdit: {{isEdit}} / {{ CurrentStep }}
+          {{ isEdit ? '編輯文件' : '簽署人用印'}}
         </h4>
         <div v-if="getSignaturePage()" class="alert alert-success mb-0 py-2 px-3" role="alert">
           <i class="fas fa-info-circle pe-2"></i>
@@ -401,8 +401,6 @@
 <script>
   // 取得上傳 PDF 總頁數
   const { ContractNo, Title, CurrentStep, KeyID: contractID, PageCount, Parties } = @Html.Raw(contractRefsJson);
-  const contract = @Html.Raw(contractRefsJson);
-
   /**
    * param {Number} StepEnum 文件狀態
     * 0: Initial - 開始,
@@ -422,7 +420,6 @@
     el: '#AffixPdfSealImage',
     data() {
       return {
-        contract,
         ContractNo,
         Title,
         CurrentStep,
@@ -555,14 +552,12 @@
       // 取出當前簽署人簽署區塊資料
       getContractor() {
         const currentUser = this.Parties.filter(item => item.IsCurrentUserCompany)[0];
-        console.log('Parties:', this.Parties)
         const OperatorID = currentUser.KeyID;
         this.getFeildSetting(contractID, OperatorID);
       },
 
       // 取得用印範圍資訊
       getFeildSetting(ContractID, OperatorID) {
-        //console.log({ ContractID, CompanyID });
         const payload = { ContractID, OperatorID };
         showLoading();
         postData('@(Url.Action("FeildSettings", "Task"))', payload)
@@ -777,7 +772,7 @@
             error: function (xhr, ajaxOptions, thrownError) {
               hideLoading();
               console.log(xhr.status);
-              console.log(thrownError);
+              alertModal(thrownError);
             }
           });
         }
@@ -919,7 +914,6 @@
         if (hasVm) {
           positionsMap = this.signaturePositionsTemp.map(item => {
             const { Id, UserId, MarginTop, MarginLeft, ScaleWidth, ScaleHeight, SealScale, PageIndex, Type } = item;
-            console.log('送出合約:', { item })
             return {
               ID: Id,
               //CompanyID: UserId,
@@ -991,7 +985,6 @@
         } else {
           postData('@(Url.Action("AcceptContract", "Task"))', payload)
             .then((res) => {
-              console.log({res})  
               const { result, dataItem, message } = res;
               if (result) {
                 // 成功
@@ -1013,8 +1006,7 @@
         const payload = { ContractID };
         this.isCreate = true;
 
-        //showLoading();
-        console.log('loading')
+        showLoading();
         postData('@(Url.Action("Establish", "Task"))', payload)
           .then((res) => {
             const { hasError, data, message } = res;
@@ -1361,7 +1353,6 @@
         showLoading();
         $.post('@Html.Raw(Url.Action("CommitPdfNote", "Task"))', payload, function (res) {
           hideLoading();
-          console.log({res})
           const { data, hasError, message, url } = res;
           if ($.isPlainObject(res)) {
             if (!hasError) {
@@ -2050,7 +2041,7 @@
       error: function (xhr, ajaxOptions, thrownError) {
         hideLoading();
         console.log(xhr.status);
-        console.log(thrownError);
+        alertModal(thrownError);
       }
     });
   };
