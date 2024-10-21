@@ -15,7 +15,7 @@ using static ContractHome.Helper.JwtTokenGenerator;
 namespace ContractHome.Controllers
 {
     //remark for testing by postman
-    [Authorize]
+    //[Authorize]
     public class TaskController : SampleController
     {
         private readonly ILogger<HomeController> _logger;
