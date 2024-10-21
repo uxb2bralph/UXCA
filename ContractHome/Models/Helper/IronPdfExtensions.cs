@@ -125,14 +125,15 @@ namespace ContractHome.Models.Helper
             {
                 using (Bitmap bmp = new Bitmap(stream))
                 {
-                    var backgroundStamp = new HtmlStamper($"<img style='mix-blend-mode:multiply;width:{bmp.Width * ((sealScale ?? 100) / 100 * 2.54 / bmp.HorizontalResolution)}cm;' src='data:application/octet-stream;base64,{Convert.ToBase64String(buf)}'/>")
+                    var backgroundStamp = new HtmlStamper()
                     {
+                        Html = $"<img style='z-index:10; mix-blend-mode:multiply;width:{bmp.Width * (sealScale ?? 1)}px;' src='data:application/octet-stream;base64,{Convert.ToBase64String(buf)}'/>",
                         Opacity = 60,
                         HorizontalOffset = new Length(unit: MeasurementUnit.Centimeter) { Value = marginLeft ?? 0, },
                         VerticalOffset = new Length(unit: MeasurementUnit.Centimeter) { Value = marginTop ?? 0 },
                         VerticalAlignment = IronPdf.Editing.VerticalAlignment.Top,
                         HorizontalAlignment = IronPdf.Editing.HorizontalAlignment.Left,
-                        IsStampBehindContent = true,
+                        IsStampBehindContent = false,
                     };
                     pdf.ApplyStamp(backgroundStamp, pageIndex ?? 0);
                 }
@@ -141,14 +142,15 @@ namespace ContractHome.Models.Helper
 
         private static void ApplyStamp(PdfDocument pdf, String text, double? marginLeft, double? marginTop, int? pageIndex, double? width)
         {
-            var backgroundStamp = new HtmlStamper($"<div>{text}</div>")
+            var backgroundStamp = new HtmlStamper()
             {
+                Html = $"<div>{text}</div>",
                 //Opacity = 60,
                 HorizontalOffset = new Length(unit: MeasurementUnit.Centimeter) { Value = marginLeft ?? 0, },
                 VerticalOffset = new Length(unit: MeasurementUnit.Centimeter) { Value = marginTop ?? 0 },
                 VerticalAlignment = IronPdf.Editing.VerticalAlignment.Top,
                 HorizontalAlignment = IronPdf.Editing.HorizontalAlignment.Left,
-                IsStampBehindContent = true,
+                IsStampBehindContent = false,
                 MaxWidth = new Length(unit: MeasurementUnit.Centimeter) { Value = width ?? 0, }
             };
             pdf.ApplyStamp(backgroundStamp, pageIndex ?? 0);

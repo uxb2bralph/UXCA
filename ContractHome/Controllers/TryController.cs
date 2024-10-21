@@ -44,6 +44,16 @@ namespace ContractHome.Controllers
             public int IntItem { get; set; }
         }
 
+        [HttpGet]
+        [Route("EasyPass")]
+        public async Task<IActionResult> EasyPass([FromQuery] string pid)
+        {
+            //wait to add... if debug
+            DCDataContext models = new DCDataContext();
+            var user = models.GetTable<UserProfile>().Where(x => x.PID == pid).FirstOrDefault();
+            await HttpContext.SignOnAsync(user);
+            return Redirect("https://localhost:5153/ContractConsole/ListToStampIndex");
+        }
 
         
 

@@ -1,0 +1,204 @@
+@*
+For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model ContractHome.Models.Rpt.TaskProcess
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="zh-tw">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge" />
+  <title>UX SIGN 數位簽署歷程報告</title>
+  <!-- MDB icon -->
+  <link rel="icon" href="~/images/uxSign.ico" type="image/x-icon" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="~/css/fontawesome/all.css" />
+  <!-- Google Fonts Roboto -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
+  <!-- Boostrap -->
+  <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+  <!-- Custom scripts -->
+  <link rel="stylesheet" href="~/lib/jquery-ui/Content/themes/base/all.css" />
+  <!-- 網站設定樣式 -->
+  <link rel="stylesheet" href="~/css/site.css" />
+  <script type="text/javascript" src="~/lib/jquery/dist/jquery.js"></script>
+  <script type="text/javascript" src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="~/js/vue.js"></script>
+</head>
+
+<body>
+  <div id="signHistoryPaper">
+    <div class="text-center pt-5">
+      <h2><strong>UX SIGN 電子簽章簽署歷程文件</strong></h2>
+      <p>製表日期: 2024/06/12</p>
+    </div>
+    <div class="container">
+      <h4 class="mb-3 pb-1 border-bottom border-secondary fw-bolder">基本資訊</h4>
+            <p class="mb-3"><strong>文件名稱：</strong>@(Model.FileName)</p>
+            <p class="mb-3"><strong>文件編號：</strong>@(Model.FileNo)</p>
+      <p class="mb-3"><strong>文件簽署發起者：</strong>{{ report.name }} ({{ report.email }} / {{ report.ip }})</p>
+            <p class="mb-3"><strong>文件建立時間：</strong>@(Model.PublishedDateTime)</p>
+            <p class="mb-3"><strong>文件簽署完成時間：</strong>@(Model.FinishedDateTime)</p>
+      <p class="mb-3"><strong>文件頁數：</strong>{{ report.totalPage }}</p>
+      <p class="mb-3"><strong>簽章總數：</strong>{{ report.totalSign }}</p>
+    </div>
+    <div class="container">
+      <h4 class="mb-3 pt-3 pb-1 border-bottom border-secondary fw-bolder">簽署者清單</h4>
+      <table class="table border border-secondary">
+        <thead>
+          <tr class="table-primary">
+            <th scope="col">姓名(通知電子信箱)</th>
+            <th scope="col">角色</th>
+            <th scope="col">身分識別方式</th>
+            <th scope="col">簽署信物</th>
+          </tr>
+        </thead>
+        <tbody>
+                    @foreach (var x in @Model.Operators)
+                    {
+                        <tr>
+                            <td class="fs-13">{{ @x.Name }}</td>
+                        </tr>
+                    }
+        </tbody>
+      </table>
+    </div>
+    <div class="container">
+      <h4 class="mb-3 pt-3 pb-1 border-bottom border-secondary fw-bolder">事件摘要</h4>
+      <table class="table border border-secondary">
+        <thead>
+          <tr class="table-primary">
+            <th scope="col">時間</th>
+            <th scope="col">簽署事件狀態</th>
+          </tr>
+        </thead>
+        <tbody>
+            @foreach (var x in @Model.Processes)
+            {
+                <tr>
+                    <td class="fs-13">{{ @x.Name }}</td>
+                    <td class="fs-13">{{ @x.DateTime }}</td>
+                </tr>
+            }
+        </tbody>
+      </table>
+    </div>
+    <div class="container">
+      <h4 class="mb-3 pt-3 pb-1 border-bottom border-secondary fw-bolder">簽署歷程</h4>
+      <table class="table border border-secondary">
+        <thead>
+          <tr class="table-primary">
+            <th scope="col">簽署者資訊</th>
+            <th scope="col">動作</th>
+            <th scope="col">IP 位址及裝置</th>
+            <th scope="col">時間</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(item, index) in report.history" :key="index">
+            <td class="fs-13">{{ item.name }}<br>({{ item.mail }})<br>{{ item.rule }}</td>
+            <td class="fs-13">{{ item.event }}</td>
+            <td class="fs-13">{{ item.ip }}<br>{{ item.device }}</td>
+            <td class="fs-13">{{ item.date }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="container pb-5">
+      <h6 class="mb-3 pt-3 pb-1 border-bottom border-secondary fw-bolder">補充說明</h6>
+      <ol class="fs-13">
+        <li><strong>時區：</strong>本簽署歷程文件之時區，預設使用(UTC+8)台北時間</li>
+        <li><strong>Adobe Reader 警示訊息：</strong><br>
+          使用Adobe Reader閱讀文件時，若在簽名面板上出現訊息如「至少有一個簽名發生問題」、「簽名有效性不詳」，表示簽署者之身分驗證方式為「Email
+          驗證碼、手機簡訊驗證碼、或個人驗證：驗證手機門號」，仍不影響文件有效性。<br>
+          前述簽署者之身分驗證方式，係由文件簽署發起者指示 UX SIGN 平台執行，該驗證方式僅透過簡易程序進行簽署者對 Email 或手機掌控權之查證，以確認為本人進行簽署。</li>
+        <li><strong>簽署模式：</strong><br>
+          遠端簽署：文件簽署發起者登入後，從 UX SIGN 平台遠端發送簽署邀請給簽署者。<br>
+          簽署者無論是否登入 UX SIGN 平台，皆可完成簽署。</li>
+      </ol>
+    </div>
+
+  </div>
+</body>
+
+</html>
+<script>
+  const app = new Vue({
+    el: '#signHistoryPaper',
+    data() {
+      return {
+        report: {
+          fileName: '電子簽章平台測試合約.pdf',
+          fileNo: '2352928c-4eb7-4250-8730-0172fc0d4b48',
+          initiator: '簡立恆',
+          email: '186825@mail.csc.com.tw',
+          ip: '210.63.212.209',
+          published: '2023/02/13 14:02:13',
+          finished: '2023/02/13 14:21:18',
+          totalPage: '31',
+          totalSign: '3',
+          signer: [
+            {
+              name: '中國鋼鐵股份有限公司',
+              mail: '186825@mail.csc.com.tw',
+              rule: '文件簽署發起者',
+              identify: '法人驗證：工商憑證',
+              certificate: '16: 25: 75',
+              cn: '30414175-00-00 - C3:: HSMT005'
+            },
+            {
+              name: '中國鋼鐵結構股份有限公司',
+              mail: '19232@cssc.com.tw',
+              rule: '簽署者',
+              identify: '法人驗證：工商憑證',
+              certificate: '16:25:87',
+              cn: '85800192-00-00-C3::HSMT000'
+            },
+            {
+              name: 'UX SIGN',
+              mail: 'service@mail.uxifs.com',
+              rule: '認證單位',
+              identify: null,
+              certificate: '15:B2:7F',
+              cn: 'UX SIGN'
+            }
+          ],
+          summary: [
+            {
+              date: '2023/02/13 14:02:13',
+              des: '文件已建立',
+            },
+            {
+              date: '2023/02/13 14:06:05',
+              des: '首封簽署通知已寄出',
+            },
+            {
+              date: '2023/02/13 14:08:09',
+              des: '第 1 位簽署者已簽署 (遠端簽署)',
+            },
+            {
+              date: '2023/02/13 14:21:18',
+              des: '第 2 位簽署者已簽署 (遠端簽署)',
+            },
+          ],
+          history: [
+            {
+              name: '簡立恆',
+              mail: '186825@mail.csc.com.tw',
+              rule: '文件簽署發起者',
+              ip: '210.63.212.209',
+              event: '文件密碼重置：無需重置',
+              device: 'Windows NT 10.0/Win64',
+              date: '2023/02/13 14:02:13'
+            },
+          ]
+        }
+      }
+    },
+
+  });
+</script>
