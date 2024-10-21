@@ -15,7 +15,7 @@ using static ContractHome.Helper.JwtTokenGenerator;
 namespace ContractHome.Controllers
 {
     //remark for testing by postman
-    //[Authorize]
+    [Authorize]
     public class TaskController : SampleController
     {
         private readonly ILogger<HomeController> _logger;
@@ -479,37 +479,27 @@ namespace ContractHome.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetOperatorsAsync([FromBody] GetSignatoriesRequest req)
+        public async Task<IActionResult> GetOperatorsAsync()
         {
             var profile = await HttpContext.GetUserAsync();
-            #region add for postman test
-            if (profile == null && req.EncUID != null)
-            {
-                profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
-            }
-            #endregion
+            //#region add for postman test
+            //if (profile == null)
+            //{
+            //    profile = models.GetTable<UserProfile>().Where(x => x.UID == 4).FirstOrDefault();
+            //}
+            //#endregion
             if (profile == null)
             {
                 return Json(new BaseResponse(true, "請重新登入"));
             }
 
             _contractServices.SetModels(models);
-            Contract contract = _contractServices.GetContractByID(contractID: req.ContractID.DecryptKeyValue());
-            if (contract == null)
-            {
-                return Json(new BaseResponse(true, "無此權限"));
-            }
 
             IEnumerable<UserProfile>? operators
-                = _contractServices.GetOperatorByCompanyID(contract.CompanyID);
+                = _contractServices.GetOperatorByOwnerID(profile.UID);
 
             _baseResponse.Data = operators.Select(x =>
-                new
-                {
-                    id = x.UID.EncryptKey(),
-                    title = x.OperatorNote ?? string.Empty,
-                    email = x.EMail
-                });
+                new Models.Operator(pID: x.PID, eMail: x.EMail, title: x.OperatorNote, region: x.Region));
 
             return Json(_baseResponse);
         }

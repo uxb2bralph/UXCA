@@ -82,9 +82,9 @@ namespace ContractHome.Models.Helper
             return _models.GetTable<Organization>().Where(x => x.CompanyBelongTo == companyID);
         }
 
-        public IEnumerable<UserProfile>? GetOperatorByCompanyID(int companyID)
+        public IEnumerable<UserProfile>? GetOperatorByOwnerID(int uid)
         {
-            return _models.GetTable<UserProfile>().Where(x => x.CompanyID == companyID);
+            return _models.GetTable<UserProfile>().Where(x => x.OperatorOwnerUID == uid);
         }
 
         public bool IsContractHasCompany(Contract contract, int? companyID)

@@ -354,7 +354,7 @@ namespace ContractHome.Controllers
             return Json(_baseResponse);
         }
 
-        //[RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.User })]
+        [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.User })]
         public ActionResult CreateOperator([FromBody] UserProfileViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
@@ -374,14 +374,14 @@ namespace ContractHome.Controllers
                 return Json(_baseResponse.ErrorMessage("使用者不存在."));
             };
 
-            var sameEmailInCompany = models.GetTable<UserProfile>()
+            var sameEmailInOperatorOwner = models.GetTable<UserProfile>()
                 .Where(u => u.EMail == viewModel.EMail)
-                .Where(u => u.CompanyID==viewModel.GetCompanyID())
+                .Where(u => u.OperatorOwnerUID==uid)
                 .FirstOrDefault();
 
-            if (sameEmailInCompany!=null)
+            if (sameEmailInOperatorOwner!=null)
             {
-                return Json(_baseResponse.ErrorMessage($"email:{viewModel.EMail} 已存在."));
+                return Json(_baseResponse.ErrorMessage($"email:{viewModel.EMail} 已存在於 uid:{uid}."));
             }
 
             UserProfile item = UserProfile.PrepareNewItem(models.DataContext);
@@ -389,14 +389,47 @@ namespace ContractHome.Controllers
             item.PID = Guid.NewGuid().ToString();
             item.EMail = viewModel.EMail;
             item.Region = viewModel.Region;
-            item.CompanyID = viewModel.GetCompanyID();
+            item.OperatorOwnerUID = uid;
             item.OperatorNote = viewModel.Title;
             models.SubmitChanges();
 
             models.ExecuteCommand(@"INSERT INTO UserRole (UID, RoleID) VALUES ({0},{1})", item.UID, 3);
             models.SubmitChanges();
 
+            _baseResponse.Data = new Models.Operator(pID: item.PID, eMail: item.EMail, title: item.OperatorNote, region: item.Region);
+
             return Json(_baseResponse);
+        }
+
+        [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.User })]
+        public async Task<IActionResult> UpdateOperator([FromBody] UserProfileViewModel viewModel)
+        {
+            var profile = await HttpContext.GetUserAsync();
+            //#region add for postman test
+            //if (profile == null)
+            //{
+            //    profile = models.GetTable<UserProfile>().Where(x => x.UID == 4).FirstOrDefault();
+            //}
+            //#endregion
+
+            var operatorUser = models.GetTable<UserProfile>()
+                .Where(u => u.OperatorOwnerUID == profile.UID)
+                .Where(x=>x.PID==viewModel.PID)
+                .Where(u=>u.EMail == viewModel.EMail)
+                .FirstOrDefault();
+
+            if (profile==null||operatorUser == null)
+            {
+                return Ok(_baseResponse.ErrorMessage("Operator不存在."));
+            }
+
+            operatorUser.OperatorNote = viewModel.Title;
+            models.SubmitChanges();
+            _baseResponse.Data = new Models.Operator(
+                pID: operatorUser.PID, eMail: operatorUser.EMail, 
+                title: operatorUser.OperatorNote??string.Empty, region: operatorUser.Region);
+
+            return Ok(_baseResponse);
         }
 
         [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
