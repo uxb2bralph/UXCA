@@ -499,7 +499,7 @@ namespace ContractHome.Controllers
                 = _contractServices.GetOperatorByOwnerID(profile.UID);
 
             _baseResponse.Data = operators.Select(x =>
-                new Models.Operator(pID: x.PID, eMail: x.EMail, title: x.OperatorNote, region: x.Region));
+                new Models.Operator(pID: x.PID, email: x.EMail, title: x.OperatorNote, region: x.Region));
 
             return Json(_baseResponse);
         }

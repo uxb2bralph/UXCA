@@ -55,18 +55,6 @@ namespace ContractHome.Controllers
             return Redirect("https://localhost:5153/ContractConsole/ListToStampIndex");
         }
 
-        
-
-        [HttpGet]
-        [Route("EasyPass")]
-        public async Task<IActionResult> EasyPass([FromQuery] string pid)
-        {
-            DCDataContext models = new DCDataContext();
-            var user =  models.GetTable<UserProfile>().Where(x => x.PID == pid).FirstOrDefault();
-            await HttpContext.SignOnAsync(user);
-            return Redirect("https://localhost:5153/ContractConsole/ListToStampIndex");
-        }
-
         [HttpGet]
         [Route("DecryptKeyValue")]
         public IActionResult GetDecryptKeyValue([FromQuery] string keyID)

@@ -396,7 +396,7 @@ namespace ContractHome.Controllers
             models.ExecuteCommand(@"INSERT INTO UserRole (UID, RoleID) VALUES ({0},{1})", item.UID, 3);
             models.SubmitChanges();
 
-            _baseResponse.Data = new Models.Operator(pID: item.PID, eMail: item.EMail, title: item.OperatorNote, region: item.Region);
+            _baseResponse.Data = new Models.Operator(pID: item.PID, email: item.EMail, title: item.OperatorNote, region: item.Region);
 
             return Json(_baseResponse);
         }
@@ -426,7 +426,7 @@ namespace ContractHome.Controllers
             operatorUser.OperatorNote = viewModel.Title;
             models.SubmitChanges();
             _baseResponse.Data = new Models.Operator(
-                pID: operatorUser.PID, eMail: operatorUser.EMail, 
+                pID: operatorUser.PID, email: operatorUser.EMail, 
                 title: operatorUser.OperatorNote??string.Empty, region: operatorUser.Region);
 
             return Ok(_baseResponse);
