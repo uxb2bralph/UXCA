@@ -29,7 +29,7 @@
         var recordCount = _model.Count();
         if (recordCount > 0)
         {
-            await Html.RenderPartialAsync("~/Views/Task/Module/ContractRequestTable.cshtml", _model);
+            await Html.RenderPartialAsync("~/Views/Task/Module/TaskRequestTable.cshtml", _model);
             await Html.RenderPartialAsync("~/Views/Common/Module/QueryPagingControl.cshtml", _model);
         }
         else

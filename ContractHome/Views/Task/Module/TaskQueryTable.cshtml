@@ -22,21 +22,22 @@
     _viewModel = (QueryViewModel)ViewBag.ViewModel;
 
 }
-<table id="@(_listID)" class="table01 itemList">
+<table id="@(_listID)" class="table01 itemList text-nowrap">
     <thead>
         <tr>
             <th>
-                <input name="chkAll" type="checkbox">
+                <a href="javascript:void(0);" onclick="$inquiryAgent.sort('CDS_Document.DocID',this);">建檔日期</a>
             </th>
-            @*<th>檔案類型</th>*@
+            <th>起約人</th>
+            <th>簽約人</th>
             <th><a href="javascript:void(0);" onclick="$inquiryAgent.sort('ContractNo',this);">合約編號</a></th>
-            <th>合約用印</th>
-            <th>合約數位簽章</th>
+            <th>用印狀態</th>
+            <th>簽章狀態</th>
         </tr>
     </thead>
     <tbody>
         @{
-            await Html.RenderPartialAsync("~/Views/Task/Module/ContractRequestList.cshtml", _model);
+            await Html.RenderPartialAsync("~/Views/Task/Module/TaskQueryList.cshtml", _model);
         }
     </tbody>
 </table>

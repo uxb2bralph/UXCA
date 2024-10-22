@@ -27,7 +27,7 @@
 
     await Html.RenderPartialAsync("~/Views/DataExchange/Module/ItemListSorting.cshtml");
 
-    _dataItemView = ViewBag.DataItemView ?? "~/Views/Task/Module/ContractQueryItem.cshtml";
+    _dataItemView = ViewBag.DataItemView ?? "~/Views/Task/Module/TaskQueryItem.cshtml";
 
     IQueryable<dynamic> items;
     int pageIndex = _viewModel.PageIndex ?? 0;

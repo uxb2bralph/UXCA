@@ -151,14 +151,14 @@ namespace ContractHome.Controllers
         public async Task<ActionResult> VueListToStampAsync([FromBody] SignContractViewModel viewModel)
         {
             ViewResult result = (ViewResult)(await ListToStampAsync(viewModel));
-            result.ViewName = "~/Views/Task/VueModule/ContractRequestList.cshtml";
+            result.ViewName = "~/Views/Task/VueModule/TaskRequestList.cshtml";
             return result;
         }
 
         public async Task<ActionResult> ListToStampIndexAsync(SignContractViewModel viewModel)
         {
             ViewResult result = (ViewResult)(await ListToStampAsync(viewModel));
-            result.ViewName = "~/Views/Task/ListToStampIndex.cshtml";
+            result.ViewName = "~/Views/Task/TaskListIndex.cshtml";
             return result;
         }
 
@@ -238,12 +238,12 @@ namespace ContractHome.Controllers
             if (viewModel.PageIndex.HasValue)
             {
                 viewModel.PageIndex--;
-                return View("~/Views/Task/Module/ContractRequestList.cshtml", items);
+                return View("~/Views/Task/Module/TaskRequestList.cshtml", items);
             }
             else
             {
                 viewModel.PageIndex = 0;
-                return View("~/Views/Task/Module/ContractRequestQueryResult.cshtml", items);
+                return View("~/Views/Task/Module/TaskRequestQueryResult.cshtml", items);
             }
         }
 
