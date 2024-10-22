@@ -61,11 +61,18 @@ namespace ContractHome.Controllers
                 return Json(new { result = false, message = "合約資料錯誤!!" });
             }
 
-            var profile = (await HttpContext.GetUserAsync()).LoadInstance(models);
-            if (profile?.ContractingUser == null)
+            var profile = await HttpContext.GetUserAsync();
+            //#region add for postman test
+            //if (profile == null)
+            //{
+            //    profile = models.GetTable<UserProfile>().Where(x => x.UID == viewModel.EncUID.DecryptKeyValue()).FirstOrDefault();
+            //}
+            //#endregion
+
+            profile = profile.LoadInstance(models);
+            if (profile==null||profile.ContractingUser == null)
             {
                 return Json(new { result = false, message = "簽約人資料錯誤!!" });
-
             }
 
             var requestItem =
@@ -100,15 +107,15 @@ namespace ContractHome.Controllers
             }
 
             _contractServices.SetModels(models);
-            if (contract.isAllStamped())
+            if (contract.isAllStamped(isTask:true))
             {
-                var targetUsers = _contractServices.GetUsersbyContract(contract);
-                if (ContractServices.IsNotNull(targetUsers))
+                var targetUsers = _contractServices.GetUsersbyContract(contract,true);
+                if (ContractServices.IsNotNull(targetUsers)&& targetUsers.Count()>0)
                 {
                     _contractServices.CDS_DocumentTransitStep(contract, profile!.UID, CDS_Document.StepEnum.Sealed);
                     _contractServices.SendUsersNotifyEmailAboutContractAsync(
                         contract,
-                        _emailContentFactories.GetNotifySign(),
+                        _emailContentFactories.GetTaskNotifySign(),
                         targetUsers);
                 }
             }
@@ -218,7 +225,7 @@ namespace ContractHome.Controllers
             }
         }
 
-        public async Task<ActionResult> CommitPdfSignatureAsync(SignatureRequestViewModel viewModel)
+        public async Task<ActionResult> CommitPdfSignatureAsync([FromBody] SignatureRequestViewModel viewModel)
         {
             var seal = models.GetTable<SealTemplate>().Where(s => s.SealID == viewModel.SealID).FirstOrDefault();
             if (seal == null)
@@ -253,7 +260,12 @@ namespace ContractHome.Controllers
             }
 
             var profile = await HttpContext.GetUserAsync();
-
+            //#region add for postman test
+            //if (profile == null)
+            //{
+            //    profile = models.GetTable<UserProfile>().Where(x => x.UID == viewModel.EncUID.DecryptKeyValue()).FirstOrDefault();
+            //}
+            //#endregion
             void ApplySeal(Contract contract, SealTemplate seal, int? uid, int? pageIndex)
             {
                 ContractSealRequest item = new ContractSealRequest
@@ -287,10 +299,10 @@ namespace ContractHome.Controllers
                     ApplySeal(contract, seal, profile.UID, viewModel.PageIndex);
                 }
 
-                return Json(new { result = true });
+                return Ok(_baseResponse);
             }
 
-            return Json(new { result = false });
+            return Ok(_baseResponse.ErrorMessage("請重新登入"));
 
         }
 
@@ -363,12 +375,12 @@ namespace ContractHome.Controllers
         public async Task<IActionResult> FeildSettingsUpdateAsync([FromBody] PostFieldSettingRequest req)
         {
             var profile = await HttpContext.GetUserAsync();
-            #region add for postman test
-            if (profile == null)
-            {
-                profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
-            }
-            #endregion
+            //#region add for postman test
+            //if (profile == null)
+            //{
+            //    profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
+            //}
+            //#endregion
             _contractServices.SetModels(models);
             var contractID = req.ContractID.DecryptKeyValue();
             Contract contract = _contractServices.GetContractByID(contractID: contractID);
@@ -419,7 +431,7 @@ namespace ContractHome.Controllers
 
                 _contractServices.SetModels(models);
                 (resp, Contract contract, userProfile) =
-                    _contractServices.CanPdfDigitalSign(contractID: jwtTokenObj.ContractID.DecryptKeyValue());
+                    _contractServices.CanPdfDigitalSign(contractID: jwtTokenObj.ContractID.DecryptKeyValue(), true);
 
                 if (resp.HasError)
                 {
@@ -460,6 +472,13 @@ namespace ContractHome.Controllers
             }
 
             var profile = HttpContext.GetUserAsync().Result;
+            //#region add for postman test
+            //if (profile == null)
+            //{
+            //    //profile = models.GetTable<UserProfile>().Where(x => x.UID == 4).FirstOrDefault();
+            //    profile = models.GetTable<UserProfile>().Where(x => x.UID == 41).FirstOrDefault();
+            //}
+            //#endregion
             _contractServices.SetModels(models);
             (BaseResponse resp, Contract contract) =
                  _contractServices.CanTaskSeal(contractID: contractID, userProfile: profile);
@@ -509,12 +528,12 @@ namespace ContractHome.Controllers
         {
             Contract contract;
             UserProfile profile = await HttpContext.GetUserAsync();
-            #region add for postman test
-            if (profile == null && req.EncUID.Length > 0)
-            {
-                profile = models.GetTable<UserProfile>().Where(x => x.UID == 4).FirstOrDefault();
-            }
-            #endregion
+            //#region add for postman test
+            //if (profile == null && req.EncUID.Length > 0)
+            //{
+            //    profile = models.GetTable<UserProfile>().Where(x => x.UID == 4).FirstOrDefault();
+            //}
+            //#endregion
 
             _contractServices.SetModels(models: models);
             contract = _contractServices.GetContractByID(req.ContractID.DecryptKeyValue());
@@ -549,12 +568,12 @@ namespace ContractHome.Controllers
         public async Task<ActionResult> ConfigAsync([FromBody] PostConfigRequest req)
         {
             UserProfile profile = await HttpContext.GetUserAsync();
-            // #if DEBUG
-            //       if (profile == null && req.EncUID != null)
-            //       {
-            //         profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
-            //       }
-            // #endif
+#if DEBUG
+            if (profile == null && req.EncUID != null)
+            {
+                profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
+            }
+#endif
 
             _contractServices.SetModels(models);
             var contractID = req.ContractID.ToString().DecryptKeyValue();

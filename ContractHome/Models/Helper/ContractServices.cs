@@ -221,7 +221,7 @@ namespace ContractHome.Models.Helper
             return contract;
         }
 
-        public (BaseResponse, Contract, UserProfile) CanPdfDigitalSign(int? contractID)
+        public (BaseResponse, Contract, UserProfile) CanPdfDigitalSign(int? contractID, bool isTask=false)
         {
             if (contractID == null || contractID == 0)
             {
@@ -235,14 +235,27 @@ namespace ContractHome.Models.Helper
             }
 
             var item = GetContractByID(contractID: contractID);
-
+            if (item==null)
+            {
+                return (new BaseResponse(reason: WebReasonEnum.ContractNotExisted), item, profile);
+            }
             var parties = _models!.GetTable<ContractingParty>()
-            .Where(p => p.ContractID == contractID)
-            .Where(p => _models.GetTable<OrganizationUser>()
-            .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
-            .FirstOrDefault();
+                .Where(p => p.ContractID == contractID)
+                .Where(p => _models.GetTable<OrganizationUser>()
+                .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
+                .FirstOrDefault();
 
-            if ((item == null) || (parties == null))
+            var taskUsers = _models!.GetTable<ContractingUser>()
+                .Where(p => p.ContractID == contractID)
+                .Where(o => o.UserID == profile.UID)
+                .FirstOrDefault();
+
+            if (isTask&& taskUsers==null)
+            {
+                return (new BaseResponse(reason: WebReasonEnum.ContractNotExisted), item, profile);
+            }
+
+            if (!isTask && parties == null)
             {
                 return (new BaseResponse(reason: WebReasonEnum.ContractNotExisted), item, profile);
             }

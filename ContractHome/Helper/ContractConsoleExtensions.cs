@@ -223,8 +223,12 @@ namespace ContractHome.Helper
         //            .Where(x => (x.IsInitiator==null)|| (x.IsInitiator == false));
         //}
 
-        public static bool isAllStamped(this Contract contract)
+        public static bool isAllStamped(this Contract contract, bool isTask=false)
         {
+            if (isTask)
+            {
+                return (contract.ContractUserSignatureRequest.Where(x => x.StampDate == null).Count() == 0);
+            }
             return (contract.ContractSignatureRequest.Where(x => x.StampDate == null).Count() == 0);
         }
 
