@@ -369,7 +369,7 @@ namespace ContractHome.Controllers
                 .Where(u => u.UID == uid)
                 .FirstOrDefault();
 
-            if (dataItem==null|| !dataItem.CompanyID.Equals(viewModel.GetCompanyID()))
+            if (dataItem==null)
             {
                 return Json(_baseResponse.ErrorMessage("使用者不存在."));
             };
