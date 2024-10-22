@@ -45,8 +45,14 @@
             <li class="nav-item">
               <a class="nav-link fs-5 fw-bolder" href="@Html.Raw(Url.Action("ListToStampIndex","ContractConsole"))">
                 <i class="fas fa-file-signature"></i>
-                文件
+                舊文件
               </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link fs-5 fw-bolder" href="@Html.Raw(Url.Action("ListToStampIndex","Task"))">
+                    <i class="fas fa-file-signature"></i>
+                    新文件
+                </a>
             </li>
             <li class="nav-item">
               <a class="nav-link fs-5 fw-bolder" href="@Html.Raw(Url.Action("QueryIndex","ContractConsole"))">

@@ -1,0 +1,46 @@
+﻿@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+}
+
+<div class="col-md-4">
+    <label for="No" class="form-label">合約號碼</label>
+    <input type="text" class="form-control" name="No" id="No" value="" />
+</div>
+<div class="col-md-4">
+    <label for="ContractDateFrom" class="form-label form_date">建檔日期(起)</label>
+    <input type="text" class="form-control" name="ContractDateFrom" id="ContractDateFrom" value="" />
+</div>
+<div class="col-md-4">
+    <label for="ContractDateTo" class="form-label form_date">建檔日期(迄)</label>
+    <input type="text" class="form-control" name="ContractDateTo" id="ContractDateTo" value="" />
+</div>
+<div class="col-md-4">
+    <label for="Initiator" class="form-label">起約人</label>
+    @{
+        await Html.RenderPartialAsync("~/Views/Home/Module/CompanyQuickSearch.cshtml", "Initiator");
+    }
+</div>
+<div class="col-md-4">
+    <label for="Contractor" class="form-label">簽約人</label>
+    @{
+        await Html.RenderPartialAsync("~/Views/Home/Module/CompanyQuickSearch.cshtml", "Contractor");
+    }
+</div>
+

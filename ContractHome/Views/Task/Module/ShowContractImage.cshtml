@@ -1,0 +1,71 @@
+﻿@using System.IO
+@using System.Linq.Expressions
+@using ContractHome.Models.Helper;
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@using System.Text.RegularExpressions
+@using System.Drawing;
+@using System.Drawing.Imaging;
+@using System.Text;
+
+@{
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+    Contract _model = (Contract)this.Model;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+    QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+    Image? img = null;
+    String? imgFile = _model.GetContractImage(_viewModel.PageIndex ?? 0);
+    if(imgFile!=null)
+    {
+        img = Bitmap.FromFile(imgFile);
+    }
+
+}
+@functions
+{
+    String ImageBase64(Image img)
+    {
+        using (MemoryStream buffer = new MemoryStream())
+        {
+            img.Save(buffer, ImageFormat.Jpeg);
+            StringBuilder sb = new StringBuilder("data:image/jpeg;base64,");
+            sb.Append(Convert.ToBase64String(buffer.ToArray()));
+            return sb.ToString();
+        }
+    }
+}
+@if (img != null)
+{
+
+    String css = $"width:{img.Width}px; height:{img.Height}px; background-image: url('../{imgFile!.Substring(imgFile.IndexOf("logs")).Replace('\\', '/')}');"; 
+    
+    <div id="contractImg" class="contractImg" style="@Html.Raw(css)"></div>
+    @*<script>
+         $(function () {
+            $('#contractImg').on('click', function (event) {
+                var event = event || window.event;
+                var rect = this.getBoundingClientRect();
+                $('[name="MarginTop"]').val(((event.clientY - rect.top) / 96 * 2.54).toFixed(2));
+                $('[name="MarginLeft"]').val(((event.clientX - rect.left) / 96 * 2.54).toFixed(2));
+            });
+
+            $('#contractImg').on('mousemove', function (event) {
+                var event = event || window.event;
+                var rect = this.getBoundingClientRect();
+                //$('#pos').text('(' + (event.clientX - rect.left).toFixed() + ',' + (event.clientY - rect.top).toFixed() + ')');
+                console.log('(' + (event.clientX - rect.left).toFixed() + ',' + (event.clientY - rect.top).toFixed() + ')');
+            });
+        }) 
+    </script>*@
+}
+

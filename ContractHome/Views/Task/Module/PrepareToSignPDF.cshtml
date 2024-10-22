@@ -1,0 +1,28 @@
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using System.Reflection
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"]!;
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+
+    ContractSignatureRequest _model;
+    QueryViewModel _viewModel;
+
+    _model = (ContractSignatureRequest)this.Model;
+    _viewModel = (QueryViewModel)ViewBag.ViewModel;
+}
+<script>
+    $('').launchDownload('@Html.Raw(Url.Action("StartSigningPDF", "ContractConsole"))', { 'KeyID': '@Html.Raw((new { ContractID=_model.ContractID,CompanyID=_model.CompanyID}).JsonStringify().EncryptData())' });
+</script>
+
+

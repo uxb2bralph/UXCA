@@ -1,0 +1,118 @@
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using System.Reflection
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+    ModelStateDictionary _modelState;
+    ModelSource? models;
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"]!;
+    _modelState = (ModelStateDictionary)ViewBag.ModelState;
+
+    Contract _model;
+    QueryViewModel _viewModel;
+
+    _model = (Contract)this.Model;
+    _viewModel = (QueryViewModel)ViewBag.ViewModel;
+    var profile = await Context.GetUserAsync();
+
+}
+<td><input name="KeyItems" type="checkbox" value='@Html.Raw(_model.ContractID.EncryptKey())' /></td>
+@*<td>@((CDS_Document.ProcessTypeEnum?)_model.CDS_Document.ProcessType)</td>*@
+<td><a href="@Html.Raw(@Url.Action("ShowCurrentContract","ContractConsole",new { KeyID = _model.ContractID.EncryptKey() }))">@(_model.ContractNo)</a></td>
+<td>
+    @if(_model.CDS_Document.IsPDF)
+    {
+        foreach (var req in _model.ContractSignatureRequest)
+        {
+            var party = _model.ContractingParty.Where(p => p.CompanyID == req.CompanyID).First();
+            <div>
+                @if (req.StampDate.HasValue)
+                {
+                    <span>@(party.ContractingIntent.Description)用印完成，@(req.StampDate)</span>
+                }
+                else
+                {
+                    if (models.CanAffixSeal(req, profile.UID))
+                    {
+                        <button type="button" class="btn" onclick="affixPdfSeal('@Html.Raw((new { ContractID=req.ContractID,CompanyID=req.CompanyID}).JsonStringify().EncryptData())');">
+                            待@(party.ContractingIntent.Description)用印
+                        </button>
+                    }
+                    else
+                    {
+                        <span>
+                            待@(party.ContractingIntent.Description)用印
+                        </span>
+                    }
+                }
+            </div>
+        }
+    }
+    else
+    {
+        foreach (var req in _model.ContractSealRequest)
+        {
+            <div>
+                @if (req.StampDate.HasValue)
+                {
+                    <span>@(req.SealTemplate.Intent)完成，@(req.StampDate)</span>
+                }
+                else
+                {
+                    if (models.CanAffixSeal(req, profile.UID))
+                    {
+                        <button type="button" class="btn" onclick="affixSeal('@Html.Raw((new { ContractID=req.ContractID,SealID=req.SealID}).JsonStringify().EncryptData())');">
+                            待@(req.SealTemplate.ContractingIntent?.Description)
+                            用印
+                        </button>
+                    }
+                    else
+                    {
+                        <span>
+                            待@(req.SealTemplate.ContractingIntent?.Description)
+                            用印
+                        </span>
+                    }
+                }
+            </div>
+        }
+    }
+</td>
+<td>
+    @foreach (var req in _model.ContractSignatureRequest)
+    {
+        <div>
+            @if (req.SignerID.HasValue)
+            {
+                <span>@(req.Organization.CompanyName)簽章完成，@(req.SignatureDate)</span>
+            }
+            else
+            {
+                if (models.CanCommitSignature(req, profile.UID, out OrganizationUser? orgUser)
+                    && (!_model.CDS_Document.IsPDF || _model.IsSealedByAll()))
+                {
+                    <button type="button" class="btn" onclick="startSigning('@Html.Raw((new { ContractID=req.ContractID,CompanyID=req.CompanyID}).JsonStringify().EncryptData())');">
+                        待@(req.Organization.CompanyName)
+                        簽章
+                    </button>
+                }
+                else
+                {
+                    <span>
+                        待@(req.Organization.CompanyName)
+                        簽章
+                    </span>
+                }
+            }
+        </div>
+    }
+</td>
+
+

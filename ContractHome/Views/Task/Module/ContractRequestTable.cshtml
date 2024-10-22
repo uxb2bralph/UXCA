@@ -1,0 +1,71 @@
+﻿@using System.Reflection
+@using System.Linq
+@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@{
+
+    ModelSource? models;
+    IQueryable<dynamic> _model;
+    String _listID = "itemList" + DateTime.Now.Ticks;
+    QueryViewModel _viewModel;
+
+    models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    _model = (IQueryable<dynamic>)this.Model;
+    _viewModel = (QueryViewModel)ViewBag.ViewModel;
+
+}
+<table id="@(_listID)" class="table01 itemList">
+    <thead>
+        <tr>
+            <th>
+                <input name="chkAll" type="checkbox">
+            </th>
+            @*<th>檔案類型</th>*@
+            <th><a href="javascript:void(0);" onclick="$inquiryAgent.sort('ContractNo',this);">合約編號</a></th>
+            <th>合約用印</th>
+            <th>合約數位簽章</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            await Html.RenderPartialAsync("~/Views/Task/Module/ContractRequestList.cshtml", _model);
+        }
+    </tbody>
+</table>
+
+<script>
+    $(function () {
+        $("#@(_listID)").find("input[name='chkAll']")
+            .click(function () {
+                $("#@(_listID)").find("input[name='KeyItems']")
+                    .prop('checked', $(this).is(':checked'));
+            });
+
+        $("#@(_listID)").find("input[name='KeyItems']")
+            .click(function (e) {
+                if (!$(this).is(':checked')) {
+                    $("#@(_listID)").find("input[name='chkAll']").prop('checked', false);
+                }
+            });
+    });
+    $inquiryAgent.doPage = function (data) {
+        $('#@(_listID) tbody')
+            .empty()
+            .append(data);
+
+        $("#@(_listID)").find("input[name='KeyItems']")
+            .click(function (e) {
+                if (!$(this).is(':checked')) {
+                    $("#@(_listID)").find("input[name='chkAll']").prop('checked', false);
+                }
+            });
+    };
+</script>

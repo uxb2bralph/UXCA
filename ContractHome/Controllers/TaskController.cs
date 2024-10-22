@@ -147,12 +147,34 @@ namespace ContractHome.Controllers
             return items;
         }
 
-        public async Task<ActionResult> ListToStampAsync(SignContractViewModel viewModel)
+
+        public async Task<ActionResult> VueListToStampAsync([FromBody] SignContractViewModel viewModel)
+        {
+            ViewResult result = (ViewResult)(await ListToStampAsync(viewModel));
+            result.ViewName = "~/Views/Task/VueModule/ContractRequestList.cshtml";
+            return result;
+        }
+
+        public async Task<ActionResult> ListToStampIndexAsync(SignContractViewModel viewModel)
+        {
+            ViewResult result = (ViewResult)(await ListToStampAsync(viewModel));
+            result.ViewName = "~/Views/Task/ListToStampIndex.cshtml";
+            return result;
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> ListToStampAsync([FromBody] SignContractViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
             if (viewModel.ContractQueryStep == null) { viewModel.ContractQueryStep = 0; }
 
             var profile = await HttpContext.GetUserAsync();
+            #region add for postman test
+            if (profile == null)
+            {
+                profile = models.GetTable<UserProfile>().Where(x => x.UID == viewModel.EncUID.DecryptKeyValue()).FirstOrDefault();
+            }
+            #endregion
             //var profileCompanyID = 0;
             //var organizationUser = models
             //    .GetTable<OrganizationUser>()
@@ -216,12 +238,12 @@ namespace ContractHome.Controllers
             if (viewModel.PageIndex.HasValue)
             {
                 viewModel.PageIndex--;
-                return View("~/Views/ContractConsole/Module/ContractRequestList.cshtml", items);
+                return View("~/Views/Task/Module/ContractRequestList.cshtml", items);
             }
             else
             {
                 viewModel.PageIndex = 0;
-                return View("~/Views/ContractConsole/Module/ContractRequestQueryResult.cshtml", items);
+                return View("~/Views/Task/Module/ContractRequestQueryResult.cshtml", items);
             }
         }
 
