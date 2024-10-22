@@ -57,9 +57,15 @@
             <li class="nav-item">
               <a class="nav-link fs-5 fw-bolder" href="@Html.Raw(Url.Action("QueryIndex","ContractConsole"))">
                 <i class="fas fa-search"></i>
-                查詢
+                舊查詢
               </a>
             </li>
+                        <li class="nav-item">
+                            <a class="nav-link fs-5 fw-bolder" href="@Html.Raw(Url.Action("QueryIndex","Task"))">
+                                <i class="fas fa-search"></i>
+                                新查詢
+                            </a>
+                        </li>
           </ul>
 
           <ul class="navbar-nav mb-2 mb-lg-0 ps-3 d-none d-lg-block">

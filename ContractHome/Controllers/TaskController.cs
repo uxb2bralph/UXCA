@@ -42,6 +42,95 @@ namespace ContractHome.Controllers
             _baseResponse = baseResponse;
         }
 
+
+        private IQueryable<Contract> PromptContractItems(UserProfile profile)
+        {
+
+            IQueryable<Contract> items =
+                models.GetTable<Contract>();
+
+            if (profile.IsSysAdmin())
+            {
+
+            }
+            else
+            {
+                items = items.Where(c => models.GetTable<ContractingUser>()
+                                    .Where(p => p.UserID == profile.UID)
+                             .Any(p => p.ContractID == c.ContractID));
+            }
+
+            return items;
+        }
+
+        public async Task<ActionResult> InquireDataAsync([FromBody] ContractQueryViewModel viewModel)
+        {
+            ViewBag.ViewModel = viewModel;
+
+            var profile = await HttpContext.GetUserAsync();
+            IQueryable<Contract> items = PromptContractItems(profile);
+
+            if (viewModel.ContractNo != null)
+            {
+                items = items.Where(c => c.ContractNo.StartsWith(viewModel.ContractNo));
+            }
+
+            bool queryByDocument = false;
+            IQueryable<CDS_Document> documents = models.GetTable<CDS_Document>();
+            //wait to fix...查詢合約時, 非聯合承攬狀況, 在部份完成簽署狀態, 會在合約查詢中, 顯示所有合約, 包括未完成簽署的合約
+            if (viewModel.QueryStep?.Length > 0)
+            {
+                documents = documents
+                    .Where(d => d.CurrentStep.HasValue)
+                    .Where(d => viewModel.QueryStep.Contains((CDS_Document.StepEnum)d.CurrentStep!));
+                queryByDocument = true;
+            }
+
+            if (!string.IsNullOrEmpty(viewModel.ContractDateFrom))
+            {
+                DateTime _date;
+                DateTime.TryParseExact(viewModel.ContractDateFrom, "yyyy/MM/dd", null,
+                    System.Globalization.DateTimeStyles.None, out _date);
+                if (_date != null)
+                {
+                    documents = documents.Where(d => d.DocDate >= _date);
+                    queryByDocument = true;
+                }
+            }
+            if (!string.IsNullOrEmpty(viewModel.ContractDateTo))
+            {
+                DateTime _date;
+                DateTime.TryParseExact(viewModel.ContractDateTo, "yyyy/MM/dd", null,
+                    System.Globalization.DateTimeStyles.None, out _date);
+                if (_date != null)
+                {
+                    documents = documents.Where(d => d.DocDate < _date.AddDays(1));
+                    queryByDocument = true;
+                }
+            }
+            if (queryByDocument)
+            {
+                items = items.Where(c => documents.Any(d => d.DocID == c.ContractID));
+            }
+
+            if (viewModel.Contractor != null)
+            {
+                var parties = models.GetTable<ContractingUser>()
+                                .Where(p => p.UserID == viewModel.Contractor.DecryptKeyValue());
+                items = items.Where(c => parties.Any(p => p.ContractID == c.ContractID));
+            }
+
+            if (viewModel.PageIndex.HasValue)
+            {
+                viewModel.PageIndex--;
+            }
+            else
+            {
+                viewModel.PageIndex = 0;
+            }
+
+            return View("~/Views/Task/VueModule/TaskRequestList.cshtml", items);
+        }
         public async Task<ActionResult> AcceptContractAsync([FromBody] SignContractViewModel viewModel)
         {
 
