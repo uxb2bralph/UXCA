@@ -75,7 +75,7 @@ namespace ContractHome.Controllers
             {
                 return Json(new { result = true, message = Url.Action("PasswordChangeView", "UserProfile") });
             }
-            return Json(new { result = true, message = Url.Action("ListToStampIndex", "ContractConsole") });
+            return Json(new { result = true, message = Url.Action("ListToStampIndex", "Task") });
 
         }
 
@@ -263,10 +263,10 @@ namespace ContractHome.Controllers
                 return new BaseResponse(true, $"驗證資料有誤(token)。");
             }
 
-            if (resp.HasError) 
+            if (resp.HasError)
             {
                 FileLogger.Logger.Error($"{resp.Message}-{this.GetType().Name}-Base64Token={token}");
-                return resp; 
+                return resp;
             }
 
             var isPasswordValid = Regex.IsMatch(password, UserProfileFactory.PasswordRegex);
@@ -347,7 +347,7 @@ namespace ContractHome.Controllers
                 _emailFactory.GetApplyPassword(dto: emailContentBodyDto));
 
 
-            _cacheStore.Add(new EmailSent(),cacheKey);
+            _cacheStore.Add(new EmailSent(), cacheKey);
 
             return new BaseResponse(false, "");
 

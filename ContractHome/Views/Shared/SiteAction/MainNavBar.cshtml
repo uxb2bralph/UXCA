@@ -112,6 +112,9 @@
                 (int)UserRoleDefinition.RoleEnum.User))
                 {
                   <li>
+                    <a class="dropdown-item" href="@Html.Raw(Url.Action("SetOperator","UserProfile"))">簽署者設定</a>
+                  </li>
+                  <li>
                     <a class="dropdown-item" href="@Html.Raw(Url.Action("PasswordChangeView","UserProfile"))">密碼變更</a>
                   </li>
                 }

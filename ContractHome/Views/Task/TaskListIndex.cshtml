@@ -1373,15 +1373,16 @@
             if (!hasError) {
               // 成功
               this.contractorAllList = data.map(item => {
-                item.text = `${item.title} (${item.email})`;
-                item.value = item.id;
+                item.text = `${item.title ? item.title : '--'} (${item.email})`;
+                item.value = item.pid;
                 return item;
               });
               // 取得轉換後的簽署人清單
               this.contractorList = this.contractorAllList;
+              console.log('ok', data)
 
               // 管理簽署人預設為當前使用者
-              this.setSignator(this.currentUserInfo.companyName);
+              this.setSignator();
             } else {
               // 失敗
               this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${message.replace(/、/g, '<br>')} </div>`;
@@ -1391,11 +1392,13 @@
       },
 
       // 管理簽署人預設為當前使用者
-      setSignator(companyName) {
-        const currentUser = this.contractorList.filter(item => item.companyName === companyName)[0];
+      setSignator() {
+        const currentUser = this.contractorList.length > 0 ? this.contractorList[0] : null;
+        console.log({ currentUser })
         if (currentUser) {
-          const { id, text } = currentUser;
-          this.selectedContractor[0].id = id;
+          console.log({ currentUser })
+          const { pid, text } = currentUser;
+          this.selectedContractor[0].id = pid;
           this.selectedContractor[0].text = text;
         }
       },
@@ -1488,6 +1491,8 @@
         const ContractID = KeyID;
         const Signatories = this.selectedContractor.map(item => item.id);
         const payload = { ContractNo, ContractID, Title, Signatories, ExpiryDateTime, IsPassStamp };
+        console.log('aa', this.selectedContractor)
+        // return;
 
         showLoading();
         postData('@(Url.Action("Config", "Task"))', payload)
@@ -1768,7 +1773,7 @@
 
       // 選擇簽約方
       selectCompany(index, contratcor) {
-        this.selectedContractor[index].id = contratcor.id;
+        this.selectedContractor[index].id = contratcor.pid;
         this.selectedContractor[index].text = contratcor.text;
         // 檢核欄位
 
