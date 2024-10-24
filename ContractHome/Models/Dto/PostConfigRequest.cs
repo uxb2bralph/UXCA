@@ -47,8 +47,8 @@ namespace ContractHome.Models.Dto
                     .NotEmpty();
 
                 this.RuleForEach(x => x.Signatories)
-                    .NotEmpty()
-                    .Must(y => GeneralValidator.TryDecryptKeyValue(y));
+                    .NotEmpty();
+                    //.Must(y => GeneralValidator.TryDecryptKeyValue(y));
 
                 this.RuleFor(x => x.ExpiryDateTime)
                     .NotNull()
