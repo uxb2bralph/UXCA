@@ -82,9 +82,14 @@ namespace ContractHome.Models.Helper
             return _models.GetTable<Organization>().Where(x => x.CompanyBelongTo == companyID);
         }
 
-        public IEnumerable<UserProfile>? GetOperatorByOwnerID(int uid)
+        public IEnumerable<UserProfile>? GetOperatorsByOwnerID(int uid)
         {
             return _models.GetTable<UserProfile>().Where(x => x.OperatorOwnerUID == uid);
+        }
+
+        public UserProfile? GetOperatorByPID(string pid)
+        {
+            return _models.GetTable<UserProfile>().Where(x => x.PID == pid).FirstOrDefault();
         }
 
         public bool IsContractHasCompany(Contract contract, int? companyID)
@@ -651,7 +656,7 @@ namespace ContractHome.Models.Helper
             {
                 if (isTask)
                 {
-                    AddOperator(contract, x.DecryptKeyValue());
+                    AddOperator(contract, x);
                 }
                 else
                 {
@@ -665,24 +670,26 @@ namespace ContractHome.Models.Helper
             return contract;
         }
 
-        private Contract AddOperator(Contract contract, int OperatorID)
-        {
 
-            if (contract.ContractingUser.Where(p => p.UserID == OperatorID).Any())
+
+        private Contract AddOperator(Contract contract, string OperatorPID)
+        {
+            var user = GetOperatorByPID(OperatorPID);
+            if (contract.ContractingUser.Where(p => p.UserID == user.UID).Any())
             {
                 return contract;
             }
 
             contract.ContractingUser.Add(new ContractingUser
             {
-                UserID = OperatorID
+                UserID = user.UID
             });
 
-            if (!contract.ContractUserSignatureRequest.Any(r => r.UserID == OperatorID))
+            if (!contract.ContractUserSignatureRequest.Any(r => r.UserID == user.UID))
             {
                 contract.ContractUserSignatureRequest.Add(new ContractUserSignatureRequest
                 {
-                    UserID = OperatorID,
+                    UserID = user.UID,
                     StampDate = (contract.IsPassStamp == true) ? DateTime.Now : null,
                 });
             }

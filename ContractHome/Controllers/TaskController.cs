@@ -626,7 +626,7 @@ namespace ContractHome.Controllers
             _contractServices.SetModels(models);
 
             IEnumerable<UserProfile>? operators
-                = _contractServices.GetOperatorByOwnerID(profile.UID);
+                = _contractServices.GetOperatorsByOwnerID(profile.UID);
 
             _baseResponse.Data = operators.Select(x =>
                 new Models.Operator(pID: x.PID, email: x.EMail, title: x.OperatorNote, region: x.Region));
