@@ -1722,7 +1722,7 @@
       const sealImg = document.querySelector(`#seal-${uuid}-img`);
       const sealImgWidth = sealImg.width;
       const sealImgHeight = sealImg.offsetHeight;
-      var hScale = ((sealImgWidth / sealImg.naturalWidth) * 100);
+      var hScale = (sealImg.height / sealImg.naturalHeight).toFixed(2);
 
       // 設置框最小縮放為160*30
       var w = Math.max(160, sealImgWidth)
@@ -1738,7 +1738,7 @@
         Id: sealBox.id,
         SealID: sealID,
         currentItem: sealBox,
-        SealScale: stampType === 'seal' ? (hScale * 1.2).toFixed(2) : hScale,
+        SealScale: hScale,
         MarginLeft: (sealBox.offsetLeft / 37.7).toFixed(2),
         MarginTop: (sealBox.offsetTop / 37.7).toFixed(2),
         stampType: stampType,
@@ -1806,11 +1806,8 @@
           sealBox.style.height = h + 'px';
 
           // 取得圖片縮放 % 比
-          // 顯示和實際貼圖的比例差了 1.2 倍
-          // 使用簽名時，不需要乘 1.2，原因待查
-          hScale = ((sealImg.width / sealImg.naturalWidth) * 100);
-          // var vScale = ((sealImg.height / sealImg.naturalHeight) * 100);
-          sealData.SealScale = stampType === 'seal' ? hScale * 1.2 : hScale;
+          hScale = (sealImg.height / sealImg.naturalHeight).toFixed(2);
+          sealData.SealScale = hScale;
         }
         contractArea.onmouseleave = function () {
           sealUnBinding(contractArea);
@@ -1877,7 +1874,6 @@
         sealImg.classList.add('w-100');
       }
       hScale = (sealImg.height / sealImg.naturalHeight).toFixed(2);
-      hScale = ((sealImg.width / sealImg.naturalWidth) * 100).toFixed(2);
 
       // 將新增的印鑑檔資料暫存
       const sealData = {

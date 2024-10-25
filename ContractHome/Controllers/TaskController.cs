@@ -131,7 +131,7 @@ namespace ContractHome.Controllers
 
             return View("~/Views/Task/VueModule/TaskRequestList.cshtml", items);
         }
-        public async Task<ActionResult> AcceptContractAsync([FromBody] SignContractViewModel viewModel)
+        public async Task<ActionResult> AcceptContractAsync(SignContractViewModel viewModel)
         {
 
             //viewModel.KeyID = viewModel.KeyID.GetEfficientString();
@@ -159,7 +159,7 @@ namespace ContractHome.Controllers
             //#endregion
 
             profile = profile.LoadInstance(models);
-            if (profile==null||profile.ContractingUser == null)
+            if (profile == null || profile.ContractingUser == null)
             {
                 return Json(new { result = false, message = "簽約人資料錯誤!!" });
             }
@@ -196,10 +196,10 @@ namespace ContractHome.Controllers
             }
 
             _contractServices.SetModels(models);
-            if (contract.isAllStamped(isTask:true))
+            if (contract.isAllStamped(isTask: true))
             {
-                var targetUsers = _contractServices.GetUsersbyContract(contract,true);
-                if (ContractServices.IsNotNull(targetUsers)&& targetUsers.Count()>0)
+                var targetUsers = _contractServices.GetUsersbyContract(contract, true);
+                if (ContractServices.IsNotNull(targetUsers) && targetUsers.Count() > 0)
                 {
                     _contractServices.CDS_DocumentTransitStep(contract, profile!.UID, CDS_Document.StepEnum.Sealed);
                     _contractServices.SendUsersNotifyEmailAboutContractAsync(
@@ -336,7 +336,7 @@ namespace ContractHome.Controllers
             }
         }
 
-        public async Task<ActionResult> CommitPdfSignatureAsync([FromBody] SignatureRequestViewModel viewModel)
+        public async Task<ActionResult> CommitPdfSignatureAsync(SignatureRequestViewModel viewModel)
         {
             var seal = models.GetTable<SealTemplate>().Where(s => s.SealID == viewModel.SealID).FirstOrDefault();
             if (seal == null)

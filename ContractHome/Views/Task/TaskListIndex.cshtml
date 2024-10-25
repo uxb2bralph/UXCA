@@ -172,7 +172,7 @@
                     <span class="text-black-50 fw-bolder">{{ contract.ContractNo }}</span>
                   </div>
                   <div class="fs-13 fw-bolder">
-                    <a :href="`javascript:showContract('${contract.KeyID}');`">
+                    <a :href="`javascript:showContract('${contract.KeyID}', null , '_blank');`">
                       {{ contract.Title }}
                     </a>
                   </div>
@@ -2033,8 +2033,9 @@
     $('').launchDownload('@Html.Raw(Url.Action("AffixSeal", "Task"))', { 'KeyID': keyID });
   }
 
-  function showContract(keyID, mode) {
-    $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "ContractConsole"))', { 'KeyID': keyID, 'ResultMode': mode });
+  function showContract(keyID, mode, target) {
+    console.log({ keyID, mode, target })
+    $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "ContractConsole"))', { 'KeyID': keyID, 'ResultMode': mode }, target);
   }
 
   function affixPdfSeal(keyID) {
