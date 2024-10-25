@@ -945,7 +945,7 @@ namespace ContractHome.Controllers
                 return View("~/Views/Shared/CustomMessage.cshtml", resp);
             }
 
-            return View("~/Views/Task/Stamper.cshtml", contract);
+            return View("~/Views/ContractConsole/AffixPdfSealImage.cshtml", contract);
 
         }
 

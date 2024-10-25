@@ -1379,7 +1379,6 @@
               });
               // 取得轉換後的簽署人清單
               this.contractorList = this.contractorAllList;
-              console.log('ok', data)
 
               // 管理簽署人預設為當前使用者
               this.setSignator();
@@ -1394,9 +1393,7 @@
       // 管理簽署人預設為當前使用者
       setSignator() {
         const currentUser = this.contractorList.length > 0 ? this.contractorList[0] : null;
-        console.log({ currentUser })
         if (currentUser) {
-          console.log({ currentUser })
           const { pid, text } = currentUser;
           this.selectedContractor[0].id = pid;
           this.selectedContractor[0].text = text;
@@ -1491,8 +1488,6 @@
         const ContractID = KeyID;
         const Signatories = this.selectedContractor.map(item => item.id);
         const payload = { ContractNo, ContractID, Title, Signatories, ExpiryDateTime, IsPassStamp };
-        console.log('aa', this.selectedContractor)
-        // return;
 
         showLoading();
         postData('@(Url.Action("Config", "Task"))', payload)
@@ -2002,7 +1997,6 @@
         postData('@(Url.Action("ValidateBySubject", "IdentityCert"))', payload)
           .then((res) => {
             const { hasError, data, message } = res;
-            console.log({ hasError, data, message });
             if (!hasError) {
               // 成功
               $("#userCertModal").modal("hide");
@@ -2034,7 +2028,6 @@
   }
 
   function showContract(keyID, mode, target) {
-    console.log({ keyID, mode, target })
     $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "ContractConsole"))', { 'KeyID': keyID, 'ResultMode': mode }, target);
   }
 

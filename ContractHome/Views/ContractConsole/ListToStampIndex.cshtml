@@ -172,7 +172,7 @@
                     <span class="text-black-50 fw-bolder">{{ contract.ContractNo }}</span>
                   </div>
                   <div class="fs-13 fw-bolder">
-                    <a :href="`javascript:showContract('${contract.KeyID}');`">
+                    <a :href="`javascript:showContract('${contract.KeyID}', null , '_blank');`">
                       {{ contract.Title }}
                     </a>
                   </div>
@@ -1212,7 +1212,7 @@
            * acceptedFiles: 檔案格式
            * dictDefaultMessage: 畫面顯示內容
            */
-          url: '@Url.Action("Create", "Task")',
+          url: '@Url.Action("InitialContract", "ContractConsole")',
           autoProcessQueue: true,
           uploadMultiple: false,
           parallelUploads: 1,
@@ -1230,7 +1230,7 @@
               const { data, hasError, message, url } = res;
               if ($.isPlainObject(res)) {
                 if (!hasError) {
-                  self.configFormData.KeyID = data.contractID;
+                  self.configFormData.KeyID = message;
                   // 可簽署對象查詢
                   self.getAvailableSignatories();
                 }
@@ -1367,13 +1367,13 @@
       getAvailableSignatories() {
         const { KeyID } = this.configFormData;
         const payload = { ContractID: KeyID };
-        postData('@(Url.Action("GetOperators", "Task"))', payload)
+        postData('@(Url.Action("AvailableSignatories", "ContractConsole"))', payload)
           .then((res) => {
-            const { data, hasError, message, url } = res;
+            const { data, hasError, message } = res;
             if (!hasError) {
               // 成功
               this.contractorAllList = data.map(item => {
-                item.text = `${item.title} (${item.email})`;
+                item.text = `${item.companyName} (${item.receiptNo})`;
                 item.value = item.id;
                 return item;
               });
@@ -1490,9 +1490,9 @@
         const payload = { ContractNo, ContractID, Title, Signatories, ExpiryDateTime, IsPassStamp };
 
         showLoading();
-        postData('@(Url.Action("Config", "Task"))', payload)
+        postData('@(Url.Action("Config", "ContractConsole"))', payload)
           .then((res) => {
-            const { hasError, data, message, url } = res;
+            const { hasError, data, message } = res;
             if (!hasError) {
               // 成功
               // 初始化簽署人表單
@@ -1507,14 +1507,15 @@
                 // 文件已填寫並用印完畢則建立合約
                 this.established(ContractID);
               } else {
+                // 進行圈選設定
                 affixPdfSeal(ContractID);
               }
             } else {
               // 失敗
-              //const { ContractID, Signatories } = message;
-              //const contractIDString = ContractID ? ContractID.join(', ') : '資料有誤';
-              //const signatoriesString = Signatories ? Signatories[0].join(', ') : '資料有誤';
-              this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${message} </div>`;
+              const { ContractID, Signatories } = message;
+              const contractIDString = ContractID ? ContractID.join(', ') : '資料有誤';
+              const signatoriesString = Signatories ? Signatories[0].join(', ') : '資料有誤';
+              this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${contractIDString} <br> ${signatoriesString} </div>`;
               $("#infoModal").modal("show");
 
             }
@@ -2028,12 +2029,12 @@
     $('').launchDownload('@Html.Raw(Url.Action("AffixSeal", "ContractConsole"))', { 'KeyID': keyID });
   }
 
-  function showContract(keyID, mode) {
-    $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "ContractConsole"))', { 'KeyID': keyID, 'ResultMode': mode });
+  function showContract(keyID, mode, target) {
+    $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "ContractConsole"))', { 'KeyID': keyID, 'ResultMode': mode }, target);
   }
 
   function affixPdfSeal(keyID) {
-    $('').launchDownload('@Html.Raw(Url.Action("AffixSeal", "Task"))', { 'KeyID': keyID });
+    $('').launchDownload('@Html.Raw(Url.Action("AffixPdfSeal", "ContractConsole"))', { 'KeyID': keyID });
   }
 
   function terminateContract(keyID) {

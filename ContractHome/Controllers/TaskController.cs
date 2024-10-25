@@ -131,7 +131,7 @@ namespace ContractHome.Controllers
 
             return View("~/Views/Task/VueModule/TaskRequestList.cshtml", items);
         }
-        public async Task<ActionResult> AcceptContractAsync(SignContractViewModel viewModel)
+        public async Task<ActionResult> AcceptContractAsync([FromBody] SignContractViewModel viewModel)
         {
 
             //viewModel.KeyID = viewModel.KeyID.GetEfficientString();

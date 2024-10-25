@@ -559,7 +559,6 @@
 
       // 取得用印範圍資訊
       getFeildSetting(ContractID, CompanyID) {
-        //console.log({ ContractID, CompanyID });
         const payload = { ContractID, CompanyID };
         showLoading();
         postData('@(Url.Action("FeildSettings", "ContractConsole"))', payload)
@@ -1007,8 +1006,7 @@
         const payload = { ContractID };
         this.isCreate = true;
 
-        //showLoading();
-        console.log('loading')
+        showLoading();
         postData('@(Url.Action("Establish", "ContractConsole"))', payload)
           .then((res) => {
             const { hasError, data, message } = res;
@@ -1355,7 +1353,6 @@
         showLoading();
         $.post('@Html.Raw(Url.Action("CommitPdfNote", "ContractConsole"))', payload, function (res) {
           hideLoading();
-          console.log({res})
           if ($.isPlainObject(res)) {
             if (res.result) {
               if (!this.isEdit) {
