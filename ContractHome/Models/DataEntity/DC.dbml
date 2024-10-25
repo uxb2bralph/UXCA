@@ -34,8 +34,10 @@
       <Column Name="UserInProgress" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="CompanyID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="NotifyUntilDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="CreateUID" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Association Name="FK_Contract_CDS_Document" Member="CDS_Document" ThisKey="ContractID" OtherKey="DocID" Type="CDS_Document" IsForeignKey="true" DeleteOnNull="true" />
       <Association Name="FK_Contract_Organization" Member="Organization" ThisKey="CompanyID" OtherKey="CompanyID" Type="Organization" IsForeignKey="true" />
+      <Association Name="FK_Contract_UserProfile" Member="UserProfile" ThisKey="CreateUID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
       <Association Name="FK_ContractingParty_Contract" Member="ContractingParty" ThisKey="ContractID" OtherKey="ContractID" Type="ContractingParty" DeleteRule="CASCADE" />
       <Association Name="FK_ContractingUser_Contract" Member="ContractingUser" ThisKey="ContractID" OtherKey="ContractID" Type="ContractingUser" DeleteRule="NO ACTION" />
       <Association Name="FK_ContractNoteRequest_Contract" Member="ContractNoteRequest" ThisKey="ContractID" OtherKey="ContractID" Type="ContractNoteRequest" DeleteRule="CASCADE" />
@@ -43,6 +45,7 @@
       <Association Name="FK_ContractSignature_Contract" Member="ContractSignature" ThisKey="ContractID" OtherKey="ContractID" Type="ContractSignature" Cardinality="One" DeleteRule="CASCADE" />
       <Association Name="FK_ContractSignaturePositionRequest_Contract" Member="ContractSignaturePositionRequest" ThisKey="ContractID" OtherKey="ContractID" Type="ContractSignaturePositionRequest" DeleteRule="CASCADE" />
       <Association Name="FK_ContractSignatureRequest_Contract" Member="ContractSignatureRequest" ThisKey="ContractID" OtherKey="ContractID" Type="ContractSignatureRequest" DeleteRule="CASCADE" />
+      <Association Name="FK_ContractUserSignature_Contract" Member="ContractUserSignature" ThisKey="ContractID" OtherKey="ContractID" Type="ContractUserSignature" Cardinality="One" DeleteRule="CASCADE" />
       <Association Name="FK_ContractUserSignatureRequest_Contract" Member="ContractUserSignatureRequest" ThisKey="ContractID" OtherKey="ContractID" Type="ContractUserSignatureRequest" DeleteRule="CASCADE" />
     </Type>
   </Table>
@@ -153,6 +156,14 @@
       <Association Name="FK_ContractSignatureRequest_UserProfile" Member="UserProfile" ThisKey="SignerID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
     </Type>
   </Table>
+  <Table Name="dbo.ContractUserSignature" Member="ContractUserSignature">
+    <Type Name="ContractUserSignature">
+      <Column Name="ContractID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="UserID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Association Name="FK_ContractUserSignature_Contract" Member="Contract" ThisKey="ContractID" OtherKey="ContractID" Type="Contract" IsForeignKey="true" DeleteOnNull="true" />
+      <Association Name="FK_ContractUserSignature_ContractUserSignatureRequest" Member="ContractUserSignatureRequest" ThisKey="ContractID,UserID" OtherKey="ContractID,UserID" Type="ContractUserSignatureRequest" IsForeignKey="true" />
+    </Type>
+  </Table>
   <Table Name="dbo.ContractUserSignatureRequest" Member="ContractUserSignatureRequest">
     <Type Name="ContractUserSignatureRequest">
       <Column Name="ContractID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
@@ -168,6 +179,8 @@
       <Column Name="PageIndex" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="StampDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
       <Column Name="RequestTicket" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
+      <Column Name="SignatureDone" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
+      <Association Name="FK_ContractUserSignature_ContractUserSignatureRequest" Member="ContractUserSignature" ThisKey="ContractID,UserID" OtherKey="ContractID,UserID" Type="ContractUserSignature" DeleteRule="NO ACTION" />
       <Association Name="FK_ContractUserSignatureRequest_Contract" Member="Contract" ThisKey="ContractID" OtherKey="ContractID" Type="Contract" IsForeignKey="true" DeleteOnNull="true" />
       <Association Name="FK_ContractUserSignatureRequest_ContractingUser" Member="ContractingUser" ThisKey="ContractID,UserID" OtherKey="ContractID,UserID" Type="ContractingUser" IsForeignKey="true" />
       <Association Name="FK_ContractUserSignatureRequest_UserProfile" Member="UserProfile" ThisKey="UserID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
@@ -303,6 +316,7 @@
       <Column Name="PasswordUpdatedDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
       <Column Name="OperatorNote" Type="System.String" DbType="NVarChar(8)" CanBeNull="true" />
       <Column Name="OperatorOwnerUID" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Association Name="FK_Contract_UserProfile" Member="Contract" ThisKey="UID" OtherKey="CreateUID" Type="Contract" DeleteRule="NO ACTION" />
       <Association Name="FK_ContractingUser_UserProfile" Member="ContractingUser" ThisKey="UID" OtherKey="UserID" Type="ContractingUser" DeleteRule="NO ACTION" />
       <Association Name="FK_ContractNoteRequest_UserProfile" Member="ContractNoteRequest" ThisKey="UID" OtherKey="StampUID" Type="ContractNoteRequest" DeleteRule="NO ACTION" />
       <Association Name="FK_ContractSealRequest_UserProfile" Member="ContractSealRequest" ThisKey="UID" OtherKey="StampUID" Type="ContractSealRequest" DeleteRule="NO ACTION" />

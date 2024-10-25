@@ -25,7 +25,7 @@
 }
 <td><input name="KeyItems" type="checkbox" value='@Html.Raw(_model.ContractID.EncryptKey())' /></td>
 @*<td>@((CDS_Document.ProcessTypeEnum?)_model.CDS_Document.ProcessType)</td>*@
-<td><a href="@Html.Raw(@Url.Action("ShowCurrentContract","ContractConsole",new { KeyID = _model.ContractID.EncryptKey() }))">@(_model.ContractNo)</a></td>
+<td><a href="@Html.Raw(@Url.Action("ShowCurrentContract","Task",new { KeyID = _model.ContractID.EncryptKey() }))">@(_model.ContractNo)</a></td>
 <td>
     @if(_model.CDS_Document.IsPDF)
     {

@@ -12,6 +12,7 @@ using Org.BouncyCastle.Crypto.Tls;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using static ContractHome.Models.Helper.ContractServices;
 
 namespace ContractHome.Helper
 {
@@ -30,7 +31,90 @@ namespace ContractHome.Helper
             }
         }
 
-        public static bool CHT_SignPdfByEnterprise(this GenericManager<DCDataContext> models, ContractSignatureRequest request, UserProfile signer)
+        private static bool Task_IsNotFirstSigned(Contract contract, bool isTask = false)
+        {
+            return contract.ContractUserSignatureRequest.Any(r => r.SignatureDate.HasValue);
+        }
+
+        private static string Task_GetCHTSignedUrl(Contract contract,
+            DigitalSignCerts digitalSignCerts,
+            bool isFirstSigned)
+        {
+            if (digitalSignCerts == DigitalSignCerts.Enterprise)
+            {
+                return isFirstSigned ?
+                    Settings.Default.CHTSigning.AP_SignPDF :
+                    Settings.Default.CHTSigning.AP_SignPDF_Encrypt;
+            }
+            return string.Empty;
+        }
+
+        public static bool TaskCHT_SignPdfByEnterprise(this GenericManager<DCDataContext> models,
+            ContractUserSignatureRequest request,
+            UserProfile signer)
+        {
+            CHT_Token key = signer.Organization.CHT_Token;
+
+            string privateKey = key.ApplicationKey;
+            // 創建RSA加密服務提供者
+            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
+            rsa.ImportFromPem(privateKey);
+
+            // 輸入要加密的字串
+            string inputString = $"{key.Token}{DateTime.Now:yyyyMMddHHmmss}";
+            using SHA256 hash = SHA256.Create();
+            byte[] inputBytes = hash.ComputeHash(Encoding.Default.GetBytes(inputString));
+            // 將輸入字串轉換為byte陣列
+
+            // 進行RSA加密運算
+            byte[] encryptedBytes = rsa.SignData(inputBytes, hash); //rsa.Encrypt(inputBytes, false);
+
+            encryptedBytes = rsa.SignHash(inputBytes, "SHA256");
+            var apSignature = encryptedBytes.ToHexString(format: "x2");
+            var data = new
+            {
+                clusterid = key.ClusterID,
+                b64pdf = request.Contract.TaskBuildContractWithSignatureBase64(),
+                uid = $"uxb2b-{signer.UID}",
+                pdfpw = "",
+                ownerpw = "",
+                userpw = "",
+                thirdpartyclusterid = key.ThirdPartyClusterID,
+                email = key.Email,
+                apOneTimeToken = inputString,
+                apSignature = apSignature
+            };
+
+            String dataToSign = data.JsonStringify();
+            request.RequestPath = Path.Combine(FileLogger.Logger.LogDailyPath, $"request-{Guid.NewGuid()}.json");
+            File.WriteAllText(request.RequestPath, dataToSign);
+            bool isFirstSigned = Task_IsNotFirstSigned(request.Contract);
+            string chtSignUrl = Task_GetCHTSignedUrl(request.Contract, DigitalSignCerts.Enterprise, isFirstSigned);
+
+            using (WebClientEx client = new WebClientEx())
+            {
+                client.Headers[HttpRequestHeader.ContentType] = "application/json";
+                //3partypdfencsign加密簽只能在第一次簽章使用，第二次開始請用3partypdfsign(沒加密)
+                String result = client.UploadString(chtSignUrl, dataToSign);
+
+                String responsePath = Path.Combine(FileLogger.Logger.LogDailyPath, $"response-{Guid.NewGuid()}.json");
+                File.WriteAllText(responsePath, result);
+
+                JObject content = JObject.Parse(result);
+                if ((String)content["code"] == "0")
+                {
+                    request.ResponsePath = responsePath;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+
+        public static bool CHT_SignPdfByEnterprise(this GenericManager<DCDataContext> models, 
+            ContractSignatureRequest request, 
+            UserProfile signer)
         {
             CHT_Token key = request.Organization.CHT_Token;
 
@@ -188,6 +272,60 @@ namespace ContractHome.Helper
 
                 JObject content = JObject.Parse(result);
                 return content;
+            }
+        }
+
+        public static (bool, string) TaskCHT_SignPdfByUser(this GenericManager<DCDataContext> models, 
+            ContractUserSignatureRequest request, 
+            UserProfile signer)
+        {
+            if (_DefaultToken == null)
+            {
+                return (false, string.Empty);
+            }
+
+            var data = new
+            {
+                clusterid = _DefaultToken.ClusterID,
+                b64pdf = request.Contract.TaskBuildContractWithSignatureBase64(),
+                uid = $"uxb2b-{signer.UID}",
+                pdfpw = "",
+                //ownerpw = "",
+                //userpw = "",
+                thirdpartyclusterid = _DefaultToken.ThirdPartyClusterID,
+                email = signer.EMail,
+                tid = request.RequestTicket,
+            };
+
+            String dataToSign = data.JsonStringify();
+            request.RequestPath = Path.Combine(FileLogger.Logger.LogDailyPath, $"request-{Guid.NewGuid()}.json");
+            File.WriteAllText(request.RequestPath, dataToSign);
+
+            using (WebClientEx client = new WebClientEx())
+            {
+                client.Headers[HttpRequestHeader.ContentType] = "application/json";
+                //3partypdfencsign加密簽只能在第一次簽章使用，第二次開始請用3partypdfsign(沒加密)
+                //String result = client.UploadString(Settings.Default.CHTSigning.User_SignPDF_Encrypt, dataToSign);
+                String result = client.UploadString(models.GetTable<ContractSignatureRequest>()
+                    .Where(r => r.ContractID == request.ContractID).Where(r => r.SignatureDate.HasValue)
+                    .Any()
+                        ? Settings.Default.CHTSigning.User_SignPDF
+                        : Settings.Default.CHTSigning.User_SignPDF_Encrypt, dataToSign);
+
+
+                String responsePath = Path.Combine(FileLogger.Logger.LogDailyPath, $"response-{Guid.NewGuid()}.json");
+                File.WriteAllText(responsePath, result);
+
+                JObject content = JObject.Parse(result);
+                if ((String)content["code"] == "0")
+                {
+                    request.ResponsePath = responsePath;
+                    return (true, string.Empty);
+                }
+                else
+                {
+                    return (false, (String)content["code"]);
+                }
             }
         }
 

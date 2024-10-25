@@ -47,7 +47,7 @@ namespace ContractHome.Models.Helper
 
         //https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-messages/nullable-warnings?f1url=%3FappId%3Droslyn%26k%3Dk(CS8602)
         public static bool IsNotNull([NotNullWhen(true)] object? obj) => obj != null;
-
+        public static bool IsNull([NotNullWhen(true)] object? obj) => obj == null;
         public void SetModels(GenericManager<DCDataContext> models)
         {
             _models = models;
@@ -60,6 +60,46 @@ namespace ContractHome.Models.Helper
             Exchange = 2,//以證換證
                          //MOEA= 2,//工商憑證
                          //MOI =3 //自然人憑證
+        }
+
+        public static bool IsOperator(UserProfile userProfile)
+        {
+            var role = userProfile.UserRole.FirstOrDefault();
+            if (IsNotNull(role)
+                &&((role.RoleID==(int)UserRoleDefinition.RoleEnum.Operator)
+                &&IsNull(userProfile.Organization)))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public static bool IsUser(UserProfile userProfile)
+        {
+            var role = userProfile.UserRole.FirstOrDefault();
+            if (IsNotNull(role)
+                && ((role.RoleID == (int)UserRoleDefinition.RoleEnum.User)
+                && IsNotNull(userProfile.Organization)))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public static DigitalSignCerts GetUserSignCert(UserProfile userProfile)
+        {
+            if (IsOperator(userProfile))
+            {
+                return DigitalSignCerts.Exchange;
+            } 
+            else if (IsUser(userProfile))
+            {
+                return userProfile.Organization.DigitalSignBy();
+            }
+            else
+            {
+                return DigitalSignCerts.UXB2B;
+            }
         }
 
         public Contract GetContractByID(int? contractID)
@@ -646,7 +686,8 @@ namespace ContractHome.Models.Helper
 
         }
 
-        public Contract SetConfigAndSave(Contract contract, PostConfigRequest req,
+        public Contract SetConfigAndSave(Contract contract, 
+            PostConfigRequest req,
             int uid, bool isTask = false)
         {
             contract.ContractNo = req.ContractNo;
@@ -664,6 +705,7 @@ namespace ContractHome.Models.Helper
                 }
             });
             contract.NotifyUntilDate = Convert.ToDateTime(req.ExpiryDateTime);
+            contract.CreateUID = uid;
             SaveContract();
 
             CDS_DocumentTransitStep(contract, uid, CDS_Document.StepEnum.Config);
@@ -700,7 +742,8 @@ namespace ContractHome.Models.Helper
         public void CDS_DocumentTransitStep(
             Contract contract,
             int uid,
-            CDS_Document.StepEnum step)
+            CDS_Document.StepEnum step,
+            bool isTask=false)
         {
             contract.CDS_Document.DocumentProcessLog.Add(new DocumentProcessLog
             {
@@ -713,7 +756,7 @@ namespace ContractHome.Models.Helper
 
             SaveContract();
 
-            if (step.Equals(CDS_Document.StepEnum.DigitalSigned) && !contract.isAllDigitalSignatureDone())
+            if (step.Equals(CDS_Document.StepEnum.DigitalSigned) && !contract.isAllDigitalSignatureDone(isTask))
             {
                 UpdateCDS_DocumentCurrentStep(contract, CDS_Document.StepEnum.DigitalSigning);
             }

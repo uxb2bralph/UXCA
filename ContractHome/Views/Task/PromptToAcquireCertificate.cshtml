@@ -1,0 +1,83 @@
+﻿@using System.IO
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+
+@using ContractHome.Properties;
+@using ContractHome.Helper
+@using ContractHome.Controllers
+@using ContractHome.Models.DataEntity
+@using ContractHome.Models.ViewModel
+@using CommonLib.Utility
+@using Newtonsoft.Json
+@using Newtonsoft.Json.Linq;
+@{
+  //Layout = "~/Views/Shared/Module/CenterModalTemplate.cshtml";
+
+  ModelStateDictionary _modelState;
+  ModelSource? models;
+  JObject _model = (JObject)this.Model;
+  ContractSignatureRequest? _item = ViewBag.DataItem as ContractSignatureRequest;
+
+  models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+  _modelState = (ModelStateDictionary)ViewBag.ModelState;
+
+  SignatureRequestViewModel _viewModel = (SignatureRequestViewModel)ViewBag.ViewModel;
+  _viewModel.DialogID = $"sign{DateTime.Now.Ticks}";
+
+  var profile = await Context.GetUserAsync();
+
+}
+
+<div id="promptToAcquireCertificate">
+  <!-- 數位簽章 Dialog -->
+  <div class="modal fade" id="acquireCertificate" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="acquireCertificateLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bolder" id="staticBackdropLabel">簽署憑證申請</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+            id="maintainDataHandler"></button>
+        </div>
+        <div class="modal-body">
+          <div class="card p-3 mb-4">
+            <div class="h5 fw-bolder text-primary opacity-75">文件編號：@(_item?.Contract.ContractNo)</div>
+            <div class="h6">申請人電子郵件信箱：@(profile.EMail)</div>
+            <div class="py-3 fs-13 border-top text-danger">
+              <i class="fas fa-exclamation-circle"></i>
+              <span>申請憑證時所輸入的PIN碼(如下圖所示)將做為未來文件簽署的驗證密碼，請妥善保管。</span>
+            </div>
+            <div>
+              <img src="~/images/pin_password.png" class="img-fluid border rounded-3" alt="Pin 碼">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-top-0 justify-content-center pb-4">
+          <button type="button" class="btn btn-primary" id="acquireHandler">申請簽章憑證</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+@{
+  <script nonce="Y2hiY29kZQ==">
+    $(function () {
+      var $currentModal = $('#@(_viewModel.DialogID)');
+    });
+  </script>
+}
+@{
+  <script>
+    // 導頁
+    const acquireHandler = document.querySelector('#acquireHandler');
+    acquireHandler.addEventListener('click', function () {
+      window.open('@Html.Raw(_model["url"])', '_blank');
+    });
+
+    // 關閉Dialog時重整頁面
+    const maintainDataHandler = document.querySelector('#maintainDataHandler');
+    maintainDataHandler.addEventListener('click', function () {
+      window.location.href = '@Html.Raw(Url.Action("ListToStampIndex", "Task"))';
+    });
+  </script>
+}

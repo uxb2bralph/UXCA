@@ -70,6 +70,31 @@ namespace ContractHome.Helper
             return !contract.ContractSignatureRequest.Any(s => !s.StampDate.HasValue);
         }
 
+        public static MemoryStream TaskBuildContractWithSignature(this Contract contract, GenericManager<DCDataContext> models, bool preview = false)
+        {
+            if (contract.ContractUserSignature != null)
+            {
+                ContractUserSignatureRequest request = contract.ContractUserSignature.ContractUserSignatureRequest;
+                if (request.ResponsePath != null && File.Exists(request.ResponsePath))
+                {
+                    if (request.RequestPath.EndsWith(".json", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        JObject content = JObject.Parse(File.ReadAllText(request.ResponsePath));
+                        if ((String)content["code"] == "0")
+                        {
+                            return new MemoryStream(Convert.FromBase64String((String)content["msg"]));
+                        }
+                    }
+                    else
+                    {
+                        return new MemoryStream(File.ReadAllBytes(request.ResponsePath));
+                    }
+                }
+            }
+
+            return contract.BuildContractWithSeal();
+        }
+
         public static MemoryStream BuildContractWithSignature(this Contract contract, GenericManager<DCDataContext> models, bool preview = false)
         {
             if (contract.ContractSignature != null)
@@ -93,6 +118,34 @@ namespace ContractHome.Helper
             }
 
             return contract.BuildContractWithSeal();
+        }
+
+        public static String TaskBuildContractWithSignatureBase64(this Contract contract, bool preview = false)
+        {
+            if (contract.ContractSignature != null)
+            {
+                ContractUserSignatureRequest request = contract.ContractUserSignature.ContractUserSignatureRequest;
+                if (request.ResponsePath != null && File.Exists(request.ResponsePath))
+                {
+                    if (request.RequestPath.EndsWith(".json", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        JObject content = JObject.Parse(File.ReadAllText(request.ResponsePath));
+                        if ((String)content["code"] == "0")
+                        {
+                            return (String)content["msg"];
+                        }
+                    }
+                    else
+                    {
+                        return Convert.ToBase64String(File.ReadAllBytes(request.ResponsePath));
+                    }
+                }
+            }
+
+            using (MemoryStream stream = contract.BuildContractWithSeal())
+            {
+                return Convert.ToBase64String(stream.ToArray());
+            }
         }
 
         public static String BuildContractWithSignatureBase64(this Contract contract, GenericManager<DCDataContext> models, bool preview = false)
@@ -237,8 +290,12 @@ namespace ContractHome.Helper
             return (contract.ContractSignatureRequest.Where(x => x.StampDate == null).AsEnumerable());
         }
 
-        public static bool isAllDigitalSignatureDone(this Contract contract)
+        public static bool isAllDigitalSignatureDone(this Contract contract, bool isTask=false)
         {
+            if (isTask)
+            {
+                return (contract.ContractUserSignatureRequest.Where(x => x.SignatureDate == null).Count() == 0);
+            }
             return (contract.ContractSignatureRequest.Where(x => x.SignatureDate == null).Count() == 0);
         }
 

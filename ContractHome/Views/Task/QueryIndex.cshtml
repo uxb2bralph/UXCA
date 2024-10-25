@@ -1044,11 +1044,11 @@
 
   function showContract(keyID, mode) {
     if (mode == @((int)DataResultMode.Download)) {
-      $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "ContractConsole"))', { 'KeyID': keyID, 'ResultMode': mode });
+      $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "Task"))', { 'KeyID': keyID, 'ResultMode': mode });
     } else {
       if ($('#pdfModal').length > 0) {
         $('#pdfModal').modal('show');
-        $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "ContractConsole"))', { 'KeyID': keyID, 'ResultMode': mode }, 'pdfFrame');
+        $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "Task"))', { 'KeyID': keyID, 'ResultMode': mode }, 'pdfFrame');
       } else {
         showLoading();
         $.post('@Html.Raw(Url.Action("PreviewCurrentContract", "ContractConsole"))', { 'KeyID': keyID }, function (data) {

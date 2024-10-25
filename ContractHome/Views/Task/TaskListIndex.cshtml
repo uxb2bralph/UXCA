@@ -2027,8 +2027,8 @@
     $('').launchDownload('@Html.Raw(Url.Action("AffixSeal", "Task"))', { 'KeyID': keyID });
   }
 
-  function showContract(keyID, mode, target) {
-    $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "ContractConsole"))', { 'KeyID': keyID, 'ResultMode': mode }, target);
+  function showContract(keyID, mode) {
+    $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "Task"))', { 'KeyID': keyID, 'ResultMode': mode });
   }
 
   function affixPdfSeal(keyID) {

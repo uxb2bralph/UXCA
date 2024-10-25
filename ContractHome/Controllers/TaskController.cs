@@ -9,8 +9,10 @@ using ContractHome.Models.Helper;
 using ContractHome.Models.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Web;
 using static ContractHome.Controllers.ContractConsoleController;
 using static ContractHome.Helper.JwtTokenGenerator;
+using static ContractHome.Models.Helper.ContractServices;
 
 namespace ContractHome.Controllers
 {
@@ -40,6 +42,379 @@ namespace ContractHome.Controllers
             _emailContentFactories = emailContentFactories;
             _httpContextAccessor = httpContextAccessor;
             _baseResponse = baseResponse;
+        }
+
+        public async Task<ActionResult> ShowCurrentContractAsync(SignContractViewModel viewModel)
+        {
+            ViewBag.ViewModel = viewModel;
+            //viewModel.KeyID = viewModel.KeyID.GetEfficientString();
+            if (viewModel.KeyID != null)
+            {
+                viewModel.ContractID = viewModel.DecryptKeyValue();
+            }
+
+            var contract = models.GetTable<Contract>()
+                            .Where(c => c.ContractID == viewModel.ContractID)
+                            .FirstOrDefault();
+
+            Response.Clear();
+            Response.ContentType = "application/pdf";
+            Response.Headers.Add("Cache-control", "max-age=1");
+
+            if (contract != null)
+            {
+                var profile = await HttpContext.GetUserAsync();
+
+                contract.CDS_Document.DocumentProcessLog.Add(new DocumentProcessLog
+                {
+                    LogDate = DateTime.Now,
+                    ActorID = profile!.UID,
+                    StepID = (int)CDS_Document.StepEnum.Browsed,
+                });
+
+                models.SubmitChanges();
+
+                if (viewModel.ResultMode == DataResultMode.Download)
+                {
+                    Response.Headers.Add("Content-Disposition", String.Format("attachment;filename={0}.pdf", HttpUtility.UrlEncode(contract.ContractNo)));
+                }
+
+                if (contract.CDS_Document.IsPDF)
+                {
+                    using (MemoryStream output = contract.TaskBuildContractWithSignature(models, viewModel.Preview == true))
+                    {
+                        await Response.Body.WriteAsync(output.ToArray());
+                    }
+                }
+                ////gembox:暫不維護
+                //else
+                //{
+                //    using (MemoryStream output = contract.BuildCurrentContract(models, viewModel.Preview == true))
+                //    {
+                //        await Response.Body.WriteAsync(output.ToArray());
+                //    }
+                //}
+                await Response.Body.FlushAsync();
+            }
+
+            return new EmptyResult { };
+        }
+
+        public async Task<ActionResult> LoadSignatureRequestAsync(SignContractViewModel viewModel)
+        {
+            ViewBag.ViewModel = viewModel;
+            var ttt = viewModel.KeyID.DecryptKeyValue();
+            _contractServices.SetModels(models);
+            Contract? contract = _contractServices.GetContractByID(ttt);
+
+            if (ContractServices.IsNull(contract))
+            {
+                return Ok(_baseResponse.ErrorMessage("合約不存在"));
+            }
+
+            var profile = (await HttpContext.GetUserAsync()).LoadInstance(models);
+            if (profile?.OrganizationUser == null)
+            {
+                return Json(_baseResponse.ErrorMessage("合約簽署人資料錯誤!!"));
+            }
+
+            #region 同文件同時間簽章檢查
+            if (contract.HasUserInProgress && !contract.IsSameUserInProgress(profile.UID))
+            {
+                return Json(_baseResponse.ErrorMessage("其他人簽署中, 請稍後再試!!"));
+            }
+
+            contract.UserInProgress = profile.UID;
+            models.SubmitChanges();
+            #endregion
+
+            var requestItem =
+                models.GetTable<ContractUserSignatureRequest>()
+                    .Where(p => p.ContractID == contract.ContractID)
+                    .Where(o => o.UserID == profile.UID)
+                    .FirstOrDefault();
+
+            if (requestItem == null)
+            {
+                return Json(_baseResponse.ErrorMessage("合約未建立!!"));
+            }
+
+            ViewBag.SignatureRequest = requestItem;
+            ViewBag.Contract = contract;
+            ViewBag.Profile = profile;
+
+            _baseResponse.Data = new { contract.ContractNo, contract.Title };
+            return Json(_baseResponse);
+        }
+
+        public async Task<ActionResult> CommitDigitalSignatureAsync(SignatureRequestViewModel viewModel)
+        {
+            var result = await LoadSignatureRequestAsync(viewModel);
+            Contract contract = ViewBag.Contract as Contract;
+            ContractUserSignatureRequest? item = ViewBag.SignatureRequest as ContractUserSignatureRequest;
+
+            if (item == null)
+            {
+                return result;
+            }
+
+            UserProfile profile = (UserProfile)ViewBag.Profile;
+
+            if (!item.SignerID.HasValue)
+            {
+                DigitalSignCerts userSignCert = ContractServices.GetUserSignCert(profile);
+
+                bool isSigned = false;
+                if (userSignCert == DigitalSignCerts.Enterprise)
+                {
+                    isSigned = models.TaskCHT_SignPdfByEnterprise(signer:profile,request: item);
+                }
+                //else if (userSignCert == DigitalSignCerts.UXB2B)
+                //{
+                //    isSigned = models.SignPdfByLocalUser(request: null, signer: profile);
+                //}
+                else
+                {
+                    //iris:目前未使用
+                    //if (Properties.Settings.Default.IsIdentityCertCheck)
+                    //{
+                    //    IdentityCertRepo identityCertRepo = new(models);
+                    //    var identityCert = identityCertRepo.GetByUid(profile.UID).FirstOrDefault();
+                    //    if (identityCert == null)
+                    //    {
+                    //        ModelState.AddModelError("Signature", "使用者未註冊憑證");
+                    //        return BadRequest();
+                    //    }
+
+                    //    IdentityCertHelper identityCertHelper = new(x509PemString: identityCert.X509Certificate);
+                    //    if (!identityCertHelper.IsSignatureValid(profile.PID, viewModel.Signature))
+                    //    {
+                    //        ModelState.AddModelError("Signature", "驗章失敗");
+                    //        return BadRequest();
+                    //    }
+                    //}
+
+                    ViewBag.DataItem = item;
+                    var content = profile.CHT_UserRequestTicket();
+                    //var tid = ((String)content["tid"]).GetEfficientString();
+                    var tid = ((String)content["tid"]);
+                    if (tid != null)
+                    {
+                        item.RequestTicket = tid;
+                        models.SubmitChanges();
+
+                        return View("~/Views/Task/PrepareCHTSigning.cshtml", content);
+                    }
+                    else
+                    {
+                        //var discountCode = ((String)content["discountCode"]).GetEfficientString();
+                        var discountCode = ((String)content["discountCode"]);
+                        if (discountCode != null)
+                        {
+                            content = profile.CHT_RequireIssue(discountCode);
+                            if ((int?)content["result"] == 1)
+                            {
+                                return View("~/Views/Task/PromptToAcquireCertificate.cshtml", content);
+                            }
+                        }
+                        else
+                        {
+                            return Json(_baseResponse.ErrorMessage($"錯誤代碼: {content["result"]}"));
+                        }
+                    }
+                }
+                //wait to do...CommitUserSignatureAsync if (!item.SignerID.HasValue), 動作一樣
+                if (isSigned)
+                {
+                    item.Contract.ContractUserSignature = new ContractUserSignature
+                    {
+                        ContractUserSignatureRequest = item,
+                    };
+
+                    item.SignerID = profile.UID;
+                    item.SignatureDate = DateTime.Now;
+
+                    models.SubmitChanges();
+
+                    _contractServices.SetModels(models);
+                    _contractServices.CDS_DocumentTransitStep(item.Contract, profile!.UID, CDS_Document.StepEnum.DigitalSigned);
+
+                    if (!models.GetTable<ContractUserSignatureRequest>()
+                        .Where(c => c.ContractID == item.ContractID)
+                        .Where(c => !c.SignerID.HasValue)
+                        .Any())
+                    {
+                        _contractServices.CDS_DocumentTransitStep(item.Contract, profile!.UID, CDS_Document.StepEnum.Committed);
+
+                        EmailContentBodyDto emailContentBodyDto =
+                            new EmailContentBodyDto(contract: item?.Contract, initiatorOrg: null, userProfile: profile);
+
+                        var targetUsers = _contractServices.GetUsersbyContract(item.Contract);
+                        if (targetUsers != null)
+                        {
+                            _contractServices.SendUsersNotifyEmailAboutContractAsync(
+                                item.Contract,
+                                _emailContentFactories.GetFinishContract(emailContentBodyDto),
+                                targetUsers);
+                        }
+
+                    }
+
+                    if ((UserSession.Get(_httpContextAccessor) != null) && (UserSession.Get(_httpContextAccessor).IsTrust))
+                    {
+                        UserSession.Remove(_httpContextAccessor);
+                        HttpContext.Logout();
+                    }
+
+                    if (ContractServices.IsNotNull(contract) && contract.HasUserInProgress)
+                    {
+                        contract.UserInProgress = null;
+                        models.SubmitChanges();
+                    }
+
+                    return Json(_baseResponse);
+
+                }
+            }
+            else
+            {
+                return Json(new BaseResponse(haserror: true, error: "合約已有簽署記錄, 無法再次簽署."));
+            }
+
+            if (viewModel.IsTrust != null && viewModel.IsTrust == true)
+            {
+                _baseResponse.Url = $"{ContractHome.Properties.Settings.Default.WebAppDomain}";
+                return View("~/Views/Shared/CustomMessage.cshtml", _baseResponse);
+            }
+
+            return Json(_baseResponse);
+
+        }
+
+        public async Task<ActionResult> CommitUserSignatureAsync(SignatureRequestViewModel viewModel)
+        {
+            var result = await LoadSignatureRequestAsync(viewModel);
+
+            ContractUserSignatureRequest? item = ViewBag.SignatureRequest as ContractUserSignatureRequest;
+
+            if (item == null)
+            {
+                return result;
+            }
+
+            UserProfile profile = (UserProfile)ViewBag.Profile;
+            //wait to do...合併CommitDigitalSignatureAsync if(Signed), 動作一樣
+            if (!item.SignerID.HasValue)
+            {
+                (bool signOk, string code) = models.TaskCHT_SignPdfByUser(item, profile);
+                if (signOk)
+                {
+                    item.Contract.ContractUserSignature = new ContractUserSignature
+                    {
+                        ContractUserSignatureRequest = item,
+                    };
+
+                    item.SignerID = profile.UID;
+                    item.SignatureDate = DateTime.Now;
+
+                    models.SubmitChanges();
+
+                    _contractServices.SetModels(models);
+                    _contractServices.CDS_DocumentTransitStep(item.Contract, profile!.UID, CDS_Document.StepEnum.DigitalSigned);
+
+                    if (!models.GetTable<ContractUserSignatureRequest>()
+                        .Where(c => c.ContractID == item.ContractID)
+                        .Where(c => !c.SignerID.HasValue)
+                        .Any())
+                    {
+                        _contractServices.CDS_DocumentTransitStep(item.Contract, profile!.UID, CDS_Document.StepEnum.Committed);
+
+                        EmailContentBodyDto emailContentBodyDto =
+                            new EmailContentBodyDto(contract: item.Contract, initiatorOrg: null, userProfile: profile);
+
+                        var targetUsers = _contractServices.GetUsersbyContract(item.Contract);
+                        _contractServices.SendUsersNotifyEmailAboutContractAsync(
+                            item.Contract,
+                            _emailContentFactories.GetFinishContract(emailContentBodyDto),
+                            targetUsers);
+
+                    }
+
+                    if ((UserSession.Get(_httpContextAccessor) != null) && (UserSession.Get(_httpContextAccessor).IsTrust))
+                    {
+                        UserSession.Remove(_httpContextAccessor);
+                        HttpContext.Logout();
+                    }
+
+                    if (ContractServices.IsNotNull(item.Contract) && item.Contract.HasUserInProgress)
+                    {
+                        item.Contract.UserInProgress = null;
+                        models.SubmitChanges();
+                    }
+
+                    return Json(new BaseResponse());
+                }
+                else
+                {
+                    return Json(new BaseResponse(haserror: true, error: code));
+                }
+            }
+
+            return Json(new BaseResponse());
+
+        }
+
+        //2024.05.29 iris:查詢畫面的[終止文件], 和[AbortContractAsync]結果一樣, 更新文件狀態為[CDS_Document.StepEnum.Revoked]
+        public async Task<ActionResult> TerminateContractAsync(SignatureRequestViewModel viewModel)
+        {
+            //var result = LoadContract(viewModel);
+            Contract item = _contractServices.GetContractByID(viewModel.ContractID);
+
+            //if (item == null)
+            //{
+            //    return result;
+            //}
+
+            if (item.CDS_Document.CurrentStep == (int)CDS_Document.StepEnum.Terminated)
+            {
+                return Json(new { result = true });
+            }
+
+            _contractServices.SetModels(models);
+            var profile = (await HttpContext.GetUserAsync()).LoadInstance(models);
+            if (profile?.IsSysAdmin() == true)
+            {
+                if (!item.CDS_Document.CurrentStep.HasValue || item.CDS_Document.CurrentStep == (int)CDS_Document.StepEnum.Initial)
+                {
+                    models.DeleteAny<CDS_Document>(d => d.DocID == item.ContractID);
+                    return Json(new { result = true });
+                }
+                else
+                {
+                    _contractServices.CDS_DocumentTransitStep(item, profile!.UID, CDS_Document.StepEnum.Revoked);
+                    return Json(new { result = true });
+                }
+            }
+            else
+            {
+                if (profile?.OrganizationUser == null)
+                {
+                    return Json(new { result = false, message = "合約簽署人資料錯誤!!" });
+                }
+
+                if (!models.GetTable<ContractingUser>()
+                        .Where(p => p.ContractID == item.ContractID)
+                        .Where(p => p.UserID == profile.UID)
+                        .Any())
+                {
+                    return Json(new { result = false, message = "合約簽署人資料錯誤!!" });
+                }
+
+                _contractServices.CDS_DocumentTransitStep(item, profile!.UID, CDS_Document.StepEnum.Terminated);
+                return Json(new { result = true });
+            }
+
+
         }
 
 
@@ -228,9 +603,7 @@ namespace ContractHome.Controllers
             }
             else
             {
-                items = items.Where(c => models.GetTable<ContractingUser>()
-                                    .Where(o => o.UserID == profile.UID)
-                                    .Any(p => p.ContractID == c.ContractID));
+                items = items.Where(x=>x.CreateUID==profile.UID);
             }
 
             return items;
@@ -256,8 +629,8 @@ namespace ContractHome.Controllers
         {
             ViewBag.ViewModel = viewModel;
             if (viewModel.ContractQueryStep == null) { viewModel.ContractQueryStep = 0; }
-
             var profile = await HttpContext.GetUserAsync();
+            profile = profile.LoadInstance(models);
             #region add for postman test
             if (profile == null)
             {
@@ -689,7 +1062,7 @@ namespace ContractHome.Controllers
             _contractServices.SetModels(models);
             var contractID = req.ContractID.ToString().DecryptKeyValue();
             Contract? contract = _contractServices.GetContractByID(contractID: contractID);
-            if (!ContractServices.IsNotNull(contract))
+            if (ContractServices.IsNull(contract))
             {
                 ModelState.AddModelError("", "合約不存在");
                 return BadRequest();

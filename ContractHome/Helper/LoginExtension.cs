@@ -178,13 +178,20 @@ namespace ContractHome.Helper
         {
             return profile != null && (profile.UserRole.Any(r => r.RoleID == (int)UserRoleDefinition.RoleEnum.User));
         }
-
+        public static bool IsOperator(this UserProfile profile)
+        {
+            return profile != null && (profile.UserRole.Any(r => r.RoleID == (int)UserRoleDefinition.RoleEnum.Operator));
+        }
         public static bool CanCreateContract(this UserProfile profile)
         {
-            if (profile?.OrganizationUser == null) return false;
-            if (profile?.OrganizationUser.Organization == null) return false;
-            if (profile?.OrganizationUser.Organization.CanCreateContract==true) return true;
+            if (profile.IsUser()) 
+            {
+                return true;
+            }
             return false;
+            //if (profile?.OrganizationUser == null) return false;
+            //if (profile?.OrganizationUser.Organization == null) return false;
+            //if (profile?.OrganizationUser.Organization.CanCreateContract==true) return true;
         }
     }
 }

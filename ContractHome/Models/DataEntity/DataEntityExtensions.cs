@@ -5,6 +5,8 @@ using System.Collections;
 using BitMiracle.LibTiff.Classic;
 using System.Security.Cryptography.X509Certificates;
 using System.Data.Linq.SqlClient;
+using ContractHome.Models.Helper;
+using static ContractHome.Models.Helper.ContractServices;
 
 namespace ContractHome.Models.DataEntity
 {
@@ -43,6 +45,7 @@ namespace ContractHome.Models.DataEntity
             SystemAdmin = 0,
             User = 1,
             MemberAdmin = 2,
+            Operator = 3
         }
     }
 

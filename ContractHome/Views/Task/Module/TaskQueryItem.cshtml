@@ -27,7 +27,7 @@
 <td>@(_model.ContractingParty.Where(p => p.IsInitiator == true).FirstOrDefault()?.Organization.CompanyName)</td>
 <td>@(String.Join("<br/>", _model.ContractingParty.Where(p => !p.IsInitiator.HasValue || p.IsInitiator == false)
         .Select(p=>p.Organization.CompanyName)))</td>
-<td><a target="_blank" href="@Html.Raw(@Url.Action("ShowCurrentContract","ContractConsole",new { KeyID = _model.ContractID.EncryptKey() }))">@(_model.ContractNo)</a></td>
+<td><a target="_blank" href="@Html.Raw(@Url.Action("ShowCurrentContract","Task",new { KeyID = _model.ContractID.EncryptKey() }))">@(_model.ContractNo)</a></td>
 <td>
     @if(_model.CDS_Document.IsPDF)
     {

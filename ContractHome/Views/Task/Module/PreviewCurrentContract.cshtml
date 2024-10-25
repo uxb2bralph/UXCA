@@ -32,7 +32,7 @@
             <div class="modal-body pb-0">
                 <!-- PDF 內嵌頁面 -->
                 <div class="card pdf__wrapper">
-                    <iframe name="pdfFrame" style="width:100%;height:100%" frameborder="0" scrolling="auto" src='@Html.Raw(Url.Action("ShowCurrentContract","ContractConsole",new { KeyID = _viewModel?.KeyID }))'>
+                    <iframe name="pdfFrame" style="width:100%;height:100%" frameborder="0" scrolling="auto" src='@Html.Raw(Url.Action("ShowCurrentContract","Task",new { KeyID = _viewModel?.KeyID }))'>
                     </iframe>
                 </div>
             </div>

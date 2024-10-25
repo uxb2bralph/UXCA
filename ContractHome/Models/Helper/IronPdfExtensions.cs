@@ -25,6 +25,7 @@ using IronPdf.Signing;
 using IronSoftware.Drawing;
 using System.Drawing.Imaging;
 using System.Text.RegularExpressions;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace ContractHome.Models.Helper
 {
