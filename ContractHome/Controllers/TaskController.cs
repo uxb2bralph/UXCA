@@ -612,6 +612,11 @@ namespace ContractHome.Controllers
 
         public async Task<ActionResult> VueListToStampAsync([FromBody] SignContractViewModel viewModel)
         {
+            var profile = await HttpContext.GetUserAsync();
+            if (profile == null)
+            {
+                return View("~/Views/Account/Login.cshtml");
+            }
             ViewResult result = (ViewResult)(await ListToStampAsync(viewModel));
             result.ViewName = "~/Views/Task/VueModule/TaskRequestList.cshtml";
             return result;
@@ -619,6 +624,11 @@ namespace ContractHome.Controllers
 
         public async Task<ActionResult> ListToStampIndexAsync(SignContractViewModel viewModel)
         {
+            var profile = await HttpContext.GetUserAsync();
+            if (profile == null)
+            {
+                return View("~/Views/Account/Login.cshtml");
+            }
             ViewResult result = (ViewResult)(await ListToStampAsync(viewModel));
             result.ViewName = "~/Views/Task/TaskListIndex.cshtml";
             return result;
