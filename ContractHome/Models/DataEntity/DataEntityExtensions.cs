@@ -102,6 +102,10 @@ namespace ContractHome.Models.DataEntity
 
         public Organization? Organization =>
             ((CompanyID != null)&& (CompanyID != 0)) ? OrganizationUser.Organization : null;
+
+        public bool IsUserWantToCheckReceiptNo => (this.IsOperator() && !string.IsNullOrEmpty(OperatorReceiptNo))
+            ||(this.IsUser()&&!string.IsNullOrEmpty(Organization.ReceiptNo));
+        public string GetReceiptNoByRole => (this.IsOperator()) ? OperatorReceiptNo??string.Empty : Organization.ReceiptNo??string.Empty;
     }
 
     public partial class CDS_Document

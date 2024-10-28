@@ -316,6 +316,7 @@
       <Column Name="PasswordUpdatedDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
       <Column Name="OperatorNote" Type="System.String" DbType="NVarChar(8)" CanBeNull="true" />
       <Column Name="OperatorOwnerUID" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="OperatorReceiptNo" Type="System.String" DbType="NChar(10)" CanBeNull="true" />
       <Association Name="FK_Contract_UserProfile" Member="Contract" ThisKey="UID" OtherKey="CreateUID" Type="Contract" DeleteRule="NO ACTION" />
       <Association Name="FK_ContractingUser_UserProfile" Member="ContractingUser" ThisKey="UID" OtherKey="UserID" Type="ContractingUser" DeleteRule="NO ACTION" />
       <Association Name="FK_ContractNoteRequest_UserProfile" Member="ContractNoteRequest" ThisKey="UID" OtherKey="StampUID" Type="ContractNoteRequest" DeleteRule="NO ACTION" />

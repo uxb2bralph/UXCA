@@ -107,11 +107,17 @@ namespace ContractHome.Controllers
                 //{
                 //    ModelState.AddModelError("CompanyName", "憑證資料不符(O)");
                 //}
-                if (identityCertHelper.IsCorporateCert
-                    &&
-                    !identityCertHelper.IsSubjectMatch(profile.Organization.ReceiptNo))
+                //if (identityCertHelper.IsCorporateCert
+                //    &&
+                //    !identityCertHelper.IsSubjectMatch(profile.Organization.ReceiptNo))
+                if (profile.IsUserWantToCheckReceiptNo)
                 {
-                    ModelState.AddModelError("ReceiptNo", "憑證資料不符(ReceiptNo)");
+                    if (identityCertHelper.IsCorporateCert
+                        &&
+                        !identityCertHelper.IsSubjectMatch(profile.GetReceiptNoByRole))
+                    {
+                        ModelState.AddModelError("ReceiptNo", "憑證資料不符(ReceiptNo)");
+                    }
                 }
 
                 if (!identityCertHelper.IsSignatureValid(profile.PID, req.Signature))

@@ -6861,6 +6861,8 @@ namespace ContractHome.Models.DataEntity
 		
 		private System.Nullable<int> _OperatorOwnerUID;
 		
+		private string _OperatorReceiptNo;
+		
 		private EntitySet<Contract> _Contract;
 		
 		private EntitySet<ContractingUser> _ContractingUser;
@@ -6949,6 +6951,8 @@ namespace ContractHome.Models.DataEntity
     partial void OnOperatorNoteChanged();
     partial void OnOperatorOwnerUIDChanging(System.Nullable<int> value);
     partial void OnOperatorOwnerUIDChanged();
+    partial void OnOperatorReceiptNoChanging(string value);
+    partial void OnOperatorReceiptNoChanged();
     #endregion
 		
 		public UserProfile()
@@ -7496,6 +7500,26 @@ namespace ContractHome.Models.DataEntity
 					this._OperatorOwnerUID = value;
 					this.SendPropertyChanged("OperatorOwnerUID");
 					this.OnOperatorOwnerUIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_OperatorReceiptNo", DbType="NChar(10)")]
+		public string OperatorReceiptNo
+		{
+			get
+			{
+				return this._OperatorReceiptNo;
+			}
+			set
+			{
+				if ((this._OperatorReceiptNo != value))
+				{
+					this.OnOperatorReceiptNoChanging(value);
+					this.SendPropertyChanging();
+					this._OperatorReceiptNo = value;
+					this.SendPropertyChanged("OperatorReceiptNo");
+					this.OnOperatorReceiptNoChanged();
 				}
 			}
 		}
