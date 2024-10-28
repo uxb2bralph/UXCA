@@ -113,7 +113,11 @@ namespace ContractHome.Controllers
             }
 
             var profile = (await HttpContext.GetUserAsync()).LoadInstance(models);
-            if (profile?.OrganizationUser == null)
+            //if (profile?.OrganizationUser == null)
+            //{
+            //    return Json(_baseResponse.ErrorMessage("合約簽署人資料錯誤!!"));
+            //}
+            if(!contract.ContractingUser.Any(x => x.UserID == profile.UID))
             {
                 return Json(_baseResponse.ErrorMessage("合約簽署人資料錯誤!!"));
             }
@@ -237,14 +241,14 @@ namespace ContractHome.Controllers
                     models.SubmitChanges();
 
                     _contractServices.SetModels(models);
-                    _contractServices.CDS_DocumentTransitStep(item.Contract, profile!.UID, CDS_Document.StepEnum.DigitalSigned);
+                    _contractServices.CDS_DocumentTransitStep(item.Contract, profile!.UID, CDS_Document.StepEnum.DigitalSigned, true);
 
                     if (!models.GetTable<ContractUserSignatureRequest>()
                         .Where(c => c.ContractID == item.ContractID)
                         .Where(c => !c.SignerID.HasValue)
                         .Any())
                     {
-                        _contractServices.CDS_DocumentTransitStep(item.Contract, profile!.UID, CDS_Document.StepEnum.Committed);
+                        _contractServices.CDS_DocumentTransitStep(item.Contract, profile!.UID, CDS_Document.StepEnum.Committed, true);
 
                         EmailContentBodyDto emailContentBodyDto =
                             new EmailContentBodyDto(contract: item?.Contract, initiatorOrg: null, userProfile: profile);
@@ -320,14 +324,14 @@ namespace ContractHome.Controllers
                     models.SubmitChanges();
 
                     _contractServices.SetModels(models);
-                    _contractServices.CDS_DocumentTransitStep(item.Contract, profile!.UID, CDS_Document.StepEnum.DigitalSigned);
+                    _contractServices.CDS_DocumentTransitStep(item.Contract, profile!.UID, CDS_Document.StepEnum.DigitalSigned,true);
 
                     if (!models.GetTable<ContractUserSignatureRequest>()
                         .Where(c => c.ContractID == item.ContractID)
                         .Where(c => !c.SignerID.HasValue)
                         .Any())
                     {
-                        _contractServices.CDS_DocumentTransitStep(item.Contract, profile!.UID, CDS_Document.StepEnum.Committed);
+                        _contractServices.CDS_DocumentTransitStep(item.Contract, profile!.UID, CDS_Document.StepEnum.Committed,true);
 
                         EmailContentBodyDto emailContentBodyDto =
                             new EmailContentBodyDto(contract: item.Contract, initiatorOrg: null, userProfile: profile);
@@ -391,7 +395,7 @@ namespace ContractHome.Controllers
                 }
                 else
                 {
-                    _contractServices.CDS_DocumentTransitStep(item, profile!.UID, CDS_Document.StepEnum.Revoked);
+                    _contractServices.CDS_DocumentTransitStep(item, profile!.UID, CDS_Document.StepEnum.Revoked,true);
                     return Json(new { result = true });
                 }
             }
@@ -410,7 +414,7 @@ namespace ContractHome.Controllers
                     return Json(new { result = false, message = "合約簽署人資料錯誤!!" });
                 }
 
-                _contractServices.CDS_DocumentTransitStep(item, profile!.UID, CDS_Document.StepEnum.Terminated);
+                _contractServices.CDS_DocumentTransitStep(item, profile!.UID, CDS_Document.StepEnum.Terminated,true);
                 return Json(new { result = true });
             }
 
@@ -576,7 +580,7 @@ namespace ContractHome.Controllers
                 var targetUsers = _contractServices.GetUsersbyContract(contract, true);
                 if (ContractServices.IsNotNull(targetUsers) && targetUsers.Count() > 0)
                 {
-                    _contractServices.CDS_DocumentTransitStep(contract, profile!.UID, CDS_Document.StepEnum.Sealed);
+                    _contractServices.CDS_DocumentTransitStep(contract, profile!.UID, CDS_Document.StepEnum.Sealed, true);
                     _contractServices.SendUsersNotifyEmailAboutContractAsync(
                         contract,
                         _emailContentFactories.GetTaskNotifySign(),
@@ -585,7 +589,7 @@ namespace ContractHome.Controllers
             }
             else
             {
-                _contractServices.CDS_DocumentTransitStep(contract, profile!.UID, CDS_Document.StepEnum.Sealing);
+                _contractServices.CDS_DocumentTransitStep(contract, profile!.UID, CDS_Document.StepEnum.Sealing, true);
             }
 
             return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
@@ -641,12 +645,12 @@ namespace ContractHome.Controllers
             if (viewModel.ContractQueryStep == null) { viewModel.ContractQueryStep = 0; }
             var profile = await HttpContext.GetUserAsync();
             profile = profile.LoadInstance(models);
-            #region add for postman test
-            if (profile == null)
-            {
-                profile = models.GetTable<UserProfile>().Where(x => x.UID == viewModel.EncUID.DecryptKeyValue()).FirstOrDefault();
-            }
-            #endregion
+            //#region add for postman test
+            //if (profile == null)
+            //{
+            //    profile = models.GetTable<UserProfile>().Where(x => x.UID == viewModel.EncUID.DecryptKeyValue()).FirstOrDefault();
+            //}
+            //#endregion
             //var profileCompanyID = 0;
             //var organizationUser = models
             //    .GetTable<OrganizationUser>()
@@ -887,7 +891,7 @@ namespace ContractHome.Controllers
             //contract.CDS_Document.CheckIfCanGo
             _contractServices.DeleteAndCreateFieldPostion(contract, req.FieldSettings);
             models.SubmitChanges();
-            _contractServices.CDS_DocumentTransitStep(contract, profile!.UID, CDS_Document.StepEnum.FieldSet);
+            _contractServices.CDS_DocumentTransitStep(contract, profile!.UID, CDS_Document.StepEnum.FieldSet, true);
             return Json(_baseResponse);
         }
 
@@ -938,12 +942,12 @@ namespace ContractHome.Controllers
 
                     ContractNo = contract.ContractNo,
                     ContractTitle = contract.Title,
-                    CompanyName = userProfile.Organization.CompanyName,
+                    //CompanyName = string.Empty,
                     ContractID = jwtTokenObj.ContractID
                 };
 
 
-                return View("~/Views/Shared/DigitalSignModal.cshtml", digitalSignModal);
+                return View("~/Views/Task/DigitalSignModal.cshtml", digitalSignModal);
 
             }
 
@@ -1034,11 +1038,11 @@ namespace ContractHome.Controllers
 
             if (ContractServices.IsNotNull(profile))
             {
-                _contractServices.CDS_DocumentTransitStep(contract, profile.UID, CDS_Document.StepEnum.Establish);
+                _contractServices.CDS_DocumentTransitStep(contract, profile.UID, CDS_Document.StepEnum.Establish,true);
 
                 if (contract.IsPassStamp == true)
                 {
-                    _contractServices.CDS_DocumentTransitStep(contract, profile.UID, CDS_Document.StepEnum.Sealed);
+                    _contractServices.CDS_DocumentTransitStep(contract, profile.UID, CDS_Document.StepEnum.Sealed, true);
                 }
 
                 //3.發送通知(one by one)
@@ -1062,12 +1066,12 @@ namespace ContractHome.Controllers
         public async Task<ActionResult> ConfigAsync([FromBody] PostConfigRequest req)
         {
             UserProfile profile = await HttpContext.GetUserAsync();
-#if DEBUG
-            if (profile == null && req.EncUID != null)
-            {
-                profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
-            }
-#endif
+//#if DEBUG
+//            if (profile == null && req.EncUID != null)
+//            {
+//                profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
+//            }
+//#endif
 
             _contractServices.SetModels(models);
             var contractID = req.ContractID.ToString().DecryptKeyValue();

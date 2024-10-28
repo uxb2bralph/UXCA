@@ -735,7 +735,8 @@ namespace ContractHome.Controllers
         [AutoValidateAntiforgeryToken]
         public async Task<ActionResult> GetUserAsync()
         {
-            var profile = (await HttpContext.GetUserAsync()).LoadInstance(models);
+            var ttt = await HttpContext.GetUserAsync();
+            var profile = (ttt).LoadInstance(models);
             if (profile == null)
             {
                 return Json(new BaseResponse(true, "驗證失敗"));
@@ -749,8 +750,8 @@ namespace ContractHome.Controllers
             }
             else
             {
-                isSignExchange = (profile.OrganizationUser.Organization.DigitalSignBy() == DigitalSignCerts.Exchange);
-                companyName = profile.OrganizationUser.Organization.CompanyName;
+                isSignExchange = ContractServices.GetUserSignCert(profile) == DigitalSignCerts.Exchange;
+                companyName = profile.CompanyName;
             }
 
             ClientUserInfo userResponse = new()
