@@ -18,7 +18,7 @@ namespace ContractHome.Models.Helper
             ID = contractingUser.UserID;
             ContractID = contract.ContractID;
             KeyID = contractingUser.UserID.EncryptKey();
-            Name = $"{contractingUser.UserProfile.OperatorNote??contractingUser.UserProfile.UserName}";
+            Name = $"{contractingUser.UserProfile.OperatorNote}";
 
                 StampDate = (initiatContractSignatureRequest.StampDate.HasValue) ?
                     initiatContractSignatureRequest?.StampDate.Value.ToString("yyyy/MM/dd HH:mm") : string.Empty;

@@ -87,11 +87,11 @@ namespace ContractHome.Controllers
                 items = items.Where(o => o.PID.StartsWith(viewModel.PID));
             }
 
-            viewModel.UserName = viewModel.UserName.GetEfficientString();
-            if (viewModel.UserName != null)
-            {
-                items = items.Where(o => o.UserName.StartsWith(viewModel.UserName));
-            }
+            //viewModel.UserName = viewModel.UserName.GetEfficientString();
+            //if (viewModel.UserName != null)
+            //{
+            //    items = items.Where(o => o.UserName.StartsWith(viewModel.UserName));
+            //}
 
             viewModel.EMail = viewModel.EMail.GetEfficientString();
             if (viewModel.EMail != null)
@@ -327,8 +327,9 @@ namespace ContractHome.Controllers
 
             item.PID = viewModel.PID;
             item.EMail = viewModel.EMail;
-            item.UserName = viewModel.UserName.GetEfficientString();
+            //item.UserName = viewModel.UserName.GetEfficientString();
             item.Region = viewModel.Region.GetEfficientString();
+            item.OperatorNote = viewModel.PID;
 
             if (!String.IsNullOrEmpty(viewModel.Password))
             {
@@ -337,8 +338,8 @@ namespace ContractHome.Controllers
                 item.LoginFailedCount = 0;
                 item.PasswordUpdatedDate = DateTime.Now;
             }
-
             models.SubmitChanges();
+            item.OperatorOwnerUID = item.UID;
 
             models.GetTable<OrganizationUser>().InsertOnSubmit(
                 new OrganizationUser() { UID = item.UID, CompanyID = companyID ?? 0 });

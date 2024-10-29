@@ -6811,31 +6811,11 @@ namespace ContractHome.Models.DataEntity
 		
 		private int _UID;
 		
-		private string _UserName;
-		
 		private string _PID;
 		
 		private string _Password;
 		
-		private string _ContactTitle;
-		
-		private string _Address;
-		
-		private string _City;
-		
 		private string _Region;
-		
-		private string _PostalCode;
-		
-		private string _Country;
-		
-		private string _MobilePhone;
-		
-		private string _Phone;
-		
-		private string _Phone2;
-		
-		private string _Fax;
 		
 		private string _EMail;
 		
@@ -6843,15 +6823,7 @@ namespace ContractHome.Models.DataEntity
 		
 		private System.Nullable<int> _Creator;
 		
-		private System.Nullable<int> _AuthID;
-		
-		private System.Nullable<int> _LevelID;
-		
-		private string _ThemeName;
-		
 		private string _Password2;
-		
-		private string _MailID;
 		
 		private System.Nullable<int> _LoginFailedCount;
 		
@@ -6889,10 +6861,6 @@ namespace ContractHome.Models.DataEntity
 		
 		private EntitySet<UserProfile> _UserProfile_UserProfile;
 		
-		private EntityRef<UserProfile> _Auth;
-		
-		private EntitySet<UserProfile> _UserProfile_UserProfile1;
-		
 		private EntitySet<UserRole> _UserRole;
 		
     #region 擴充性方法定義
@@ -6901,48 +6869,20 @@ namespace ContractHome.Models.DataEntity
     partial void OnCreated();
     partial void OnUIDChanging(int value);
     partial void OnUIDChanged();
-    partial void OnUserNameChanging(string value);
-    partial void OnUserNameChanged();
     partial void OnPIDChanging(string value);
     partial void OnPIDChanged();
     partial void OnPasswordChanging(string value);
     partial void OnPasswordChanged();
-    partial void OnContactTitleChanging(string value);
-    partial void OnContactTitleChanged();
-    partial void OnAddressChanging(string value);
-    partial void OnAddressChanged();
-    partial void OnCityChanging(string value);
-    partial void OnCityChanged();
     partial void OnRegionChanging(string value);
     partial void OnRegionChanged();
-    partial void OnPostalCodeChanging(string value);
-    partial void OnPostalCodeChanged();
-    partial void OnCountryChanging(string value);
-    partial void OnCountryChanged();
-    partial void OnMobilePhoneChanging(string value);
-    partial void OnMobilePhoneChanged();
-    partial void OnPhoneChanging(string value);
-    partial void OnPhoneChanged();
-    partial void OnPhone2Changing(string value);
-    partial void OnPhone2Changed();
-    partial void OnFaxChanging(string value);
-    partial void OnFaxChanged();
     partial void OnEMailChanging(string value);
     partial void OnEMailChanged();
     partial void OnExpirationChanging(System.Nullable<System.DateTime> value);
     partial void OnExpirationChanged();
     partial void OnCreatorChanging(System.Nullable<int> value);
     partial void OnCreatorChanged();
-    partial void OnAuthIDChanging(System.Nullable<int> value);
-    partial void OnAuthIDChanged();
-    partial void OnLevelIDChanging(System.Nullable<int> value);
-    partial void OnLevelIDChanged();
-    partial void OnThemeNameChanging(string value);
-    partial void OnThemeNameChanged();
     partial void OnPassword2Changing(string value);
     partial void OnPassword2Changed();
-    partial void OnMailIDChanging(string value);
-    partial void OnMailIDChanged();
     partial void OnLoginFailedCountChanging(System.Nullable<int> value);
     partial void OnLoginFailedCountChanged();
     partial void OnPasswordUpdatedDateChanging(System.Nullable<System.DateTime> value);
@@ -6970,8 +6910,6 @@ namespace ContractHome.Models.DataEntity
 			this._SealTemplate = new EntitySet<SealTemplate>(new Action<SealTemplate>(this.attach_SealTemplate), new Action<SealTemplate>(this.detach_SealTemplate));
 			this._CreatorUserProfile = default(EntityRef<UserProfile>);
 			this._UserProfile_UserProfile = new EntitySet<UserProfile>(new Action<UserProfile>(this.attach_UserProfile_UserProfile), new Action<UserProfile>(this.detach_UserProfile_UserProfile));
-			this._Auth = default(EntityRef<UserProfile>);
-			this._UserProfile_UserProfile1 = new EntitySet<UserProfile>(new Action<UserProfile>(this.attach_UserProfile_UserProfile1), new Action<UserProfile>(this.detach_UserProfile_UserProfile1));
 			this._UserRole = new EntitySet<UserRole>(new Action<UserRole>(this.attach_UserRole), new Action<UserRole>(this.detach_UserRole));
 			OnCreated();
 		}
@@ -6992,26 +6930,6 @@ namespace ContractHome.Models.DataEntity
 					this._UID = value;
 					this.SendPropertyChanged("UID");
 					this.OnUIDChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UserName", DbType="NVarChar(40)")]
-		public string UserName
-		{
-			get
-			{
-				return this._UserName;
-			}
-			set
-			{
-				if ((this._UserName != value))
-				{
-					this.OnUserNameChanging(value);
-					this.SendPropertyChanging();
-					this._UserName = value;
-					this.SendPropertyChanged("UserName");
-					this.OnUserNameChanged();
 				}
 			}
 		}
@@ -7056,66 +6974,6 @@ namespace ContractHome.Models.DataEntity
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ContactTitle", DbType="NVarChar(30)")]
-		public string ContactTitle
-		{
-			get
-			{
-				return this._ContactTitle;
-			}
-			set
-			{
-				if ((this._ContactTitle != value))
-				{
-					this.OnContactTitleChanging(value);
-					this.SendPropertyChanging();
-					this._ContactTitle = value;
-					this.SendPropertyChanged("ContactTitle");
-					this.OnContactTitleChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Address", DbType="NVarChar(128)")]
-		public string Address
-		{
-			get
-			{
-				return this._Address;
-			}
-			set
-			{
-				if ((this._Address != value))
-				{
-					this.OnAddressChanging(value);
-					this.SendPropertyChanging();
-					this._Address = value;
-					this.SendPropertyChanged("Address");
-					this.OnAddressChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_City", DbType="NVarChar(16)")]
-		public string City
-		{
-			get
-			{
-				return this._City;
-			}
-			set
-			{
-				if ((this._City != value))
-				{
-					this.OnCityChanging(value);
-					this.SendPropertyChanging();
-					this._City = value;
-					this.SendPropertyChanged("City");
-					this.OnCityChanged();
-				}
-			}
-		}
-		
 		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Region", DbType="NVarChar(16)")]
 		public string Region
 		{
@@ -7132,126 +6990,6 @@ namespace ContractHome.Models.DataEntity
 					this._Region = value;
 					this.SendPropertyChanged("Region");
 					this.OnRegionChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PostalCode", DbType="NVarChar(16)")]
-		public string PostalCode
-		{
-			get
-			{
-				return this._PostalCode;
-			}
-			set
-			{
-				if ((this._PostalCode != value))
-				{
-					this.OnPostalCodeChanging(value);
-					this.SendPropertyChanging();
-					this._PostalCode = value;
-					this.SendPropertyChanged("PostalCode");
-					this.OnPostalCodeChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Country", DbType="NVarChar(16)")]
-		public string Country
-		{
-			get
-			{
-				return this._Country;
-			}
-			set
-			{
-				if ((this._Country != value))
-				{
-					this.OnCountryChanging(value);
-					this.SendPropertyChanging();
-					this._Country = value;
-					this.SendPropertyChanged("Country");
-					this.OnCountryChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_MobilePhone", DbType="NVarChar(24)")]
-		public string MobilePhone
-		{
-			get
-			{
-				return this._MobilePhone;
-			}
-			set
-			{
-				if ((this._MobilePhone != value))
-				{
-					this.OnMobilePhoneChanging(value);
-					this.SendPropertyChanging();
-					this._MobilePhone = value;
-					this.SendPropertyChanged("MobilePhone");
-					this.OnMobilePhoneChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Phone", DbType="NVarChar(64)")]
-		public string Phone
-		{
-			get
-			{
-				return this._Phone;
-			}
-			set
-			{
-				if ((this._Phone != value))
-				{
-					this.OnPhoneChanging(value);
-					this.SendPropertyChanging();
-					this._Phone = value;
-					this.SendPropertyChanged("Phone");
-					this.OnPhoneChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Phone2", DbType="NVarChar(64)")]
-		public string Phone2
-		{
-			get
-			{
-				return this._Phone2;
-			}
-			set
-			{
-				if ((this._Phone2 != value))
-				{
-					this.OnPhone2Changing(value);
-					this.SendPropertyChanging();
-					this._Phone2 = value;
-					this.SendPropertyChanged("Phone2");
-					this.OnPhone2Changed();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Fax", DbType="NVarChar(64)")]
-		public string Fax
-		{
-			get
-			{
-				return this._Fax;
-			}
-			set
-			{
-				if ((this._Fax != value))
-				{
-					this.OnFaxChanging(value);
-					this.SendPropertyChanging();
-					this._Fax = value;
-					this.SendPropertyChanged("Fax");
-					this.OnFaxChanged();
 				}
 			}
 		}
@@ -7320,70 +7058,6 @@ namespace ContractHome.Models.DataEntity
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_AuthID", DbType="Int")]
-		public System.Nullable<int> AuthID
-		{
-			get
-			{
-				return this._AuthID;
-			}
-			set
-			{
-				if ((this._AuthID != value))
-				{
-					if (this._Auth.HasLoadedOrAssignedValue)
-					{
-						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
-					}
-					this.OnAuthIDChanging(value);
-					this.SendPropertyChanging();
-					this._AuthID = value;
-					this.SendPropertyChanged("AuthID");
-					this.OnAuthIDChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_LevelID", DbType="Int")]
-		public System.Nullable<int> LevelID
-		{
-			get
-			{
-				return this._LevelID;
-			}
-			set
-			{
-				if ((this._LevelID != value))
-				{
-					this.OnLevelIDChanging(value);
-					this.SendPropertyChanging();
-					this._LevelID = value;
-					this.SendPropertyChanged("LevelID");
-					this.OnLevelIDChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ThemeName", DbType="NVarChar(16)")]
-		public string ThemeName
-		{
-			get
-			{
-				return this._ThemeName;
-			}
-			set
-			{
-				if ((this._ThemeName != value))
-				{
-					this.OnThemeNameChanging(value);
-					this.SendPropertyChanging();
-					this._ThemeName = value;
-					this.SendPropertyChanged("ThemeName");
-					this.OnThemeNameChanged();
-				}
-			}
-		}
-		
 		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Password2", DbType="NVarChar(64)")]
 		public string Password2
 		{
@@ -7400,26 +7074,6 @@ namespace ContractHome.Models.DataEntity
 					this._Password2 = value;
 					this.SendPropertyChanged("Password2");
 					this.OnPassword2Changed();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_MailID", DbType="NVarChar(64)")]
-		public string MailID
-		{
-			get
-			{
-				return this._MailID;
-			}
-			set
-			{
-				if ((this._MailID != value))
-				{
-					this.OnMailIDChanging(value);
-					this.SendPropertyChanging();
-					this._MailID = value;
-					this.SendPropertyChanged("MailID");
-					this.OnMailIDChanged();
 				}
 			}
 		}
@@ -7730,53 +7384,6 @@ namespace ContractHome.Models.DataEntity
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="FK_UserProfile_UserProfile1", Storage="_Auth", ThisKey="AuthID", OtherKey="UID", IsForeignKey=true)]
-		public UserProfile Auth
-		{
-			get
-			{
-				return this._Auth.Entity;
-			}
-			set
-			{
-				UserProfile previousValue = this._Auth.Entity;
-				if (((previousValue != value) 
-							|| (this._Auth.HasLoadedOrAssignedValue == false)))
-				{
-					this.SendPropertyChanging();
-					if ((previousValue != null))
-					{
-						this._Auth.Entity = null;
-						previousValue.UserProfile_UserProfile1.Remove(this);
-					}
-					this._Auth.Entity = value;
-					if ((value != null))
-					{
-						value.UserProfile_UserProfile1.Add(this);
-						this._AuthID = value.UID;
-					}
-					else
-					{
-						this._AuthID = default(Nullable<int>);
-					}
-					this.SendPropertyChanged("Auth");
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="FK_UserProfile_UserProfile1", Storage="_UserProfile_UserProfile1", ThisKey="UID", OtherKey="AuthID", DeleteRule="NO ACTION")]
-		public EntitySet<UserProfile> UserProfile_UserProfile1
-		{
-			get
-			{
-				return this._UserProfile_UserProfile1;
-			}
-			set
-			{
-				this._UserProfile_UserProfile1.Assign(value);
-			}
-		}
-		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="FK_UserRole_UserProfile", Storage="_UserRole", ThisKey="UID", OtherKey="UID", DeleteRule="CASCADE")]
 		public EntitySet<UserRole> UserRole
 		{
@@ -7940,18 +7547,6 @@ namespace ContractHome.Models.DataEntity
 		{
 			this.SendPropertyChanging();
 			entity.CreatorUserProfile = null;
-		}
-		
-		private void attach_UserProfile_UserProfile1(UserProfile entity)
-		{
-			this.SendPropertyChanging();
-			entity.Auth = this;
-		}
-		
-		private void detach_UserProfile_UserProfile1(UserProfile entity)
-		{
-			this.SendPropertyChanging();
-			entity.Auth = null;
 		}
 		
 		private void attach_UserRole(UserRole entity)

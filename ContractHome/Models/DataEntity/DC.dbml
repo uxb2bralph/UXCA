@@ -291,27 +291,13 @@
   <Table Name="dbo.UserProfile" Member="UserProfile">
     <Type Name="UserProfile">
       <Column Name="UID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="UserName" Type="System.String" DbType="NVarChar(40)" CanBeNull="true" />
       <Column Name="PID" Type="System.String" DbType="NVarChar(64) NOT NULL" CanBeNull="false" />
       <Column Name="Password" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
-      <Column Name="ContactTitle" Type="System.String" DbType="NVarChar(30)" CanBeNull="true" />
-      <Column Name="Address" Type="System.String" DbType="NVarChar(128)" CanBeNull="true" />
-      <Column Name="City" Type="System.String" DbType="NVarChar(16)" CanBeNull="true" />
       <Column Name="Region" Type="System.String" DbType="NVarChar(16)" CanBeNull="true" />
-      <Column Name="PostalCode" Type="System.String" DbType="NVarChar(16)" CanBeNull="true" />
-      <Column Name="Country" Type="System.String" DbType="NVarChar(16)" CanBeNull="true" />
-      <Column Name="MobilePhone" Type="System.String" DbType="NVarChar(24)" CanBeNull="true" />
-      <Column Name="Phone" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
-      <Column Name="Phone2" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
-      <Column Name="Fax" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
       <Column Name="EMail" Type="System.String" DbType="NVarChar(512)" CanBeNull="true" />
       <Column Name="Expiration" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
       <Column Name="Creator" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="AuthID" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="LevelID" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="ThemeName" Type="System.String" DbType="NVarChar(16)" CanBeNull="true" />
       <Column Name="Password2" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
-      <Column Name="MailID" Type="System.String" DbType="NVarChar(64)" CanBeNull="true" />
       <Column Name="LoginFailedCount" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="PasswordUpdatedDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
       <Column Name="OperatorNote" Type="System.String" DbType="NVarChar(8)" CanBeNull="true" />
@@ -330,8 +316,6 @@
       <Association Name="FK_SealTemplate_UserProfile" Member="SealTemplate" ThisKey="UID" OtherKey="UID" Type="SealTemplate" DeleteRule="NO ACTION" />
       <Association Name="FK_UserProfile_UserProfile" Member="CreatorUserProfile" ThisKey="Creator" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
       <Association Name="FK_UserProfile_UserProfile" Member="UserProfile_UserProfile" ThisKey="UID" OtherKey="Creator" Type="UserProfile" DeleteRule="NO ACTION" />
-      <Association Name="FK_UserProfile_UserProfile1" Member="Auth" ThisKey="AuthID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
-      <Association Name="FK_UserProfile_UserProfile1" Member="UserProfile_UserProfile1" ThisKey="UID" OtherKey="AuthID" Type="UserProfile" DeleteRule="NO ACTION" />
       <Association Name="FK_UserRole_UserProfile" Member="UserRole" ThisKey="UID" OtherKey="UID" Type="UserRole" DeleteRule="CASCADE" />
     </Type>
   </Table>
