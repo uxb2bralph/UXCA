@@ -43,29 +43,30 @@
             </li>
             -->
             <li class="nav-item">
-              <a class="nav-link fs-5 fw-bolder" href="@Html.Raw(Url.Action("ListToStampIndex","ContractConsole"))">
+              <a id="m1" class="nav-link fs-5 fw-bolder"
+                href="@Html.Raw(Url.Action("ListToStampIndex","ContractConsole"))">
                 <i class="fas fa-file-signature"></i>
                 舊文件
               </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link fs-5 fw-bolder" href="@Html.Raw(Url.Action("ListToStampIndex","Task"))">
-                    <i class="fas fa-file-signature"></i>
-                    新文件
-                </a>
+              <a id="m2" class="nav-link fs-5 fw-bolder" href="@Html.Raw(Url.Action("ListToStampIndex","Task"))">
+                <i class="fas fa-file-signature"></i>
+                新文件
+              </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link fs-5 fw-bolder" href="@Html.Raw(Url.Action("QueryIndex","ContractConsole"))">
+              <a id="m3" class="nav-link fs-5 fw-bolder" href="@Html.Raw(Url.Action("QueryIndex","ContractConsole"))">
                 <i class="fas fa-search"></i>
                 舊查詢
               </a>
             </li>
-                        <li class="nav-item">
-                            <a class="nav-link fs-5 fw-bolder" href="@Html.Raw(Url.Action("QueryIndex","Task"))">
-                                <i class="fas fa-search"></i>
-                                新查詢
-                            </a>
-                        </li>
+            <li class="nav-item">
+              <a id="m4" class="nav-link fs-5 fw-bolder" href="@Html.Raw(Url.Action("QueryIndex","Task"))">
+                <i class="fas fa-search"></i>
+                新查詢
+              </a>
+            </li>
           </ul>
 
           <ul class="navbar-nav mb-2 mb-lg-0 ps-3 d-none d-lg-block">
@@ -131,3 +132,33 @@
     </nav>
   </header>
 </div>
+
+<script>
+  // 分頁顯示狀態 active
+  const menus = ['m1', 'm2', 'm3', 'm4'];
+  let currentTab = null;
+  const currentPathName = document.location.pathname;
+  switch (currentPathName) {
+    case '/ContractConsole/ListToStampIndex':
+      currentTab = 'm1';
+      break;
+    case '/Task/ListToStampIndex':
+      currentTab = 'm2';
+      break;
+    case '/ContractConsole/QueryIndex':
+      currentTab = 'm3';
+      break;
+    case '/Task/QueryIndex':
+      currentTab = 'm4';
+      break;
+  };
+
+  menus.forEach(menu => {
+    const tab = document.querySelector(`#${menu}`);
+    if (menu === currentTab) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+</script>

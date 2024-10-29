@@ -33,7 +33,9 @@
 * {
   font-family: -apple-system, Roboto, BlinkMacSystemFont, Microsoft JhengHei, 新微軟正黑體, 微軟正黑體, Segoe UI, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
 }
-html, body {
+
+html,
+body {
   height: 100%;
   background-color: #f2f2f2;
 }
@@ -122,20 +124,23 @@ html, body {
     color: #FFFFFF;
   }
 }
+
 .nav {
   &--tab {
     .nav-link {
       color: #999999;
+
       &.active {
         color: #0d6efd;
         border-bottom: 4px solid #0d6efd;
         background-color: #FFFFFF;
       }
+
       &:focus {
         box-shadow: none;
       }
     }
-  }   
+  }
 }
 
 //.listToStamp {
@@ -175,6 +180,7 @@ html, body {
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;
+
     @include xl {
       align-items: center;
     }
@@ -188,6 +194,7 @@ html, body {
       max-width: 1200px;
     }
   }
+
   &__forgetPassword {
     width: 100%;
     max-width: 520px;
@@ -201,13 +208,14 @@ html, body {
     background-position: center center;
     background-repeat: no-repeat;
     border-radius: 0;
-    
+
     @include lg {
       min-height: 450px;
       border-top-left-radius: 0.25rem;
       border-top-right-radius: 0;
       border-bottom-left-radius: 0.25rem;
     }
+
     img {
       height: 72px;
     }
@@ -217,17 +225,20 @@ html, body {
     text-align: center;
     font-size: 0.875rem;
     color: #FFFFFF;
+
     a {
       margin-left: 0.5rem;
       margin-right: 0.5rem;
       font-size: 0.875rem;
       color: #FFF;
+
       &:hover {
         color: #333;
       }
     }
   }
 }
+
 .forgetPwd {
   height: 72px;
 }
@@ -241,10 +252,12 @@ html, body {
   position: fixed;
   top: 10px;
   z-index: 4;
+
   a {
     margin-left: 0;
     margin-right: 0;
   }
+
   &.show {
     display: flex;
   }
@@ -263,7 +276,7 @@ html, body {
   // 搜尋
   &__height {
     height: auto;
-    
+
     @include md {
       height: 62px;
     }
@@ -281,6 +294,7 @@ html, body {
   &__rounded {
     width: 30px;
     height: 30px;
+
     >i {
       font-size: 12px;
     }
@@ -317,7 +331,7 @@ html, body {
     position: relative;
     z-index: 2;
   }
-  
+
   &__companyGroup {
     display: flex;
     flex-direction: column;
@@ -343,10 +357,12 @@ html, body {
 
     &--done {
       background-color: #63d19e;
+
       &:hover {
         background-color: #63d19e !important;
       }
     }
+
     &--actived {
       background-color: #4f81ee;
 
@@ -354,6 +370,7 @@ html, body {
         background-color: #3c68c9 !important;
       }
     }
+
     &--signActived {
       background-color: #f06755;
 
@@ -418,7 +435,7 @@ html, body {
   }
 
   &__name {
-    max-width: 70px;    
+    max-width: 70px;
     display: inline-block;
     padding: 0.35em 0.65em;
     font-size: .75em;
@@ -560,7 +577,7 @@ html, body {
   &:focus {
     box-shadow: 0 0 0 0.25rem rgba(241, 215, 159, 0.25);
     outline: #0b5ed7 4px double !important;
-  } 
+  }
 }
 
 .btn-red {
@@ -623,6 +640,7 @@ html, body {
     cursor: pointer;
     color: #333333;
     background-color: #fecba1;
+
     &:hover {
       color: #FFFFFF;
       background-color: #fd9843;
@@ -639,6 +657,7 @@ html, body {
     }
   }
 }
+
 .signature {
   &__canvas {
     background-color: #f2f2f2;
@@ -689,6 +708,7 @@ html, body {
     width: 100%;
     height: calc(100% - 40px);
     position: relative;
+
     @include xl {
       width: calc(100% - 400px);
       height: 100%;
@@ -723,12 +743,15 @@ html, body {
     width: 100%;
     overflow: hidden;
     overflow-y: auto;
+
     @include xl {
       width: 400px;
     }
   }
+
   &--show {
     display: none;
+
     @include xl {
       display: flex;
     }
@@ -737,7 +760,7 @@ html, body {
 
 // 用印簽名區
 #signatureCanvas {
-  > canvas {
+  >canvas {
     border-radius: 3px;
   }
 }
@@ -776,6 +799,7 @@ html, body {
   background: rgba(74, 146, 253, 0.3);
   position: absolute;
   cursor: move;
+
   .note {
     text-align: left;
     font-size: 1rem;
@@ -853,37 +877,45 @@ html, body {
     // border-bottom-right-radius: 0;
     background: rgba(132, 181, 253, .5);
     position: absolute;
-    cursor: move;    
+    cursor: move;
+
     &--bg00 {
       border: 2px dashed #4e90f1;
       background: rgba(132, 181, 253, .5);
     }
+
     &--bg01 {
       border: 2px dashed #f9a657;
       background: rgba(253, 227, 132, 0.584);
     }
+
     &--bg02 {
       border: 2px dashed #35b451;
       background: rgba(160, 228, 154, 0.5);
     }
+
     &--bg03 {
       border: 2px dashed #fa73e7;
       background: rgba(243, 160, 225, 0.5);
     }
+
     &--bg04 {
       border: 2px dashed #a696ff;
       background: rgba(216, 182, 243, 0.5);
     }
+
     &--bg05 {
       border: 2px dashed #df9b7d;
       background: rgba(224, 210, 197, 0.5);
     }
   }
+
   &__compantEdit {
     align-items: start;
     //justify-content: start;
     border-style: solid;
     cursor: default;
+
     .vmBox__note {
       width: 100%;
       height: 100%;
@@ -892,6 +924,7 @@ html, body {
       justify-content: center;
     }
   }
+
   &__note {
     display: flex;
     width: 100%;
@@ -904,6 +937,7 @@ html, body {
     overflow: hidden;
     white-space: nowrap;
   }
+
   &__text {
     display: block;
     width: 100%;
@@ -913,6 +947,7 @@ html, body {
     //font-weight: 700;
     //font-size: 1.5rem;
   }
+
   &__subtext {
     position: absolute;
     bottom: -22px;
@@ -921,6 +956,7 @@ html, body {
     font-size: 13px;
     color: #666666;
   }
+
   &__arrow {
     padding: 0;
     height: 24px;
@@ -930,6 +966,7 @@ html, body {
     top: -25px;
     left: -18px;
   }
+
   &__scale {
     height: 15px;
     width: 15px;
@@ -941,6 +978,7 @@ html, body {
     border-right: #6495ED 3px solid;
     cursor: se-resize;
   }
+
   &__delete {
     padding: 0;
     height: 24px;
@@ -954,12 +992,13 @@ html, body {
     background-color: #FFFFFF;
     color: #FF5722;
     box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.35);
-  
+
     &:hover {
       background-color: #FF5722;
       color: #FFFFFF;
     }
   }
+
   &__check {
     padding: 0;
     height: 24px;
@@ -973,12 +1012,13 @@ html, body {
     background-color: #FFFFFF;
     color: #15a340;
     box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.35);
-  
+
     &:hover {
       background-color: #15a340;
       color: #FFFFFF;
     }
   }
+
   &__edit {
     padding: 0;
     height: 24px;
@@ -998,14 +1038,17 @@ html, body {
       color: #FFFFFF;
     }
   }
+
   &--edit {
     width: 100%;
     height: 100%;
     cursor: pointer;
   }
 }
+
 .bd-00 {
   border-left: 8px solid #4e90f1;
+
   &:hover {
     border-left: 8px solid #4e90f1;
     background-color: #e2e2e2;
@@ -1014,6 +1057,7 @@ html, body {
 
 .bd-01 {
   border-left: 8px solid #eb9c42;
+
   &:hover {
     border-left: 8px solid #eb9c42;
     background-color: #e2e2e2;
@@ -1021,7 +1065,8 @@ html, body {
 }
 
 .bd-02 {
-  border-left: 8px solid #49c271;  
+  border-left: 8px solid #49c271;
+
   &:hover {
     border-left: 8px solid #49c271;
     background-color: #e2e2e2;
@@ -1031,9 +1076,11 @@ html, body {
 .hide {
   display: none;
 }
+
 .show {
   display: block;
 }
+
 .disabled {
   pointer-events: none;
 }
@@ -1105,7 +1152,7 @@ html, body {
   color: #666666;
 }
 
-a { 
+a {
   text-decoration: none;
 }
 
@@ -1113,6 +1160,7 @@ a {
 .fs-12 {
   font-size: 0.8rem;
 }
+
 // 13級字
 .fs-13 {
   font-size: 0.875rem;
@@ -1165,27 +1213,35 @@ a {
   width: 20px;
   border-radius: 50%;
   color: #FFFFFF;
+
   &--colorDefault {
     background-color: #b5b5b5;
   }
+
   &--color0 {
     background-color: #4e90f1;
   }
+
   &--color1 {
     background-color: #f9a657;
   }
+
   &--color2 {
     background-color: #35b451;
   }
+
   &--color3 {
     background-color: #fa73e7;
   }
+
   &--color4 {
     background-color: #a696ff;
   }
+
   &--color5 {
     background-color: #df9b7d;
   }
+
   &__mover {
     cursor: move;
   }
@@ -1195,6 +1251,16 @@ a {
   text-decoration: none;
   border-bottom-width: 1px;
   border-bottom-style: solid;
+}
+
+.navbar-light {
+  .navbar-nav {
+    .nav-link {
+      &.active {
+        color: #0849df;
+      }
+    }
+  }
 }
 
 // 隱藏數字框小箭頭
