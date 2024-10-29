@@ -284,37 +284,15 @@ namespace ContractHome.Models.Helper
             {
                 return (new BaseResponse(reason: WebReasonEnum.ContractNotExisted), item, profile);
             }
-            var parties = _models!.GetTable<ContractingParty>()
-                .Where(p => p.ContractID == contractID)
-                .Where(p => _models.GetTable<OrganizationUser>()
-                .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
-                .FirstOrDefault();
 
-            var taskUsers = _models!.GetTable<ContractingUser>()
-                .Where(p => p.ContractID == contractID)
-                .Where(o => o.UserID == profile.UID)
-                .FirstOrDefault();
-
-            if (isTask&& taskUsers==null)
+            if (!item.IsUserInContract(profile,true))
             {
-                return (new BaseResponse(reason: WebReasonEnum.ContractNotExisted), item, profile);
+                return (new BaseResponse(true, "無文件簽署權限.").AddContractMessage(item), item, profile);
             }
 
-            if (!isTask && parties == null)
+            if (item.IsContractUserHasSigned(profile,true))
             {
-                return (new BaseResponse(reason: WebReasonEnum.ContractNotExisted), item, profile);
-            }
-
-            if (item.CurrentStep >= (int)CDS_Document.StepEnum.DigitalSigned)
-            {
-                return (new BaseResponse(true, "合約已完成簽署流程, 無法再次簽署.").AddContractMessage(item), item, profile);
-            }
-
-            if (item.ContractSignatureRequest
-                        .Where(x => x.CompanyID == profile.CompanyID)
-                        .Where(x => x.SignatureDate != null).Count() > 0)
-            {
-                return (new BaseResponse(true, "合約已完成簽署, 無法再次簽署.").AddContractMessage(item), item, profile);
+                return (new BaseResponse(true, "文件已完成簽署.").AddContractMessage(item), item, profile);
             }
 
             return (_baseResponse, item, profile);

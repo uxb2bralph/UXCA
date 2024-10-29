@@ -46,6 +46,13 @@ namespace ContractHome.Helper
                     Settings.Default.CHTSigning.AP_SignPDF :
                     Settings.Default.CHTSigning.AP_SignPDF_Encrypt;
             }
+
+            if (digitalSignCerts == DigitalSignCerts.Exchange)
+            {
+                return isFirstSigned ?
+                    Settings.Default.CHTSigning.User_SignPDF :
+                    Settings.Default.CHTSigning.User_SignPDF_Encrypt;
+            }
             return string.Empty;
         }
 
@@ -300,17 +307,14 @@ namespace ContractHome.Helper
             String dataToSign = data.JsonStringify();
             request.RequestPath = Path.Combine(FileLogger.Logger.LogDailyPath, $"request-{Guid.NewGuid()}.json");
             File.WriteAllText(request.RequestPath, dataToSign);
-
+            bool isFirstSigned = Task_IsNotFirstSigned(request.Contract);
+            string chtSignUrl = Task_GetCHTSignedUrl(request.Contract, DigitalSignCerts.Exchange, isFirstSigned);
             using (WebClientEx client = new WebClientEx())
             {
                 client.Headers[HttpRequestHeader.ContentType] = "application/json";
                 //3partypdfencsign加密簽只能在第一次簽章使用，第二次開始請用3partypdfsign(沒加密)
                 //String result = client.UploadString(Settings.Default.CHTSigning.User_SignPDF_Encrypt, dataToSign);
-                String result = client.UploadString(models.GetTable<ContractSignatureRequest>()
-                    .Where(r => r.ContractID == request.ContractID).Where(r => r.SignatureDate.HasValue)
-                    .Any()
-                        ? Settings.Default.CHTSigning.User_SignPDF
-                        : Settings.Default.CHTSigning.User_SignPDF_Encrypt, dataToSign);
+                String result = client.UploadString(chtSignUrl, dataToSign);
 
 
                 String responsePath = Path.Combine(FileLogger.Logger.LogDailyPath, $"response-{Guid.NewGuid()}.json");

@@ -1,18 +1,8 @@
 ﻿using CommonLib.Core.Utility;
 using CommonLib.DataAccess;
-using CommonLib.Utility;
 using ContractHome.Models.DataEntity;
 using ContractHome.Models.Helper;
-using ContractHome.Properties;
-using DocumentFormat.OpenXml.Drawing;
-using GemBox.Document;
-using IronPdf.Editing;
 using Newtonsoft.Json.Linq;
-using System.Drawing;
-using System.Net;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace ContractHome.Helper
 {
@@ -70,7 +60,7 @@ namespace ContractHome.Helper
             return !contract.ContractSignatureRequest.Any(s => !s.StampDate.HasValue);
         }
 
-        public static MemoryStream TaskBuildContractWithSignature(this Contract contract, GenericManager<DCDataContext> models, bool preview = false)
+        public static MemoryStream TaskBuildContractWithSignature(this Contract contract, bool preview = false)
         {
             if (contract.ContractUserSignature != null)
             {
@@ -122,7 +112,7 @@ namespace ContractHome.Helper
 
         public static String TaskBuildContractWithSignatureBase64(this Contract contract, bool preview = false)
         {
-            if (contract.ContractSignature != null)
+            if (contract.ContractUserSignature != null)
             {
                 ContractUserSignatureRequest request = contract.ContractUserSignature.ContractUserSignatureRequest;
                 if (request.ResponsePath != null && File.Exists(request.ResponsePath))
@@ -303,5 +293,35 @@ namespace ContractHome.Helper
         {
             return (contract.ContractSignatureRequest.Where(x => x.SignatureDate == null).AsEnumerable());
         }
+
+        public static bool IsContractUserHasSigned(this Contract contract, UserProfile userProfile, bool isTask=false)
+        {
+            if (contract.CurrentStep >= (int)CDS_Document.StepEnum.DigitalSigned)
+            {
+                return true;
+            }
+
+            if (isTask)
+            {
+                return contract.ContractUserSignatureRequest
+                    .Where(x => x.UserID == userProfile.UID)
+                    .Any(x => x.SignatureDate != null);
+            }
+
+            return contract.ContractSignatureRequest
+                    .Where(x => x.CompanyID == userProfile.CompanyID)
+                    .Any(x => x.SignatureDate != null);
+        }
+
+        public static bool IsUserInContract(this Contract contract, UserProfile userProfile, bool isTask = false)
+        {
+            if (isTask)
+            {
+                return contract.ContractingUser.Any(x => x.UserID == userProfile.UID);
+            }
+
+            return contract.ContractingParty.Any(x => x.CompanyID == userProfile.CompanyID);
+        }
+
     }
 }

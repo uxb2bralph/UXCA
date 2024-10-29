@@ -81,7 +81,7 @@ namespace ContractHome.Controllers
 
                 if (contract.CDS_Document.IsPDF)
                 {
-                    using (MemoryStream output = contract.TaskBuildContractWithSignature(models, viewModel.Preview == true))
+                    using (MemoryStream output = contract.TaskBuildContractWithSignature(viewModel.Preview == true))
                     {
                         await Response.Body.WriteAsync(output.ToArray());
                     }
