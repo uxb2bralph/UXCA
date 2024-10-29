@@ -70,6 +70,8 @@ namespace ContractHome.Controllers.Filters
                         ViewData = viewData,
                     };
                 }
+
+                filterContext.HttpContext.Logout();
             }
         }
     }

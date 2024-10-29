@@ -916,7 +916,7 @@ namespace ContractHome.Controllers
 
             //wait to do:Trust進來可能沒有正常user權限,
             //但因為controller都有用var profile = await HttpContext.GetUserAsync();, 暫時先用
-            HttpContext.SignOnAsync(userProfile);
+            await HttpContext.SignOnAsync(userProfile);
             var userSession = UserSession.Create(_httpContextAccessor);
 
             if (jwtTokenObj.IsSeal)
