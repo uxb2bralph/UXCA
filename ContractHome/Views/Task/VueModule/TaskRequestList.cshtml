@@ -76,7 +76,7 @@
 <script>
   $(function () {
     app.contractList = @Html.Raw(items!.ToArray()
-      .Select(c => new TaskRefs((Contract)c, queryItem: "ProcessLog", userID: profile?.UID??0))
+      .Select(c => new TaskRefs((Contract)c, userProfile: profile!,queryItem: "ProcessLog"))
       .JsonStringify());
     app.totalRecordCount = @(_model.Count());
   });

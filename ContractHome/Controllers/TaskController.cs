@@ -607,7 +607,9 @@ namespace ContractHome.Controllers
             }
             else
             {
-                items = items.Where(x=>x.CreateUID==profile.UID);
+                items = items.Where(o => models.GetTable<ContractingUser>()
+                                                .Where(u => u.UserID == profile.UID)
+                                            .Any(u => u.ContractID == o.ContractID));
             }
 
             return items;

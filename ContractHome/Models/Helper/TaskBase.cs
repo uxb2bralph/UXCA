@@ -10,7 +10,7 @@ namespace ContractHome.Models.Helper
     {
         public TaskUserBase(Contract contract,
             ContractingUser contractingUser,
-            int? currentUserID = null)
+            UserProfile userProfile = null)
         {
 
             var initiatContractSignatureRequest =
@@ -34,9 +34,9 @@ namespace ContractHome.Models.Helper
                     Step = (int)StepEnum.DigitalSigned;
                 }
 
-            isInitiator = true;
-            //wait to replace by IsCurrentUserID
-            IsCurrentUserCompany = currentUserID != null ? ID == currentUserID : false;
+            isInitiator = (contract.CreateUID==contractingUser.UserID) ? true : false;
+            //IsCurrentUserCompany = (contractingUser.UserID==(currentUserID??0)) ? true : false;
+            IsCurrentUserCompany = (contract.CompanyID== userProfile.CompanyID) ? true : false;
         }
 
         [JsonIgnore]
@@ -74,8 +74,9 @@ namespace ContractHome.Models.Helper
 
         public TaskUserRefs(Contract contract,
             ContractingUser contractingUser,
-            string queryItem = "",
-            int? currentUserID = null) : base(contract, contractingUser, currentUserID)
+            UserProfile userProfile,
+            string queryItem = ""
+            ) : base(contract, contractingUser, userProfile)
         {
             if (queryItem.Equals("SignaturePositions"))
             {
@@ -129,10 +130,10 @@ namespace ContractHome.Models.Helper
     {
         [JsonProperty]
         public List<TaskUserRefs> Parties { get; set; }
-        public TaskRefs(Contract contract, string queryItem="", int userID=0) : base(contract, queryItem)
+        public TaskRefs(Contract contract, UserProfile userProfile, string queryItem="") : base(contract, queryItem)
         {
             Parties = contract.ContractingUser
-                .Select(x => new TaskUserRefs(contract, x, queryItem, userID)).ToList();
+                .Select(x => new TaskUserRefs(contract, x, userProfile, queryItem)).ToList();
         }
     }
 

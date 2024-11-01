@@ -52,7 +52,7 @@ namespace ContractHome.Controllers
             DCDataContext models = new DCDataContext();
             var user = models.GetTable<UserProfile>().Where(x => x.PID == pid).FirstOrDefault();
             await HttpContext.SignOnAsync(user);
-            return Redirect("https://localhost:5153/ContractConsole/ListToStampIndex");
+            return Redirect("https://localhost:5153/Task/ListToStampIndex");
         }
 
         [HttpGet]
