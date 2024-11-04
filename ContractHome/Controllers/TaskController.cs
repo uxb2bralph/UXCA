@@ -609,7 +609,10 @@ namespace ContractHome.Controllers
             {
                 items = items.Where(o => models.GetTable<ContractingUser>()
                                                 .Where(u => u.UserID == profile.UID)
-                                            .Any(u => u.ContractID == o.ContractID));
+                                            .Any(u => u.ContractID == o.ContractID) //[用印簽約]可查看
+                                    || o.UserProfile.UID == profile.UID//[起約人]可查看(用印簽約者可能不是起約人)
+                                   ) 
+                    .Distinct(); 
             }
 
             return items;
