@@ -1031,7 +1031,8 @@ namespace ContractHome.Controllers
                 users.Select(x => new Models.Operator(pID: x.PID, email: x.EMail, title: x.PID, region: x.Region, isOperator: false));
 
             _baseResponse.Data = operators.Select(x =>
-                new Models.Operator(pID: x.PID, email: x.EMail, title: x.OperatorNote, region: x.Region, isOperator: true)).Concat(nonOperators);
+                new Models.Operator(pID: x.PID, email: x.EMail, title: x.OperatorNote, region: x.Region, isOperator: true))
+                .Concat(nonOperators).Distinct();
 
             return Json(_baseResponse);
         }

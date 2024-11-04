@@ -373,7 +373,7 @@ namespace ContractHome.Controllers
             if (dataItem==null)
             {
                 return Json(_baseResponse.ErrorMessage("使用者不存在."));
-            };
+            }
 
             var sameEmailInOperatorOwner = models.GetTable<UserProfile>()
                 .Where(u => u.EMail == viewModel.EMail)
@@ -382,7 +382,7 @@ namespace ContractHome.Controllers
 
             if (sameEmailInOperatorOwner!=null)
             {
-                return Json(_baseResponse.ErrorMessage($"email:{viewModel.EMail} 已存在於 uid:{uid}."));
+                return Json(_baseResponse.ErrorMessage($"email:{viewModel.EMail} 已存在於 uid:{uid.EncryptKey()}."));
             }
 
             UserProfile item = UserProfile.PrepareNewItem(models.DataContext);
@@ -397,7 +397,7 @@ namespace ContractHome.Controllers
             models.ExecuteCommand(@"INSERT INTO UserRole (UID, RoleID) VALUES ({0},{1})", item.UID, 3);
             models.SubmitChanges();
 
-            _baseResponse.Data = new Models.Operator(pID: item.PID, email: item.EMail, title: item.OperatorNote, region: item.Region);
+            _baseResponse.Data = new Models.Operator(pID: item.PID, email: item.EMail, title: item.OperatorNote, region: item.Region, isOperator: true);
 
             return Json(_baseResponse);
         }
@@ -428,7 +428,7 @@ namespace ContractHome.Controllers
             models.SubmitChanges();
             _baseResponse.Data = new Models.Operator(
                 pID: operatorUser.PID, email: operatorUser.EMail, 
-                title: operatorUser.OperatorNote??string.Empty, region: operatorUser.Region);
+                title: operatorUser.OperatorNote??string.Empty, region: operatorUser.Region, isOperator: true);
 
             return Ok(_baseResponse);
         }
