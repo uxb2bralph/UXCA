@@ -1004,6 +1004,10 @@ namespace ContractHome.Controllers
         public async Task<IActionResult> GetOperatorsAsync()
         {
             var profile = await HttpContext.GetUserAsync();
+            if (profile != null) 
+            {
+                profile = profile.LoadInstance(models);
+            }
             //#region add for postman test
             //if (profile == null)
             //{
@@ -1020,8 +1024,14 @@ namespace ContractHome.Controllers
             IEnumerable<UserProfile>? operators
                 = _contractServices.GetOperatorsByOwnerID(profile.UID);
 
+            IEnumerable<UserProfile>? users
+                = _contractServices.GetUsersbyCompanyID(profile.CompanyID);
+
+            IEnumerable<Models.Operator> nonOperators = 
+                users.Select(x => new Models.Operator(pID: x.PID, email: x.EMail, title: x.PID, region: x.Region, isOperator: false));
+
             _baseResponse.Data = operators.Select(x =>
-                new Models.Operator(pID: x.PID, email: x.EMail, title: x.OperatorNote, region: x.Region));
+                new Models.Operator(pID: x.PID, email: x.EMail, title: x.OperatorNote, region: x.Region, isOperator: true)).Concat(nonOperators);
 
             return Json(_baseResponse);
         }

@@ -490,10 +490,9 @@ namespace ContractHome.Models.Helper
         public IQueryable<UserProfile>? GetUsersbyCompanyID(int companyID)
         {
             if (companyID.Equals(0)) { return null; }
-            var ttt = _models.GetTable<OrganizationUser>()
+            return _models.GetTable<OrganizationUser>()
                 .Where(x => x.CompanyID == companyID)
                 .Select(y => y.UserProfile);
-            return ttt;
         }
 
         public IQueryable<UserProfile>? GetUsersbyContract(Contract contract, bool isTask = false)

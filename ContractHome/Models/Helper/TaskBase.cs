@@ -34,9 +34,8 @@ namespace ContractHome.Models.Helper
                     Step = (int)StepEnum.DigitalSigned;
                 }
 
-            isInitiator = (contract.CreateUID==contractingUser.UserID) ? true : false;
-            //IsCurrentUserCompany = (contractingUser.UserID==(currentUserID??0)) ? true : false;
-            IsCurrentUserCompany = (contract.CompanyID== userProfile.CompanyID) ? true : false;
+            isInitiator = (contract.CreateUID==contractingUser.UserID);
+            IsCurrentUser = (contractingUser.UserID == userProfile.UID); //用印/簽署權限? A:step符合, 作業為[自己]
         }
 
         [JsonIgnore]
@@ -62,8 +61,7 @@ namespace ContractHome.Models.Helper
         [JsonProperty]
         public bool isInitiator { get; set; }
         [JsonProperty]
-        public bool IsCurrentUserCompany { get; set; }
-
+        public bool IsCurrentUser { get; set; }
 
     }
 
@@ -133,7 +131,7 @@ namespace ContractHome.Models.Helper
         public TaskRefs(Contract contract, UserProfile userProfile, string queryItem="") : base(contract, queryItem)
         {
             Parties = contract.ContractingUser
-                .Select(x => new TaskUserRefs(contract, x, userProfile, queryItem)).ToList();
+                .Select(x => new TaskUserRefs(contract, x,userProfile, queryItem)).ToList();
         }
     }
 
