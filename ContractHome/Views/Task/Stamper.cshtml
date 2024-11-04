@@ -551,7 +551,7 @@
       // 合約簽署設定查詢
       // 取出當前簽署人簽署區塊資料
       getContractor() {
-        const currentUser = this.Parties.filter(item => item.IsCurrentUserCompany)[0];
+                const currentUser = this.Parties.filter(item => item.IsCurrentUser)[0];
         const OperatorID = currentUser.KeyID;
         this.getFeildSetting(contractID, OperatorID);
       },

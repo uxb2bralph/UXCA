@@ -47,7 +47,7 @@
 <body>
   <!-- Navbar -->
   @{
-    if (profile != null)
+        if ((profile != null)&&(!profile.IsOperator()))
     {
       await Html.RenderPartialAsync("~/Views/Shared/SiteAction/MainNavBar.cshtml");
     }
