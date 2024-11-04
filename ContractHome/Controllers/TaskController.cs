@@ -1028,10 +1028,10 @@ namespace ContractHome.Controllers
                 = _contractServices.GetUsersbyCompanyID(profile.CompanyID);
 
             IEnumerable<Models.Operator> nonOperators = 
-                users.Select(x => new Models.Operator(pID: x.PID, email: x.EMail, title: x.PID, region: x.Region, isOperator: false));
+                users.Select(x => new Models.Operator(pID: x.PID, email: x.EMail, title: x.PID, region: x.Region, isOperator: true));
 
             _baseResponse.Data = operators.Select(x =>
-                new Models.Operator(pID: x.PID, email: x.EMail, title: x.OperatorNote, region: x.Region, isOperator: true))
+                new Models.Operator(pID: x.PID, email: x.EMail, title: x.OperatorNote, region: x.Region, isOperator: false))
                 .Concat(nonOperators).Distinct();
 
             return Json(_baseResponse);
