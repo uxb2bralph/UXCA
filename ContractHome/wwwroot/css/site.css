@@ -294,6 +294,9 @@ body {
   top: calc(50% - 5px);
   left: -27px;
 }
+.progresses__line--dashed {
+  border-top-style: dashed;
+}
 .progresses__line--sign {
   top: calc(50% - 1px);
   border-color: #78f0b8;
