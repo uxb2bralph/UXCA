@@ -240,10 +240,10 @@
                 <div :class="[idx === 0 ? '' : 'progresses__stepGroup']" :key="`contract${idx}`">
                   <!-- 待用印: 第一筆資料不會畫線 -->
                   <span v-if="idx !== 0 && contract.CurrentStep > 5" class="progresses__line"
-                    :class="{'progresses__line--dashed': contract.CurrentStep === 6, 'progresses__line--done': contract.CurrentStep >= 7 }"></span>
+                    :class="{'progresses__line--dashed': contract.CurrentStep === 6 && !item.StampDate, 'progresses__line--done': contract.CurrentStep >= 7 }"></span>
                   <!-- 待簽署: 第一筆資料不會畫線 -->
                   <span v-if="idx !== 0 && contract.CurrentStep >= 10" class="progresses__line progresses__line--sign"
-                    :class="{'progresses__line--dashed': contract.CurrentStep === 10, 'progresses__line--signDone': contract.CurrentStep >= 11 }"></span>
+                    :class="{'progresses__line--dashed': contract.CurrentStep === 10 && !item.SignerDate, 'progresses__line--signDone': contract.CurrentStep >= 11 }"></span>
                   <div class="progresses__companyGroup">
                     <div class="progresses__company">
                       <span v-if="!item.StampDate" class="fw-bolder text-primary opacity-75">
@@ -252,7 +252,7 @@
                       <span v-if="!!item.StampDate && !item.SignerDate" class="fw-bolder text-primary opacity-75">
                         待簽署
                       </span>
-                      <span v-if="!!item.StampDate && !! item.SignerDate" class="fw-bolder text-success opacity-75">
+                      <span v-if="!!item.StampDate && !!item.SignerDate" class="fw-bolder text-success opacity-75">
                         已完成
                       </span>
                     </div>
