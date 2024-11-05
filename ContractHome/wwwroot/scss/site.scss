@@ -403,11 +403,15 @@ body {
 
     &--sign {
       top: calc(50% - 1px);
-      border-color: #78f0b8;
+      border-color: #ffc107;
     }
 
     &--done {
-      background-color: #63d19e;
+      border-top-color: #63d19e;
+    }
+
+    &--signDone {
+      border-top-color: #ffc107;
     }
 
     &--w200 {
