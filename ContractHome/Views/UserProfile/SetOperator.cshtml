@@ -38,7 +38,7 @@
               <td class="fs-13">{{ contractor.email }}</td>
               <td class="text-nowrap text-center">
                 <!-- 編輯 -->
-                <span class="tooltip__wrapper mx-1">
+                <span v-if="!contractor.isOperator" class="tooltip__wrapper mx-1">
                   <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded"
                     v-on:click="editData('edit', contractor)">
                     <i class="fal fa-edit"></i>
@@ -279,7 +279,8 @@
       isInputOptionsOpen: false,
       searchResults: [],
       currentlyCounter: -1,
-      msgStatus: false
+      msgStatus: false,
+      isDuplicateEmail: false,
     },
     watch: {
       // 檢查公司名稱輸入框的值，並執行Autocomplate
@@ -395,11 +396,12 @@
         this.isEMail = !this.formData.EMail;
         this.isRegion = !this.formData.Region;
         // 檢核email格式是否正確
+        this.checkEmailDuplicate(this.formData.EMail);
+        // 檢核email是否重複
         this.checkMail('isEMail', this.formData.EMail);
         // 如果檢核通過，就會送出表單
-        if (this.isTitle || this.isEMail || this.isRegion) return;
+        if (this.isTitle || this.isEMail || this.isRegion || this.isDuplicateEmail) return;
 
-        console.log('儲存表單', this.formData);
         const payload = this.formData;
 
         showLoading();
@@ -466,6 +468,13 @@
         const emailRegex = /^[A-Za-z0-9._%+-]+@@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
         const checkEmail = emailRegex.test(contactEmail);
         this[status] = !checkEmail;
+      },
+      // 檢查 Email 是否重複
+      checkEmailDuplicate(email) {
+        const isDuplicate = this.contractorList.filter(item => item.email === email).length > 0;
+        this.isDuplicateEmail = isDuplicate;
+        this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base">您的簽署人清單中已有重複的 Email！</div>`;
+        $("#infoModal").modal("show");
       },
       // 欄位檢核
       validateField(status, data) {
