@@ -19,20 +19,20 @@ namespace ContractHome.Models.Helper
             ContractID = contract.ContractID;
             KeyID = contractingUser.UserID.EncryptKey();
             Name = string.IsNullOrEmpty(contractingUser.UserProfile.OperatorNote)?$"{contractingUser.UserProfile.PID}": $"{ contractingUser.UserProfile.OperatorNote}";
-
-                StampDate = (initiatContractSignatureRequest.StampDate.HasValue) ?
-                    initiatContractSignatureRequest?.StampDate.Value.ToString("yyyy/MM/dd HH:mm") : string.Empty;
-                SignerDate = initiatContractSignatureRequest.SignatureDate.HasValue ?
-                    initiatContractSignatureRequest?.SignatureDate.Value.ToString("yyyy/MM/dd HH:mm") : string.Empty;
-                SignerID = initiatContractSignatureRequest?.UserProfile?.PID ?? string.Empty;
-                if ((Step == (int)StepEnum.Sealing) && (!string.IsNullOrEmpty(StampDate)))
-                {
-                    Step = (int)StepEnum.Sealed; 
-                }
-                if ((Step == (int)StepEnum.DigitalSigning) && (!string.IsNullOrEmpty(SignerDate)))
-                {
-                    Step = (int)StepEnum.DigitalSigned;
-                }
+            Step = contract.CDS_Document.CurrentStep;
+            StampDate = (initiatContractSignatureRequest.StampDate.HasValue) ?
+                initiatContractSignatureRequest?.StampDate.Value.ToString("yyyy/MM/dd HH:mm") : string.Empty;
+            SignerDate = initiatContractSignatureRequest.SignatureDate.HasValue ?
+                initiatContractSignatureRequest?.SignatureDate.Value.ToString("yyyy/MM/dd HH:mm") : string.Empty;
+            SignerID = initiatContractSignatureRequest?.UserProfile?.PID ?? string.Empty;
+            if ((Step == (int)StepEnum.Sealing) && (!string.IsNullOrEmpty(StampDate)))
+            {
+                Step = (int)StepEnum.Sealed; 
+            }
+            if ((Step == (int)StepEnum.DigitalSigning) && (!string.IsNullOrEmpty(SignerDate)))
+            {
+                Step = (int)StepEnum.DigitalSigned;
+            }
 
             isInitiator = (contract.CreateUID==contractingUser.UserID);
             IsCurrentUser = (contractingUser.UserID == userProfile.UID); //用印/簽署權限? A:step符合, 作業為[自己]
