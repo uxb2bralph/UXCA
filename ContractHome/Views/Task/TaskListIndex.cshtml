@@ -708,6 +708,8 @@
                 <div>
                   <div class="fs-12 text-black-50">
                     <span>{{ signerStatusData.CreatedDateTime }}</span>
+                    /
+                    <span class="text-black-50 fw-bolder">{{ signerStatusData.ContractNo }}</span>
                   </div>
                   <div class="fw-bolder">
                     {{ signerStatusData.Title }}
@@ -720,6 +722,7 @@
               <template v-for="(item, index) in signerStatusData.Parties">
                 <div class="d-flex align-items-center" :key="index">
                   <div class="col d-flex align-items-center">
+                    <!-- 簽暑人狀態 -->
                     <div class="progresses__steps"
                       :class="{'progresses__steps--done': item.StampDate && item.SignerDate }">
                       <span>
@@ -728,10 +731,10 @@
                       </span>
                     </div>
                     <div class="ps-2">
-                      <!-- 起約人 -->
-                      <span v-if="item.isInitiator" class="badge bg-primary opacity-75">{{ item.Name }}</span>
-                      <!-- 簽約人 -->
-                      <span v-else class="badge bg-warning text-dark opacity-75">{{ item.Name }}</span>
+                      <span class="badge opacity-75"
+                        :class="[item.IsCurrentUser ? 'bg-primary' : 'bg-warning text-dark' ]">
+                        {{ item.Name }}
+                      </span>
                     </div>
                   </div>
                   <div class="col fw-bolder text-end text-primary opacity-75 fs-13 pe-3"
@@ -755,27 +758,29 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <div class="d-flex justify-content-between">
-              <div class="d-flex w-50">
+            <div class="row flex-column flex-sm-row">
+              <div class="col col-sm-8 d-flex ">
                 <div class="fs-1 px-2 text-secondary opacity-75">
                   <i class="fad fa-file-contract fa-lg"></i>
                 </div>
                 <div>
                   <div class="fs-12 text-black-50">
                     {{ historyData.CreatedDateTime }}
+                    /
+                    <span class="text-black-50 fw-bolder">{{ historyData.ContractNo }}</span>
                   </div>
                   <div class="fw-bolder">
                     {{ historyData.Title }}
                   </div>
                 </div>
               </div>
-              <div class="w-50">
+              <div class="col mt-1">
                 <template v-for="(item, index) in historyData.Parties">
-                  <div class="d-flex align-items-start" :class="{'py-1': item.isInitiator}" :key="index">
-                    <span v-if="item.isInitiator" class="badge bg-primary opacity-75">起約人</span>
-                    <span v-else class="badge bg-warning text-dark opacity-75">簽約人</span>
-                    ：
-                    <span class="fs-13">{{ item.Name }}</span>
+                  <div class="mb-1" :key="index">
+                    <span class="badge opacity-75"
+                      :class="[item.IsCurrentUser ? 'bg-primary' : 'bg-warning text-dark']">
+                      {{ item.Name }}
+                    </span>
                   </div>
                 </template>
               </div>
@@ -973,17 +978,17 @@
 <script>
   /**
     * 文件列表
-    * @@param {string} uuid 
-    * @@param {string} ContractNo 文件號碼
-    * @@param {string} Title 文件標題
-    * @@param {object} Initiator 起約人
-    * @@param {array} Contractor 簽約人
-    * @@param {string} KeyID 文件檔案ID
-    * @@param {number} PageCount 文件總頁數
-    * @@param {array} Parties 甲乙雙方人員資料
-    * @@param {array} ProcessLogs 歷程記錄
-    * @@param {string} contractorName 文件名稱
-    * @@* param {Number} StepEnum 文件狀態
+    * param {string} uuid 
+    * param {string} ContractNo 文件號碼
+    * param {string} Title 文件標題
+    * param {object} Initiator 起約人
+    * param {array} Contractor 簽約人
+    * param {string} KeyID 文件檔案ID
+    * param {number} PageCount 文件總頁數
+    * param {array} Parties 甲乙雙方人員資料
+    * param {array} ProcessLogs 歷程記錄
+    * param {string} contractorName 文件名稱
+    * param {Number} StepEnum 文件狀態
      * 0: Initial - 開始,
      * 1: Config - 設定,
      * 3: FieldSet - 欄位設定,
@@ -997,7 +1002,7 @@
      * 18: Committed - 完成,
      * 19: Revoked - 撤銷,
     */
-  // 註冊元件
+
   Vue.component('vuedraggable', window.vuedraggable);
   var app = new Vue({
     el: '#listToStamp',
@@ -1010,13 +1015,13 @@
         navTab: null,
         /**
         * 文件表單
-        * @@param {string} ContractNo 文件號碼
-        * @@param {string} ContractID 文件號碼(加密)
-        * @@param {string} Title 文件標題
-        * @@param {array} Signatories 簽署人
-        * @@param {string} ExpiryDateTime 簽署期限
-        * @@param {boolean} IsInBulk 共同簽署
-        * @@param {boolean} IsPassStamp 文件已簽章
+        * param {string} ContractNo 文件號碼
+        * param {string} ContractID 文件號碼(加密)
+        * param {string} Title 文件標題
+        * param {array} Signatories 簽署人
+        * param {string} ExpiryDateTime 簽署期限
+        * param {boolean} IsInBulk 共同簽署
+        * param {boolean} IsPassStamp 文件已簽章
         */
         initialFormData: {
           ContractNo: null,
