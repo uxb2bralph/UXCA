@@ -496,7 +496,9 @@
                 </div>
                 <div>
                   <div class="fs-12 text-black-50">
-                    <span>建立：{{ signerStatusData.CreatedDateTime }}</span>
+                    <span>{{ signerStatusData.CreatedDateTime }}</span>
+                    /
+                    <span class="text-black-50 fw-bolder">{{ signerStatusData.ContractNo }}</span>
                   </div>
                   <div class="fw-bolder">
                     {{ signerStatusData.Title }}
@@ -550,11 +552,13 @@
                   <i class="fad fa-file-contract fa-lg"></i>
                 </div>
                 <div>
+                  <div class="fs-12 text-black-50">
+                    {{ historyData.CreatedDateTime }}
+                    /
+                    <span class="text-black-50 fw-bolder">{{ historyData.ContractNo }}</span>
+                  </div>
                   <div class="fw-bolder">
                     {{ historyData.Title }}
-                  </div>
-                  <div class="fs-12 text-black-50">
-                    建立：{{ historyData.CreatedDateTime }}
                   </div>
                 </div>
               </div>
