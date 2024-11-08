@@ -199,7 +199,7 @@
                     <span class="text-black-50 fw-bolder">{{ contract.ContractNo }}</span>
                   </div>
                   <div class="fs-13 fw-bolder">
-                    <a :href="`javascript:showContract('${contract.KeyID}');`">
+                    <a href="#" v-on:click.prevent="showContract(`${contract.KeyID}`)">
                       {{ contract.Title }}
                     </a>
                   </div>
@@ -872,7 +872,7 @@
 
       // 下載檔案
       downloadPdf(contract) {
-        showContract(contract.KeyID, @((int)DataResultMode.Download));
+        this.showContract(contract.KeyID, @((int)DataResultMode.Download));
       },
 
       // 格式化名稱
@@ -994,6 +994,30 @@
           $(`#${event}`).tooltip({ placement: "bottom" });
         });
       },
+      
+      showContract(keyID, mode) {
+        if (mode == @((int)DataResultMode.Download)) {
+          // 下載
+          $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "Task"))', { 'KeyID': keyID, 'ResultMode': mode });
+        } else {
+          if ($('#pdfModal').length > 0) {
+            $('#pdfModal').modal('show');
+            $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "Task"))', { 'KeyID': keyID, 'ResultMode': mode }, 'pdfFrame');
+          } else {
+            // 開啟PDF Modal
+            showLoading();
+            $.post('@Html.Raw(Url.Action("PreviewCurrentContract", "ContractConsole"))', { 'KeyID': keyID }, function (data) {
+              hideLoading();
+              if ($.isPlainObject(data)) {
+                alertModal(data.message);
+              } else {
+                $(data).appendTo($('body'));
+                $('#pdfModal').modal('show');
+              }
+            });
+          }
+        }
+      },
     }
   });
 
@@ -1004,28 +1028,6 @@
       $inquiryAgent.inquire();
     },
   };
-
-  function showContract(keyID, mode) {
-    if (mode == @((int)DataResultMode.Download)) {
-      $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "Task"))', { 'KeyID': keyID, 'ResultMode': mode });
-    } else {
-      if ($('#pdfModal').length > 0) {
-        $('#pdfModal').modal('show');
-        $('').launchDownload('@Html.Raw(Url.Action("ShowCurrentContract", "Task"))', { 'KeyID': keyID, 'ResultMode': mode }, 'pdfFrame');
-      } else {
-        showLoading();
-        $.post('@Html.Raw(Url.Action("PreviewCurrentContract", "ContractConsole"))', { 'KeyID': keyID }, function (data) {
-          hideLoading();
-          if ($.isPlainObject(data)) {
-            alertModal(data.message);
-          } else {
-            $(data).appendTo($('body'));
-            $('#pdfModal').modal('show');
-          }
-        });
-      }
-    }
-  }
 
   function terminateContract(keyID) {
     showLoading();
