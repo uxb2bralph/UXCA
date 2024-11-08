@@ -172,6 +172,7 @@ namespace ContractHome.Models.DataEntity
 
         public static StepEnum[] DocumentEditable =
         {
+            StepEnum.Config,
             StepEnum.Establish,
             StepEnum.Sealing,
             StepEnum.Sealed,

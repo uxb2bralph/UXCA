@@ -35,6 +35,7 @@
       <Column Name="CompanyID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="NotifyUntilDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
       <Column Name="CreateUID" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="FieldSetUID" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Association Name="FK_Contract_CDS_Document" Member="CDS_Document" ThisKey="ContractID" OtherKey="DocID" Type="CDS_Document" IsForeignKey="true" DeleteOnNull="true" />
       <Association Name="FK_Contract_Organization" Member="Organization" ThisKey="CompanyID" OtherKey="CompanyID" Type="Organization" IsForeignKey="true" />
       <Association Name="FK_Contract_UserProfile" Member="UserProfile" ThisKey="CreateUID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />

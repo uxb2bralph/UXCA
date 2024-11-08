@@ -132,6 +132,11 @@ namespace ContractHome.Models.Helper
             return _models.GetTable<UserProfile>().Where(x => x.PID == pid).FirstOrDefault();
         }
 
+        public IQueryable<UserProfile>? GetUserByUID(int? uid)
+        {
+            return _models.GetTable<UserProfile>().Where(x => x.UID == uid);
+        }
+
         public bool IsContractHasCompany(Contract contract, int? companyID)
         {
             return contract.ContractingParty.Where(x => x.CompanyID == companyID).Any();
@@ -266,7 +271,44 @@ namespace ContractHome.Models.Helper
             return contract;
         }
 
-        public (BaseResponse, Contract, UserProfile) CanPdfDigitalSign(int? contractID, bool isTask=false)
+        public (BaseResponse, Contract) CanFieldSet(int? contractID, UserProfile profile)
+        {
+            var contract = GetContractByID(contractID: contractID);
+            if (contract == null)
+            {
+                return (new BaseResponse(reason: WebReasonEnum.ContractNotExisted), contract);
+            }
+
+            if (contract.CurrentStep!=(int)StepEnum.Config)
+            {
+                return (_baseResponse.ErrorMessage($"文件已完成圖章設定."),contract);
+            }
+
+            return (_baseResponse,contract);
+        }
+
+        public (BaseResponse, Contract) CanTaskDigitalSign(int? contractID, UserProfile profile)
+        {
+            var item = GetContractByID(contractID: contractID);
+            if (item == null)
+            {
+                return (new BaseResponse(reason: WebReasonEnum.ContractNotExisted), item);
+            }
+
+            if (!item.IsUserInContract(profile, true))
+            {
+                return (new BaseResponse(true, "無文件簽署權限.").AddContractMessage(item), item);
+            }
+
+            if (item.IsContractUserHasSigned(profile, true))
+            {
+                return (new BaseResponse(true, "文件已完成簽署.").AddContractMessage(item), item);
+            }
+
+            return (_baseResponse, item);
+        }
+
+        public (BaseResponse, Contract, UserProfile) CanPdfDigitalSign(int? contractID)
         {
             if (contractID == null || contractID == 0)
             {
@@ -507,6 +549,8 @@ namespace ContractHome.Models.Helper
                 .Select(y => y.UserProfile);
         }
 
+
+
         public IQueryable<UserProfile>? GetUsersByWhoNotFinished(Contract contract,
             int currentStep)
         {
@@ -674,7 +718,7 @@ namespace ContractHome.Models.Helper
             {
                 if (isTask)
                 {
-                    AddOperator(contract, x);
+                    AddOperator(contract, x.DecryptKeyValue());
                 }
                 else
                 {
@@ -683,6 +727,7 @@ namespace ContractHome.Models.Helper
             });
             contract.NotifyUntilDate = Convert.ToDateTime(req.ExpiryDateTime);
             contract.CreateUID = uid;
+            contract.FieldSetUID = IsNull(req.FieldSetUID) ? uid : req.FieldSetUID.DecryptKeyValue();
             SaveContract();
 
             CDS_DocumentTransitStep(contract, uid, CDS_Document.StepEnum.Config);
@@ -691,24 +736,23 @@ namespace ContractHome.Models.Helper
 
 
 
-        private Contract AddOperator(Contract contract, string OperatorPID)
+        private Contract AddOperator(Contract contract, int uid)
         {
-            var user = GetOperatorByPID(OperatorPID);
-            if (contract.ContractingUser.Where(p => p.UserID == user.UID).Any())
+            if (contract.ContractingUser.Where(p => p.UserID == uid).Any())
             {
                 return contract;
             }
 
             contract.ContractingUser.Add(new ContractingUser
             {
-                UserID = user.UID
+                UserID = uid
             });
 
-            if (!contract.ContractUserSignatureRequest.Any(r => r.UserID == user.UID))
+            if (!contract.ContractUserSignatureRequest.Any(r => r.UserID == uid))
             {
                 contract.ContractUserSignatureRequest.Add(new ContractUserSignatureRequest
                 {
-                    UserID = user.UID,
+                    UserID = uid,
                     StampDate = (contract.IsPassStamp == true) ? DateTime.Now : null,
                 });
             }

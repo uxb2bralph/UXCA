@@ -107,6 +107,12 @@ namespace ContractHome.Models.Email.Template
             return emailContent;
         }
 
+        public IEmailContent GetTaskNotifyFieldSet()
+        {
+            return _emailContents.OfType<TaskNotifyFieldSet>()
+                .FirstOrDefault()!;
+        }
+
         public IEmailContent GetLoginFailed(string emailUserName, string email)
         {
             var emailContent = _emailContents.OfType<LoginFailed>()

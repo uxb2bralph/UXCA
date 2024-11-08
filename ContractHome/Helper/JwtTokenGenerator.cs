@@ -32,6 +32,7 @@ namespace ContractHome.Helper
                 || payloadObj.data.Func.Equals(typeof(TaskNotifySeal).Name);
             public bool IsSign => payloadObj.data.Func.Equals(typeof(NotifySign).Name)
                 || payloadObj.data.Func.Equals(typeof(TaskNotifySign).Name);
+            public bool IsFieldSet => payloadObj.data.Func.Equals(typeof(TaskNotifyFieldSet).Name);
             public override string? ToString()
             {
                 return payloadObj.ToString();

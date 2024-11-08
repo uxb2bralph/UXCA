@@ -130,6 +130,7 @@ namespace ContractHome
             services.AddScoped<IEmailContent, FinishContract>();
             services.AddScoped<IEmailContent, TaskNotifySeal>();
             services.AddScoped<IEmailContent, TaskNotifySign>();
+            services.AddScoped<IEmailContent, TaskNotifyFieldSet>();
 
             services.AddScoped<ContractServices>();
             services.AddScoped<BaseResponse>();

@@ -800,6 +800,8 @@ namespace ContractHome.Models.DataEntity
 		
 		private System.Nullable<int> _CreateUID;
 		
+		private System.Nullable<int> _FieldSetUID;
+		
 		private EntityRef<CDS_Document> _CDS_Document;
 		
 		private EntityRef<Organization> _Organization;
@@ -848,6 +850,8 @@ namespace ContractHome.Models.DataEntity
     partial void OnNotifyUntilDateChanged();
     partial void OnCreateUIDChanging(System.Nullable<int> value);
     partial void OnCreateUIDChanged();
+    partial void OnFieldSetUIDChanging(System.Nullable<int> value);
+    partial void OnFieldSetUIDChanged();
     #endregion
 		
 		public Contract()
@@ -1075,6 +1079,26 @@ namespace ContractHome.Models.DataEntity
 					this._CreateUID = value;
 					this.SendPropertyChanged("CreateUID");
 					this.OnCreateUIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FieldSetUID", DbType="Int")]
+		public System.Nullable<int> FieldSetUID
+		{
+			get
+			{
+				return this._FieldSetUID;
+			}
+			set
+			{
+				if ((this._FieldSetUID != value))
+				{
+					this.OnFieldSetUIDChanging(value);
+					this.SendPropertyChanging();
+					this._FieldSetUID = value;
+					this.SendPropertyChanged("FieldSetUID");
+					this.OnFieldSetUIDChanged();
 				}
 			}
 		}

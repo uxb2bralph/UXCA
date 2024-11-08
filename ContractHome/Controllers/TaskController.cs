@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Web;
 using static ContractHome.Controllers.ContractConsoleController;
 using static ContractHome.Helper.JwtTokenGenerator;
+using static ContractHome.Models.DataEntity.CDS_Document;
 using static ContractHome.Models.Helper.ContractServices;
 
 namespace ContractHome.Controllers
@@ -611,6 +612,7 @@ namespace ContractHome.Controllers
                                                 .Where(u => u.UserID == profile.UID)
                                             .Any(u => u.ContractID == o.ContractID) //[用印簽約]可查看
                                     || o.UserProfile.UID == profile.UID//[起約人]可查看(用印簽約者可能不是起約人)
+                                    || o.FieldSetUID == profile.UID//[挖框人]可查看(挖框人可能不是起約人)
                                    ) 
                     .Distinct(); 
             }
@@ -703,7 +705,7 @@ namespace ContractHome.Controllers
             if ((Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.UnStamped)))
             {
                 contractSignatureRequestItems = contractSignatureRequestItems
-                    .Where(x => x.StampDate == null);
+                    .Where(x=>x.StampDate == null);
             }
 
             var contractIDs = contractSignatureRequestItems.Select(x => x.ContractID).ToList();
@@ -890,10 +892,14 @@ namespace ContractHome.Controllers
             //wait to do...獨立控管每項作業可執行step
             if (contract.CDS_Document.CurrentStep >= 5)
             {
-                return Json(new BaseResponse(true, "合約已進行中,無法修改資料"));
+                return Ok(_baseResponse.ErrorMessage("文件已進行中,無法修改資料"));
             }
-            //wait to do..檢查currentStep是否可進行UpdateFieldSetting
-            //contract.CDS_Document.CheckIfCanGo
+
+            if (contract.IsPassStamp??false)
+            {
+                return Ok(_baseResponse.ErrorMessage("文件設定為直接簽署"));
+            }
+
             _contractServices.DeleteAndCreateFieldPostion(contract, req.FieldSettings);
             models.SubmitChanges();
             _contractServices.CDS_DocumentTransitStep(contract, profile!.UID, CDS_Document.StepEnum.FieldSet, true);
@@ -924,6 +930,11 @@ namespace ContractHome.Controllers
             await HttpContext.SignOnAsync(userProfile);
             var userSession = UserSession.Create(_httpContextAccessor);
 
+            if (jwtTokenObj.IsFieldSet)
+            {
+                return await FieldSettingView(new SignatureRequestViewModel() { IsTrust = true, KeyID = jwtTokenObj.ContractID });
+            }
+
             if (jwtTokenObj.IsSeal)
             {
                 return await AffixSeal(new SignatureRequestViewModel() { IsTrust = true, KeyID = jwtTokenObj.ContractID });
@@ -931,10 +942,9 @@ namespace ContractHome.Controllers
 
             if (jwtTokenObj.IsSign)
             {
-
                 _contractServices.SetModels(models);
-                (resp, Contract contract, userProfile) =
-                    _contractServices.CanPdfDigitalSign(contractID: jwtTokenObj.ContractID.DecryptKeyValue(), true);
+                (resp, Contract contract) =
+                    _contractServices.CanTaskDigitalSign(contractID: jwtTokenObj.ContractID.DecryptKeyValue(), profile:userProfile);
 
                 if (resp.HasError)
                 {
@@ -960,6 +970,46 @@ namespace ContractHome.Controllers
             return RedirectToAction("Login", "Account");
         }
 
+        public async Task<ActionResult> FieldSettingView(SignatureRequestViewModel viewModel)
+        {
+            ViewBag.ViewModel = viewModel;
+
+            int contractID = viewModel.ContractID ?? 0;
+            if (viewModel.KeyID != null)
+            {
+                contractID = viewModel.DecryptKeyValue();
+            }
+            if (contractID == 0)
+            {
+                return View("~/Views/Shared/CustomMessage.cshtml", _baseResponse.ErrorMessage("contractID is null."));
+            }
+
+            var profile = await HttpContext.GetUserAsync();
+            //#region add for postman test
+            //if (profile == null)
+            //{
+            //    //profile = models.GetTable<UserProfile>().Where(x => x.UID == 4).FirstOrDefault();
+            //    profile = models.GetTable<UserProfile>().Where(x => x.UID == 41).FirstOrDefault();
+            //}
+            //#endregion
+            _contractServices.SetModels(models);
+            (BaseResponse resp, Contract contract) =
+                 _contractServices.CanFieldSet(contractID: contractID, profile: profile);
+
+            if (resp.HasError)
+            {
+                resp.Url = $"{Properties.Settings.Default.ContractListUrl}";
+                if (viewModel.IsTrust != null && viewModel.IsTrust == true)
+                {
+                    resp.Url = $"{Properties.Settings.Default.WebAppDomain}";
+                }
+                return View("~/Views/Shared/CustomMessage.cshtml", resp);
+            }
+
+            return View("~/Views/Task/Stamper.cshtml", contract);
+
+        }
+
         public async Task<ActionResult> AffixSeal(SignatureRequestViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
@@ -974,7 +1024,7 @@ namespace ContractHome.Controllers
                 return View("~/Views/Shared/CustomMessage.cshtml", _baseResponse.ErrorMessage("contractID is null."));
             }
 
-            var profile = HttpContext.GetUserAsync().Result;
+            var profile = await HttpContext.GetUserAsync();
             //#region add for postman test
             //if (profile == null)
             //{
@@ -1082,12 +1132,12 @@ namespace ContractHome.Controllers
         public async Task<ActionResult> ConfigAsync([FromBody] PostConfigRequest req)
         {
             UserProfile profile = await HttpContext.GetUserAsync();
-//#if DEBUG
-//            if (profile == null && req.EncUID != null)
-//            {
-//                profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
-//            }
-//#endif
+#if DEBUG
+            if (profile == null && req.EncUID != null)
+            {
+                profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
+            }
+#endif
 
             _contractServices.SetModels(models);
             var contractID = req.ContractID.ToString().DecryptKeyValue();
@@ -1107,6 +1157,18 @@ namespace ContractHome.Controllers
             if (ContractServices.IsNotNull(profile))
             {
                 _contractServices.SetConfigAndSave(contract, req, profile.UID, true);
+                if (!contract.CreateUID.Equals(contract.FieldSetUID))
+                {
+                    IQueryable<UserProfile> targetUsers = _contractServices.GetUserByUID(contract.FieldSetUID)!;
+                    if (ContractServices.IsNotNull(targetUsers))
+                    {
+                        _contractServices.SendUsersNotifyEmailAboutContractAsync(
+                            contract,
+                            _emailContentFactories.GetTaskNotifyFieldSet(),
+                            targetUsers);
+                    }
+                }
+
                 return Json(_baseResponse);
             }
 

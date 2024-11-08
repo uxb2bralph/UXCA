@@ -42,13 +42,13 @@
                     if (models.CanAffixSeal(req, profile.UID))
                     {
                         <button type="button" class="btn" onclick="affixPdfSeal('@Html.Raw((new { ContractID=req.ContractID,CompanyID=req.CompanyID}).JsonStringify().EncryptData())');">
-                            待@(party.ContractingIntent.Description)用印
+                            待@(party.ContractingIntent.Description)用印wait to check
                         </button>
                     }
                     else
                     {
                         <span>
-                            待@(party.ContractingIntent.Description)用印
+                            待@(party.ContractingIntent.Description)用印wait to check
                         </span>
                     }
                 }
