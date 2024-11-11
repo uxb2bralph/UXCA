@@ -1091,10 +1091,10 @@ namespace ContractHome.Controllers
                 = _contractServices.GetUsersbyCompanyID(profile.CompanyID);
 
             IEnumerable<Models.Operator> nonOperators = 
-                users.Select(x => new Models.Operator(pID: x.PID, email: x.EMail, title: x.PID, region: x.Region, isOperator: true));
+                users.Select(x => new Models.Operator(pID: x.UID.EncryptKey(), email: ContractServices.EmailMasking(x.EMail), title: x.PID, region: x.Region, isOperator: true));
 
             _baseResponse.Data = operators.Select(x =>
-                new Models.Operator(pID: x.PID, email: x.EMail, title: x.OperatorNote, region: x.Region, isOperator: false))
+                new Models.Operator(pID: x.UID.EncryptKey(), email: ContractServices.EmailMasking(x.EMail), title: x.OperatorNote, region: x.Region, isOperator: false))
                 .Concat(nonOperators).Distinct();
 
             return Json(_baseResponse);
@@ -1164,6 +1164,7 @@ namespace ContractHome.Controllers
             _contractServices.SetModels(models);
             var contractID = req.ContractID.ToString().DecryptKeyValue();
             Contract? contract = _contractServices.GetContractByID(contractID: contractID);
+            bool isFieldSetUserSameWithInitiator = true;
             if (ContractServices.IsNull(contract))
             {
                 ModelState.AddModelError("", "合約不存在");
@@ -1181,6 +1182,7 @@ namespace ContractHome.Controllers
                 _contractServices.SetConfigAndSave(contract, req, profile.UID, true);
                 if (!contract.CreateUID.Equals(contract.FieldSetUID))
                 {
+                    isFieldSetUserSameWithInitiator = false;
                     IQueryable<UserProfile> targetUsers = _contractServices.GetUserByUID(contract.FieldSetUID)!;
                     if (ContractServices.IsNotNull(targetUsers))
                     {
@@ -1191,6 +1193,7 @@ namespace ContractHome.Controllers
                     }
                 }
 
+                _baseResponse.Data = new { ContractID = contract.ContractID.EncryptKey(), IsGoToFieldSet = isFieldSetUserSameWithInitiator };
                 return Json(_baseResponse);
             }
 

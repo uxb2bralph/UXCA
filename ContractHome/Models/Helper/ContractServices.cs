@@ -15,6 +15,7 @@ using static ContractHome.Models.DataEntity.CDS_Document;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography.Xml;
 using DocumentFormat.OpenXml.Spreadsheet;
+using System.Text.RegularExpressions;
 
 namespace ContractHome.Models.Helper
 {
@@ -49,6 +50,13 @@ namespace ContractHome.Models.Helper
         //https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-messages/nullable-warnings?f1url=%3FappId%3Droslyn%26k%3Dk(CS8602)
         public static bool IsNotNull([NotNullWhen(true)] object? obj) => obj != null;
         public static bool IsNull([NotNullWhen(true)] object? obj) => obj == null;
+
+        public static string EmailMasking(string input)
+        {
+            string pattern = @"(?<=[\w]{1})[\w\-._\+%]*(?=[\w]{1}@)";
+            return Regex.Replace(input, pattern, m => new string('*', m.Length));
+        }
+
         public void SetModels(GenericManager<DCDataContext> models)
         {
             _models = models;
@@ -126,11 +134,6 @@ namespace ContractHome.Models.Helper
         public IEnumerable<UserProfile>? GetOperatorsByOwnerID(int uid)
         {
             return _models.GetTable<UserProfile>().Where(x => x.OperatorOwnerUID == uid);
-        }
-
-        public UserProfile? GetUserByPID(string pid)
-        {
-            return _models.GetTable<UserProfile>().Where(x => x.PID == pid).FirstOrDefault();
         }
 
         public IQueryable<UserProfile>? GetUserByUID(int? uid)
@@ -719,7 +722,7 @@ namespace ContractHome.Models.Helper
             {
                 if (isTask)
                 {
-                    AddOperator(contract, x);
+                    AddOperator(contract, x.DecryptKeyValue());
                 }
                 else
                 {
@@ -728,7 +731,7 @@ namespace ContractHome.Models.Helper
             });
             contract.NotifyUntilDate = Convert.ToDateTime(req.ExpiryDateTime);
             contract.CreateUID = uid;
-            var fieldSetUser = GetUserByPID(req.FieldSetUser);
+            var fieldSetUser = GetUserByUID(req.FieldSetUser.DecryptKeyValue()).FirstOrDefault();
             contract.FieldSetUID = IsNull(fieldSetUser) ? uid : fieldSetUser.UID;
             SaveContract();
 
@@ -738,24 +741,23 @@ namespace ContractHome.Models.Helper
 
 
 
-        private Contract AddOperator(Contract contract, string OperatorPID)
+        private Contract AddOperator(Contract contract, int uid)
         {
-            var user = GetUserByPID(OperatorPID);
-            if (contract.ContractingUser.Where(p => p.UserID == user.UID).Any())
+            if (contract.ContractingUser.Where(p => p.UserID == uid).Any())
             {
                 return contract;
             }
 
             contract.ContractingUser.Add(new ContractingUser
             {
-                UserID = user.UID
+                UserID = uid
             });
 
-            if (!contract.ContractUserSignatureRequest.Any(r => r.UserID == user.UID))
+            if (!contract.ContractUserSignatureRequest.Any(r => r.UserID == uid))
             {
                 contract.ContractUserSignatureRequest.Add(new ContractUserSignatureRequest
                 {
-                    UserID = user.UID,
+                    UserID = uid,
                     StampDate = (contract.IsPassStamp == true) ? DateTime.Now : null,
                 });
             }

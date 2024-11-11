@@ -128,7 +128,7 @@ namespace ContractHome.Models.Helper
     {
         [JsonProperty]
         public List<TaskUserRefs> Parties { get; set; }
-        public TaskRefs(Contract contract, UserProfile userProfile, string queryItem="") : base(contract, queryItem)
+        public TaskRefs(Contract contract, UserProfile userProfile, string queryItem="") : base(contract, userProfile, queryItem)
         {
             Parties = contract.ContractingUser
                 .Select(x => new TaskUserRefs(contract, x,userProfile, queryItem)).ToList();
@@ -152,8 +152,10 @@ namespace ContractHome.Models.Helper
         [JsonProperty]
         public int? PageCount { get; set; }
         [JsonProperty]
+        public bool IsFieldSetUser { get; set; }
+        [JsonProperty]
         public IEnumerable<ProcessLog>? ProcessLogs { get; set; }
-        public TaskBase(Contract contract, string? queryItem = "", int? userCompanyID = null)
+        public TaskBase(Contract contract, UserProfile userProfile, string? queryItem = "")
         {
             KeyID = contract.ContractID.EncryptKey();
             ContractNo = contract.ContractNo;
@@ -162,7 +164,8 @@ namespace ContractHome.Models.Helper
             CreatedDateTime = contract.CDS_Document.DocDate.ReportDateTimeString();
             PageCount = contract.GetPdfPageCount();
             CurrentStep = contract.CDS_Document.CurrentStep;
-            
+            IsFieldSetUser = (contract.FieldSetUID == userProfile.UID);
+
             if ((queryItem!=null)&&(queryItem.Equals("ProcessLog")))
             {
                 ProcessLogs = contract.CDS_Document.DocumentProcessLog.Select(l =>
