@@ -681,15 +681,24 @@ namespace ContractHome.Controllers
             //    //StepEnum.DigitalSigning,4
             //    //StepEnum.DigitalSigned 5
 
+            //public enum QueryStepEnum
+            //CurrentUser = 1,  // 0001
+            //UnStamped = 2,   // 0010
+            //UnSigned = 4,   // 0100
+            //UnCommited = 8  // 1000
+
             items = items.Where(d => !d.CDS_Document.CurrentStep.HasValue
                  || CDS_Document.DocumentEditable.Contains((CDS_Document.StepEnum)d.CDS_Document.CurrentStep!));
 
+            var zzz = viewModel.ContractQueryStep & (int)QueryStepEnum.CurrentUser;
+            var yyy = Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.CurrentUser);
+
             var contractSignatureRequestItems = items
                 .SelectMany(x => x.ContractUserSignatureRequest)
-                //判斷是查詢登入者的合約, 或是其他人的合約
+                //判斷是查詢登入者的文件, 或是其他人的文件
                 .Where(y => (Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.CurrentUser)) ?
-                    (y.UserID == profile.UID) : //登入者的合約
-                    (y.UserID != profile.UID))  //其他人的合約
+                    (y.UserID == profile.UID || y.Contract.FieldSetUID == profile.UID) : //登入者文件:包括未挖框文件
+                    (y.UserID != profile.UID && (y.Contract.FieldSetUID != profile.UID|| y.Contract.FieldSetUID==null)))  //其他人文件
                 ;
 
             //待簽
@@ -879,6 +888,10 @@ namespace ContractHome.Controllers
         [HttpPost]
         public async Task<IActionResult> FeildSettingsUpdateAsync([FromBody] PostFieldSettingRequest req)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
             var profile = await HttpContext.GetUserAsync();
             //#region add for postman test
             //if (profile == null)
@@ -1090,6 +1103,10 @@ namespace ContractHome.Controllers
         [HttpPost]
         public async Task<ActionResult> EstablishAsync([FromBody] GetSignatoriesRequest req)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
             Contract contract;
             UserProfile profile = await HttpContext.GetUserAsync();
             //#region add for postman test
@@ -1131,13 +1148,18 @@ namespace ContractHome.Controllers
         //是否有Contract產製修改權限ContractHome.Security.Authorization
         public async Task<ActionResult> ConfigAsync([FromBody] PostConfigRequest req)
         {
-            UserProfile profile = await HttpContext.GetUserAsync();
-#if DEBUG
-            if (profile == null && req.EncUID != null)
+
+            if (!ModelState.IsValid)
             {
-                profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
+                return BadRequest();
             }
-#endif
+            UserProfile profile = await HttpContext.GetUserAsync();
+//#if DEBUG
+//            if (profile == null && req.EncUID != null)
+//            {
+//                profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
+//            }
+//#endif
 
             _contractServices.SetModels(models);
             var contractID = req.ContractID.ToString().DecryptKeyValue();
@@ -1249,6 +1271,10 @@ namespace ContractHome.Controllers
         [RequestSizeLimit(200 * 1024 * 1024)]
         public async Task<IActionResult> Create(IFormFile file)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
             // var user = await HttpContext.GetUserAsync();
             // //var profile = user.LoadInstance(models);
             // if (!ContractServices.IsNotNull(user) || !ContractServices.IsNotNull(user.OrganizationUser))

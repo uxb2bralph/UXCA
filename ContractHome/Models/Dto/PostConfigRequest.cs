@@ -16,13 +16,13 @@ namespace ContractHome.Models.Dto
         public bool IsPassStamp { get; set; }
         public IEnumerable<string> Signatories { get; set; }
         public string? EncUID { get; set; }
-        public string FieldSetUID { get; set; }
+        public string FieldSetUser { get; set; }
 
 
         public PostConfigRequest(string contractID, string title, string contractNo, string expiryDateTime,
             bool isPassStamp,
             IEnumerable<string> signatories,
-            string fieldSetUID)
+            string fieldSetUser)
         {
             ContractID = contractID;
             Title = title;
@@ -30,7 +30,7 @@ namespace ContractHome.Models.Dto
             ExpiryDateTime = expiryDateTime;
             IsPassStamp = isPassStamp;
             Signatories = signatories;
-            FieldSetUID = fieldSetUID;
+            FieldSetUser = fieldSetUser;
         }
 
 

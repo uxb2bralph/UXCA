@@ -14,6 +14,7 @@ using System.Text;
 using static ContractHome.Models.DataEntity.CDS_Document;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography.Xml;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace ContractHome.Models.Helper
 {
@@ -127,7 +128,7 @@ namespace ContractHome.Models.Helper
             return _models.GetTable<UserProfile>().Where(x => x.OperatorOwnerUID == uid);
         }
 
-        public UserProfile? GetOperatorByPID(string pid)
+        public UserProfile? GetUserByPID(string pid)
         {
             return _models.GetTable<UserProfile>().Where(x => x.PID == pid).FirstOrDefault();
         }
@@ -718,7 +719,7 @@ namespace ContractHome.Models.Helper
             {
                 if (isTask)
                 {
-                    AddOperator(contract, x.DecryptKeyValue());
+                    AddOperator(contract, x);
                 }
                 else
                 {
@@ -727,7 +728,8 @@ namespace ContractHome.Models.Helper
             });
             contract.NotifyUntilDate = Convert.ToDateTime(req.ExpiryDateTime);
             contract.CreateUID = uid;
-            contract.FieldSetUID = IsNull(req.FieldSetUID) ? uid : req.FieldSetUID.DecryptKeyValue();
+            var fieldSetUser = GetUserByPID(req.FieldSetUser);
+            contract.FieldSetUID = IsNull(fieldSetUser) ? uid : fieldSetUser.UID;
             SaveContract();
 
             CDS_DocumentTransitStep(contract, uid, CDS_Document.StepEnum.Config);
@@ -736,23 +738,24 @@ namespace ContractHome.Models.Helper
 
 
 
-        private Contract AddOperator(Contract contract, int uid)
+        private Contract AddOperator(Contract contract, string OperatorPID)
         {
-            if (contract.ContractingUser.Where(p => p.UserID == uid).Any())
+            var user = GetUserByPID(OperatorPID);
+            if (contract.ContractingUser.Where(p => p.UserID == user.UID).Any())
             {
                 return contract;
             }
 
             contract.ContractingUser.Add(new ContractingUser
             {
-                UserID = uid
+                UserID = user.UID
             });
 
-            if (!contract.ContractUserSignatureRequest.Any(r => r.UserID == uid))
+            if (!contract.ContractUserSignatureRequest.Any(r => r.UserID == user.UID))
             {
                 contract.ContractUserSignatureRequest.Add(new ContractUserSignatureRequest
                 {
-                    UserID = uid,
+                    UserID = user.UID,
                     StampDate = (contract.IsPassStamp == true) ? DateTime.Now : null,
                 });
             }
