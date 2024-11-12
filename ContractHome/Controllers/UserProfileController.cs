@@ -397,7 +397,7 @@ namespace ContractHome.Controllers
             models.ExecuteCommand(@"INSERT INTO UserRole (UID, RoleID) VALUES ({0},{1})", item.UID, 3);
             models.SubmitChanges();
 
-            _baseResponse.Data = new Models.Operator(pID: item.PID, email: item.EMail, title: item.OperatorNote, region: item.Region, isOperator: true);
+            _baseResponse.Data = new Models.Operator(pID: item.UID.EncryptKey(), email: item.EMail, title: item.OperatorNote, region: item.Region, isOperator: true);
 
             return Json(_baseResponse);
         }
@@ -413,9 +413,15 @@ namespace ContractHome.Controllers
             //}
             //#endregion
 
+            int? uid = null;
+            if (viewModel.KeyID != null)
+            {
+                uid = viewModel.DecryptKeyValue();
+            }
+
             var operatorUser = models.GetTable<UserProfile>()
                 .Where(u => u.OperatorOwnerUID == profile.UID)
-                .Where(x=>x.PID==viewModel.PID)
+                .Where(x=>x.UID== uid)
                 .Where(u=>u.EMail == viewModel.EMail)
                 .FirstOrDefault();
 
@@ -427,7 +433,7 @@ namespace ContractHome.Controllers
             operatorUser.OperatorNote = viewModel.Title;
             models.SubmitChanges();
             _baseResponse.Data = new Models.Operator(
-                pID: operatorUser.PID, email: operatorUser.EMail, 
+                pID: operatorUser.UID.EncryptKey(), email: operatorUser.EMail, 
                 title: operatorUser.OperatorNote??string.Empty, region: operatorUser.Region, isOperator: true);
 
             return Ok(_baseResponse);
