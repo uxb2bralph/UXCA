@@ -363,7 +363,7 @@ namespace ContractHome.Controllers
             int? uid = null;
             if (viewModel.KeyID != null)
             {
-                uid = viewModel.DecryptKeyValue();
+                uid = viewModel.KeyID.DecryptKeyValue();
             }
 
             var dataItem = models.GetTable<UserProfile>()
@@ -416,13 +416,13 @@ namespace ContractHome.Controllers
             int? uid = null;
             if (viewModel.KeyID != null)
             {
-                uid = viewModel.DecryptKeyValue();
+                uid = viewModel.KeyID.DecryptKeyValue();
             }
 
             var operatorUser = models.GetTable<UserProfile>()
                 .Where(u => u.OperatorOwnerUID == profile.UID)
                 .Where(x=>x.UID== uid)
-                .Where(u=>u.EMail == viewModel.EMail)
+                //.Where(u=>u.EMail == viewModel.EMail)
                 .FirstOrDefault();
 
             if (profile==null||operatorUser == null)
