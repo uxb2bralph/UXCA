@@ -32,7 +32,7 @@
   <script src="~/js/api.js"></script>
 }
 <div id="listToStamp" class="listToStamp__wrapper">
-  <!-- Tab -->
+  @* <!-- Tab --> *@
   <div class="bg-white border-bottom border-1">
     <div class="container-lg pt-3">
       <div class="row d-flex align-items-center">
@@ -66,7 +66,7 @@
         </div>
         <div
           class="col-12 col-md-4 col-lg-6 pb-2 order-1 order-md-2 d-flex align-items-center justify-content-center justify-content-md-end">
-          <!--
+          @* <!--
           <button type="button" class="btn btn-sm btn-primary" v-on:click="openUserCertDialog('register')">憑證註冊</button>
           <span class="px-3 text-black-50"> | </span>
           <div id="tourbutton" class="tooltip__wrapper">
@@ -76,11 +76,10 @@
             </button>
             <div class="tooltip__text">導覽小幫手</div>
           </div>
-          -->
+          --> *@
           @{
             if (ViewBag.CanCreateContract)
             {
-              <!--<span class="px-3 text-black-50"> | </span>-->
               <div id="addContract" class="tooltip__wrapper">
                 <button type="button" class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="addHandler">
                   <i class="fal fa-file-plus"></i>
@@ -94,7 +93,7 @@
     </div>
   </div>
   <div class="container-lg listToStamp__container">
-    <!-- 排序項目 -->
+    @* <!-- 排序項目 --> *@
     <div v-if="contractList.length > 0" class="row my-0 pt-3"
       :style="{ 'padding-bottom': !isLayoutCard ? `12px` : null }">
       <div class="col-12 col-md-6 d-flex align-items-center">
@@ -123,15 +122,6 @@
         </span>
       </div>
       <div class="col-12 col-md-6 text-end">
-        <!--
-        <span class="fs-12 text-black-50 fw-bolder">說明：</span>
-        <span class="progresses__name bg-lightBlue mr-2">
-          起約方
-        </span>
-        <span class="progresses__name bg-warning opacity-75 text-dark">
-          簽約方
-        </span>
-        -->
         <div class="btn-group btn-group-sm ms-3" role="group" aria-label="Basic radio toggle button group">
           <input v-model="isLayoutCard" type="radio" class="btn-check active" name="layout" id="btnradio1"
             autocomplete="off" v-on:change="layoutHandler(false)">
@@ -149,7 +139,7 @@
         </div>
       </div>
     </div>
-    <!-- 文件資料列表 -->
+    @* <!-- 文件資料列表 --> *@
     <section id="queryArea" class="listToStamp__queryArea">
       <div v-if="contractList.length === 0" class="card shadow-sm my-3 p-3 text-center">
         <span class="text-primary opacity-75" style="font-size: 50px;">
@@ -180,7 +170,7 @@
                   </div>
                 </div>
               </div>
-              <!-- 選單 -->
+              @* <!-- 選單 --> *@
               <div>
                 <div :id="`dropdown_${index}`" class="dropdown">
                   <button class="btn btn-sm fs-6" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown"
@@ -227,21 +217,21 @@
                 </div>
               </div>
             </div>
-            <!--
+            @* <!--
             <div v-if="isLayoutCard" class="divider pb-2"></div>
             <div v-else class="d-flex" style="height: 100%;">
               <div class="vr"></div>
             </div>
-            -->
-            <!-- 用印流程 -->
+            --> *@
+            @* <!-- 用印流程 --> *@
             <div :id="`progresses_${index}`" class="progresses__wrapper pb-2" :class="{ 'col-8' : !isLayoutCard }">
               <template v-for="(item, idx) in contract.Parties">
-                <!-- 簽署人 -->
+                @* <!-- 簽署人 --> *@
                 <div :class="[idx === 0 ? '' : 'progresses__stepGroup']" :key="`contract${idx}`">
-                  <!-- 待用印: 第一筆資料不會畫線 -->
+                  @* <!-- 待用印: 第一筆資料不會畫線 --> *@
                   <span v-if="idx !== 0 && contract.CurrentStep > 5" class="progresses__line"
                     :class="{'progresses__line--dashed': contract.CurrentStep === 6 && !item.StampDate, 'progresses__line--done': contract.CurrentStep >= 7 }"></span>
-                  <!-- 待簽署: 第一筆資料不會畫線 -->
+                  @* <!-- 待簽署: 第一筆資料不會畫線 --> *@
                   <span v-if="idx !== 0 && contract.CurrentStep >= 10" class="progresses__line progresses__line--sign"
                     :class="{'progresses__line--dashed': contract.CurrentStep === 10 && !item.SignerDate, 'progresses__line--signDone': contract.CurrentStep >= 11 }"></span>
                   <div class="progresses__companyGroup">
@@ -256,20 +246,20 @@
                         已完成
                       </span>
                     </div>
-                    <!-- 已完成 -->
+                    @* <!-- 已完成 --> *@
                     <button v-if="!!item.StampDate && !!item.SignerDate" type="button"
                       class="btn progresses__steps progresses__steps--done disabled">
                       <i class="fas fa-circle"></i>
                     </button>
 
-                    <!-- 待用印 -->
+                    @* <!-- 待用印 --> *@
                     <button v-if="!item.StampDate" type="button" class="btn progresses__steps"
                       :class="[item.IsCurrentUser ? 'progresses__steps--actived' : 'disabled']"
                       v-on:click="stampHandler(contract, 'item')">
                       <i class="fas fa-stamp"></i>
                     </button>
 
-                    <!-- 待簽署 -->
+                    @* <!-- 待簽署 --> *@
                     <button v-if="!!item.StampDate && !item.SignerDate" class="btn progresses__steps"
                       :class="[canSigner(contract) && item.IsCurrentUser ? 'progresses__steps--signActived' : 'disabled']"
                       v-on:click="signerHandler(contract.KeyID, item.Name, contract.ContractNo, contract.Title)">
@@ -434,6 +424,7 @@
         </div>
       </div>
     </div>
+
     <!-- 新增 Project Dialog -->
     <div class="modal fade" id="addProjectModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
       aria-labelledby="addNewModalLabel" aria-hidden="true">
@@ -466,6 +457,27 @@
                     <div class="invalid-feedback text-end">
                       請輸入專案編號
                     </div>
+                  </div>
+                  <div class="col-12">
+                    <label for="SetFieldUser" class="form-label fw-bolder text-primary">
+                      文件設定人
+                      <span class="fs-14 text-black-50">( 負責設定用印/附註/日期區塊的人員 )</span>
+                    </label>
+                    <div class="input-group w-100 bg-white">
+                      <button
+                        class="btn btn-outline-secondary d-flex align-items-center justify-content-between opacity-75 dropdown-toggle flex-fill"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        {{ fieldSetUser || '請選擇文件設定人' }}
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li v-for="(item, idx) in setFieldList" :key="idx">
+                          <a class="dropdown-item" v-on:click="selectSetFieldUser(item)">{{ item.text }}</a>
+                        </li>
+                      </ul>
+                    </div>
+                    <div class="invalid-feedback text-end">
+                      {{ '請選擇文件設定人' }}
+                    </div>                    
                   </div>
                   <!--
                   <div class="col-12">
@@ -904,7 +916,7 @@
                   </div>
                 </div>
               </div>
-              <!-- 卡片簽章資訊，除錯時用 -->
+              @* <!-- 卡片簽章資訊，除錯時用 -->
               <!--
               <div v-if="signatureInfo.ret_code === 0" class="alert alert-success" role="alert">
                 <dl class="row">
@@ -918,7 +930,7 @@
                   <dd class="col-md-9 text-break">{{signatureInfo.certb64}}</dd>
                 </dl>
               </div>
-              -->
+              --> *@
             </div>
             <div class="modal-footer border-top-0 justify-content-center">
               <button type="button" class="btn btn-secondary opacity-50" data-bs-dismiss="modal">取消</button>
@@ -1020,16 +1032,16 @@
         * param {string} Title 文件標題
         * param {array} Signatories 簽署人
         * param {string} ExpiryDateTime 簽署期限
-        * param {boolean} IsInBulk 共同簽署
         * param {boolean} IsPassStamp 文件已簽章
+        * param {boolean} FieldSetUser 文件設定人員
         */
         initialFormData: {
           ContractNo: null,
           Title: null,
           Signatories: [],
           ExpiryDateTime: null,
-          //IsInBulk: false,
           IsPassStamp: false,
+          FieldSetUser: null
         },
         selectedContractor: [
           {
@@ -1038,6 +1050,7 @@
             text: null
           }
         ],
+        fieldSetUser: null,
         inputSearchCompany: '',
         selectExpiryDateTime: 7,
         expiryDateTimeString: null,
@@ -1060,6 +1073,7 @@
           { text: '文件編號', value: 'ContractNo' }
         ],
         contractList: [],
+        setFieldList: [],
         isSortNo: true,
         isUpload: true,
         currentCompanyData: {},
@@ -1336,14 +1350,21 @@
               // 成功
               this.contractorAllList = data.map(item => {
                 item.text = `${item.title ? item.title : '--'} (${item.email})`;
-                item.value = item.pid;
+                item.value = item.uid;
+                item.isCurrentUser = item.title === this.currentUserInfo.userName;
                 return item;
               });
               // 取得轉換後的簽署人清單
               this.contractorList = this.contractorAllList;
 
+              // 取得可設定圈選人員清單
+              this.setFieldList = this.contractorList.filter(item => item.isOperator);
+
               // 管理簽署人預設為當前使用者
               this.setSignator();
+
+              // 文件設定人員預設為當前使用者
+              this.setFieldUser();
             } else {
               // 失敗
               this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${message.replace(/、/g, '<br>')} </div>`;
@@ -1354,11 +1375,23 @@
 
       // 管理簽署人預設為當前使用者
       setSignator() {
-        const currentUser = this.contractorList.length > 0 ? this.contractorList[0] : null;
-        if (currentUser) {
-          const { pid, text } = currentUser;
-          this.selectedContractor[0].id = pid;
+        const hasData = this.contractorList.length > 0;
+        if (hasData) {
+          const currentUser = this.contractorList.filter(contractor => contractor.isCurrentUser);
+          const { uid, text } = currentUser[0];
+          this.selectedContractor[0].id = uid;
           this.selectedContractor[0].text = text;
+        }
+      },
+
+      // 文件設定人員預設為當前使用者
+      setFieldUser() {
+        const hasData = this.setFieldList.length > 0;
+        if (hasData) {
+          const currentUser = this.setFieldList.filter(item => item.isCurrentUser);
+          const { uid, text } = currentUser[0];
+          this.configFormData.FieldSetUser = uid;
+          this.fieldSetUser = text;
         }
       },
 
@@ -1446,10 +1479,11 @@
         if (!this.configFormData.Title) return;
         if (!this.configFormData.ContractNo) return;
         if (this.checkSignatories(this.selectedContractor)) return;
-        const { ContractNo, KeyID, Title, ExpiryDateTime, IsPassStamp } = this.configFormData;
+        const { ContractNo, KeyID, Title, ExpiryDateTime, IsPassStamp, FieldSetUser } = this.configFormData;
         const ContractID = KeyID;
         const Signatories = this.selectedContractor.map(item => item.id);
-        const payload = { ContractNo, ContractID, Title, Signatories, ExpiryDateTime, IsPassStamp };
+        const payload = { ContractNo, ContractID, Title, Signatories, ExpiryDateTime, IsPassStamp, FieldSetUser };
+        console.log({payload})
 
         showLoading();
         postData('@(Url.Action("Config", "Task"))', payload)
@@ -1730,11 +1764,18 @@
 
       // 選擇簽約方
       selectCompany(index, contratcor) {
-        this.selectedContractor[index].id = contratcor.pid;
+        this.selectedContractor[index].id = contratcor.uid;
         this.selectedContractor[index].text = contratcor.text;
         // 檢核欄位
 
         this.hasDuplicateValues();
+      },
+
+      // 選擇文件設定人員
+      selectSetFieldUser(user) {
+        const { uid, text } = user;
+        this.configFormData.FieldSetUser = uid;
+        this.fieldSetUser = text;
       },
 
       // 檢查是否重複
