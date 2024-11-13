@@ -233,7 +233,6 @@
   var app = new Vue({
     el: '#userProdile',
     data: {
-      isValidate: false,
       regionList,
       contractorList: [],
       userId: null,
@@ -252,7 +251,6 @@
         Region: 'O'
       },
       formData: {},
-      userList: [],
       /** 分頁 options
        * totalRecordCount: 總筆數
        * pageSize: 每頁筆數
@@ -271,31 +269,9 @@
       isEMail: false,
       isRegion: false,
       infoMsg: null,
-      /**
-       * Autocomplete
-       */
-      companyOptions: [],
-      isSearchOptionsOpen: false,
-      isInputOptionsOpen: false,
-      searchResults: [],
-      currentlyCounter: -1,
       msgStatus: false,
-      isDuplicateEmail: false,
-    },
-    watch: {
-      // 檢查公司名稱輸入框的值，並執行Autocomplate
-      //'searchFormData.CompanyName'() {
-      //  this.filterResults('search');
-      //},
-      //'formData.CompanyName'() {
-      //  this.filterResults('edit');
-      //}
     },
     computed: {
-      // 搜尋 email 輸入檢核
-      //searchMailCheck() {
-      //  return this.mailValidate(this.searchFormData.EMail);
-      //},
       // 計算總頁數
       totalPages() {
         const totalCount = Number.parseInt(this.totalRecordCount, 10);
@@ -303,11 +279,11 @@
         return Math.ceil(totalCount / pageSize);
       }
     },
-    created() {
+    async created() {
       // 取得當前使用者資料
-      this.getCurrentUserInfo();
-      // 進入本頁先查詢清單
-      this.inquireData();
+      await this.getCurrentUserInfo();
+      // 載入簽署者資料
+      await this.inquireData();
     },
     methods: {
       // 取得當前使用者資料
@@ -317,8 +293,7 @@
             const { data, hasError, message } = res;
             if (!hasError) {
               // 成功
-              const { euid } = data;
-              this.userId = euid;
+              this.userId = data.euid;
             } else {
               // 失敗
               this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${message.replace(/、/g, '<br>')} </div>`;
@@ -330,14 +305,13 @@
       // 查詢簽署者資料
       inquireData() {
         this.msgStatus = false;
-
         // 表單資料
         this.page = 1;
         this.fetchAPI();
       },
 
+      // 取得簽署者列表
       fetchAPI() {
-        // 取得使用者列表
         showLoading();
         // Post API
         postData('@(Url.Action("GetOperators", "Task"))')
@@ -370,11 +344,12 @@
           emailEl.removeAttribute('disabled');
         };
         if (type === 'edit') {
-          const { email: EMail, pid: PID, title: Title, region: Region } = data;
-          this.formData = { EMail, PID, Title, Region };
+          const { email: EMail, uid: KeyID, title: Title, region: Region } = data;
+          this.formData = { EMail, KeyID, Title, Region };
           emailEl.setAttribute('disabled', '');
         };
       },
+
       // 開啟確認視窗
       confirmHandler() {
         if (this.editType === 'canEditStamp') {
@@ -395,14 +370,24 @@
         this.isTitle = !this.formData.Title;
         this.isEMail = !this.formData.EMail;
         this.isRegion = !this.formData.Region;
-        // 檢核email格式是否正確
-        this.checkEmailDuplicate(this.formData.EMail);
-        // 檢核email是否重複
-        this.checkMail('isEMail', this.formData.EMail);
-        // 如果檢核通過，就會送出表單
-        if (this.isTitle || this.isEMail || this.isRegion || this.isDuplicateEmail) return;
 
-        const payload = this.formData;
+        if (this.formType === 'addNew') {
+          // 檢核email格式是否正確
+          this.checkMail('isEMail', this.formData.EMail);
+          // 如果檢核通過，就會送出表單
+          if (this.isTitle || this.isEMail || this.isRegion) return;
+        } else {
+          if (this.isTitle || this.isEMail) return;
+        }
+
+        const { KeyID, Title, EMail, Region } = this.formData;
+        let payload = {};
+
+        if (this.formType === 'addNew') {
+          payload = { KeyID, Title, EMail, Region }
+        } else {
+          payload = { KeyID, Title }
+        };
 
         showLoading();
         // 新增
@@ -411,7 +396,6 @@
             .then((res) => {
               const { data, hasError, message, url } = res;
               this.msgStatus = !hasError;
-              console.log('addNew')
               hideLoading();
               if (!hasError) {
                 // 成功 - 取得簽署人清單
@@ -435,14 +419,12 @@
             .then((res) => {
               const { data, hasError, message, url } = res;
               this.msgStatus = !hasError;
-              console.log('edita', { res })
               hideLoading();
               if (!hasError) {
                 // 成功 - 取得簽署人清單
                 $('#addNewModal').modal('hide');
                 this.contractorList = data;
                 this.totalRecordCount = this.contractorList.length;
-                console.log('success')
                 this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base">
                 ${this.formData.Title}<br>更新成功</div>`;
                 $("#infoModal").modal("show");
@@ -455,31 +437,19 @@
             });
         }
       },
-
-      // 查詢 email 欄位驗證
-      mailValidate(value) {
-        const emailRegex = /^[A-Za-z0-9._%+-]+@@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-        const isEmail = !!value;
-        const checkEmail = emailRegex.test(value);
-        return isEmail && !checkEmail;
-      },
+      
       // 輸入 email 欄位驗證
       checkMail(status, contactEmail) {
         const emailRegex = /^[A-Za-z0-9._%+-]+@@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
         const checkEmail = emailRegex.test(contactEmail);
         this[status] = !checkEmail;
       },
-      // 檢查 Email 是否重複
-      checkEmailDuplicate(email) {
-        const isDuplicate = this.contractorList.filter(item => item.email === email).length > 0;
-        this.isDuplicateEmail = isDuplicate;
-        this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base">您的簽署人清單中已有重複的 Email！</div>`;
-        $("#infoModal").modal("show");
-      },
+
       // 欄位檢核
       validateField(status, data) {
         this[status] = !data;
       },
+
       // 初始化檢核
       initialValidate() {
         const validateList = [
@@ -489,10 +459,12 @@
         ];
         validateList.forEach(item => this.resetValidate(item));
       },
+
       // Reset 欄位檢核
       resetValidate(status) {
         this[status] = false;
       },
+
       // 設定每頁筆數
       resetPageSize() {
         // 重新查詢列表並回傳資料
@@ -500,18 +472,21 @@
         this.page = 1;
         this.fetchAPI();
       },
+
       // 換頁
       changePage(page) {
         this.page = page;
         // 重新查詢列表並回傳資料
         this.fetchAPI();
       },
+
       // 第一頁
       firstPage() {
         this.page = 1;
         // 重新查詢列表並回傳資料
         this.fetchAPI();
       },
+
       // 前一頁
       previousPage() {
         const currentPage = Number.parseInt(this.page, 10);
@@ -519,6 +494,7 @@
         // 重新查詢列表並回傳資料
         this.fetchAPI();
       },
+
       // 下一頁
       nextPage() {
         const currentPage = Number.parseInt(this.page, 10);
@@ -526,25 +502,13 @@
         // 重新查詢列表並回傳資料
         this.fetchAPI();
       },
+      
       // 最後一頁
       lastPage() {
         this.page = this.totalPages;
         // 重新查詢列表並回傳資料
         this.fetchAPI();
       },
-
-      // 還原初始化
-      clearAll(type) {
-        this.currentlyCounter = -1;
-        this.$nextTick(() => {
-          if (type === 'search') {
-            this.isSearchOptionsOpen = false;
-          }
-          if (type === 'edit') {
-            this.isInputOptionsOpen = false;
-          }
-        })
-      }
     }
   });
 </script>
