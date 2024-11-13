@@ -1499,12 +1499,25 @@
                 text: null
               }];
               $('#addProjectModal').modal('hide');
+              const { contractID, isGoToFieldSet } = data;
+
+              // 文件已填寫並用印完畢則建立合約
               if (IsPassStamp) {
-                // 文件已填寫並用印完畢則建立合約
-                this.established(ContractID);
-              } else {
-                affixPdfSeal(ContractID);
-              }
+                this.established(contractID);
+                return;
+              };
+
+              // 文件設定用印區塊為User本人，則進入編輯畫面
+              if (isGoToFieldSet) {
+                affixPdfSeal(contractID);
+                return;
+              };
+
+              // 文件設定用印區塊不是User本人，則進入文件列表
+              this.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base">已寄送文件設定通知信。<br>請文件設定人員收信後<br>依指定連結操作進行編輯設定</div>`;
+              $("#infoModal").modal("show");
+              this.fetchAPI();
+
             } else {
               // 失敗
               //const { ContractID, Signatories } = message;
