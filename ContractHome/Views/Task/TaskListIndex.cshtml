@@ -32,7 +32,7 @@
   <script src="~/js/api.js"></script>
 }
 <div id="listToStamp" class="listToStamp__wrapper">
-  @* <!-- Tab --> *@
+  <!-- Tab -->
   <div class="bg-white border-bottom border-1">
     <div class="container-lg pt-3">
       <div class="row d-flex align-items-center">
@@ -66,17 +66,6 @@
         </div>
         <div
           class="col-12 col-md-4 col-lg-6 pb-2 order-1 order-md-2 d-flex align-items-center justify-content-center justify-content-md-end">
-          @* <!--
-          <button type="button" class="btn btn-sm btn-primary" v-on:click="openUserCertDialog('register')">憑證註冊</button>
-          <span class="px-3 text-black-50"> | </span>
-          <div id="tourbutton" class="tooltip__wrapper">
-            <button type="button" class="px-1 btn btn-lg btn-warning rounded-pill opacity-75" style="width: 48px;"
-              v-on:click="tourHandler">
-              <i class="far fa-street-view"></i>
-            </button>
-            <div class="tooltip__text">導覽小幫手</div>
-          </div>
-          --> *@
           @{
             if (ViewBag.CanCreateContract)
             {
@@ -93,7 +82,7 @@
     </div>
   </div>
   <div class="container-lg listToStamp__container">
-    @* <!-- 排序項目 --> *@
+    <!-- 排序項目 -->
     <div v-if="contractList.length > 0" class="row my-0 pt-3"
       :style="{ 'padding-bottom': !isLayoutCard ? `12px` : null }">
       <div class="col-12 col-md-6 d-flex align-items-center">
@@ -139,7 +128,7 @@
         </div>
       </div>
     </div>
-    @* <!-- 文件資料列表 --> *@
+    <!-- 文件資料列表 -->
     <section id="queryArea" class="listToStamp__queryArea">
       <div v-if="contractList.length === 0" class="card shadow-sm my-3 p-3 text-center">
         <span class="text-primary opacity-75" style="font-size: 50px;">
@@ -170,7 +159,7 @@
                   </div>
                 </div>
               </div>
-              @* <!-- 選單 --> *@
+              <!-- 選單 -->
               <div>
                 <div :id="`dropdown_${index}`" class="dropdown">
                   <button class="btn btn-sm fs-6" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown"
@@ -217,20 +206,11 @@
                 </div>
               </div>
             </div>
-            @* <!--
-            <div v-if="isLayoutCard" class="divider pb-2"></div>
-            <div v-else class="d-flex" style="height: 100%;">
-              <div class="vr"></div>
-            </div>
-            --> *@
-            @* <!-- 用印流程 --> *@
+            <!-- 用印流程 -->
             <div :id="`progresses_${index}`" class="progresses__wrapper pb-2" :class="{ 'col-8' : !isLayoutCard }">
-              @* IsFieldSetUser: {{ contract.IsFieldSetUser }}<br>
-              CurrentStep: {{contract.CurrentStep}} *@
-
-              @* <!-- 文件設定人員 --> *@
+              <!-- 文件設定人員 -->
               <div v-if="contract.CurrentStep < 5">
-                @* <!-- 待設定 --> *@
+                <!-- 待設定 -->
                 <div class="progresses__companyGroup">
                   <div class="progresses__company">
                     <span class="fw-bolder text-danger opacity-75">
@@ -247,12 +227,12 @@
                 <div></div>
               </div>
               <template v-else v-for="(item, idx) in contract.Parties">
-                @* <!-- 簽署人 --> *@
+                <!-- 簽署人 -->
                 <div :class="[idx === 0 ? '' : 'progresses__stepGroup']" :key="`contract${idx}`">
-                  @* <!-- 待用印: 第一筆資料不會畫線 --> *@
+                  <!-- 待用印: 第一筆資料不會畫線 -->
                   <span v-if="idx !== 0 && contract.CurrentStep > 5" class="progresses__line"
                     :class="{'progresses__line--dashed': contract.CurrentStep === 6 && !item.StampDate, 'progresses__line--done': contract.CurrentStep >= 7 }"></span>
-                  @* <!-- 待簽署: 第一筆資料不會畫線 --> *@
+                  <!-- 待簽署: 第一筆資料不會畫線 -->
                   <span v-if="idx !== 0 && contract.CurrentStep >= 10" class="progresses__line progresses__line--sign"
                     :class="{'progresses__line--dashed': contract.CurrentStep === 10 && !item.SignerDate, 'progresses__line--signDone': contract.CurrentStep >= 11 }"></span>
                   <div class="progresses__companyGroup">
@@ -267,20 +247,20 @@
                         已完成
                       </span>
                     </div>
-                    @* <!-- 已完成 --> *@
+                    <!-- 已完成 -->
                     <button v-if="!!item.StampDate && !!item.SignerDate" type="button"
                       class="btn progresses__steps progresses__steps--done disabled">
                       <i class="fas fa-circle"></i>
                     </button>
 
-                    @* <!-- 待用印 --> *@
+                    <!-- 待用印 -->
                     <button v-if="!item.StampDate" type="button" class="btn progresses__steps"
                       :class="[item.IsCurrentUser ? 'progresses__steps--actived' : 'disabled']"
                       v-on:click="stampHandler(contract, 'item')">
                       <i class="fas fa-stamp"></i>
                     </button>
 
-                    @* <!-- 待簽署 --> *@
+                    <!-- 待簽署 -->
                     <button v-if="!!item.StampDate && !item.SignerDate" class="btn progresses__steps"
                       :class="[canSigner(contract) && item.IsCurrentUser ? 'progresses__steps--signActived' : 'disabled']"
                       v-on:click="signerHandler(contract.KeyID, item.Name, contract.ContractNo, contract.Title)">
@@ -305,14 +285,6 @@
         <div class="col-auto">
           <nav aria-label="Page navigation">
             <ul class="pagination justify-content-center mb-0">
-              <!-- 第一頁 -->
-              <!--
-              <li class=" page-item" :class="{'disabled' : page === 1}">
-                <a class="page-link" v-on:click="firstPage">
-                  <i class="far fa-step-backward"></i>
-                </a>
-              </li>
-              -->
               <!-- 前一頁 -->
               <li class=" page-item" :class="{'disabled' : page === 1}">
                 <a class="page-link" v-on:click="previousPage">
@@ -391,14 +363,6 @@
                   <i class="fal fa-chevron-right"></i>
                 </a>
               </li>
-              <!-- 最後一頁 -->
-              <!--
-              <li class="page-item" :class="{'disabled' : page === totalPages}">
-                <a class="page-link" v-on:click="lastPage">
-                  <i class="far fa-step-forward"></i>
-                </a>
-              </li>
-              -->
             </ul>
           </nav>
         </div>
@@ -534,15 +498,6 @@
                   <div class="col-12">
                     <label for="Title" class="form-label fw-bolder text-primary">簽署方式</label>
                   </div>
-                  <!--
-                  <div class="col-md-6 mt-0">
-                    <input v-model="configFormData.IsInBulk" type="checkbox" class="form-check-input me-1" id="IsInBulk"
-                      name="IsInBulk" :true-value="true" :false-value="false" />
-                    <label class="form-check-label fw-bolder" for="IsInBulk">
-                      個別簽署
-                    </label>
-                  </div>
-                  -->
                   <div class="col-md-6 mt-0">
                     <input v-model="configFormData.IsPassStamp" type="checkbox" class="form-check-input me-1"
                       name="IsPassStamp" :true-value="true" :false-value="false" />
@@ -637,16 +592,10 @@
                               <div class="invalid-feedback text-end">
                                 {{ item.isDuplicate ? '簽署人重複，請檢查' : '請選擇簽署人' }}
                               </div>
-                              <!--
-                              <div v-if="index === 0 && selectedContractor.length > 1" class="dropdown-divider mt-4"></div>
-                              -->
                             </div>
                           </div>
-
                         </template>
                       </draggable>
-
-                      <!--<pre>{{selectedContractor}}</pre>-->
                     </div>
                   </div>
                 </div>
