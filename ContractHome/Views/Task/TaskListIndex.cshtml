@@ -225,7 +225,28 @@
             --> *@
             @* <!-- 用印流程 --> *@
             <div :id="`progresses_${index}`" class="progresses__wrapper pb-2" :class="{ 'col-8' : !isLayoutCard }">
-              <template v-for="(item, idx) in contract.Parties">
+              @* IsFieldSetUser: {{ contract.IsFieldSetUser }}<br>
+              CurrentStep: {{contract.CurrentStep}} *@
+
+              @* <!-- 文件設定人員 --> *@
+              <div v-if="contract.CurrentStep < 5">
+                @* <!-- 待設定 --> *@
+                <div class="progresses__companyGroup">
+                  <div class="progresses__company">
+                    <span class="fw-bolder text-danger opacity-75">
+                      {{ contract.IsFieldSetUser ? '文件待設定' : '文件設定中' }}
+                    </span>
+                  </div>
+
+                  <button type="button" class="btn progresses__steps"
+                    :class="[contract.IsFieldSetUser ? 'progresses__steps--setActived' : 'disabled']"
+                    v-on:click="stampHandler(contract)">
+                    <i class="far fa-draw-polygon"></i>
+                  </button>
+                </div>
+                <div></div>
+              </div>
+              <template v-else v-for="(item, idx) in contract.Parties">
                 @* <!-- 簽署人 --> *@
                 <div :class="[idx === 0 ? '' : 'progresses__stepGroup']" :key="`contract${idx}`">
                   @* <!-- 待用印: 第一筆資料不會畫線 --> *@
@@ -477,7 +498,7 @@
                     </div>
                     <div class="invalid-feedback text-end">
                       {{ '請選擇文件設定人' }}
-                    </div>                    
+                    </div>
                   </div>
                   <!--
                   <div class="col-12">
@@ -1483,7 +1504,7 @@
         const ContractID = KeyID;
         const Signatories = this.selectedContractor.map(item => item.id);
         const payload = { ContractNo, ContractID, Title, Signatories, ExpiryDateTime, IsPassStamp, FieldSetUser };
-        console.log({payload})
+        console.log({ payload })
 
         showLoading();
         postData('@(Url.Action("Config", "Task"))', payload)
@@ -1553,7 +1574,7 @@
           })
       },
 
-      // 用印
+      // 設定文件 / 用印
       stampHandler(contract, rule) {
         affixPdfSeal(contract.KeyID);
       },

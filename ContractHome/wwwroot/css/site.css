@@ -267,6 +267,12 @@ body {
 .progresses__steps--done:hover {
   background-color: #63d19e !important;
 }
+.progresses__steps--setActived {
+  background-color: #ee814f;
+}
+.progresses__steps--setActived:hover {
+  background-color: #f16c2e !important;
+}
 .progresses__steps--actived {
   background-color: #4f81ee;
 }

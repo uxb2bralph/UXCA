@@ -363,6 +363,14 @@ body {
       }
     }
 
+    &--setActived {
+      background-color: #ee814f;
+
+      &:hover {
+        background-color: #f16c2e !important;
+      }
+    }
+
     &--actived {
       background-color: #4f81ee;
 
