@@ -29,7 +29,7 @@
   // .Where(o => o.UID == profile.UID).Any(o => o.CompanyID == p.CompanyID))
   // .FirstOrDefault();
 
-    var taskRefs = new TaskRefs(_model, profile, "SignaturePositions");
+  var taskRefs = new TaskRefs(_model, profile, "SignaturePositions");
 
   //var contractData = @Html.Raw(_model.JsonStringify());
   //var partyData = @Html.Raw(party.JsonStringify());
@@ -213,9 +213,14 @@
             </div>
             <!-- 操作按鈕 -->
             <div v-if="isEdit" class="row g-2 my-0">
-              <div class="col-md-4 py-1">
-                <button type="button" class="btn btn-secondary opacity-50 w-100" v-on:click="cancelHandler">
-                  取消
+              <div class="col-lg-3 col-xl-6 py-1">
+                <button type="button" class="btn btn-danger opacity-75 w-100" v-on:click="cancelHandler">
+                  取消文件
+                </button>
+              </div>
+              <div class="col-lg-3 col-xl-6 py-1">
+                <button type="button" class="btn btn-secondary opacity-50 w-100" v-on:click="backSearch">
+                  返回文件列表
                 </button>
               </div>
               <div class="col py-1">
@@ -551,7 +556,7 @@
       // 合約簽署設定查詢
       // 取出當前簽署人簽署區塊資料
       getContractor() {
-                const currentUser = this.Parties.filter(item => item.IsCurrentUser)[0];
+        const currentUser = this.Parties.filter(item => item.IsCurrentUser)[0];
         const OperatorID = currentUser.KeyID;
         this.getFeildSetting(contractID, OperatorID);
       },
