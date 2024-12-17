@@ -9,8 +9,10 @@ using ContractHome.Models.Helper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using System.Diagnostics.Contracts;
 using System.DirectoryServices.Protocols;
 using System.Web;
+using Wangkanai.Extensions;
 using static ContractHome.Helper.JwtTokenGenerator;
 
 namespace ContractHome.Controllers
@@ -24,15 +26,19 @@ namespace ContractHome.Controllers
         private readonly IViewRenderService _viewRenderService;
         private readonly IRazorViewToStringRenderer _razorViewToStringRenderer;
         private ContractServices? _contractServices;
+        private IWebHostEnvironment _hostingEnvironment;
+
         public TryController(
             IMailService mailService,
             IViewRenderService viewRenderService,
-            ContractServices contractServices
+            ContractServices contractServices,
+            IWebHostEnvironment environment
             )
         {
             _contractServices = contractServices;
             _mailService = mailService;
             _viewRenderService = viewRenderService;
+            _hostingEnvironment = environment;
         }
 
         public class VO
@@ -58,6 +64,50 @@ namespace ContractHome.Controllers
         {
             //viewModel.ContractID = viewModel.DecryptKeyValue();
             return Ok(keyID.DecryptKeyValue());
+        }
+
+        [HttpGet]
+        [Route("SaveFile")]
+        public async Task<IActionResult> SaveFile(IFormFile file)
+        {
+            await NewMethod(file);
+            return Ok();
+        }
+
+        private async Task<string> NewMethod(IFormFile file)
+        {
+            string uploads = Path.Combine(_hostingEnvironment.WebRootPath, "logs");
+            string filePath = Path.Combine(uploads, file.FileName);
+            using (Stream fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(fileStream);
+            }
+            return filePath;
+        }
+
+        [HttpGet]
+        [Route("void")]
+        public IActionResult GetVoidDocument(IFormFile img, IFormFile pdf)
+        {
+            if ((img.Length > 0))
+            {
+                var filePath = NewMethod(pdf).Result;
+                var pdfFile = new FileInfo(filePath);
+                using (var ms = new MemoryStream())
+                {
+                    img.CopyTo(ms);
+                    var fileBytes = ms.ToArray();
+                    PdfDocument pdfDocument = PdfDocument.FromFile(filePath);
+                    IronPdfExtensions.ApplyStamp(pdfDocument, fileBytes, 1, 1, 1.01, 0);
+                    String extName = $"{Guid.NewGuid()}{Path.GetExtension(pdfFile.FullName)}";
+                    string uploads = Path.Combine(_hostingEnvironment.WebRootPath, "logs", extName);
+                    pdfDocument.SaveAs(uploads);
+                    return Ok();
+                    //string s = Convert.ToBase64String(fileBytes);
+                    // act on the Base64 data
+                }
+            }
+            return BadRequest();
         }
 
         [HttpPost]

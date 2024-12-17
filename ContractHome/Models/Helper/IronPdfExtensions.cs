@@ -118,7 +118,7 @@ namespace ContractHome.Models.Helper
             return null;
         }
 
-        private static void ApplyStamp(PdfDocument pdf, byte[] buf, double? marginLeft, double? marginTop, double? sealScale, int? pageIndex)
+        public static void ApplyStamp(PdfDocument pdf, byte[] buf, double? marginLeft, double? marginTop, double? sealScale, int? pageIndex)
         {
             using (MemoryStream stream = new MemoryStream(buf))
             {
