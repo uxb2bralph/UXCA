@@ -57,9 +57,10 @@
     <use xlink:href="#exclamation-triangle-fill" />
   </svg>
   <div>
-    <span class="fs-14 pt-2">系統已發送「雲端簽署憑證」授權訊息到您的信箱，請依訊息指示操作並取得簽署憑證授權後，再點擊<span
-        class="text-primary">「執行簽署」</span>進行文件簽署的動作。
+    <span class="fs-14 pt-2">系統已發送「雲端簽署憑證」授權訊息到您的信箱，請依訊息指示操作並取得簽署憑證授權後，再點擊<span class="text-primary">「執行簽署」</span>
+      進行文件簽署的動作。
     </span>
+    <span class="deep-orange--text text--darken-2">尚未簽署前，請勿關閉本視窗，以免簽署失敗。</span>
   </div>
 </div>
 
@@ -79,8 +80,8 @@
         var $formData = $currentModal.find('input,select,textarea').serializeObject();
         $formData.KeyID = '@Html.Raw(_item?.ContractID.EncryptKey())';
 
-        showLoading();        
-        $currentModal.modal('hide');          
+        showLoading();
+        $currentModal.modal('hide');
         clearErrors();
         $.post('@Html.Raw(Url.Action("CommitUserSignature", "Task"))', $formData, function (res) {
           hideLoading();
@@ -91,14 +92,13 @@
               setTimeout(() => {
                 window.location.href = '@(Url.Action("ListToStampIndex", "Task"))';
               }, 3000);
-            } else {   
+            } else {
               switch (message) {
                 case '060':
                   alertModal('<div class="pb-4 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> 簽署失敗，請先確認是否已取得簽署憑證調用授權，再執行簽署！</div>');
                   break;
                 default:
                   alertModal(`<div class="pb-4 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ( ${message} )簽署失敗！</div>`);
-                
               }
               const agree = document.querySelector('#agree').checked = false;
             }
