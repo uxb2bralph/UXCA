@@ -257,6 +257,8 @@ namespace ContractHome.Models.ViewModel
     public int? UID { get; set; }
     public String? SealData { get; set; }
         public string? Title { get; set; }
+        public string? ReceiptNo { get; set; }
+
     }
 
   public class UserPasswordChangeViewModel : QueryViewModel

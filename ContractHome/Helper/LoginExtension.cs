@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using ContractHome.Helper.Security.MembershipManagement;
 using System.Data.Linq.SqlClient;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace ContractHome.Helper
 {
@@ -112,7 +113,17 @@ namespace ContractHome.Helper
             result.Wait();
             return result.Result;
         }
+        public static async Task<UserProfile> GetUserProfileUserForTestAsync(this HttpContext context, int uid)
+        {
+            using (CommonLib.DataAccess.GenericManager<DCDataContext> _models
+                = new CommonLib.DataAccess.GenericManager<DCDataContext>())
+            {
 
+                UserProfile userProfile = _models.GetTable<UserProfile>().Where(x => x.UID == uid).FirstOrDefault();
+                context.SetCacheValue("userProfile", userProfile);
+                return userProfile;
+            }
+        }
         public static async Task<UserProfile> GetUserAsync(this HttpContext context)
         {
             UserProfile profile = (UserProfile)context.GetCacheValue("userProfile");

@@ -131,9 +131,9 @@ namespace ContractHome.Models.Helper
             return _models.GetTable<Organization>().Where(x => x.CompanyBelongTo == companyID);
         }
 
-        public IEnumerable<UserProfile>? GetOperatorsByOwnerID(int uid)
+        public IEnumerable<UserProfile>? GetOperatorsByUID(int uid)
         {
-            return _models.GetTable<UserProfile>().Where(x => x.OperatorOwnerUID == uid);
+            return _models.GetTable<OperatorUser>().Where(x => x.UID == uid).Select(y=>y.UserProfile);
         }
 
         public IQueryable<UserProfile>? GetUserByUID(int? uid)

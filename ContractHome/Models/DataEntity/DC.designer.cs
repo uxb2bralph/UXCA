@@ -74,6 +74,9 @@ namespace ContractHome.Models.DataEntity
     partial void InsertIdentityCert(IdentityCert instance);
     partial void UpdateIdentityCert(IdentityCert instance);
     partial void DeleteIdentityCert(IdentityCert instance);
+    partial void InsertOperatorUser(OperatorUser instance);
+    partial void UpdateOperatorUser(OperatorUser instance);
+    partial void DeleteOperatorUser(OperatorUser instance);
     partial void InsertOrganization(Organization instance);
     partial void UpdateOrganization(Organization instance);
     partial void DeleteOrganization(Organization instance);
@@ -241,6 +244,14 @@ namespace ContractHome.Models.DataEntity
 			get
 			{
 				return this.GetTable<IdentityCert>();
+			}
+		}
+		
+		public System.Data.Linq.Table<OperatorUser> OperatorUser
+		{
+			get
+			{
+				return this.GetTable<OperatorUser>();
 			}
 		}
 		
@@ -5071,6 +5082,174 @@ namespace ContractHome.Models.DataEntity
 		}
 	}
 	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.OperatorUser")]
+	public partial class OperatorUser : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _UID;
+		
+		private int _OperatorUID;
+		
+		private EntityRef<UserProfile> _UserProfile;
+		
+		private EntityRef<UserProfile> _OperatorUser_UID;
+		
+    #region 擴充性方法定義
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnUIDChanging(int value);
+    partial void OnUIDChanged();
+    partial void OnOperatorUIDChanging(int value);
+    partial void OnOperatorUIDChanged();
+    #endregion
+		
+		public OperatorUser()
+		{
+			this._UserProfile = default(EntityRef<UserProfile>);
+			this._OperatorUser_UID = default(EntityRef<UserProfile>);
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UID", DbType="Int NOT NULL", IsPrimaryKey=true)]
+		public int UID
+		{
+			get
+			{
+				return this._UID;
+			}
+			set
+			{
+				if ((this._UID != value))
+				{
+					if (this._OperatorUser_UID.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnUIDChanging(value);
+					this.SendPropertyChanging();
+					this._UID = value;
+					this.SendPropertyChanged("UID");
+					this.OnUIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_OperatorUID", DbType="Int NOT NULL", IsPrimaryKey=true)]
+		public int OperatorUID
+		{
+			get
+			{
+				return this._OperatorUID;
+			}
+			set
+			{
+				if ((this._OperatorUID != value))
+				{
+					if (this._UserProfile.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnOperatorUIDChanging(value);
+					this.SendPropertyChanging();
+					this._OperatorUID = value;
+					this.SendPropertyChanged("OperatorUID");
+					this.OnOperatorUIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="FK_OperatorUser_OperatorUID", Storage="_UserProfile", ThisKey="OperatorUID", OtherKey="UID", IsForeignKey=true)]
+		public UserProfile UserProfile
+		{
+			get
+			{
+				return this._UserProfile.Entity;
+			}
+			set
+			{
+				UserProfile previousValue = this._UserProfile.Entity;
+				if (((previousValue != value) 
+							|| (this._UserProfile.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._UserProfile.Entity = null;
+						previousValue.OperatorUser.Remove(this);
+					}
+					this._UserProfile.Entity = value;
+					if ((value != null))
+					{
+						value.OperatorUser.Add(this);
+						this._OperatorUID = value.UID;
+					}
+					else
+					{
+						this._OperatorUID = default(int);
+					}
+					this.SendPropertyChanged("UserProfile");
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="FK_OperatorUser_UID", Storage="_OperatorUser_UID", ThisKey="UID", OtherKey="UID", IsForeignKey=true)]
+		public UserProfile OperatorUser_UID
+		{
+			get
+			{
+				return this._OperatorUser_UID.Entity;
+			}
+			set
+			{
+				UserProfile previousValue = this._OperatorUser_UID.Entity;
+				if (((previousValue != value) 
+							|| (this._OperatorUser_UID.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._OperatorUser_UID.Entity = null;
+						previousValue.OperatorUser_UID.Remove(this);
+					}
+					this._OperatorUser_UID.Entity = value;
+					if ((value != null))
+					{
+						value.OperatorUser_UID.Add(this);
+						this._UID = value.UID;
+					}
+					else
+					{
+						this._UID = default(int);
+					}
+					this.SendPropertyChanged("OperatorUser_UID");
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+	
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Organization")]
 	public partial class Organization : INotifyPropertyChanging, INotifyPropertyChanged
 	{
@@ -6877,13 +7056,21 @@ namespace ContractHome.Models.DataEntity
 		
 		private EntitySet<IdentityCert> _IdentityCert;
 		
+		private EntitySet<OperatorUser> _OperatorUser;
+		
+		private EntitySet<OperatorUser> _OperatorUser_UID;
+		
 		private EntityRef<OrganizationUser> _OrganizationUser;
 		
 		private EntitySet<SealTemplate> _SealTemplate;
 		
 		private EntityRef<UserProfile> _CreatorUserProfile;
 		
-		private EntitySet<UserProfile> _UserProfile_UserProfile;
+		private EntitySet<UserProfile> _UserProfile_UserProfile_Creator;
+		
+		private EntityRef<UserProfile> _OperatorOwnerU;
+		
+		private EntitySet<UserProfile> _UserProfile_UserProfile_OperatorOwner;
 		
 		private EntitySet<UserRole> _UserRole;
 		
@@ -6930,10 +7117,14 @@ namespace ContractHome.Models.DataEntity
 			this._ContractUserSignatureRequest = new EntitySet<ContractUserSignatureRequest>(new Action<ContractUserSignatureRequest>(this.attach_ContractUserSignatureRequest), new Action<ContractUserSignatureRequest>(this.detach_ContractUserSignatureRequest));
 			this._DocumentProcessLog = new EntitySet<DocumentProcessLog>(new Action<DocumentProcessLog>(this.attach_DocumentProcessLog), new Action<DocumentProcessLog>(this.detach_DocumentProcessLog));
 			this._IdentityCert = new EntitySet<IdentityCert>(new Action<IdentityCert>(this.attach_IdentityCert), new Action<IdentityCert>(this.detach_IdentityCert));
+			this._OperatorUser = new EntitySet<OperatorUser>(new Action<OperatorUser>(this.attach_OperatorUser), new Action<OperatorUser>(this.detach_OperatorUser));
+			this._OperatorUser_UID = new EntitySet<OperatorUser>(new Action<OperatorUser>(this.attach_OperatorUser_UID), new Action<OperatorUser>(this.detach_OperatorUser_UID));
 			this._OrganizationUser = default(EntityRef<OrganizationUser>);
 			this._SealTemplate = new EntitySet<SealTemplate>(new Action<SealTemplate>(this.attach_SealTemplate), new Action<SealTemplate>(this.detach_SealTemplate));
 			this._CreatorUserProfile = default(EntityRef<UserProfile>);
-			this._UserProfile_UserProfile = new EntitySet<UserProfile>(new Action<UserProfile>(this.attach_UserProfile_UserProfile), new Action<UserProfile>(this.detach_UserProfile_UserProfile));
+			this._UserProfile_UserProfile_Creator = new EntitySet<UserProfile>(new Action<UserProfile>(this.attach_UserProfile_UserProfile_Creator), new Action<UserProfile>(this.detach_UserProfile_UserProfile_Creator));
+			this._OperatorOwnerU = default(EntityRef<UserProfile>);
+			this._UserProfile_UserProfile_OperatorOwner = new EntitySet<UserProfile>(new Action<UserProfile>(this.attach_UserProfile_UserProfile_OperatorOwner), new Action<UserProfile>(this.detach_UserProfile_UserProfile_OperatorOwner));
 			this._UserRole = new EntitySet<UserRole>(new Action<UserRole>(this.attach_UserRole), new Action<UserRole>(this.detach_UserRole));
 			OnCreated();
 		}
@@ -7173,6 +7364,10 @@ namespace ContractHome.Models.DataEntity
 			{
 				if ((this._OperatorOwnerUID != value))
 				{
+					if (this._OperatorOwnerU.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
 					this.OnOperatorOwnerUIDChanging(value);
 					this.SendPropertyChanging();
 					this._OperatorOwnerUID = value;
@@ -7319,6 +7514,32 @@ namespace ContractHome.Models.DataEntity
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="FK_OperatorUser_OperatorUID", Storage="_OperatorUser", ThisKey="UID", OtherKey="OperatorUID", DeleteRule="NO ACTION")]
+		public EntitySet<OperatorUser> OperatorUser
+		{
+			get
+			{
+				return this._OperatorUser;
+			}
+			set
+			{
+				this._OperatorUser.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="FK_OperatorUser_UID", Storage="_OperatorUser_UID", ThisKey="UID", OtherKey="UID", DeleteRule="NO ACTION")]
+		public EntitySet<OperatorUser> OperatorUser_UID
+		{
+			get
+			{
+				return this._OperatorUser_UID;
+			}
+			set
+			{
+				this._OperatorUser_UID.Assign(value);
+			}
+		}
+		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="FK_OrganizationUser_UserProfile", Storage="_OrganizationUser", ThisKey="UID", OtherKey="UID", IsUnique=true, IsForeignKey=false, DeleteRule="CASCADE")]
 		public OrganizationUser OrganizationUser
 		{
@@ -7361,7 +7582,7 @@ namespace ContractHome.Models.DataEntity
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="FK_UserProfile_UserProfile", Storage="_CreatorUserProfile", ThisKey="Creator", OtherKey="UID", IsForeignKey=true)]
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="FK_UserProfile_UserProfile_Creator", Storage="_CreatorUserProfile", ThisKey="Creator", OtherKey="UID", IsForeignKey=true)]
 		public UserProfile CreatorUserProfile
 		{
 			get
@@ -7378,12 +7599,12 @@ namespace ContractHome.Models.DataEntity
 					if ((previousValue != null))
 					{
 						this._CreatorUserProfile.Entity = null;
-						previousValue.UserProfile_UserProfile.Remove(this);
+						previousValue.UserProfile_UserProfile_Creator.Remove(this);
 					}
 					this._CreatorUserProfile.Entity = value;
 					if ((value != null))
 					{
-						value.UserProfile_UserProfile.Add(this);
+						value.UserProfile_UserProfile_Creator.Add(this);
 						this._Creator = value.UID;
 					}
 					else
@@ -7395,16 +7616,63 @@ namespace ContractHome.Models.DataEntity
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="FK_UserProfile_UserProfile", Storage="_UserProfile_UserProfile", ThisKey="UID", OtherKey="Creator", DeleteRule="NO ACTION")]
-		public EntitySet<UserProfile> UserProfile_UserProfile
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="FK_UserProfile_UserProfile_Creator", Storage="_UserProfile_UserProfile_Creator", ThisKey="UID", OtherKey="Creator", DeleteRule="NO ACTION")]
+		public EntitySet<UserProfile> UserProfile_UserProfile_Creator
 		{
 			get
 			{
-				return this._UserProfile_UserProfile;
+				return this._UserProfile_UserProfile_Creator;
 			}
 			set
 			{
-				this._UserProfile_UserProfile.Assign(value);
+				this._UserProfile_UserProfile_Creator.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="FK_UserProfile_UserProfile_OperatorOwner", Storage="_OperatorOwnerU", ThisKey="OperatorOwnerUID", OtherKey="UID", IsForeignKey=true)]
+		public UserProfile OperatorOwnerU
+		{
+			get
+			{
+				return this._OperatorOwnerU.Entity;
+			}
+			set
+			{
+				UserProfile previousValue = this._OperatorOwnerU.Entity;
+				if (((previousValue != value) 
+							|| (this._OperatorOwnerU.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._OperatorOwnerU.Entity = null;
+						previousValue.UserProfile_UserProfile_OperatorOwner.Remove(this);
+					}
+					this._OperatorOwnerU.Entity = value;
+					if ((value != null))
+					{
+						value.UserProfile_UserProfile_OperatorOwner.Add(this);
+						this._OperatorOwnerUID = value.UID;
+					}
+					else
+					{
+						this._OperatorOwnerUID = default(Nullable<int>);
+					}
+					this.SendPropertyChanged("OperatorOwnerU");
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="FK_UserProfile_UserProfile_OperatorOwner", Storage="_UserProfile_UserProfile_OperatorOwner", ThisKey="UID", OtherKey="OperatorOwnerUID", DeleteRule="NO ACTION")]
+		public EntitySet<UserProfile> UserProfile_UserProfile_OperatorOwner
+		{
+			get
+			{
+				return this._UserProfile_UserProfile_OperatorOwner;
+			}
+			set
+			{
+				this._UserProfile_UserProfile_OperatorOwner.Assign(value);
 			}
 		}
 		
@@ -7549,6 +7817,30 @@ namespace ContractHome.Models.DataEntity
 			entity.UserProfile = null;
 		}
 		
+		private void attach_OperatorUser(OperatorUser entity)
+		{
+			this.SendPropertyChanging();
+			entity.UserProfile = this;
+		}
+		
+		private void detach_OperatorUser(OperatorUser entity)
+		{
+			this.SendPropertyChanging();
+			entity.UserProfile = null;
+		}
+		
+		private void attach_OperatorUser_UID(OperatorUser entity)
+		{
+			this.SendPropertyChanging();
+			entity.OperatorUser_UID = this;
+		}
+		
+		private void detach_OperatorUser_UID(OperatorUser entity)
+		{
+			this.SendPropertyChanging();
+			entity.OperatorUser_UID = null;
+		}
+		
 		private void attach_SealTemplate(SealTemplate entity)
 		{
 			this.SendPropertyChanging();
@@ -7561,16 +7853,28 @@ namespace ContractHome.Models.DataEntity
 			entity.UserProfile = null;
 		}
 		
-		private void attach_UserProfile_UserProfile(UserProfile entity)
+		private void attach_UserProfile_UserProfile_Creator(UserProfile entity)
 		{
 			this.SendPropertyChanging();
 			entity.CreatorUserProfile = this;
 		}
 		
-		private void detach_UserProfile_UserProfile(UserProfile entity)
+		private void detach_UserProfile_UserProfile_Creator(UserProfile entity)
 		{
 			this.SendPropertyChanging();
 			entity.CreatorUserProfile = null;
+		}
+		
+		private void attach_UserProfile_UserProfile_OperatorOwner(UserProfile entity)
+		{
+			this.SendPropertyChanging();
+			entity.OperatorOwnerU = this;
+		}
+		
+		private void detach_UserProfile_UserProfile_OperatorOwner(UserProfile entity)
+		{
+			this.SendPropertyChanging();
+			entity.OperatorOwnerU = null;
 		}
 		
 		private void attach_UserRole(UserRole entity)

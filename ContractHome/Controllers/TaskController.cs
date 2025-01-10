@@ -18,7 +18,7 @@ using static ContractHome.Models.Helper.ContractServices;
 namespace ContractHome.Controllers
 {
     //remark for testing by postman
-    //[Authorize]
+    [Authorize]
     public class TaskController : SampleController
     {
         private readonly ILogger<HomeController> _logger;
@@ -66,14 +66,16 @@ namespace ContractHome.Controllers
             {
                 var profile = await HttpContext.GetUserAsync();
 
-                contract.CDS_Document.DocumentProcessLog.Add(new DocumentProcessLog
-                {
-                    LogDate = DateTime.Now,
-                    ActorID = profile!.UID,
-                    StepID = (int)CDS_Document.StepEnum.Browsed,
-                });
+                //contract.CDS_Document.DocumentProcessLog.Add(new DocumentProcessLog
+                //{
+                //    LogDate = DateTime.Now,
+                //    ActorID = profile!.UID,
+                //    StepID = (int)CDS_Document.StepEnum.Browsed,
+                //});
 
-                models.SubmitChanges();
+                //models.SubmitChanges();
+                _contractServices.SetModels(models);
+                _contractServices.CDS_DocumentTransitStep(contract, profile!.UID, CDS_Document.StepEnum.Browsed, true);
 
                 if (viewModel.ResultMode == DataResultMode.Download)
                 {
@@ -202,31 +204,29 @@ namespace ContractHome.Controllers
                     ViewBag.DataItem = item;
                     var content = profile.CHT_UserRequestTicket();
                     //var tid = ((String)content["tid"]).GetEfficientString();
-                    var tid = ((String)content["tid"]);
-                    if (tid != null)
+                    bool isTicketResultOK = ((string)content["result"]).Equals("1");
+                    bool isTicketResultAcquireCertificate = content["result"]?.Equals("13008") ?? false;
+                    string discountCode = (string)content["discountCode"]??string.Empty;
+                    bool hasDiscountCode = !string.IsNullOrEmpty(discountCode);
+
+                    var tid = ((string)content["tid"]);
+                    if (isTicketResultOK && !string.IsNullOrEmpty(tid))
                     {
                         item.RequestTicket = tid;
                         models.SubmitChanges();
 
                         return View("~/Views/Task/PrepareCHTSigning.cshtml", content);
-                    }
-                    else
+                    } 
+                    else if (isTicketResultAcquireCertificate && hasDiscountCode)
                     {
-                        //var discountCode = ((String)content["discountCode"]).GetEfficientString();
-                        var discountCode = ((String)content["discountCode"]);
-                        if (discountCode != null)
+                        content = profile.CHT_RequireIssue(discountCode);
+                        if ((int?)content["result"] == 1)
                         {
-                            content = profile.CHT_RequireIssue(discountCode);
-                            if ((int?)content["result"] == 1)
-                            {
-                                return View("~/Views/Task/PromptToAcquireCertificate.cshtml", content);
-                            }
-                        }
-                        else
-                        {
-                            return Json(_baseResponse.ErrorMessage($"錯誤代碼: {content["result"]}"));
+                            return View("~/Views/Task/PromptToAcquireCertificate.cshtml", content);
                         }
                     }
+
+                    return Json(_baseResponse.ErrorMessage($"錯誤代碼: {content["result"]}"));
                 }
                 //wait to do...CommitUserSignatureAsync if (!item.SignerID.HasValue), 動作一樣
                 if (isSigned)
@@ -651,6 +651,7 @@ namespace ContractHome.Controllers
             ViewBag.ViewModel = viewModel;
             if (viewModel.ContractQueryStep == null) { viewModel.ContractQueryStep = 0; }
             var profile = await HttpContext.GetUserAsync();
+            //var profile = await HttpContext.GetUserProfileUserForTestAsync(4);
             profile = profile.LoadInstance(models);
             //#region add for postman test
             //if (profile == null)
@@ -1066,7 +1067,8 @@ namespace ContractHome.Controllers
         [HttpPost]
         public async Task<IActionResult> GetOperatorsAsync()
         {
-            var profile = await HttpContext.GetUserAsync();
+            //var profile = await HttpContext.GetUserAsync();
+            var profile = await HttpContext.GetUserProfileUserForTestAsync(4);
             if (profile != null) 
             {
                 profile = profile.LoadInstance(models);
@@ -1085,16 +1087,16 @@ namespace ContractHome.Controllers
             _contractServices.SetModels(models);
 
             IEnumerable<UserProfile>? operators
-                = _contractServices.GetOperatorsByOwnerID(profile.UID);
+                = _contractServices.GetOperatorsByUID(profile.UID);
 
             IEnumerable<UserProfile>? users
                 = _contractServices.GetUsersbyCompanyID(profile.CompanyID);
 
             IEnumerable<Models.Operator> nonOperators = 
-                users.Select(x => new Models.Operator(pID: x.UID.EncryptKey(), email: ContractServices.EmailMasking(x.EMail), title: x.PID, region: x.Region, isOperator: true));
+                users.Select(x => new Models.Operator(pID: x.UID.EncryptKey(), email: ContractServices.EmailMasking(x.EMail), title: x.PID, region: x.Region, isOperator: false));
 
             _baseResponse.Data = operators.Select(x =>
-                new Models.Operator(pID: x.UID.EncryptKey(), email: ContractServices.EmailMasking(x.EMail), title: x.OperatorNote, region: x.Region, isOperator: false))
+                new Models.Operator(pID: x.UID.EncryptKey(), email: ContractServices.EmailMasking(x.EMail), title: x.OperatorNote, region: x.Region, isOperator: true))
                 .Concat(nonOperators).Distinct();
 
             return Json(_baseResponse);
@@ -1153,16 +1155,11 @@ namespace ContractHome.Controllers
             {
                 return BadRequest();
             }
-            UserProfile profile = await HttpContext.GetUserAsync();
-//#if DEBUG
-//            if (profile == null && req.EncUID != null)
-//            {
-//                profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
-//            }
-//#endif
-
+            //UserProfile profile = await HttpContext.GetUserAsync();
+            UserProfile profile = await HttpContext.GetUserProfileUserForTestAsync(4);
+            
             _contractServices.SetModels(models);
-            var contractID = req.ContractID.ToString().DecryptKeyValue();
+            var contractID = req.ContractID.DecryptKeyValue();
             Contract? contract = _contractServices.GetContractByID(contractID: contractID);
             bool isFieldSetUserSameWithInitiator = true;
             if (ContractServices.IsNull(contract))

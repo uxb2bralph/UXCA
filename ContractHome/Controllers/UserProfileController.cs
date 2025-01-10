@@ -339,7 +339,7 @@ namespace ContractHome.Controllers
                 item.PasswordUpdatedDate = DateTime.Now;
             }
             models.SubmitChanges();
-            item.OperatorOwnerUID = item.UID;
+            //item.OperatorOwnerUID = item.UID;
 
             models.GetTable<OrganizationUser>().InsertOnSubmit(
                 new OrganizationUser() { UID = item.UID, CompanyID = companyID ?? 0 });
@@ -356,33 +356,20 @@ namespace ContractHome.Controllers
         }
 
         [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.User })]
-        public ActionResult CreateOperator([FromBody] UserProfileViewModel viewModel)
+        public async Task<IActionResult> CreateOperator([FromBody] UserProfileViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
 
-            int? uid = null;
-            if (viewModel.KeyID != null)
-            {
-                uid = viewModel.KeyID.DecryptKeyValue();
-            }
-
-            var dataItem = models.GetTable<UserProfile>()
-                .Where(u => u.UID == uid)
+            var profile = await HttpContext.GetUserAsync();
+            //var profile = await HttpContext.GetUserProfileUserForTestAsync(4);
+            var sameEmailInOperatorOwner = models.GetTable<OperatorUser>()
+                .Where(u => u.UID== profile.UID)
+                .Where(u=>u.UserProfile.EMail == viewModel.EMail)
                 .FirstOrDefault();
 
-            if (dataItem==null)
+            if (sameEmailInOperatorOwner != null)
             {
-                return Json(_baseResponse.ErrorMessage("使用者不存在."));
-            }
-
-            var sameEmailInOperatorOwner = models.GetTable<UserProfile>()
-                .Where(u => u.EMail == viewModel.EMail)
-                .Where(u => u.OperatorOwnerUID==uid)
-                .FirstOrDefault();
-
-            if (sameEmailInOperatorOwner!=null)
-            {
-                return Json(_baseResponse.ErrorMessage($"email:{viewModel.EMail} 已存在於 uid:{uid.EncryptKey()}."));
+                return Json(_baseResponse.ErrorMessage($"email:{viewModel.EMail} 已設定在{profile.PID}."));
             }
 
             UserProfile item = UserProfile.PrepareNewItem(models.DataContext);
@@ -390,10 +377,13 @@ namespace ContractHome.Controllers
             item.PID = Guid.NewGuid().ToString();
             item.EMail = viewModel.EMail;
             item.Region = viewModel.Region;
-            item.OperatorOwnerUID = uid;
+            //item.OperatorOwnerUID = uid;
             item.OperatorNote = viewModel.Title;
+            item.OperatorReceiptNo = viewModel.ReceiptNo;
+
             models.SubmitChanges();
 
+            models.GetTable<OperatorUser>().InsertOnSubmit(new OperatorUser() { UID = profile.UID, OperatorUID = item.UID });
             models.ExecuteCommand(@"INSERT INTO UserRole (UID, RoleID) VALUES ({0},{1})", item.UID, 3);
             models.SubmitChanges();
 
@@ -406,22 +396,16 @@ namespace ContractHome.Controllers
         public async Task<IActionResult> UpdateOperator([FromBody] UserProfileViewModel viewModel)
         {
             var profile = await HttpContext.GetUserAsync();
-            //#region add for postman test
-            //if (profile == null)
-            //{
-            //    profile = models.GetTable<UserProfile>().Where(x => x.UID == 4).FirstOrDefault();
-            //}
-            //#endregion
-
+            //var profile = await HttpContext.GetUserProfileUserForTestAsync(4);
             int? uid = null;
             if (viewModel.KeyID != null)
             {
                 uid = viewModel.KeyID.DecryptKeyValue();
             }
 
-            var operatorUser = models.GetTable<UserProfile>()
-                .Where(u => u.OperatorOwnerUID == profile.UID)
-                .Where(x=>x.UID== uid)
+            var operatorUser = models.GetTable<OperatorUser>()
+                .Where(u => u.UID == profile.UID)
+                .Where(x=>x.OperatorUID== uid)
                 //.Where(u=>u.EMail == viewModel.EMail)
                 .FirstOrDefault();
 
@@ -430,11 +414,13 @@ namespace ContractHome.Controllers
                 return Ok(_baseResponse.ErrorMessage("Operator不存在."));
             }
 
-            operatorUser.OperatorNote = viewModel.Title;
+            operatorUser.UserProfile.OperatorNote = viewModel.Title;
+
             models.SubmitChanges();
             _baseResponse.Data = new Models.Operator(
-                pID: operatorUser.UID.EncryptKey(), email: operatorUser.EMail, 
-                title: operatorUser.OperatorNote??string.Empty, region: operatorUser.Region, isOperator: true);
+                pID: operatorUser.UID.EncryptKey(), email: operatorUser.UserProfile.EMail, 
+                title: operatorUser.UserProfile.OperatorNote??string.Empty, region: operatorUser.UserProfile.Region, 
+                isOperator: true);
 
             return Ok(_baseResponse);
         }

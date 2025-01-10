@@ -210,6 +210,14 @@
       <Association Name="FK_IdentityCert_UserProfile" Member="UserProfile" ThisKey="BindingUID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
     </Type>
   </Table>
+  <Table Name="dbo.OperatorUser" Member="OperatorUser">
+    <Type Name="OperatorUser">
+      <Column Name="UID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="OperatorUID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Association Name="FK_OperatorUser_OperatorUID" Member="UserProfile" ThisKey="OperatorUID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
+      <Association Name="FK_OperatorUser_UID" Member="OperatorUser_UID" ThisKey="UID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
+    </Type>
+  </Table>
   <Table Name="dbo.Organization" Member="Organization">
     <Type Name="Organization">
       <Column Name="ContactName" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
@@ -313,10 +321,14 @@
       <Association Name="FK_ContractUserSignatureRequest_UserProfile" Member="ContractUserSignatureRequest" ThisKey="UID" OtherKey="UserID" Type="ContractUserSignatureRequest" DeleteRule="NO ACTION" />
       <Association Name="FK_DocumentProcessLog_UserProfile" Member="DocumentProcessLog" ThisKey="UID" OtherKey="ActorID" Type="DocumentProcessLog" DeleteRule="NO ACTION" />
       <Association Name="FK_IdentityCert_UserProfile" Member="IdentityCert" ThisKey="UID" OtherKey="BindingUID" Type="IdentityCert" DeleteRule="NO ACTION" />
+      <Association Name="FK_OperatorUser_OperatorUID" Member="OperatorUser" ThisKey="UID" OtherKey="OperatorUID" Type="OperatorUser" DeleteRule="NO ACTION" />
+      <Association Name="FK_OperatorUser_UID" Member="OperatorUser_UID" ThisKey="UID" OtherKey="UID" Type="OperatorUser" DeleteRule="NO ACTION" />
       <Association Name="FK_OrganizationUser_UserProfile" Member="OrganizationUser" ThisKey="UID" OtherKey="UID" Type="OrganizationUser" Cardinality="One" DeleteRule="CASCADE" />
       <Association Name="FK_SealTemplate_UserProfile" Member="SealTemplate" ThisKey="UID" OtherKey="UID" Type="SealTemplate" DeleteRule="NO ACTION" />
-      <Association Name="FK_UserProfile_UserProfile" Member="CreatorUserProfile" ThisKey="Creator" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
-      <Association Name="FK_UserProfile_UserProfile" Member="UserProfile_UserProfile" ThisKey="UID" OtherKey="Creator" Type="UserProfile" DeleteRule="NO ACTION" />
+      <Association Name="FK_UserProfile_UserProfile_Creator" Member="CreatorUserProfile" ThisKey="Creator" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
+      <Association Name="FK_UserProfile_UserProfile_Creator" Member="UserProfile_UserProfile_Creator" ThisKey="UID" OtherKey="Creator" Type="UserProfile" DeleteRule="NO ACTION" />
+      <Association Name="FK_UserProfile_UserProfile_OperatorOwner" Member="OperatorOwnerU" ThisKey="OperatorOwnerUID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
+      <Association Name="FK_UserProfile_UserProfile_OperatorOwner" Member="UserProfile_UserProfile_OperatorOwner" ThisKey="UID" OtherKey="OperatorOwnerUID" Type="UserProfile" DeleteRule="NO ACTION" />
       <Association Name="FK_UserRole_UserProfile" Member="UserRole" ThisKey="UID" OtherKey="UID" Type="UserRole" DeleteRule="CASCADE" />
     </Type>
   </Table>
