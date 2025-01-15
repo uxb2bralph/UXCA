@@ -521,12 +521,15 @@ namespace ContractHome.Controllers
             items = items.Where(d => !d.CDS_Document.CurrentStep.HasValue
                  || CDS_Document.DocumentEditable.Contains((CDS_Document.StepEnum)d.CDS_Document.CurrentStep!));
 
+            bool isUserSysAdmin = profile.IsSysAdmin();
+
             var contractSignatureRequestItems = items
                 .SelectMany(x => x.ContractSignatureRequest)
                 //判斷是查詢登入者的合約, 或是其他人的合約
                 .Where(y => (Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.CurrentUser)) ?
                     (y.CompanyID == profileCompanyID) : //登入者的合約
-                    (y.CompanyID != profileCompanyID))  //其他人的合約
+                    (y.CompanyID != profileCompanyID) 
+                    && !isUserSysAdmin)  //其他人的合約
                 ;
 
             //待簽

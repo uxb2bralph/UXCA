@@ -694,12 +694,16 @@ namespace ContractHome.Controllers
             var zzz = viewModel.ContractQueryStep & (int)QueryStepEnum.CurrentUser;
             var yyy = Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.CurrentUser);
 
+            bool isUserSysAdmin = profile.IsSysAdmin();
+
             var contractSignatureRequestItems = items
                 .SelectMany(x => x.ContractUserSignatureRequest)
                 //判斷是查詢登入者的文件, 或是其他人的文件
                 .Where(y => (Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.CurrentUser)) ?
-                    (y.UserID == profile.UID || y.Contract.FieldSetUID == profile.UID) : //登入者文件:包括未挖框文件
-                    (y.UserID != profile.UID && (y.Contract.FieldSetUID != profile.UID|| y.Contract.FieldSetUID==null)))  //其他人文件
+                    (y.UserID == profile.UID || y.Contract.FieldSetUID == profile.UID) : //登入者文件:包括未挖框文件也列示
+                    //(y.UserID != profile.UID && (y.Contract.FieldSetUID != profile.UID|| y.Contract.FieldSetUID==null)))  //其他人文件
+                    (y.UserID != profile.UID)
+                    && !isUserSysAdmin)  //其他人文件
                 ;
 
             //待簽
@@ -1067,8 +1071,8 @@ namespace ContractHome.Controllers
         [HttpPost]
         public async Task<IActionResult> GetOperatorsAsync()
         {
-            //var profile = await HttpContext.GetUserAsync();
-            var profile = await HttpContext.GetUserProfileUserForTestAsync(4);
+            var profile = await HttpContext.GetUserAsync();
+            //var profile = await HttpContext.GetUserProfileUserForTestAsync(3);
             if (profile != null) 
             {
                 profile = profile.LoadInstance(models);

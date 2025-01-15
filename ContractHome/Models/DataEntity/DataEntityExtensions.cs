@@ -98,14 +98,18 @@ namespace ContractHome.Models.DataEntity
             (OrganizationUser != null) ? OrganizationUser.Organization.CompanyID : 0;
 
         public string CompanyName =>
-            (CompanyID != null && (CompanyID != 0)) ? Organization.CompanyName : string.Empty;
+             Organization?.CompanyName??string.Empty;
 
         public Organization? Organization =>
-            ((CompanyID != null)&& (CompanyID != 0)) ? OrganizationUser.Organization : null;
+            (OrganizationUser != null)?OrganizationUser.Organization:null;
 
         public bool IsUserWantToCheckReceiptNo => (this.IsOperator() && !string.IsNullOrEmpty(OperatorReceiptNo))
-            ||(this.IsUser()&&!string.IsNullOrEmpty(Organization.ReceiptNo));
-        public string GetReceiptNoByRole => (this.IsOperator()) ? OperatorReceiptNo??string.Empty : Organization.ReceiptNo??string.Empty;
+            ||(this.IsUser()&&!string.IsNullOrEmpty(Organization?.ReceiptNo));
+        public string GetReceiptNoByRole => (this.IsOperator()) ? OperatorReceiptNo??string.Empty : Organization?.ReceiptNo??string.Empty;
+
+        public string GetUserNameByRole => (this.IsOperator()) ? 
+            $"{this.EMail}({this.OperatorNote})" : 
+            $"{this.PID}({this.Organization?.CompanyName})";
     }
 
     public partial class CDS_Document

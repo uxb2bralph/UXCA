@@ -18,7 +18,8 @@ namespace ContractHome.Models.Helper
             ID = contractingUser.UserID;
             ContractID = contract.ContractID;
             KeyID = contractingUser.UserID.EncryptKey();
-            Name = string.IsNullOrEmpty(contractingUser.UserProfile.OperatorNote)?$"{contractingUser.UserProfile.PID}": $"{ contractingUser.UserProfile.OperatorNote}";
+            //Name = string.IsNullOrEmpty(contractingUser.UserProfile.OperatorNote)?$"{contractingUser.UserProfile.PID}": $"{ contractingUser.UserProfile.EMail}";
+            Name = contractingUser.UserProfile.GetUserNameByRole;
             Step = contract.CDS_Document.CurrentStep;
             StampDate = (initiatContractSignatureRequest.StampDate.HasValue) ?
                 initiatContractSignatureRequest?.StampDate.Value.ToString("yyyy/MM/dd HH:mm") : string.Empty;

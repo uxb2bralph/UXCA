@@ -31,8 +31,12 @@
           aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto ms-3 mb-2 mb-lg-0">
+
+         <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.MemberAdmin,
+                    (int)UserRoleDefinition.RoleEnum.User))
+                    {
+                        <ul class="navbar-nav me-auto ms-3 mb-2 mb-lg-0">
             <!--
             <li class="nav-item">
               <a class="nav-link fs-5 fw-bolder" aria-current="page"
@@ -68,7 +72,7 @@
               </a>
             </li>
           </ul>
-
+                        }
           <ul class="navbar-nav mb-2 mb-lg-0 ps-3 d-none d-lg-block">
             <li class="fw-bolder">@Html.Raw(profile.OrganizationUser?.Organization.CompanyName)
               @Html.Raw(profile.PID) 您好！</li>
