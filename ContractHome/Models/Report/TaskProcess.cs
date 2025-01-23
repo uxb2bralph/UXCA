@@ -9,7 +9,7 @@ namespace ContractHome.Models.Report
     {
         public string FileName { get; set; } = string.Empty;
         public string FileNo { get; set; } = string.Empty;
-        public UserProfile CreateUser { get; set; }
+        public string Creator { get; set; } = string.Empty;
         public string TaskProcessDateTime { get; set; } = string.Empty;
         public string PublishedDateTime { get; set; } = string.Empty;
         public string FinishedDateTime { get; set; } = string.Empty;

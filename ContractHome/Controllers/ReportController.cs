@@ -43,23 +43,27 @@ namespace ContractHome.Controllers
                 .Where(c => c.ContractID == viewModel.ContractID)
                 .FirstOrDefault();
 
-            if (contract==null) { return BadRequest(_baseResponse.ErrorMessage($"合約{viewModel.KeyID}不存在")); }
+            if (contract==null) { return Ok(_baseResponse.ErrorMessage($"合約{viewModel.KeyID}不存在")); }
+            if (contract.UserProfile==null) { return Ok(_baseResponse.ErrorMessage($"合約{viewModel.KeyID} Creator待設定")); }
 
             var logList = contract.CDS_Document.DocumentProcessLog;
 
             _taskProcess.FileNo = contract.ContractNo;
             _taskProcess.FileName = contract.Title;
             _taskProcess.TaskProcessDateTime = DateTime.Now.ToString(dateTimeFormat);
-            _taskProcess.CreateUser = contract.UserProfile;
-            _taskProcess.PublishedDateTime = logList.Min(x => x.LogDate).ToString(dateTimeFormat);
-            _taskProcess.FinishedDateTime = logList.Max(x => x.LogDate).ToString(dateTimeFormat);
-            _taskProcess.Processes = logList.Select(x => 
-                new TaskProcess.Process(
-                    taskDateTime:x.LogDate.ToString(dateTimeFormat), 
-                    taskDesc: CDS_Document.StepNaming[x.StepID], 
-                    email: x.UserProfile.EMail,
-                    clientIP: x.ClientIP,
-                    clientDevice: x.ClientDevice));
+            _taskProcess.Creator = $"{contract.UserProfile.PID}({contract.UserProfile.EMail})";
+            if (logList!=null&&logList.Count>0)
+            {
+                _taskProcess.PublishedDateTime = logList.Min(x => x.LogDate).ToString(dateTimeFormat);
+                _taskProcess.FinishedDateTime = logList.Max(x => x.LogDate).ToString(dateTimeFormat);
+                _taskProcess.Processes = logList.Select(x =>
+                    new TaskProcess.Process(
+                        taskDateTime: x.LogDate.ToString(dateTimeFormat),
+                        taskDesc: CDS_Document.StepNaming[x.StepID],
+                        email: x.UserProfile.EMail,
+                        clientIP: x.ClientIP,
+                        clientDevice: x.ClientDevice));
+            }
             _taskProcess.Operators = contract.ContractingUser.Select(x => 
                     new TaskProcess.Operator(email: x.UserProfile.EMail, region: x.UserProfile.Region));
 
