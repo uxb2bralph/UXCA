@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Html;
 using ContractHome.Models.Dto;
 using DocumentFormat.OpenXml.Spreadsheet;
 using System.Drawing;
+using static ContractHome.Models.DataEntity.CDS_Document;
 
 namespace ContractHome.Controllers
 {
@@ -55,7 +56,7 @@ namespace ContractHome.Controllers
             if (logList!=null&&logList.Count>0)
             {
                 _taskProcess.PublishedDateTime = logList.Min(x => x.LogDate).ToString(dateTimeFormat);
-                _taskProcess.FinishedDateTime = logList.Max(x => x.LogDate).ToString(dateTimeFormat);
+                _taskProcess.FinishedDateTime = logList.Where(x=>x.StepID==(int)StepEnum.Committed).Max(x => x.LogDate).ToString(dateTimeFormat);
                 _taskProcess.Processes = logList.Select(x =>
                     new TaskProcess.Process(
                         taskDateTime: x.LogDate.ToString(dateTimeFormat),
@@ -65,7 +66,7 @@ namespace ContractHome.Controllers
                         clientDevice: x.ClientDevice));
             }
             _taskProcess.Operators = contract.ContractingUser.Select(x => 
-                    new TaskProcess.Operator(email: x.UserProfile.EMail, region: x.UserProfile.Region));
+                    new TaskProcess.Operator(userNameByRole: x.UserProfile.GetUserNameByRole, region: x.UserProfile.Region));
 
             var rptViewRenderString = await _viewRenderService.RenderToStringAsync(
                 viewName: _taskProcess.TemplateItem,

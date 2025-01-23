@@ -562,7 +562,6 @@ namespace ContractHome.Models.Helper
                 return null;
 
             bool isSigning = (contract.CurrentStep == (int)StepEnum.DigitalSigning || contract.CurrentStep == (int)StepEnum.Sealed);
-            bool isStamping = (contract.CurrentStep == (int)StepEnum.Sealing);
 
             return _models.GetTable<OrganizationUser>()
                 .Where(x => ((isSigning) ? contract.whoNotDigitalSigned() : contract.whoNotStamped())
@@ -782,9 +781,18 @@ namespace ContractHome.Models.Helper
 
             SaveContract();
 
+            if (step.Equals(CDS_Document.StepEnum.Browsed))
+            {
+                return;
+            }
+
             if (step.Equals(CDS_Document.StepEnum.DigitalSigned) && !contract.isAllDigitalSignatureDone(isTask))
             {
                 UpdateCDS_DocumentCurrentStep(contract, CDS_Document.StepEnum.DigitalSigning);
+            }
+            else if (step.Equals(CDS_Document.StepEnum.Sealed) && !contract.isAllStamped(isTask))
+            {
+                UpdateCDS_DocumentCurrentStep(contract, CDS_Document.StepEnum.Sealing);
             }
             else
             {

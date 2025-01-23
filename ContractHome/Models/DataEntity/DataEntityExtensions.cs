@@ -127,9 +127,9 @@ namespace ContractHome.Models.DataEntity
             Undefind =2,
             FieldSet = 3,
             Establish = 5,
-            Sealing = 6,
+            Sealing = 6, //DocumentProcessLog不用, CDS_Document.CurrentStep為未完成所有用印註記
             Sealed = 7,
-            DigitalSigning = 10,
+            DigitalSigning = 10,//DocumentProcessLog不用, CDS_Document.CurrentStep為未完成所有簽署註記
             DigitalSigned = 11,
             Browsed = 16,
             Terminated = 17,
@@ -139,12 +139,12 @@ namespace ContractHome.Models.DataEntity
 
         public static readonly String[] StepNaming =
             {
-                "開始",//0
-                "設定",//1
+                "文件上傳",//0
+                "文件設定",//1
                 "無法定義",//2
                 "欄位設定",//3
                 "",//4
-                "建立",//5
+                "文件建立",//5
                 "用印中",//6
                 "用印完成",//7
                 "--",//8
@@ -157,7 +157,7 @@ namespace ContractHome.Models.DataEntity
                 "",//15
                 "瀏覽",//16
                 "已終止",//17
-                "完成",//18
+                "文件完成",//18
                 "撤銷",//19
                 ""//20
             };
@@ -181,6 +181,18 @@ namespace ContractHome.Models.DataEntity
             StepEnum.Sealing,
             StepEnum.Sealed,
             StepEnum.DigitalSigning
+        };
+
+        public static StepEnum[] DocumentCanFeildSet =
+        {
+            StepEnum.Config,
+            StepEnum.FieldSet
+        };
+
+        public static StepEnum[] DocumentCanConfig =
+        {
+            StepEnum.Initial,
+            StepEnum.Config
         };
 
         public bool IsPDF => ProcessType == (int)ProcessTypeEnum.PDF;

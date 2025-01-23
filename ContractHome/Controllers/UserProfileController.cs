@@ -170,19 +170,19 @@ namespace ContractHome.Controllers
             return View("~/Views/UserProfile/Module/EditItem.cshtml", dataItem);
         }
 
-        [UserAuthorize]
+        [RoleAuthorize(roleID: new int[] {
+            (int)UserRoleDefinition.RoleEnum.User,
+            (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
         public async Task<ActionResult> PasswordChangeView(
             UserPasswordChangeViewModel userPasswordChange)
         {
             return View("~/Views/UserProfile/VueModule/PasswordChange.cshtml");
         }
 
-        //[RoleAuthorize(roleID: new int[] {
-        //    (int)UserRoleDefinition.RoleEnum.User,
-        //    (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
-        [UserAuthorize]
+        [RoleAuthorize(roleID: new int[] {
+            (int)UserRoleDefinition.RoleEnum.User,
+            (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
         [HttpPost]
-        //[RoleAuthorize(roleID: new int[] {(int)UserRoleDefinition.RoleEnum.User,(int)UserRoleDefinition.RoleEnum.MemberAdmin })]
         public async Task<ActionResult> PasswordChange(
       [FromBody] UserPasswordChangeViewModel userPasswordChange)
         {

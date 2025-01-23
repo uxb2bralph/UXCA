@@ -20,14 +20,14 @@ namespace ContractHome.Models.Report
 
         public class Operator
         {
-            public string Email { get; set; }
+            public string UserNameByRole { get; set; }
             private string Region { get; set; }
             public string RegionDesc =>
-                this.Region.Equals("O") ? "工商憑證" : (this.Region.Equals("E") ? "企業憑證" : "其他");
+                this.Region.Equals("O") ? "工商憑證" : (this.Region.Equals("E") ? "企業憑證" : (this.Region.Equals("P") ? "自然人憑證" : "其他"));
 
-            public Operator(string email, string region)
+            public Operator(string userNameByRole, string region)
             {
-                Email = email;
+                UserNameByRole = userNameByRole;
                 Region = region;
             }
         }

@@ -52,7 +52,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
       <table class="table border border-secondary">
         <thead>
           <tr class="table-primary">
-            <th scope="col">電子信箱</th>
+                        <th scope="col">角色和電子信箱</th>
             <th scope="col">身分識別方式</th>
           </tr>
         </thead>
@@ -60,7 +60,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
                     @foreach (var x in @Model.Operators)
                     {
                         <tr>
-                            <td class="fs-13">@x.Email</td>
+                            <td class="fs-13">@x.UserNameByRole</td>
                             <td class="fs-13">@x.RegionDesc</td>
                         </tr>
                     }
@@ -73,7 +73,7 @@ For more information on enabling MVC for empty projects, visit https://go.micros
         <thead>
             <tr class="table-primary">
                 <th scope="col">時間和動作</th>
-                <th scope="col">角色和電子信箱</th>
+                <th scope="col">電子信箱</th>
                 <th scope="col">IP位址及裝置</th>
             </tr>
         </thead>

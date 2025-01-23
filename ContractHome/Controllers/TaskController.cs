@@ -19,6 +19,7 @@ namespace ContractHome.Controllers
 {
     //remark for testing by postman
     [Authorize]
+    //[Authorize]
     public class TaskController : SampleController
     {
         private readonly ILogger<HomeController> _logger;
@@ -531,6 +532,7 @@ namespace ContractHome.Controllers
             }
 
             var profile = await HttpContext.GetUserAsync();
+            //var profile = await HttpContext.GetUserProfileUserForTestAsync(4);
             //#region add for postman test
             //if (profile == null)
             //{
@@ -576,21 +578,17 @@ namespace ContractHome.Controllers
             }
 
             _contractServices.SetModels(models);
+            _contractServices.CDS_DocumentTransitStep(contract, profile!.UID, CDS_Document.StepEnum.Sealed, true);
             if (contract.isAllStamped(isTask: true))
             {
                 var targetUsers = _contractServices.GetUsersbyContract(contract, true);
                 if (ContractServices.IsNotNull(targetUsers) && targetUsers.Count() > 0)
                 {
-                    _contractServices.CDS_DocumentTransitStep(contract, profile!.UID, CDS_Document.StepEnum.Sealed, true);
                     _contractServices.SendUsersNotifyEmailAboutContractAsync(
                         contract,
                         _emailContentFactories.GetTaskNotifySign(),
                         targetUsers);
                 }
-            }
-            else
-            {
-                _contractServices.CDS_DocumentTransitStep(contract, profile!.UID, CDS_Document.StepEnum.Sealing, true);
             }
 
             return Json(new { result = true, dataItem = new { contract.ContractNo, contract.Title } });
@@ -677,11 +675,6 @@ namespace ContractHome.Controllers
             //    //非登入者未印:0010=2
             //    //非登入者未簽:0100=4    
 
-            //    //StepEnum.Sealing,2
-            //    //StepEnum.Sealed,3
-            //    //StepEnum.DigitalSigning,4
-            //    //StepEnum.DigitalSigned 5
-
             //public enum QueryStepEnum
             //CurrentUser = 1,  // 0001
             //UnStamped = 2,   // 0010
@@ -701,8 +694,7 @@ namespace ContractHome.Controllers
                 //判斷是查詢登入者的文件, 或是其他人的文件
                 .Where(y => (Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.CurrentUser)) ?
                     (y.UserID == profile.UID || y.Contract.FieldSetUID == profile.UID) : //登入者文件:包括未挖框文件也列示
-                    //(y.UserID != profile.UID && (y.Contract.FieldSetUID != profile.UID|| y.Contract.FieldSetUID==null)))  //其他人文件
-                    (y.UserID != profile.UID)
+                    (y.UserID != profile.UID && (y.Contract.FieldSetUID != profile.UID|| y.Contract.FieldSetUID==null))  //其他人文件
                     && !isUserSysAdmin)  //其他人文件
                 ;
 
@@ -742,10 +734,17 @@ namespace ContractHome.Controllers
                 viewModel.PageIndex = 0;
                 return View("~/Views/Task/Module/TaskRequestQueryResult.cshtml", items);
             }
+
+            //    //StepEnum.Sealing,2
+            //    //StepEnum.Sealed,3
+            //    //StepEnum.DigitalSigning,4
+            //    //StepEnum.DigitalSigned 5
         }
 
         public async Task<ActionResult> CommitPdfSignatureAsync(SignatureRequestViewModel viewModel)
         {
+            var profile = await HttpContext.GetUserAsync();
+            //var profile = await HttpContext.GetUserProfileUserForTestAsync(4);
             var seal = models.GetTable<SealTemplate>().Where(s => s.SealID == viewModel.SealID).FirstOrDefault();
             if (seal == null)
             {
@@ -778,7 +777,7 @@ namespace ContractHome.Controllers
                 return Json(new { result = false, message = "資料錯誤!!" });
             }
 
-            var profile = await HttpContext.GetUserAsync();
+
             //#region add for postman test
             //if (profile == null)
             //{
@@ -898,6 +897,8 @@ namespace ContractHome.Controllers
                 return BadRequest();
             }
             var profile = await HttpContext.GetUserAsync();
+            //var profile = await HttpContext.GetUserProfileUserForTestAsync(4);
+
             //#region add for postman test
             //if (profile == null)
             //{
@@ -907,8 +908,9 @@ namespace ContractHome.Controllers
             _contractServices.SetModels(models);
             var contractID = req.ContractID.DecryptKeyValue();
             Contract contract = _contractServices.GetContractByID(contractID: contractID);
-            //wait to do...獨立控管每項作業可執行step
-            if (contract.CDS_Document.CurrentStep >= 5)
+            //wait to do:如果是流覽step16, 會判斷有誤
+            //if (contract.CDS_Document.CurrentStep >= 5)
+            if (!CDS_Document.DocumentCanFeildSet.Contains((CDS_Document.StepEnum)contract.CDS_Document.CurrentStep!))
             {
                 return Ok(_baseResponse.ErrorMessage("文件已進行中,無法修改資料"));
             }
@@ -1072,7 +1074,7 @@ namespace ContractHome.Controllers
         public async Task<IActionResult> GetOperatorsAsync()
         {
             var profile = await HttpContext.GetUserAsync();
-            //var profile = await HttpContext.GetUserProfileUserForTestAsync(3);
+            //var profile = await HttpContext.GetUserProfileUserForTestAsync(4);
             if (profile != null) 
             {
                 profile = profile.LoadInstance(models);
@@ -1115,12 +1117,7 @@ namespace ContractHome.Controllers
             }
             Contract contract;
             UserProfile profile = await HttpContext.GetUserAsync();
-            //#region add for postman test
-            //if (profile == null && req.EncUID.Length > 0)
-            //{
-            //    profile = models.GetTable<UserProfile>().Where(x => x.UID == 4).FirstOrDefault();
-            //}
-            //#endregion
+            //UserProfile profile = await HttpContext.GetUserProfileUserForTestAsync(4);
 
             _contractServices.SetModels(models: models);
             contract = _contractServices.GetContractByID(req.ContractID.DecryptKeyValue());
@@ -1159,8 +1156,8 @@ namespace ContractHome.Controllers
             {
                 return BadRequest();
             }
-            //UserProfile profile = await HttpContext.GetUserAsync();
-            UserProfile profile = await HttpContext.GetUserProfileUserForTestAsync(4);
+            UserProfile profile = await HttpContext.GetUserAsync();
+            //UserProfile profile = await HttpContext.GetUserProfileUserForTestAsync(4);
             
             _contractServices.SetModels(models);
             var contractID = req.ContractID.DecryptKeyValue();
@@ -1171,8 +1168,9 @@ namespace ContractHome.Controllers
                 ModelState.AddModelError("", "合約不存在");
                 return BadRequest();
             }
-            //wait to do...獨立控管每項作業可執行step
-            if (contract.CDS_Document.CurrentStep >= 1)
+            //wait to do:如果是流覽step16, 會判斷有誤
+            //if (contract.CDS_Document.CurrentStep >= 1)
+            if (!CDS_Document.DocumentCanConfig.Contains((CDS_Document.StepEnum)contract.CDS_Document.CurrentStep!))
             {
                 ModelState.AddModelError("", "合約已進行中,無法修改資料");
                 return BadRequest();

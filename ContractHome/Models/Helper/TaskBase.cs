@@ -173,7 +173,7 @@ namespace ContractHome.Models.Helper
                     new ProcessLog(
                         time: l.LogDate.ReportDateTimeString(),
                         action: CDS_Document.StepNaming[l.StepID],
-                        role: l.UserProfile != null ? l.UserProfile.PID : ""
+                        role: l.UserProfile.GetUserNameByRole
                     ));
             }
         }
