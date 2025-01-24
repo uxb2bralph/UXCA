@@ -32,47 +32,52 @@
           <span class="navbar-toggler-icon"></span>
         </button>
 
-         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.MemberAdmin,
-                    (int)UserRoleDefinition.RoleEnum.User))
-                    {
-                        <ul class="navbar-nav me-auto ms-3 mb-2 mb-lg-0">
-            <!--
-            <li class="nav-item">
-              <a class="nav-link fs-5 fw-bolder" aria-current="page"
-                href="@Html.Raw(Url.Action("Index", "ContractTemplate"))">
-                <i class="fas fa-file-contract"></i>
-                範本
-              </a>
-            </li>
-            -->
-            <li class="nav-item">
-              <a id="m1" class="nav-link fs-5 fw-bolder"
-                href="@Html.Raw(Url.Action("ListToStampIndex","ContractConsole"))">
-                <i class="fas fa-file-signature"></i>
-                舊文件
-              </a>
-            </li>
-            <li class="nav-item">
-              <a id="m2" class="nav-link fs-5 fw-bolder" href="@Html.Raw(Url.Action("ListToStampIndex","Task"))">
-                <i class="fas fa-file-signature"></i>
-                新文件
-              </a>
-            </li>
-            <li class="nav-item">
-              <a id="m3" class="nav-link fs-5 fw-bolder" href="@Html.Raw(Url.Action("QueryIndex","ContractConsole"))">
-                <i class="fas fa-search"></i>
-                舊查詢
-              </a>
-            </li>
-            <li class="nav-item">
-              <a id="m4" class="nav-link fs-5 fw-bolder" href="@Html.Raw(Url.Action("QueryIndex","Task"))">
-                <i class="fas fa-search"></i>
-                新查詢
-              </a>
-            </li>
-          </ul>
-                        }
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.MemberAdmin,
+          (int)UserRoleDefinition.RoleEnum.User))
+          {
+            <ul class="navbar-nav me-auto ms-3 mb-2 mb-lg-0">
+              <!--
+                                  <li class="nav-item">
+                                    <a class="nav-link fs-5 fw-bolder" aria-current="page"
+                                      href="@Html.Raw(Url.Action("Index", "ContractTemplate"))">
+                                      <i class="fas fa-file-contract"></i>
+                                      範本
+                                    </a>
+                                  </li>
+                                  -->
+              <li class="nav-item">
+                <a id="m1" class="nav-link fs-5 fw-bolder"
+                  href="@Html.Raw(Url.Action("ListToStampIndex","ContractConsole"))">
+                  <i class="fas fa-file-signature"></i>
+                  舊文件
+                </a>
+              </li>
+              <li class="nav-item">
+                <a id="m2" class="nav-link fs-5 fw-bolder" href="@Html.Raw(Url.Action("ListToStampIndex","Task"))">
+                  <i class="fas fa-file-signature"></i>
+                  新文件
+                </a>
+              </li>
+              <li class="nav-item">
+                <a id="m3" class="nav-link fs-5 fw-bolder" href="@Html.Raw(Url.Action("QueryIndex","ContractConsole"))">
+                  <i class="fas fa-search"></i>
+                  舊查詢
+                </a>
+              </li>
+              <li class="nav-item">
+                <a id="m4" class="nav-link fs-5 fw-bolder" href="@Html.Raw(Url.Action("QueryIndex","Task"))">
+                  <i class="fas fa-search"></i>
+                  新查詢
+                </a>
+              </li>
+            </ul>
+          }
+          else
+          {
+            <div class="navbar-nav me-auto ms-3 mb-2 mb-lg-0"></div>
+          }
+
           <ul class="navbar-nav mb-2 mb-lg-0 ps-3 d-none d-lg-block">
             <li class="fw-bolder">@Html.Raw(profile.OrganizationUser?.Organization.CompanyName)
               @Html.Raw(profile.PID) 您好！</li>
@@ -159,6 +164,7 @@
 
   menus.forEach(menu => {
     const tab = document.querySelector(`#${menu}`);
+    if (!tab) return;
     if (menu === currentTab) {
       tab.classList.add('active');
     } else {
