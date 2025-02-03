@@ -190,6 +190,14 @@
                                                 </button>
                                             </li>
                                             <li>
+                                                <button class="dropdown-item d-flex align-items-center fs-13" v-on:click="downloadProcessReport(contract)">
+                                                    <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
+                                                        <i class="far fa-download text-info"></i>
+                                                    </span>
+                                                    下載稽核軌跡
+                                                </button>
+                                            </li>
+                                            <li>
                                                 <button class="dropdown-item d-flex align-items-center fs-13" v-on:click="downloadPdf(contract)">
                                                     <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
                                                         <i class="far fa-download text-info"></i>
@@ -1658,6 +1666,12 @@
       confirmStop(contractData) {
         $("#stopContractModal").modal('hide');
         terminateContract(contractData.KeyID);
+      },
+
+            // 下載歷程檔案
+      downloadProcessReport(contract) {
+        //showContract(contract.KeyID, @((int)DataResultMode.Download));
+          $('').launchDownload('@Html.Raw(Url.Action("TaskProcess", "Report"))', { 'KeyID': contract.KeyID, 'ResultMode': @((int)DataResultMode.Download) });
       },
 
       // 下載檔案

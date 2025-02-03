@@ -11,6 +11,7 @@ using ContractHome.Models.Dto;
 using DocumentFormat.OpenXml.Spreadsheet;
 using System.Drawing;
 using static ContractHome.Models.DataEntity.CDS_Document;
+using System.Web;
 
 namespace ContractHome.Controllers
 {
@@ -32,7 +33,7 @@ namespace ContractHome.Controllers
         }
 
         //[UserAuthorize]
-        public async Task<IActionResult> TaskProcessAsync([FromBody]SignContractViewModel viewModel)
+        public async Task<IActionResult> TaskProcessAsync(SignContractViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
             if (viewModel.KeyID != null)
@@ -75,7 +76,15 @@ namespace ContractHome.Controllers
 
             var renderer = new ChromePdfRenderer();
             PdfDocument pdf = await renderer.RenderHtmlAsPdfAsync(rptViewRenderString);
-            return File(pdf.BinaryData, "application/pdf", "viewToPdfMVCCore.pdf");
+
+            Response.Clear();
+            Response.ContentType = "application/pdf";
+            Response.Headers.Add("Cache-control", "max-age=1");
+            Response.Headers.Add("Content-Disposition", String.Format("attachment;filename={0}.pdf", HttpUtility.UrlEncode($"{contract.ContractNo}歷程記錄")));
+            await Response.Body.WriteAsync(pdf.Stream.ToArray());
+            return new EmptyResult { };
+            //return File(pdf.BinaryData, "application/pdf", "viewToPdfMVCCore.pdf");
+
         }
 
     }
