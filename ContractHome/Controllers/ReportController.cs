@@ -53,10 +53,11 @@ namespace ContractHome.Controllers
             _taskProcess.FileName = contract.Title;
             _taskProcess.TaskProcessDateTime = DateTime.Now.ToString(dateTimeFormat);
             _taskProcess.Creator = $"{contract.UserProfile.PID}({contract.UserProfile.EMail})";
+            _taskProcess.PublishedDateTime = contract.CDS_Document.DocDate.ToString(dateTimeFormat);
             if (logList!=null&&logList.Count>0)
             {
-                _taskProcess.PublishedDateTime = logList.Min(x => x.LogDate).ToString(dateTimeFormat);
-                _taskProcess.FinishedDateTime = logList.Where(x=>x.StepID==(int)StepEnum.Committed).Max(x => x.LogDate).ToString(dateTimeFormat);
+                var finishedDateTime = logList.Where(x => x.StepID == (int)StepEnum.Committed).ToList();
+                _taskProcess.FinishedDateTime = (finishedDateTime.Count()>0)?finishedDateTime.Max(x=>x.LogDate).ToString(dateTimeFormat) : string.Empty;
                 _taskProcess.Processes = logList.Select(x =>
                     new TaskProcess.Process(
                         taskDateTime: x.LogDate.ToString(dateTimeFormat),
@@ -75,7 +76,6 @@ namespace ContractHome.Controllers
             var renderer = new ChromePdfRenderer();
             PdfDocument pdf = await renderer.RenderHtmlAsPdfAsync(rptViewRenderString);
             return File(pdf.BinaryData, "application/pdf", "viewToPdfMVCCore.pdf");
-            //PdfDocument pdf = renderer.RenderHtmlAsPdf(rptViewRenderString).SaveAs("test.pdf");
         }
 
     }
