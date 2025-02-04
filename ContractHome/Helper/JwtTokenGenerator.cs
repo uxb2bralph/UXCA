@@ -96,7 +96,7 @@ namespace ContractHome.Helper
 
         public static string GenerateJwtToken(JwtPayloadData jwtTokenData, int tokenTTLMins = 1)
         {
-            JwtPayload jwtPayload = JwtTokenGenerator.GetJwtPayload(
+            JwtPayload jwtPayload = JwtTokenGenerator.CreateJwtPayload(
                 payloadData: jwtTokenData,
                 tokenTTLMins: tokenTTLMins);
 
@@ -142,7 +142,7 @@ namespace ContractHome.Helper
             return base64Url;
         }
 
-        public static JwtPayload GetJwtPayload(JwtPayloadData payloadData, int tokenTTLMins=1)
+        public static JwtPayload CreateJwtPayload(JwtPayloadData payloadData, int tokenTTLMins=1)
         {
             DateTimeOffset now = DateTime.Now;
             return new JwtPayload()
