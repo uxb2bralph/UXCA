@@ -33,8 +33,7 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.MemberAdmin,
-          (int)UserRoleDefinition.RoleEnum.User))
+          @if (profile.CanCreateContract())
           {
             <ul class="navbar-nav me-auto ms-3 mb-2 mb-lg-0">
               <!--
@@ -118,8 +117,7 @@
                       target="_blank">簽署歷程文件樣板</a>
                   </li>
                 }
-                @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.MemberAdmin,
-                (int)UserRoleDefinition.RoleEnum.User))
+                @if (profile.CanCreateContract())
                 {
                   <li>
                     <a class="dropdown-item" href="@Html.Raw(Url.Action("SetOperator","UserProfile"))">簽署者設定</a>

@@ -195,14 +195,12 @@ namespace ContractHome.Helper
         }
         public static bool CanCreateContract(this UserProfile profile)
         {
-            if (profile.IsUser()) 
+            if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.MemberAdmin,
+                            (int)UserRoleDefinition.RoleEnum.User)) 
             {
                 return true;
             }
             return false;
-            //if (profile?.OrganizationUser == null) return false;
-            //if (profile?.OrganizationUser.Organization == null) return false;
-            //if (profile?.OrganizationUser.Organization.CanCreateContract==true) return true;
         }
     }
 }
