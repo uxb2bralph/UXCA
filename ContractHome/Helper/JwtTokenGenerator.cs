@@ -1,14 +1,6 @@
-﻿using CommonLib.Core.Utility;
-using ContractHome.Models.DataEntity;
-using ContractHome.Models.Email.Template;
-using DocumentFormat.OpenXml.Office2010.Excel;
-using DocumentFormat.OpenXml.Spreadsheet;
-using Newtonsoft.Json;
-using System.Data.Linq.SqlClient;
-using System.Diagnostics.Contracts;
+﻿using ContractHome.Models.Email.Template;
 using System.Security.Cryptography;
 using System.Text;
-using static ContractHome.Helper.JwtTokenGenerator;
 
 namespace ContractHome.Helper
 {
@@ -18,21 +10,32 @@ namespace ContractHome.Helper
         internal readonly static int tokenTTLMins = 10;
         public class JwtToken
         {
-            public JwtHeader headerObj { get; set; }
-            internal string header { get; set; }
-            public JwtPayload payloadObj { get; set; }
-            internal string payload { get; set; }
-            internal byte[] signature { get; set; }
+            private JwtHeader headerObj { get; set; }
+            protected internal string header { get; set; }
+            protected internal JwtPayload payloadObj { get; set; }
+            protected internal string payload { get; set; }
+            protected internal byte[] signature { get; set; }
 
-            public string Email => payloadObj.data.Email;
-            public string ContractID => payloadObj.data.ContractID;
+            public string ContractID => payloadObj.data.ContractID??string.Empty;
+            public int DecryptContractID => payloadObj.data.ContractID.DecryptKeyValue();
             public string UID => payloadObj.data.UID;
-            //public EmailBody.EmailTemplate? EmailTemplate => payloadObj.data.EmailTemplate;
+            public int DecryptUID => payloadObj.data.UID.DecryptKeyValue();
+
             public bool IsSeal => payloadObj.data.Func.Equals(typeof(NotifySeal).Name)
                 || payloadObj.data.Func.Equals(typeof(TaskNotifySeal).Name);
             public bool IsSign => payloadObj.data.Func.Equals(typeof(NotifySign).Name)
                 || payloadObj.data.Func.Equals(typeof(TaskNotifySign).Name);
             public bool IsFieldSet => payloadObj.data.Func.Equals(typeof(TaskNotifyFieldSet).Name);
+
+            public JwtToken(JwtHeader headerObj, string header, JwtPayload payloadObj, string payload, byte[] signature)
+            {
+                this.headerObj = headerObj;
+                this.header = header;
+                this.payloadObj = payloadObj;
+                this.payload = payload;
+                this.signature = signature;
+            }
+
             public override string? ToString()
             {
                 return payloadObj.ToString();
@@ -49,9 +52,7 @@ namespace ContractHome.Helper
         {
             public long exp { get; set; }
             public long iat { get; set; }
-            //public string id { get; set; }
-            //public string email { get; set; }
-            //public string contractId { get; set; }
+
             public JwtPayloadData data { get; set; }
 
             public override string? ToString()
@@ -83,21 +84,42 @@ namespace ContractHome.Helper
         public class JwtPayloadData
         {
             public string UID { get; set; }
-            public string? Email { get; set; }
             public string? ContractID { get; set; }
-            //public EmailBody.EmailTemplate? EmailTemplate { get; set; }
             public string? Func { get; set; }
 
             public override string? ToString()
             {
-                return $"UID={UID} Email={Email} contractId={ContractID} Func={Func}";
+                return $"UID={UID} contractId={ContractID} Func={Func}";
             }
         }
 
-        public static string GenerateJwtToken(JwtPayloadData jwtTokenData, int tokenTTLMins = 1)
+        public static string GenerateJwtToken(int uid, string func, int tokenTTLMins = 4320)
         {
+            JwtTokenGenerator.JwtPayloadData jwtPayloadData = new JwtTokenGenerator.JwtPayloadData()
+            {
+                UID = uid.EncryptKey(),
+                ContractID = null,
+                Func = func
+            };
+
             JwtPayload jwtPayload = JwtTokenGenerator.CreateJwtPayload(
-                payloadData: jwtTokenData,
+                payloadData: jwtPayloadData,
+                tokenTTLMins: tokenTTLMins);
+
+            return CreateJwtToken(jwtPayload);
+        }
+
+        public static string GenerateJwtToken(int uid, int contractID, string func,  int tokenTTLMins = 4320)
+        {
+            JwtTokenGenerator.JwtPayloadData jwtPayloadData = new JwtTokenGenerator.JwtPayloadData()
+            {
+                UID = uid.EncryptKey(),
+                ContractID = contractID.EncryptKey(),
+                Func = func
+            };
+
+            JwtPayload jwtPayload = JwtTokenGenerator.CreateJwtPayload(
+                payloadData: jwtPayloadData,
                 tokenTTLMins: tokenTTLMins);
 
             return CreateJwtToken(jwtPayload);

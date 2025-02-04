@@ -276,10 +276,10 @@ namespace ContractHome.Controllers
             }
 
             var viewModelUserProfile
-          = models.GetTable<UserProfile>()
-              .Where(x => x.EMail.Equals(jwtTokenObj.payloadObj.data.Email))
-              .Where(x => x.PID.Equals(pid))
-              .FirstOrDefault();
+              = models.GetTable<UserProfile>()
+                  .Where(x => x.UID.Equals(jwtTokenObj.DecryptUID))
+                  .Where(x => x.PID.Equals(pid))
+                  .FirstOrDefault();
 
             if (viewModelUserProfile == null)
             {

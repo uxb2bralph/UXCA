@@ -28,15 +28,9 @@ namespace ContractHome.Models.Email.Template
 
     public void CreateBody(EmailContentBodyDto emailContentBodyDto)
     {
-      JwtTokenGenerator.JwtPayloadData jwtPayloadData = new JwtTokenGenerator.JwtPayloadData()
-      {
-        UID = emailContentBodyDto.UserProfile.UID.EncryptKey(),
-        Email = emailContentBodyDto.UserProfile.EMail,
-        ContractID = emailContentBodyDto.Contract.ContractID.EncryptKey(),
-        Func = this.GetType().Name
-      };
-
-      var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData, 4320);
+      var jwtToken = JwtTokenGenerator.GenerateJwtToken(uid: emailContentBodyDto.UserProfile.UID,
+          contractID: emailContentBodyDto.Contract.ContractID,
+          func: this.GetType().Name);
       var clickLink = $"{Settings.Default.WebAppDomain}/Task/Trust?token={JwtTokenGenerator.Base64UrlEncode((jwtToken.EncryptData()))}";
 
       this.EmailBody = _emailBodyBuilder

@@ -8,6 +8,7 @@ namespace ContractHome.Helper
 {
     public class JwtTokenValidator
     {
+
         public static JwtToken DecodeJwtToken(string token)
         {
             //FileLogger.Logger.Error($"token={token}");
@@ -18,19 +19,15 @@ namespace ContractHome.Helper
 
             var header = Encoding.UTF8.GetString(Base64UrlDecode(encodedHeader));
             var payload = Encoding.UTF8.GetString(Base64UrlDecode(encodedPayload));
-            //FileLogger.Logger.Error($"header={header}");
-            //FileLogger.Logger.Error($"payload={payload}");
             // Step 2: Verify the Signature
             var signature = Base64UrlDecode(tokenParts[2]);
 
-            return new JwtToken()
-            {
-                headerObj = JsonConvert.DeserializeObject<JwtHeader>(header),
-                header = encodedHeader,
-                payloadObj = JsonConvert.DeserializeObject<JwtPayload>(payload),
-                payload = encodedPayload,
-                signature = signature
-            };
+            return new JwtToken(
+                headerObj:JsonConvert.DeserializeObject<JwtHeader>(header)!,
+                header: encodedHeader,
+                payloadObj:JsonConvert.DeserializeObject<JwtPayload>(payload)!,
+                payload: encodedPayload,
+                signature);
         }
 
         public static bool ValidateJwtToken(string jwtToken, string secretKey)

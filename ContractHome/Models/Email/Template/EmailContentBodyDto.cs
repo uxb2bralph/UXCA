@@ -13,6 +13,6 @@ namespace ContractHome.Models.Email.Template
 
         public Contract? Contract {  get; }
         public Organization? InitiatorOrg { get; }
-        public UserProfile? UserProfile { get; }
+        public UserProfile UserProfile { get; }
     }
 }

@@ -87,9 +87,9 @@ namespace ContractHome.Models.Email
                 {
                     await smtp.ConnectAsync(_mailSettings.Host, _mailSettings.Port, SecureSocketOptions.None, ct);
                 }
-
+                FileLogger.Logger.Info($"Mail To:{mail.To.ToString()}.");
                 await smtp.SendAsync(mail, ct);
-                //FileLogger.Logger.Error($"Mail To:{mail.To.ToString()}");
+                //FileLogger.Logger.Info($"Mail To:{mail.To.ToString()} Finished.");
                 await smtp.DisconnectAsync(true, ct);
 
                 #endregion

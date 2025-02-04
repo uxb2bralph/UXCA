@@ -18,7 +18,6 @@ using static ContractHome.Models.Helper.ContractServices;
 namespace ContractHome.Controllers
 {
     //remark for testing by postman
-    [Authorize]
     //[Authorize]
     public class TaskController : SampleController
     {
@@ -1073,8 +1072,8 @@ namespace ContractHome.Controllers
         [HttpPost]
         public async Task<IActionResult> GetOperatorsAsync()
         {
-            var profile = await HttpContext.GetUserAsync();
-            //var profile = await HttpContext.GetUserProfileUserForTestAsync(4);
+            //var profile = await HttpContext.GetUserAsync();
+            var profile = await HttpContext.GetUserProfileUserForTestAsync(4);
             if (profile != null) 
             {
                 profile = profile.LoadInstance(models);
@@ -1156,8 +1155,8 @@ namespace ContractHome.Controllers
             {
                 return BadRequest();
             }
-            UserProfile profile = await HttpContext.GetUserAsync();
-            //UserProfile profile = await HttpContext.GetUserProfileUserForTestAsync(4);
+            //UserProfile profile = await HttpContext.GetUserAsync();
+            UserProfile profile = await HttpContext.GetUserProfileUserForTestAsync(4);
             
             _contractServices.SetModels(models);
             var contractID = req.ContractID.DecryptKeyValue();
@@ -1179,6 +1178,7 @@ namespace ContractHome.Controllers
             if (ContractServices.IsNotNull(profile))
             {
                 _contractServices.SetConfigAndSave(contract, req, profile.UID, true);
+                //新增IsPassStamp判斷
                 if (!contract.CreateUID.Equals(contract.FieldSetUID))
                 {
                     isFieldSetUserSameWithInitiator = false;

@@ -619,8 +619,7 @@ namespace ContractHome.Models.Helper
 
                 UserProfile userProfile
                     = _models.GetTable<UserProfile>()
-                        .Where(x => x.EMail.Equals(jwtTokenObj.Email))
-                        .Where(x => x.UID.Equals(jwtTokenObj.UID.DecryptKeyValue()))
+                        .Where(x => x.UID.Equals(jwtTokenObj.DecryptUID))
                         .FirstOrDefault();
 
                 if (userProfile == null)
