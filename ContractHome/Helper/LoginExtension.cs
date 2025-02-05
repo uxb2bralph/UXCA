@@ -193,14 +193,6 @@ namespace ContractHome.Helper
         {
             return profile != null && (profile.UserRole.Any(r => r.RoleID == (int)UserRoleDefinition.RoleEnum.Operator));
         }
-        public static bool CanCreateContract(this UserProfile profile)
-        {
-            if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.MemberAdmin,
-                            (int)UserRoleDefinition.RoleEnum.User)) 
-            {
-                return true;
-            }
-            return false;
-        }
+
     }
 }

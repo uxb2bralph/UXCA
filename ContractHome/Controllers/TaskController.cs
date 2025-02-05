@@ -1,5 +1,4 @@
-﻿using CommonLib.Core.Utility;
-using ContractHome.Helper;
+﻿using ContractHome.Helper;
 using ContractHome.Helper.DataQuery;
 using ContractHome.Models.Cache;
 using ContractHome.Models.DataEntity;
@@ -12,13 +11,12 @@ using Microsoft.AspNetCore.Mvc;
 using System.Web;
 using static ContractHome.Controllers.ContractConsoleController;
 using static ContractHome.Helper.JwtTokenGenerator;
-using static ContractHome.Models.DataEntity.CDS_Document;
 using static ContractHome.Models.Helper.ContractServices;
 
 namespace ContractHome.Controllers
 {
     //remark for testing by postman
-    //[Authorize]
+    [Authorize]
     public class TaskController : SampleController
     {
         private readonly ILogger<HomeController> _logger;
@@ -532,12 +530,6 @@ namespace ContractHome.Controllers
 
             var profile = await HttpContext.GetUserAsync();
             //var profile = await HttpContext.GetUserProfileUserForTestAsync(4);
-            //#region add for postman test
-            //if (profile == null)
-            //{
-            //    profile = models.GetTable<UserProfile>().Where(x => x.UID == viewModel.EncUID.DecryptKeyValue()).FirstOrDefault();
-            //}
-            //#endregion
 
             profile = profile.LoadInstance(models);
             if (profile == null || profile.ContractingUser == null)
@@ -721,7 +713,7 @@ namespace ContractHome.Controllers
 
             var userprofile = models.GetTable<UserProfile>().Where(x => x.PID == profile.PID).FirstOrDefault();
 
-            ViewBag.CanCreateContract = userprofile.CanCreateContract();
+            //ViewBag.CanCreateContract = userprofile.CanCreateContract();
 
             if (viewModel.PageIndex.HasValue)
             {
@@ -776,13 +768,6 @@ namespace ContractHome.Controllers
                 return Json(new { result = false, message = "資料錯誤!!" });
             }
 
-
-            //#region add for postman test
-            //if (profile == null)
-            //{
-            //    profile = models.GetTable<UserProfile>().Where(x => x.UID == viewModel.EncUID.DecryptKeyValue()).FirstOrDefault();
-            //}
-            //#endregion
             void ApplySeal(Contract contract, SealTemplate seal, int? uid, int? pageIndex)
             {
                 ContractSealRequest item = new ContractSealRequest
@@ -898,17 +883,10 @@ namespace ContractHome.Controllers
             var profile = await HttpContext.GetUserAsync();
             //var profile = await HttpContext.GetUserProfileUserForTestAsync(4);
 
-            //#region add for postman test
-            //if (profile == null)
-            //{
-            //    profile = models.GetTable<UserProfile>().Where(x => x.UID == req.EncUID.DecryptKeyValue()).FirstOrDefault();
-            //}
-            //#endregion
             _contractServices.SetModels(models);
             var contractID = req.ContractID.DecryptKeyValue();
             Contract contract = _contractServices.GetContractByID(contractID: contractID);
-            //wait to do:如果是流覽step16, 會判斷有誤
-            //if (contract.CDS_Document.CurrentStep >= 5)
+
             if (!CDS_Document.DocumentCanFeildSet.Contains((CDS_Document.StepEnum)contract.CDS_Document.CurrentStep!))
             {
                 return Ok(_baseResponse.ErrorMessage("文件已進行中,無法修改資料"));
@@ -1072,18 +1050,13 @@ namespace ContractHome.Controllers
         [HttpPost]
         public async Task<IActionResult> GetOperatorsAsync()
         {
-            //var profile = await HttpContext.GetUserAsync();
-            var profile = await HttpContext.GetUserProfileUserForTestAsync(4);
+            var profile = await HttpContext.GetUserAsync();
+            //var profile = await HttpContext.GetUserProfileUserForTestAsync(4);
             if (profile != null) 
             {
                 profile = profile.LoadInstance(models);
             }
-            //#region add for postman test
-            //if (profile == null)
-            //{
-            //    profile = models.GetTable<UserProfile>().Where(x => x.UID == 4).FirstOrDefault();
-            //}
-            //#endregion
+
             if (profile == null)
             {
                 return Json(new BaseResponse(true, "請重新登入"));
@@ -1121,33 +1094,32 @@ namespace ContractHome.Controllers
             _contractServices.SetModels(models: models);
             contract = _contractServices.GetContractByID(req.ContractID.DecryptKeyValue());
 
-            if (ContractServices.IsNotNull(profile))
+            if (ContractServices.IsNull(profile))
             {
-                _contractServices.CDS_DocumentTransitStep(contract, profile.UID, CDS_Document.StepEnum.Establish,true);
-
-                if (contract.IsPassStamp == true)
-                {
-                    _contractServices.CDS_DocumentTransitStep(contract, profile.UID, CDS_Document.StepEnum.Sealed, true);
-                }
-
-                //3.發送通知(one by one)
-                var targetUsers = _contractServices.GetUsersbyContract(contract, true);
-                if (ContractServices.IsNotNull(targetUsers))
-                {
-                    _contractServices.SendUsersNotifyEmailAboutContractAsync(
-                        contract,
-                        (contract.IsPassStamp == true) ? _emailContentFactories.GetTaskNotifySign() : _emailContentFactories.GetTaskNotifySeal(),
-                        targetUsers);
-                }
-
-                return Json(_baseResponse);
+                return Json(_baseResponse.ErrorMessage("請重新登入"));
             }
 
-            return Json(_baseResponse.ErrorMessage());
+            _contractServices.CDS_DocumentTransitStep(contract, profile.UID, CDS_Document.StepEnum.Establish,true);
+
+            if (contract.IsPassStamp == true)
+            {
+                _contractServices.CDS_DocumentTransitStep(contract, profile.UID, CDS_Document.StepEnum.Sealed, true);
+            }
+
+            //3.發送通知(one by one)
+            var targetUsers = _contractServices.GetUsersbyContract(contract, true);
+            if (ContractServices.IsNotNull(targetUsers))
+            {
+                _contractServices.SendUsersNotifyEmailAboutContractAsync(
+                    contract,
+                    (contract.IsPassStamp == true) ? _emailContentFactories.GetTaskNotifySign() : _emailContentFactories.GetTaskNotifySeal(),
+                    targetUsers);
+            }
+
+            return Json(_baseResponse);
         }
 
         [HttpPost]
-        //是否有Contract產製修改權限ContractHome.Security.Authorization
         public async Task<ActionResult> ConfigAsync([FromBody] PostConfigRequest req)
         {
 
@@ -1155,13 +1127,36 @@ namespace ContractHome.Controllers
             {
                 return BadRequest();
             }
-            //UserProfile profile = await HttpContext.GetUserAsync();
-            UserProfile profile = await HttpContext.GetUserProfileUserForTestAsync(4);
-            
+
             _contractServices.SetModels(models);
+            UserProfile profile = (await HttpContext.GetUserAsync()).LoadInstance(models);
+            //UserProfile profile = (await HttpContext.GetUserProfileUserForTestAsync(req.EncUID.DecryptKeyValue())).LoadInstance(models);
+            UserProfile? fieldSetUser;
+            if (ContractServices.IsNull(profile))
+            {
+                ModelState.AddModelError("", "請重新登入");
+                return BadRequest();
+            }
+
+            if (!profile.CanCreateContract)
+            {
+                ModelState.AddModelError("", $"UserProfile無起約權限");
+                return BadRequest();
+            }
+
+            if (!string.IsNullOrEmpty(req.FieldSetUser))
+            {
+                fieldSetUser = _contractServices.GetUserByUID(req.FieldSetUser.DecryptKeyValue())!.FirstOrDefault();
+
+                if (ContractServices.IsNotNull(fieldSetUser)&&!fieldSetUser.IsUser())
+                {
+                    ModelState.AddModelError("", $"FieldSetUser無圖章設定權限");
+                    return BadRequest();
+                }
+            }
+
             var contractID = req.ContractID.DecryptKeyValue();
             Contract? contract = _contractServices.GetContractByID(contractID: contractID);
-            bool isFieldSetUserSameWithInitiator = true;
             if (ContractServices.IsNull(contract))
             {
                 ModelState.AddModelError("", "合約不存在");
@@ -1175,28 +1170,35 @@ namespace ContractHome.Controllers
                 return BadRequest();
             }
 
-            if (ContractServices.IsNotNull(profile))
-            {
-                _contractServices.SetConfigAndSave(contract, req, profile.UID, true);
-                //新增IsPassStamp判斷
-                if (!contract.CreateUID.Equals(contract.FieldSetUID))
-                {
-                    isFieldSetUserSameWithInitiator = false;
-                    IQueryable<UserProfile> targetUsers = _contractServices.GetUserByUID(contract.FieldSetUID)!;
-                    if (ContractServices.IsNotNull(targetUsers))
-                    {
-                        _contractServices.SendUsersNotifyEmailAboutContractAsync(
-                            contract,
-                            _emailContentFactories.GetTaskNotifyFieldSet(),
-                            targetUsers);
-                    }
-                }
+            _contractServices.SetConfigAndSave(contract, req, profile.UID, true);
 
-                _baseResponse.Data = new { ContractID = contract.ContractID.EncryptKey(), IsGoToFieldSet = isFieldSetUserSameWithInitiator };
+            if (req.IsPassStamp)
+            {
+                _baseResponse.Data = new { ContractID = contract.ContractID.EncryptKey(), IsGoToFieldSet = false };
                 return Json(_baseResponse);
             }
 
-            return Json(_baseResponse.ErrorMessage());
+            //起約人與圖章設定人不同, 寄發連結給圖章設定人, 通知前端作業結束(IsGoToFieldSet = false)
+            if (contract.FieldSetUID != 0 && !contract.CreateUID.Equals(contract.FieldSetUID))
+            {
+                IQueryable<UserProfile> targetUser = _contractServices.GetUserByUID(contract.FieldSetUID)!;
+
+                if (ContractServices.IsNotNull(targetUser))
+                {
+                    _contractServices.SendUsersNotifyEmailAboutContractAsync(
+                        contract,
+                        _emailContentFactories.GetTaskNotifyFieldSet(),
+                        targetUser);
+                }
+
+                _baseResponse.Data = new { ContractID = contract.ContractID.EncryptKey(), IsGoToFieldSet = false };
+            }
+            else //起約人與圖章設定人相同, 通知前端導頁至圖章設定(IsGoToFieldSet = true)
+            {
+                _baseResponse.Data = new { ContractID = contract.ContractID.EncryptKey(), IsGoToFieldSet = true };
+            }
+
+            return Json(_baseResponse);
         }
 
         public async Task<ActionResult> CommitPdfNoteAsync(SignatureRequestViewModel viewModel)
@@ -1277,27 +1279,35 @@ namespace ContractHome.Controllers
             {
                 return BadRequest();
             }
-            // var user = await HttpContext.GetUserAsync();
-            // //var profile = user.LoadInstance(models);
-            // if (!ContractServices.IsNotNull(user) || !ContractServices.IsNotNull(user.OrganizationUser))
-            // {
-            //   return Ok(_baseResponse.ErrorMessage("請重新登入"));
-            // }
-            // if (!ContractServices.IsNotNull(file))
-            // {
-            //   return Ok(_baseResponse.ErrorMessage("請選擇檔案!!"));
-            // }
+            var user = await HttpContext.GetUserAsync();
+            //var user = await HttpContext.GetUserProfileUserForTestAsync(4);
+            var profile = user.LoadInstance(models);
 
-            // String extName = Path.GetExtension(file.FileName).ToLower();
-            // if (extName != ".pdf")
-            // {
-            //   return Ok(_baseResponse.ErrorMessage("合約檔案類型只能是pdf!!"));
-            // }
+            if (!profile.CanCreateContract)
+            {
+                ModelState.AddModelError("", $"UserProfile無起約權限");
+                return BadRequest();
+            }
+
+            if (!ContractServices.IsNotNull(user))
+            {
+                return Ok(_baseResponse.ErrorMessage("請重新登入"));
+            }
+            if (!ContractServices.IsNotNull(file))
+            {
+                return Ok(_baseResponse.ErrorMessage("請選擇檔案!!"));
+            }
+
+            String extName = Path.GetExtension(file.FileName).ToLower();
+            if (extName != ".pdf")
+            {
+                return Ok(_baseResponse.ErrorMessage("合約檔案類型只能是pdf!!"));
+            }
 
             Contract contract = new Contract
             {
                 FilePath = file.StoreContractDocument(),
-                CompanyID = 1,
+                CompanyID = profile.CompanyID,
                 ContractNo = String.Empty,
                 CDS_Document = new CDS_Document
                 {

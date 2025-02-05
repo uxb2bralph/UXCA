@@ -1,12 +1,6 @@
-﻿using ContractHome.Helper;
+﻿using CommonLib.Utility;
+using ContractHome.Helper;
 using ContractHome.Properties;
-using CommonLib.Utility;
-using System.Collections;
-using BitMiracle.LibTiff.Classic;
-using System.Security.Cryptography.X509Certificates;
-using System.Data.Linq.SqlClient;
-using ContractHome.Models.Helper;
-using static ContractHome.Models.Helper.ContractServices;
 
 namespace ContractHome.Models.DataEntity
 {
@@ -51,6 +45,8 @@ namespace ContractHome.Models.DataEntity
 
     public partial class UserProfile
     {
+        public bool CanCreateContract => this.IsAuthorized((int)UserRoleDefinition.RoleEnum.MemberAdmin,
+                            (int)UserRoleDefinition.RoleEnum.User);
         public int? RoleIndex { get; set; }
         public UserRole? CurrentUserRole { get; private set; }
         public void DetermineUserRole()

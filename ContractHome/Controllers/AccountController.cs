@@ -54,7 +54,7 @@ namespace ContractHome.Controllers
             if (!ModelState.IsValid)
             {
                 //wait to do...甲方的公司UserEmail登入失敗通知信
-                if (userprofile.CanCreateContract())
+                if (userprofile.CanCreateContract)
                 {
                     _emailFactory.SendEmailToCustomer(
                         _emailFactory.GetLoginFailed(emailUserName: userprofile.PID, email: userprofile.EMail));
@@ -63,7 +63,7 @@ namespace ContractHome.Controllers
                 return Json(new { result = false, message = ModelState.ErrorMessage() });
             }
 
-            if (userprofile.CanCreateContract())
+            if (userprofile.CanCreateContract)
             {
                 _emailFactory.SendEmailToCustomer(
                     _emailFactory.GetLoginSuccessed(emailUserName: userprofile.PID, email: userprofile.EMail));
