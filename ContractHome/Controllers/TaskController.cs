@@ -367,6 +367,58 @@ namespace ContractHome.Controllers
 
         }
 
+        public async Task<ActionResult> GenerateLinkAsync(SignatureRequestViewModel viewModel)
+        {
+            //var result = LoadContract(viewModel);
+            Contract item = _contractServices.GetContractByID(viewModel.ContractID);
+
+            if (item == null)
+            {
+                return Json(_baseResponse.ErrorMessage($"文件 {viewModel.ContractID} 不存在"));
+            }
+
+            if (item.CDS_Document.CurrentStep == (int)CDS_Document.StepEnum.Config)
+            {
+                return Json(new { result = true });
+            }
+
+            _contractServices.SetModels(models);
+            var profile = (await HttpContext.GetUserAsync()).LoadInstance(models);
+            if (profile?.IsSysAdmin() == true)
+            {
+                if (!item.CDS_Document.CurrentStep.HasValue || item.CDS_Document.CurrentStep == (int)CDS_Document.StepEnum.Initial)
+                {
+                    models.DeleteAny<CDS_Document>(d => d.DocID == item.ContractID);
+                    return Json(new { result = true });
+                }
+                else
+                {
+                    _contractServices.CDS_DocumentTransitStep(item, profile!.UID, CDS_Document.StepEnum.Revoked, true);
+                    return Json(new { result = true });
+                }
+            }
+            else
+            {
+                if (profile?.OrganizationUser == null)
+                {
+                    return Json(new { result = false, message = "合約簽署人資料錯誤!!" });
+                }
+
+                if (!models.GetTable<ContractingUser>()
+                        .Where(p => p.ContractID == item.ContractID)
+                        .Where(p => p.UserID == profile.UID)
+                        .Any())
+                {
+                    return Json(new { result = false, message = "合約簽署人資料錯誤!!" });
+                }
+
+                _contractServices.CDS_DocumentTransitStep(item, profile!.UID, CDS_Document.StepEnum.Terminated, true);
+                return Json(new { result = true });
+            }
+
+
+        }
+
         //2024.05.29 iris:查詢畫面的[終止文件], 和[AbortContractAsync]結果一樣, 更新文件狀態為[CDS_Document.StepEnum.Revoked]
         public async Task<ActionResult> TerminateContractAsync(SignatureRequestViewModel viewModel)
         {
@@ -1071,10 +1123,17 @@ namespace ContractHome.Controllers
                 = _contractServices.GetUsersbyCompanyID(profile.CompanyID);
 
             IEnumerable<Models.Operator> nonOperators = 
-                users.Select(x => new Models.Operator(pID: x.UID.EncryptKey(), email: ContractServices.EmailMasking(x.EMail), title: x.PID, region: x.Region, isOperator: false));
+                users.Select(x => new Models.Operator(uid: x.UID.EncryptKey(), 
+                    email: ContractServices.EmailMasking(x.EMail), 
+                    title: x.PID, region: x.Region, isOperator: false,
+                    pid: x.PID
+                    ));
 
             _baseResponse.Data = operators.Select(x =>
-                new Models.Operator(pID: x.UID.EncryptKey(), email: ContractServices.EmailMasking(x.EMail), title: x.OperatorNote, region: x.Region, isOperator: true))
+                new Models.Operator(uid: x.UID.EncryptKey(), email: ContractServices.EmailMasking(x.EMail),
+                    title: x.OperatorNote, region: x.Region, isOperator: true,
+                    pid: x.PID
+                    ))
                 .Concat(nonOperators).Distinct();
 
             return Json(_baseResponse);

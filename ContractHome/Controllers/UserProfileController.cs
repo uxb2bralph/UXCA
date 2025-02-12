@@ -172,7 +172,9 @@ namespace ContractHome.Controllers
 
         [RoleAuthorize(roleID: new int[] {
             (int)UserRoleDefinition.RoleEnum.User,
-            (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
+            (int)UserRoleDefinition.RoleEnum.MemberAdmin,
+            (int)UserRoleDefinition.RoleEnum.Operator
+        })]
         public async Task<ActionResult> PasswordChangeView(
             UserPasswordChangeViewModel userPasswordChange)
         {
@@ -181,7 +183,8 @@ namespace ContractHome.Controllers
 
         [RoleAuthorize(roleID: new int[] {
             (int)UserRoleDefinition.RoleEnum.User,
-            (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
+            (int)UserRoleDefinition.RoleEnum.MemberAdmin,
+            (int)UserRoleDefinition.RoleEnum.Operator})]
         [HttpPost]
         public async Task<ActionResult> PasswordChange(
       [FromBody] UserPasswordChangeViewModel userPasswordChange)
@@ -387,7 +390,13 @@ namespace ContractHome.Controllers
             models.ExecuteCommand(@"INSERT INTO UserRole (UID, RoleID) VALUES ({0},{1})", item.UID, 3);
             models.SubmitChanges();
 
-            _baseResponse.Data = new Models.Operator(pID: item.UID.EncryptKey(), email: item.EMail, title: item.OperatorNote, region: item.Region, isOperator: true);
+            _baseResponse.Data = new Models.Operator(
+                uid: item.UID.EncryptKey(), 
+                email: item.EMail, 
+                title: item.OperatorNote, 
+                region: item.Region, isOperator: true,
+                pid: item.PID
+                );
 
             return Json(_baseResponse);
         }
@@ -418,9 +427,10 @@ namespace ContractHome.Controllers
 
             models.SubmitChanges();
             _baseResponse.Data = new Models.Operator(
-                pID: operatorUser.UID.EncryptKey(), email: operatorUser.UserProfile.EMail, 
+                uid: operatorUser.UID.EncryptKey(), email: operatorUser.UserProfile.EMail, 
                 title: operatorUser.UserProfile.OperatorNote??string.Empty, region: operatorUser.UserProfile.Region, 
-                isOperator: true);
+                isOperator: true,
+                pid:operatorUser.UserProfile.PID);
 
             return Ok(_baseResponse);
         }

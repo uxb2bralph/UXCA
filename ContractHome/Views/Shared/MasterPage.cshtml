@@ -47,7 +47,8 @@
 <body>
   <!-- Navbar -->
   @{
-        if (profile != null && !profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.Operator))
+        //if (profile != null && !profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.Operator))
+        if (profile != null)
     {
       await Html.RenderPartialAsync("~/Views/Shared/SiteAction/MainNavBar.cshtml");
     }

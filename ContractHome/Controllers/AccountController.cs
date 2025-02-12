@@ -69,12 +69,12 @@ namespace ContractHome.Controllers
                     _emailFactory.GetLoginSuccessed(emailUserName: userprofile.PID, email: userprofile.EMail));
             }
 
-            var dateNeedToUpdatePassword = DateTime.Now.AddMonths(-3);
-            var res = DateTime.Compare(userprofile.PasswordUpdatedDate ?? dateNeedToUpdatePassword, dateNeedToUpdatePassword);
-            if (res <= 0 && !userprofile.IsSysAdmin())
-            {
-                return Json(new { result = true, message = Url.Action("PasswordChangeView", "UserProfile") });
-            }
+            //var dateNeedToUpdatePassword = DateTime.Now.AddMonths(-3);
+            //var res = DateTime.Compare(userprofile.PasswordUpdatedDate ?? dateNeedToUpdatePassword, dateNeedToUpdatePassword);
+            //if (res <= 0 && !userprofile.IsSysAdmin())
+            //{
+            //    return Json(new { result = true, message = Url.Action("PasswordChangeView", "UserProfile") });
+            //}
             return Json(new { result = true, message = Url.Action("ListToStampIndex", "Task") });
 
         }
@@ -315,24 +315,36 @@ namespace ContractHome.Controllers
         public async Task<BaseResponse> PasswordApply([FromBody] PasswordResetViewModel viewModel)
         {
 
-            var email = viewModel.Email.GetEfficientString();
-            if (string.IsNullOrEmpty(email))
-            {
-                return new BaseResponse(true, "驗證資料有誤，請檢查輸入欄位是否正確。");
-            }
+            UserProfile userProfile;
 
-            UserProfile userProfile
-                = models.GetTable<UserProfile>()
-                      .Where(x => x.EMail.Equals(email))
-                      .Where(x => x.PID.Equals(viewModel.PID))
-                      .FirstOrDefault();
+            if (!string.IsNullOrEmpty(viewModel.UID))
+            {
+                userProfile
+                    = models.GetTable<UserProfile>()
+                          .Where(x => x.UID.Equals(viewModel.UID.DecryptKeyValue()))
+                          .FirstOrDefault();
+            } 
+            else
+            {
+                var email = viewModel.Email.GetEfficientString();
+                if (string.IsNullOrEmpty(email))
+                {
+                    return new BaseResponse(true, "驗證資料有誤，請檢查輸入欄位是否正確。");
+                }
+
+                userProfile
+                    = models.GetTable<UserProfile>()
+                          .Where(x => x.EMail.Equals(email))
+                          .Where(x => x.PID.Equals(viewModel.PID))
+                          .FirstOrDefault();
+            }
 
             if (userProfile == null)
             {
                 return new BaseResponse(true, "驗證資料有誤，請檢查輸入欄位是否正確。");
             }
 
-            EmailSentCache cacheKey = new EmailSentCache(email);
+            EmailSentCache cacheKey = new EmailSentCache(userProfile.EMail);
             //var resentCahceKey = _cacheFactory.GetEmailSentCache(email);
             EmailSent resentCahce = _cacheStore.Get(cacheKey);
             if (resentCahce != null)

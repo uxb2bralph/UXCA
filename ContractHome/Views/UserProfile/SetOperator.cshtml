@@ -27,24 +27,36 @@
         <table class="table table-hover mb-0">
           <thead>
             <tr>
-              <th scope="col">簽署者稱呼</th>
+              <th scope="col">簽署者PID</th>
+              <th scope="col">簽署者Title</th>
               <th scope="col">電子郵件</th>
               <th scope="col" class="text-center">功能</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(contractor, index) in contractorList" :key="`c_${index}`">
+              <td class="fs-13">{{ contractor.pid }}</td>
               <td class="fs-13">{{ contractor.title }}</td>
               <td class="fs-13">{{ contractor.email }}</td>
               <td class="text-nowrap text-center">
                 <!-- 編輯 -->
-                <span v-if="!contractor.isOperator" class="tooltip__wrapper mx-1">
+                <span v-if="contractor.isOperator" class="tooltip__wrapper mx-1">
                   <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded"
                     v-on:click="editData('edit', contractor)">
                     <i class="fal fa-edit"></i>
                   </button>
                   <div class="tooltip__text">修改</div>
                 </span>
+                <!-- 發送密碼修改通知 -->
+                 <span v-if="contractor.isOperator" class="tooltip__wrapper mx-1">
+                    <button type="button" id="ApplyPassword"
+                            class="btn btn-sm btn-success opacity-75 rounded-pill icon__rounded"
+                                            v-on:click="sendApplyPassword(contractor.uid)">
+                        <i class="far fa-envelope"></i>
+                    </button>
+                    <div class="tooltip__text">發送密碼修改通知</div>
+                </span>
+                <span class="text-black-50 opacity-75"> | </span>
               </td>
             </tr>
           </tbody>
@@ -437,7 +449,46 @@
             });
         }
       },
-      
+            // 發送密碼修改申請
+            sendApplyPassword(uid
+            ) {
+                showLoading();
+                const payload = {
+                    UID: uid,
+                    Item: "createPassword"
+                };
+                $.ajax({
+                    url: '@(Url.Action("PasswordApply", "Account"))',
+                    data: JSON.stringify(payload),
+                    type: "POST",
+                    //dataType: "json",
+                    contentType: "application/json;charset=utf-8",
+                    success: function (data) {
+                        if (data.hasError) {
+                            app.infoMsg = `
+                    <div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="fas fa-exclamation-circle"></i></div>
+                    <div>${data.message}</div>`;
+                            $('#infoModal').modal('show');
+                        } else {
+                            app.infoMsg = `
+                    <div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div>
+                    <div>已發送email</div>`;
+                            $('#infoModal').modal('show');
+                        }
+                        hideLoading();
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        hideLoading();
+                        //alertModal(thrownError);
+                        app.infoMsg = `
+                  <div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="fas fa-exclamation-circle"></i></div>
+                  <div>${thrownError}</div>`;
+                        $('#infoModal').modal('show');
+                        console.log(xhr.status);
+                        console.log(thrownError);
+                    }
+                });
+            },
       // 輸入 email 欄位驗證
       checkMail(status, contactEmail) {
         const emailRegex = /^[A-Za-z0-9._%+-]+@@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;

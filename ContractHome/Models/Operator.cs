@@ -6,15 +6,17 @@
         public string Email { get; set; }
         public string Title { get; set; }
         public string Region { get; set; }
+        public string? PID { get; set; }
         public bool IsOperator { get; set; }
 
-        public Operator(string pID, string email, string title, string region, bool isOperator)
+        public Operator(string uid, string email, string title, string region, bool isOperator, string pid)
         {
-            UID = pID;
+            UID = uid;
             Email = email;
             Title = title;
             Region = region;
             IsOperator = isOperator;
+            PID = pid;
         }
     }
 }

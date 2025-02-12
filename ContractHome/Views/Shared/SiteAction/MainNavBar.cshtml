@@ -24,7 +24,7 @@
   <header class="border__uxb2b--bottom shadow__card">
     <nav class="navbar navbar-expand-lg navbar-light navbar-uxb2b py-0">
       <div class="container-fluid">
-        <a class="navbar-brand" href="@Url.Action("ListToStampIndex", "ContractConsole")">
+        <a class="navbar-brand" href="@Url.Action("ListToStampIndex", "Task")">
           <img src="~/images/uxSign-logo.png" alt="UX SIGN" style="height: 40px;">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
@@ -117,16 +117,20 @@
                       target="_blank">簽署歷程文件樣板</a>
                   </li>
                 }
-                @if (profile.CanCreateContract)
-                {
-                  <li>
-                    <a class="dropdown-item" href="@Html.Raw(Url.Action("SetOperator","UserProfile"))">簽署者設定</a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="@Html.Raw(Url.Action("PasswordChangeView","UserProfile"))">密碼變更</a>
-                  </li>
+                @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.MemberAdmin,
+                                (int)UserRoleDefinition.RoleEnum.User,
+                                (int)UserRoleDefinition.RoleEnum.Operator)) {
+                    @if (profile.CanCreateContract)
+                    {
+                        <li>
+                        <a class="dropdown-item" href="@Html.Raw(Url.Action("SetOperator","UserProfile"))">簽署者設定</a>
+                        </li>
+                    }
+                    <li>
+                        <a class="dropdown-item" href="@Html.Raw(Url.Action("PasswordChangeView","UserProfile"))">密碼變更</a>
+                    </li>
+                    <li><a class="dropdown-item" href="@Html.Raw(Url.Action("MaintainSeal","Organization"))">印鑑檔管理</a></li>
                 }
-                <li><a class="dropdown-item" href="@Html.Raw(Url.Action("MaintainSeal","Organization"))">印鑑檔管理</a></li>
                 <li>
                   <hr class="dropdown-divider">
                 </li>
