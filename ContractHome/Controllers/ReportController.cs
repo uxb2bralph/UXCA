@@ -12,9 +12,11 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using System.Drawing;
 using static ContractHome.Models.DataEntity.CDS_Document;
 using System.Web;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ContractHome.Controllers
 {
+    [Authorize]
     public class ReportController : SampleController
     {
         private readonly ILogger<HomeController> _logger;
@@ -32,7 +34,6 @@ namespace ContractHome.Controllers
             _baseResponse = baseResponse;
         }
 
-        //[UserAuthorize]
         public async Task<IActionResult> TaskProcessAsync(SignContractViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;

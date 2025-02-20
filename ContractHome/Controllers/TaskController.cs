@@ -736,7 +736,7 @@ namespace ContractHome.Controllers
                 .SelectMany(x => x.ContractUserSignatureRequest)
                 //判斷是查詢登入者的文件, 或是其他人的文件
                 .Where(y => (Convert.ToBoolean(viewModel.ContractQueryStep & (int)QueryStepEnum.CurrentUser)) ?
-                    (y.UserID == profile.UID || y.Contract.FieldSetUID == profile.UID) : //登入者文件:包括未挖框文件也列示
+                    (y.UserID == profile.UID || y.Contract.FieldSetUID == profile.UID) : //登入者文件:包括挖框者也列示,因目前沒有設定挖框連結, 導致非用印者但是挖框者也會顯示
                     (y.UserID != profile.UID && (y.Contract.FieldSetUID != profile.UID|| y.Contract.FieldSetUID==null))  //其他人文件
                     && !isUserSysAdmin)  //其他人文件
                 ;
