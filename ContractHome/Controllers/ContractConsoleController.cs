@@ -521,7 +521,7 @@ namespace ContractHome.Controllers
             //    //StepEnum.DigitalSigned 5
 
             items = items.Where(d => !d.CDS_Document.CurrentStep.HasValue
-                 || CDS_Document.DocumentEditable.Contains((CDS_Document.StepEnum)d.CDS_Document.CurrentStep!));
+                 || CDS_Document.PendingState.Contains((CDS_Document.StepEnum)d.CDS_Document.CurrentStep!));
 
             var contractSignatureRequestItems = items
                 .SelectMany(x => x.ContractSignatureRequest)
@@ -1363,8 +1363,8 @@ namespace ContractHome.Controllers
             }
 
             UserProfile profile = (UserProfile)ViewBag.Profile;
-
-            if (!item.SignerID.HasValue)
+            
+            if (!item.SignatureDate.HasValue)
             {
                 bool isSigned = false;
                 if (item.Organization.DigitalSignBy() == DigitalSignCerts.Enterprise)
@@ -1441,7 +1441,7 @@ namespace ContractHome.Controllers
 
                     if (!models.GetTable<ContractSignatureRequest>()
                         .Where(c => c.ContractID == item.ContractID)
-                        .Where(c => !c.SignerID.HasValue)
+                        .Where(c => !c.SignatureDate.HasValue)
                         .Any())
                     {
                         _contractServices.CDS_DocumentTransitStep(item.Contract, profile!.UID, CDS_Document.StepEnum.Committed);
@@ -1457,7 +1457,7 @@ namespace ContractHome.Controllers
                                 _emailContentFactories.GetFinishContract(emailContentBodyDto),
                                 targetUsers);
                         }
-
+                        
                     }
 
                     if ((UserSession.Get(_httpContextAccessor) != null) && (UserSession.Get(_httpContextAccessor).IsTrust))
@@ -1557,7 +1557,7 @@ namespace ContractHome.Controllers
 
             UserProfile profile = (UserProfile)ViewBag.Profile;
             //wait to do...合併CommitDigitalSignatureAsync if(Signed), 動作一樣
-            if (!item.SignerID.HasValue)
+            if (!item.SignatureDate.HasValue)
             {
                 (bool signOk, string code) = models.CHT_SignPdfByUser(item, profile);
                 if (signOk)
@@ -1577,7 +1577,7 @@ namespace ContractHome.Controllers
 
                     if (!models.GetTable<ContractSignatureRequest>()
                         .Where(c => c.ContractID == item.ContractID)
-                        .Where(c => !c.SignerID.HasValue)
+                        .Where(c => !c.SignatureDate.HasValue)
                         .Any())
                     {
                         _contractServices.CDS_DocumentTransitStep(item.Contract, profile!.UID, CDS_Document.StepEnum.Committed);

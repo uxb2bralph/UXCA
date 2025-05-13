@@ -23,6 +23,9 @@ namespace ContractHome.Models.DataEntity
         partial void OnCreated()
         {
             this.CommandTimeout = 300;
+            #if DEBUG
+            this.Log = Console.Out;
+            #endif
         }
 
     }

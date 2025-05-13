@@ -262,7 +262,7 @@
 
                   <!-- 待簽署 -->
                   <button v-if="!!item.StampDate && !item.SignerDate" class="btn progresses__steps"
-                    :class="[canSigner(contract) && item.IsCurrentUserCompany ? 'progresses__steps--signActived' : 'disabled']"
+                    :class="[canSignerByCsr(item) && item.IsCurrentUserCompany ? 'progresses__steps--signActived' : 'disabled']"
                     v-on:click="signerHandler(contract.KeyID, item.Name, contract.ContractNo, contract.Title)">
                     <i class="fas fa-signature"></i>
                   </button>
@@ -311,7 +311,7 @@
 
                       <!-- 待簽署 -->
                       <button v-if="!!item.StampDate && !item.SignerDate" type="button" class="btn progresses__steps"
-                        :class="[canSigner(contract) && item.IsCurrentUserCompany ? 'progresses__steps--signActived' : 'disabled']"
+                        :class="[canSignerByCsr(item) && item.IsCurrentUserCompany ? 'progresses__steps--signActived' : 'disabled']"
                         v-on:click="signerHandler(contract.KeyID, item.Name, contract.ContractNo, contract.Title)">
                         <i class="fas fa-signature"></i>
                       </button>
@@ -1449,6 +1449,12 @@
       canSigner(contract) {
         const { CurrentStep } = contract;
         return CurrentStep === 7 || CurrentStep === 10;
+      },
+
+      // 是否可簽署
+      canSignerByCsr(csr) {
+          const { Step } = csr;
+          return Step === 10;
       },
 
       // 新增文件 Modal

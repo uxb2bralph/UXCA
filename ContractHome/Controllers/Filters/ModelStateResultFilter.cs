@@ -21,6 +21,12 @@ namespace ContractHome.Controllers.Filters
 
         public void OnResultExecuting(ResultExecutingContext context)
         {
+            // 判斷是否為 TryController 控制項
+            if (context.Controller is TryController)
+            {
+                return;
+            }
+
 
             if (!context.ModelState.IsValid)
             {

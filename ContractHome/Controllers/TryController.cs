@@ -1,16 +1,21 @@
 ﻿using CommonLib.Core.Properties;
 using CommonLib.Core.Utility;
+using CommonLib.DataAccess;
 using ContractHome.Helper;
 using ContractHome.Models.DataEntity;
 using ContractHome.Models.Dto;
 using ContractHome.Models.Email;
 using ContractHome.Models.Email.Template;
 using ContractHome.Models.Helper;
+using ContractHome.Services.ContractService;
+using ContractHome.Services.HttpChunk;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.Diagnostics.Contracts;
 using System.DirectoryServices.Protocols;
+using System.Net;
 using System.Web;
 using Wangkanai.Extensions;
 using static ContractHome.Helper.JwtTokenGenerator;
@@ -27,18 +32,26 @@ namespace ContractHome.Controllers
         private readonly IRazorViewToStringRenderer _razorViewToStringRenderer;
         private ContractServices? _contractServices;
         private IWebHostEnvironment _hostingEnvironment;
-
+        private readonly IHttpChunkService _httpChunkService;
+        private readonly KNFileUploadSetting _KNFileUploadSetting;
+        private readonly ICustomContractService _customContractService;
         public TryController(
             IMailService mailService,
             IViewRenderService viewRenderService,
             ContractServices contractServices,
             IWebHostEnvironment environment
+            , IHttpChunkService httpChunkService
+            , IOptions<KNFileUploadSetting> kNFileUploadSetting
+            , ICustomContractService customContractService
             )
         {
             _contractServices = contractServices;
             _mailService = mailService;
             _viewRenderService = viewRenderService;
             _hostingEnvironment = environment;
+            _httpChunkService = httpChunkService;
+            _KNFileUploadSetting = kNFileUploadSetting.Value;
+            _customContractService = customContractService;
         }
 
         public class VO
@@ -179,5 +192,96 @@ namespace ContractHome.Controllers
             return Ok(jwtTokenObj);
         }
 
+        /// <summary>
+        /// 分片下載
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("ChunkDownload")]
+        public async Task<IActionResult> ChunkDownload()
+        {
+            //HttpChunkResult chunkResult = new();
+
+            //try
+            //{
+            //    chunkResult = await _httpChunkService.DownloadAsync(Request);
+            //}
+            //catch (Exception ex)
+            //{
+            //    FileLogger.Logger.Error(ex.ToString());
+            //    chunkResult.Code = (int)HttpChunkResultCodeEnum.SYSTEM_ERROR;
+            //    chunkResult.Message = ex.ToString();
+            //}
+
+            //if (chunkResult.Code != (int)HttpChunkResultCodeEnum.COMPLETE)
+            //{
+            //    return Ok(new ContractResultModel()
+            //    {
+            //        msgRes = new MsgRes()
+            //        {
+            //            type = ContractResultType.E.ToString(),
+            //            code = ICustomContractService.ResultCodeHeader + ContractResultCode.ContractUpdate,
+            //            desc = chunkResult.Message
+            //        }
+            //    });
+            //}
+
+            return Ok(await _customContractService.DownloadAsync(Request));
+        }
+
+        /// <summary>
+        /// 分片上傳
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("ChuckUpload")]
+        public async Task<IActionResult> ChuckUploadAsync()
+        {
+            HttpChunkResult chunkResult = new();
+            try
+            {
+                chunkResult = await _httpChunkService.UploadAsync(
+                               Path.Combine(Directory.GetCurrentDirectory(), "6.9M.pdf"),
+                                $"{_KNFileUploadSetting.ContractQueueid}_123_{_KNFileUploadSetting.FileCurrentDateTime}",
+                               Properties.Settings.Default.HttpChunkUploadUrl);
+            }
+            catch (Exception ex)
+            {
+                FileLogger.Logger.Error(ex.ToString());
+                chunkResult.Code = (int)HttpChunkResultCodeEnum.SYSTEM_ERROR;
+                chunkResult.Message = ex.ToString();
+            }
+
+            return Ok(chunkResult);
+        }
+
+        [HttpPost]
+        [Route("ContractInfo")]
+        public async Task<IActionResult> ContractInfo([FromBody] ContractModel contractModel)
+        {
+            try
+            {
+                if (!_customContractService.IsValid(contractModel, ModelState, out ContractResultModel result))
+                {
+                    return Ok(result);
+                }
+                var createResult = _customContractService.CreateContract(contractModel);
+                return Ok(createResult);
+            }
+            catch (Exception ex)
+            {
+                FileLogger.Logger.Error(ex.ToString());
+                return Ok(new ContractResultModel()
+                {
+                    msgRes = new MsgRes()
+                    {
+                        type = ContractResultType.E.ToString(),
+                        code = ICustomContractService.ResultCodeHeader + ContractResultCode.ContractCreate,
+                        desc = ex.ToString()
+                    }
+                });
+            }
+            
+        }
     }
 }

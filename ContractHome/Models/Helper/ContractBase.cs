@@ -31,14 +31,46 @@ namespace ContractHome.Models.Helper
                 SignerDate = initiatContractSignatureRequest.SignatureDate.HasValue ?
                     initiatContractSignatureRequest?.SignatureDate.Value.ToString("yyyy/MM/dd HH:mm") : string.Empty;
                 SignerID = initiatContractSignatureRequest?.UserProfile?.PID ?? string.Empty;
-                if ((Step == (int)StepEnum.Sealing) && (!string.IsNullOrEmpty(StampDate)))
+                //if ((Step == (int)StepEnum.Sealing) && (!string.IsNullOrEmpty(StampDate)))
+                //{
+                //    Step = (int)StepEnum.Sealed; 
+                //}
+                //if ((Step == (int)StepEnum.DigitalSigning) && (!string.IsNullOrEmpty(SignerDate)))
+                //{
+                //    Step = (int)StepEnum.DigitalSigned;
+                //}
+                // 判斷是否跳過用印
+                if (contract.IsPassStamp.HasValue && !contract.IsPassStamp.Value)
                 {
-                    Step = (int)StepEnum.Sealed; 
-                }
-                if ((Step == (int)StepEnum.DigitalSigning) && (!string.IsNullOrEmpty(SignerDate)))
+                    // 先用印後簽署 判斷用印跟簽屬時間 設定 用印中 或 簽署中
+
+                    // 未用印 未簽署
+                    if (string.IsNullOrEmpty(StampDate) && string.IsNullOrEmpty(SignerDate))
+                    {
+                        Step = (int)StepEnum.Sealing;
+                    }
+
+                    // 已用印 未簽署
+                    if (!string.IsNullOrEmpty(StampDate) && string.IsNullOrEmpty(SignerDate))
+                    {
+                        Step = (int)StepEnum.DigitalSigning;
+                    }
+
+                    // 已用印 已簽署
+                    if (!string.IsNullOrEmpty(StampDate) && !string.IsNullOrEmpty(SignerDate))
+                    {
+                        Step = (int)StepEnum.DigitalSigned;
+                    }
+
+                } else
                 {
-                    Step = (int)StepEnum.DigitalSigned;
+                    // 跳過用印做簽署 判斷簽署時間
+                    if (string.IsNullOrEmpty(SignerDate))
+                    {
+                        Step = (int)StepEnum.DigitalSigning;
+                    }
                 }
+
             }
             isInitiator = contractingParty.IsInitiator ?? false;
             IsCurrentUserCompany = userCompanyID != null ? ID == userCompanyID : false;

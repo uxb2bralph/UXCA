@@ -17,6 +17,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.HttpOverrides;
 using ContractHome.Models.Dto;
+using ContractHome.Services.HttpChunk;
+using ContractHome.Services.ContractService;
 
 namespace ContractHome
 {
@@ -120,6 +122,7 @@ namespace ContractHome
             //services.AddTransient<EmailFactory>();
             services.AddScoped<EmailBody>();
             services.AddScoped<EmailFactory>();
+
             services.AddScoped<IEmailBodyBuilder, EmailBodyBuilder>();
             services.AddScoped<IEmailContent, NotifySeal>();
             services.AddScoped<IEmailContent, NotifySign>();
@@ -129,6 +132,17 @@ namespace ContractHome
             services.AddScoped<IEmailContent, ApplyPassword>();
             services.AddScoped<IEmailContent, FinishContract>();
 
+            #region 中鋼 KN 合約配置
+            services.Configure<KNFileUploadSetting>(Configuration.GetSection(nameof(KNFileUploadSetting)));
+            services.PostConfigure<KNFileUploadSetting>(x =>
+            {
+                x.TempFolderPath = Path.Combine(Path.GetTempPath(), x.TempFolderPath);
+                x.DownloadFolderPath = Path.Combine(Directory.GetCurrentDirectory(), x.DownloadFolderPath);
+            });
+
+            services.AddScoped<IHttpChunkService, KNHttpChunkService>();
+            services.AddScoped<ICustomContractService, KNContractService>();
+            #endregion
 
             services.AddScoped<ContractServices>();
             services.AddScoped<BaseResponse>();
@@ -142,8 +156,6 @@ namespace ContractHome
                     .AddrecurringJob<JobTouchWebEveryday>();
 
             #endregion
-
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
