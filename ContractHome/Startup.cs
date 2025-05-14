@@ -138,10 +138,15 @@ namespace ContractHome
             {
                 x.TempFolderPath = Path.Combine(Path.GetTempPath(), x.TempFolderPath);
                 x.DownloadFolderPath = Path.Combine(Directory.GetCurrentDirectory(), x.DownloadFolderPath);
+
+                Directory.CreateDirectory(x.TempFolderPath);
+                Directory.CreateDirectory(x.DownloadFolderPath);
             });
 
             services.AddScoped<IHttpChunkService, KNHttpChunkService>();
             services.AddScoped<ICustomContractService, KNContractService>();
+            services.AddScoped<ChunkFileUploader>();
+
             #endregion
 
             services.AddScoped<ContractServices>();

@@ -35,6 +35,7 @@ namespace ContractHome.Controllers
         private readonly IHttpChunkService _httpChunkService;
         private readonly KNFileUploadSetting _KNFileUploadSetting;
         private readonly ICustomContractService _customContractService;
+        private readonly ChunkFileUploader _chunkFileUploader;
         public TryController(
             IMailService mailService,
             IViewRenderService viewRenderService,
@@ -43,6 +44,7 @@ namespace ContractHome.Controllers
             , IHttpChunkService httpChunkService
             , IOptions<KNFileUploadSetting> kNFileUploadSetting
             , ICustomContractService customContractService
+            , ChunkFileUploader chunkFileUploader
             )
         {
             _contractServices = contractServices;
@@ -52,6 +54,7 @@ namespace ContractHome.Controllers
             _httpChunkService = httpChunkService;
             _KNFileUploadSetting = kNFileUploadSetting.Value;
             _customContractService = customContractService;
+            _chunkFileUploader = chunkFileUploader;
         }
 
         public class VO
@@ -237,22 +240,30 @@ namespace ContractHome.Controllers
         [Route("ChuckUpload")]
         public async Task<IActionResult> ChuckUploadAsync()
         {
-            HttpChunkResult chunkResult = new();
+            //HttpChunkResult chunkResult = new();
+            //try
+            //{
+            //    chunkResult = await _httpChunkService.UploadAsync(
+            //                   Path.Combine(Directory.GetCurrentDirectory(), "6.9M.pdf"),
+            //                    $"{_KNFileUploadSetting.ContractQueueid}_123_{_KNFileUploadSetting.FileCurrentDateTime}",
+            //                   Properties.Settings.Default.HttpChunkUploadUrl);
+            //}
+            //catch (Exception ex)
+            //{
+            //    FileLogger.Logger.Error(ex.ToString());
+            //    chunkResult.Code = (int)HttpChunkResultCodeEnum.SYSTEM_ERROR;
+            //    chunkResult.Message = ex.ToString();
+            //}
             try
             {
-                chunkResult = await _httpChunkService.UploadAsync(
-                               Path.Combine(Directory.GetCurrentDirectory(), "6.9M.pdf"),
-                                $"{_KNFileUploadSetting.ContractQueueid}_123_{_KNFileUploadSetting.FileCurrentDateTime}",
-                               Properties.Settings.Default.HttpChunkUploadUrl);
+                await _chunkFileUploader.UploadAsync(filePath: Path.Combine(Directory.GetCurrentDirectory(), "6.9M.pdf"));
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 FileLogger.Logger.Error(ex.ToString());
-                chunkResult.Code = (int)HttpChunkResultCodeEnum.SYSTEM_ERROR;
-                chunkResult.Message = ex.ToString();
+                return BadRequest(ex.ToString());
             }
 
-            return Ok(chunkResult);
+            return Ok();
         }
 
         [HttpPost]

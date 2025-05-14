@@ -1,19 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using CommonLib.Core.Utility;
-using CommonLib.DataAccess;
 using ContractHome.Helper;
 using ContractHome.Models.DataEntity;
 using ContractHome.Services.HttpChunk;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using Wangkanai.Extensions;
 using CommonLib.Utility;
-using ContractHome.Models.Helper;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using ContractHome.Models.Email.Template;
-using static ContractHome.Services.ContractService.KNContractService;
-using System.Diagnostics.Contracts;
+using Hangfire;
 
 namespace ContractHome.Services.ContractService
 {
@@ -26,15 +20,6 @@ namespace ContractHome.Services.ContractService
         private readonly IHttpChunkService _httpChunkService = httpChunkService;
         private readonly KNFileUploadSetting _KNFileUploadSetting = kNFileUploadSetting.Value;
         private readonly EmailFactory _emailFactory = emailFactory;
-
-        private static void WriteLog(string message)
-        {
-            #if DEBUG
-            Console.WriteLine($"ThreadID({Environment.CurrentManagedThreadId}):{message}");
-            #endif
-
-            FileLogger.Logger.Info($"ThreadID({Environment.CurrentManagedThreadId}):{message}");
-        }
 
         /// <summary>
         /// 起約人資訊
@@ -52,7 +37,7 @@ namespace ContractHome.Services.ContractService
         /// <param name="db"></param>
         /// <param name="model"></param>
         /// <returns></returns>
-        private (Models.DataEntity.Contract contract, Promisor promisor) CreateContract(DCDataContext db, ContractModel model)
+        private (Contract contract, Promisor promisor) CreateContract(DCDataContext db, ContractModel model)
         {
             // 取得起約人資訊
             var promisor = (from u in db.UserProfile
@@ -66,7 +51,7 @@ namespace ContractHome.Services.ContractService
                             }).FirstOrDefault();
 
             // 建立合約
-            Models.DataEntity.Contract contract = new()
+            Contract contract = new()
             {
                 FilePath = GetContractFile(model.ContractNo)?.FullName,
                 ContractNo = model.ContractNo,
@@ -99,7 +84,7 @@ namespace ContractHome.Services.ContractService
         /// <param name="companyId"></param>
         /// <param name="uid"></param>
         /// <param name="isPassStamp"></param>
-        private void CreateContractSignatureRequest(Models.DataEntity.Contract contract, int companyId, int uid, bool isPassStamp)
+        private void CreateContractSignatureRequest(Contract contract, int companyId, int uid, bool isPassStamp)
         {
             // 建立起約者合約簽署要求
             ContractSignatureRequest promisorCSR = new()
@@ -121,7 +106,7 @@ namespace ContractHome.Services.ContractService
         /// <param name="companyId"></param>
         /// <param name="intentID"></param>
         /// <param name="isInitiator"></param>
-        private void CreateContractingParty(Models.DataEntity.Contract contract, int companyId, int intentID, bool isInitiator)
+        private void CreateContractingParty(Contract contract, int companyId, int intentID, bool isInitiator)
         {
             ContractingParty cp = new()
             {
@@ -224,7 +209,7 @@ namespace ContractHome.Services.ContractService
         /// <param name="contract"></param>
         /// <param name="uid"></param>
         /// <param name="isPassStamp"></param>
-        private void CreateDocumentProcessLog(Models.DataEntity.Contract contract, int uid, bool isPassStamp)
+        private void CreateDocumentProcessLog(Contract contract, int uid, bool isPassStamp)
         {
             DocumentProcessLog establishLog = new()
             {
@@ -239,6 +224,63 @@ namespace ContractHome.Services.ContractService
         }
 
         /// <summary>
+        /// 發送Mail通知
+        /// </summary>
+        /// <param name="contract"></param>
+        /// <param name="sendMails"></param>
+        /// <param name="emailContent"></param>
+        private void SendMail(Contract contract, List<string> sendMails, IEmailContent emailContent)
+        {
+            using DCDataContext db = new();
+
+            var targetUsers = (from u in db.UserProfile
+                               where sendMails.Contains(u.EMail)
+                               select u).AsEnumerable<UserProfile>();
+
+            var initiatorOrg = (from o in db.Organization
+                                where o.CompanyID == contract.CompanyID
+                                select o).FirstOrDefault();
+
+            if (initiatorOrg == null)
+            {
+                return;
+            }
+
+            foreach (var user in targetUsers)
+            {
+                EmailContentBodyDto emailContentBodyDto = new(contract, initiatorOrg, user);
+
+                emailContent.CreateBody(emailContentBodyDto);
+                _emailFactory.SendEmailToCustomer(user.EMail, emailContent);
+            }
+
+            db.Dispose();
+        }
+
+        /// <summary>
+        /// 取得合約PDF檔案
+        /// </summary>
+        /// <param name="contractNo"></param>
+        /// <returns></returns>
+        private FileInfo? GetContractFile(string contractNo)
+        {
+            string folderPath = _KNFileUploadSetting.DownloadFolderPath;
+            string prefix = $"{_KNFileUploadSetting.ContractQueueid}_{contractNo}";
+            string extension = ".pdf";
+
+            var latestFile = Directory
+                .EnumerateFiles(folderPath)
+                .Where(file =>
+                    Path.GetFileName(file).StartsWith(prefix, StringComparison.OrdinalIgnoreCase) &&
+                    Path.GetExtension(file).Equals(extension, StringComparison.OrdinalIgnoreCase))
+                .Select(file => new FileInfo(file))
+                .OrderByDescending(f => f.CreationTime)
+                .FirstOrDefault();
+
+            return latestFile;
+        }
+
+        /// <summary>
         /// 建立合約
         /// </summary>
         /// <param name="model"></param>
@@ -249,11 +291,7 @@ namespace ContractHome.Services.ContractService
             using DCDataContext db = new();
             db.Connection.Open();
             db.Transaction = db.Connection.BeginTransaction();
-            
-            #if DEBUG
-            db.Log = Console.Out;
-            #endif
-
+            bool transFail = false;
             try
             {
                 // 建立合約
@@ -293,33 +331,18 @@ namespace ContractHome.Services.ContractService
                 CreateDocumentProcessLog(contract, promisor?.UID ?? 0, model.IsPassStamp);
 
                 db.SubmitChanges();
-
                 db.Transaction.Commit();
 
                 // 發送簽署通知
-                if (model.IsPassStamp)
-                {
-                    SendMail(contract, [.. sendMails], _emailFactory.GetNotifySign());
-                }
-                else
-                {
-                    SendMail(contract, [model.NotifyMail], _emailFactory.GetNotifySeal());
-                }
+                var emailContent = (model.IsPassStamp) ? _emailFactory.GetNotifySign() : _emailFactory.GetNotifySeal();
+                var targetUsers = (model.IsPassStamp) ? sendMails.ToList() : [model.NotifyMail];
+                BackgroundJob.Enqueue(() => SendMail(contract, targetUsers, emailContent));
             } 
             catch(Exception ex)
             {
-                db.Transaction.Rollback();
-
                 FileLogger.Logger.Error(ex.ToString());
-                return new ContractResultModel
-                {
-                    msgRes = new MsgRes
-                    {
-                        type = ContractResultType.F.ToString(),
-                        code = ICustomContractService.ResultCodeHeader + (int)ContractResultCode.ContractCreate,
-                        desc = $"合約編號({model.ContractNo})-建立失敗"
-                    }
-                };
+                transFail = true;
+                db.Transaction.Rollback();
             }
             finally
             {
@@ -331,49 +354,11 @@ namespace ContractHome.Services.ContractService
             {
                 msgRes = new MsgRes
                 {
-                    type = ContractResultType.S.ToString(),
+                    type = (transFail) ? ContractResultType.F.ToString() : ContractResultType.S.ToString(),
                     code = ICustomContractService.ResultCodeHeader + (int)ContractResultCode.ContractCreate,
-                    desc = $"合約編號({model.ContractNo})-建立成功"
+                    desc = $"合約編號({model.ContractNo})-建立" + ((transFail) ? "失敗" : "成功")
                 }
             };
-        }
-
-        /// <summary>
-        /// 發送Mail通知
-        /// </summary>
-        /// <param name="contract"></param>
-        /// <param name="sendMails"></param>
-        /// <param name="emailContent"></param>
-        private void SendMail(Models.DataEntity.Contract contract, List<string> sendMails, IEmailContent emailContent)
-        {
-            using DCDataContext db = new();
-
-            #if DEBUG
-            db.Log = Console.Out;
-            #endif
-
-            var targetUsers = (from u in db.UserProfile
-                               where sendMails.Contains(u.EMail)
-                               select u).AsEnumerable<UserProfile>();
-
-            var initiatorOrg = (from o in db.Organization
-                                where o.CompanyID == contract.CompanyID
-                                select o).FirstOrDefault();
-
-            if (initiatorOrg == null)
-            {
-                return;
-            }
-
-            foreach (var user in targetUsers)
-            {
-                EmailContentBodyDto emailContentBodyDto = new(contract, initiatorOrg, user);
-
-                emailContent.CreateBody(emailContentBodyDto);
-                _emailFactory.SendEmailToCustomer(user.EMail, emailContent);
-            }
-
-            db.Dispose();
         }
 
         /// <summary>
@@ -385,10 +370,6 @@ namespace ContractHome.Services.ContractService
         public bool IsValid(ContractModel model, ModelStateDictionary modelState, out ContractResultModel result)
         {
             using DCDataContext db = new();
-
-            #if DEBUG
-            db.Log = Console.Out;
-            #endif
 
             // 檢查起約人公司是否存在
             int companyId = 0;
@@ -494,28 +475,6 @@ namespace ContractHome.Services.ContractService
             return modelState.IsValid;
         }
 
-        /// <summary>
-        /// 取得合約PDF檔案
-        /// </summary>
-        /// <param name="contractNo"></param>
-        /// <returns></returns>
-        private FileInfo? GetContractFile(string contractNo)
-        {
-            string folderPath = _KNFileUploadSetting.DownloadFolderPath; 
-            string prefix = $"{_KNFileUploadSetting.ContractQueueid}_{contractNo}";
-            string extension = ".pdf";
-
-            var latestFile = Directory
-                .EnumerateFiles(folderPath)
-                .Where(file =>
-                    Path.GetFileName(file).StartsWith(prefix, StringComparison.OrdinalIgnoreCase) &&
-                    Path.GetExtension(file).Equals(extension, StringComparison.OrdinalIgnoreCase))
-                .Select(file => new FileInfo(file))
-                .OrderByDescending(f => f.CreationTime)
-                .FirstOrDefault();
-
-            return latestFile;
-        }
         /// <summary>
         /// 下載合約
         /// </summary>

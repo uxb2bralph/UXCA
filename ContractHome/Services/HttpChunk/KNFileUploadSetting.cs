@@ -6,6 +6,11 @@
     public class KNFileUploadSetting
     {
         /// <summary>
+        /// 分段上傳URL
+        /// </summary>
+        public string ChunkUploadUrl { get; set; } = string.Empty;
+
+        /// <summary>
         /// 暫存資料夾名稱
         /// </summary>
         public string TempFolderPath { get; set; } = string.Empty;
