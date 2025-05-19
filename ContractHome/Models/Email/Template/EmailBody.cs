@@ -8,10 +8,12 @@ namespace ContractHome.Models.Email.Template
 {
     public class EmailBody
     {
-        private readonly IViewRenderService _viewRenderService;
-        public EmailBody(IViewRenderService viewRenderService)
+        private IViewRenderService _viewRenderService;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+        public EmailBody(IViewRenderService viewRenderService, IServiceScopeFactory serviceScopeFactory)
         {
             _viewRenderService = viewRenderService;
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
         public string ContractNo { get; set; }
@@ -95,6 +97,9 @@ namespace ContractHome.Models.Email.Template
 
         public async Task<string> GetViewRenderString()
         {
+            await using var scoped = _serviceScopeFactory.CreateAsyncScope();
+            _viewRenderService = scoped.ServiceProvider.GetRequiredService<IViewRenderService>();
+            _viewRenderService.HttpContext = scoped.ServiceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext;
             return await _viewRenderService.RenderToStringAsync(
                 viewName: this.GetTemplateView(),
                 model: this);

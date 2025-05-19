@@ -18,22 +18,22 @@ namespace ContractHome.Models.Email.Template
             _mailService = mailService;
         }
 
-        public async void SendEmailToCustomer(string mailTo, IEmailContent emailContent)
+        public async Task SendEmailToCustomer(string mailTo, IEmailContent emailContent)
         {
 
-            SendEmailToCustomer(emailTo: mailTo,
+            await SendEmailToCustomer(emailTo: mailTo,
                             subject: emailContent.Subject,
                             body: await emailContent.GetBody.GetViewRenderString());
         }
 
         public async void SendEmailToCustomer(IEmailContent emailContent)
         {
-            SendEmailToCustomer(emailTo: emailContent.GetBody.UserEmail,
+            await SendEmailToCustomer(emailTo: emailContent.GetBody.UserEmail,
                             subject: emailContent.Subject,
                             body: await emailContent.GetBody.GetViewRenderString());
         }
 
-        public async void SendEmailToCustomer(string emailTo, string subject, string body)
+        public async Task SendEmailToCustomer(string emailTo, string subject, string body)
         {
             List<string> emailList = new List<string>
             {

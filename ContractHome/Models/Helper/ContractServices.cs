@@ -386,9 +386,37 @@ namespace ContractHome.Models.Helper
 
         public IQueryable<UserProfile>? GetUsersbyContract(Contract contract)
         {
-            return _models.GetTable<OrganizationUser>()
-                .Where(x => contract.ContractingParty.Select(x=>x.CompanyID).Contains(x.CompanyID))
-                .Select(y => y.UserProfile);
+            DCDataContext db = _models.DataContext;
+
+            // 抓 ContractSignatureRequest SignerID 不為 NULL 的 UserProfile
+            var signers = from u in db.UserProfile
+                          join c in db.ContractSignatureRequest on u.UID equals c.SignerID
+                          where c.ContractID == contract.ContractID
+                          select u;
+            // 抓 ContractSignatureRequest SignerID 為 NULL 的 OrganizationUser
+            var orgUsers = from c in db.ContractSignatureRequest
+                           join ou in db.OrganizationUser on c.CompanyID equals ou.CompanyID
+                           join u in db.UserProfile on ou.UID equals u.UID
+                           where c.ContractID == contract.ContractID && c.SignerID == null
+                           select u;
+            // 合併兩個查詢結果
+            var users = signers.Union(orgUsers);
+
+            return users;
+        }
+
+        /// <summary>
+        /// 取得合約簽署人
+        /// </summary>
+        /// <param name="contract"></param>
+        /// <returns></returns>
+        public IQueryable<UserProfile>? GetUsersByContractSignatureRequest(Contract contract)
+        {
+            DCDataContext db = _models.DataContext;
+            return from u in db.UserProfile
+                        join c in db.ContractSignatureRequest on u.UID equals c.SignerID
+                        where c.ContractID == contract.ContractID
+                        select u;
         }
 
         public IQueryable<UserProfile>? GetUsersByWhoNotFinished(Contract contract, 
@@ -397,13 +425,23 @@ namespace ContractHome.Models.Helper
             if ((currentStep == 0) || (!CDS_Document.DocumentEditable.Contains((CDS_Document.StepEnum)currentStep!)))
                 return null;
 
-            bool isSigning = (contract.CurrentStep == (int)StepEnum.DigitalSigning || contract.CurrentStep == (int)StepEnum.Sealed);
-            bool isStamping = (contract.CurrentStep == (int)StepEnum.Sealing);
+            DCDataContext db = _models.DataContext;
 
-            return _models.GetTable<OrganizationUser>()
-                .Where(x => ((isSigning) ? contract.whoNotDigitalSigned():contract.whoNotStamped())
-                            .Select(x => x.CompanyID).Contains(x.CompanyID))
-                .Select(y => y.UserProfile);
+            // 抓 ContractSignatureRequest SignerID 不為 NULL 且 未用印 未簽署 的 UserProfile 
+            var signers = from u in db.UserProfile
+                          join c in db.ContractSignatureRequest on u.UID equals c.SignerID
+                          where c.ContractID == contract.ContractID && (c.SignatureDate == null || c.StampDate == null)
+                          select u;
+            // 抓 ContractSignatureRequest SignerID 為 NULL 的 OrganizationUser
+            var orgUsers = from c in db.ContractSignatureRequest
+                           join ou in db.OrganizationUser on c.CompanyID equals ou.CompanyID
+                           join u in db.UserProfile on ou.UID equals u.UID
+                           where c.ContractID == contract.ContractID && c.SignerID == null
+                           select u;
+            // 合併兩個查詢結果
+            var users = signers.Union(orgUsers);
+
+            return users;
         }
 
         public IEnumerable<UserProfile>? GetNotifyUsersAsync(Contract contract)
@@ -474,7 +512,7 @@ namespace ContractHome.Models.Helper
             }
         }
 
-        public async void SendUsersNotifyEmailAboutContractAsync(
+        public async Task SendUsersNotifyEmailAboutContractAsync(
             Contract contract,
             IEmailContent emailContent,
             IQueryable<UserProfile> targetUsers)
@@ -492,8 +530,8 @@ namespace ContractHome.Models.Helper
                         new EmailContentBodyDto(contract: contract, initiatorOrg: initiatorOrg, userProfile: user);
 
                     emailContent.CreateBody(emailContentBodyDto);
-                    _emailFactory.SendEmailToCustomer(mailTo: user.EMail, 
-                        emailContent: emailContent);
+                    await _emailFactory.SendEmailToCustomer(user.EMail,
+                        emailContent);
                 }
             }
         }
@@ -503,7 +541,7 @@ namespace ContractHome.Models.Helper
             _models.SubmitChanges();
         }
 
-        public void NotifyWhoNotFinishedDoc()
+        public async Task NotifyWhoNotFinishedDoc()
         {
             StringBuilder sb = new StringBuilder();
 
@@ -516,24 +554,24 @@ namespace ContractHome.Models.Helper
                     .Where(d => !d.CDS_Document.CurrentStep.HasValue
                             || CDS_Document.DocumentEditable.Contains((CDS_Document.StepEnum)d.CDS_Document.CurrentStep!))
                     .Where(x => x.NotifyUntilDate != null)
-                    .Where(x => x.NotifyUntilDate >= DateTime.Now.Date)
+                    .Where(x => x.NotifyUntilDate.Value.AddDays(-1) == DateTime.Now.Date || x.NotifyUntilDate == DateTime.Now.Date)
                     .ToList();
 
                 if (contracts.Count()>0)
                 {
                     sb.AppendLine($"NotifyWhoNotFinishedDoc:contracts.Count()={contracts.Count()}");
 
-                    contracts.ForEach(contract =>
+                    foreach (var contract in contracts)
                     {
                         var users = GetUsersByWhoNotFinished(contract, contract.CurrentStep);
-                        SendUsersNotifyEmailAboutContractAsync(
-                                contract,
-                                _emailContentFactories.GetNotifySign(),
-                                users
+                        await SendUsersNotifyEmailAboutContractAsync(
+                                    contract,
+                                    _emailContentFactories.GetNotifySign(),
+                                    users
                         );
                         var usersString = string.Join(" ", users.Select(x => $"{x.UID}"));
                         sb.Append($" ContractID: {contract.ContractID} {(CDS_Document.StepEnum)contract.CurrentStep} UID: {usersString}");
-                    });
+                    }
                 } 
                 else
                 {
