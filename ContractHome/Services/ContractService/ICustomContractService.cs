@@ -12,7 +12,7 @@ namespace ContractHome.Services.ContractService
         /// <summary>
         /// 合約結果代碼
         /// </summary>
-        public static readonly string ResultCodeHeader = "UX_";
+        public static readonly string ResultCodeHeader = "UX";
 
         ///// <summary>
         ///// 設定 dbContext
@@ -40,5 +40,26 @@ namespace ContractHome.Services.ContractService
         /// <param name="httpRequest"></param>
         /// <returns></returns>
         public Task<ContractResultModel> DownloadAsync(HttpRequest httpRequest);
+
+        /// <summary>
+        /// 建立簽屬PDF
+        /// </summary>
+        /// <param name="contract"></param>
+        /// <returns></returns>
+        public Task<string> CreateSignaturePDF(Contract contract);
+
+        /// <summary>
+        /// 建立軌跡PDF
+        /// </summary>
+        /// <param name="contract"></param>
+        /// <returns></returns>
+        public Task<string> CreateFootprintsPDF(Contract contract);
+
+        /// <summary>
+        /// 上傳簽署合約及軌跡PDF
+        /// </summary>
+        /// <param name="contract"></param>
+        /// <returns></returns>
+        public Task UploadSignatureAndFootprintsPdfFile(Contract contract);
     }
 }

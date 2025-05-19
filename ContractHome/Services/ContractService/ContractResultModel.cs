@@ -52,6 +52,20 @@
         /// <summary>
         /// UXSIGN系統錯誤
         /// </summary>
-        SystemError = 1000,
+        SystemError = 99,
+    }
+
+    public static class ContractResultCodeExtension
+    {
+
+        /// <summary>
+        /// 取得合約結果代碼
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static string GetFullCode(this ContractResultCode value)
+        {
+            return ICustomContractService.ResultCodeHeader + ((int)value).ToString("D2");
+        }
     }
 }

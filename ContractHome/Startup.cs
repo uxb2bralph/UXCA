@@ -13,8 +13,6 @@ using Microsoft.Extensions.Caching.Memory;
 using ContractHome.Services.Jobs;
 using Hangfire;
 using Hangfire.Dashboard;
-using Microsoft.Extensions.DependencyInjection;
-using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.HttpOverrides;
 using ContractHome.Models.Dto;
 using ContractHome.Services.HttpChunk;
@@ -65,6 +63,7 @@ namespace ContractHome
                 new MemoryCacheStore(x.GetService<IMemoryCache>(), cachingExpirationConfig));
 
             #endregion
+
 
             services.AddSession(options =>
             {
@@ -136,7 +135,7 @@ namespace ContractHome
             services.Configure<KNFileUploadSetting>(Configuration.GetSection(nameof(KNFileUploadSetting)));
             services.PostConfigure<KNFileUploadSetting>(x =>
             {
-                x.TempFolderPath = Path.Combine(Path.GetTempPath(), x.TempFolderPath);
+                x.TempFolderPath = Path.Combine(Directory.GetCurrentDirectory(), x.TempFolderPath);
                 x.DownloadFolderPath = Path.Combine(Directory.GetCurrentDirectory(), x.DownloadFolderPath);
 
                 Directory.CreateDirectory(x.TempFolderPath);

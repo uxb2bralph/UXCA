@@ -8,18 +8,25 @@ using Microsoft.Extensions.Options;
 using CommonLib.Utility;
 using ContractHome.Models.Email.Template;
 using Hangfire;
+using Newtonsoft.Json.Linq;
+using ContractHome.Models.Rpt;
+using ContractHome.Models.Report;
+using static ContractHome.Models.Report.SignHistoryPager;
+using System.Threading.Tasks;
 
 namespace ContractHome.Services.ContractService
 {
     /// <summary>
     /// 中鋼KN合約服務
     /// </summary>
-    public class KNContractService(IHttpChunkService httpChunkService, IOptions<KNFileUploadSetting> kNFileUploadSetting, EmailFactory emailFactory) : ICustomContractService
+    public class KNContractService(IHttpChunkService httpChunkService, IOptions<KNFileUploadSetting> kNFileUploadSetting, EmailFactory emailFactory, IViewRenderService viewRenderService, ChunkFileUploader chunkFileUploader) : ICustomContractService
     {
 
         private readonly IHttpChunkService _httpChunkService = httpChunkService;
         private readonly KNFileUploadSetting _KNFileUploadSetting = kNFileUploadSetting.Value;
         private readonly EmailFactory _emailFactory = emailFactory;
+        private readonly IViewRenderService _viewRenderService = viewRenderService;
+        private readonly ChunkFileUploader _chunkFileUploader = chunkFileUploader;
 
         /// <summary>
         /// 起約人資訊
@@ -142,7 +149,8 @@ namespace ContractHome.Services.ContractService
                 {
                     CompanyName = signatory.Name,
                     ReceiptNo = signatory.Identifier,
-                    CompanyBelongTo = companyBelongTo
+                    CompanyBelongTo = companyBelongTo,
+                    CanCreateContract = false
                 };
 
                 db.Organization.InsertOnSubmit(organization);
@@ -182,7 +190,7 @@ namespace ContractHome.Services.ContractService
                 {
                     EMail = signatory.Mail,
                     PID = signatory.Mail,
-                    Password = signatory.Mail.HashPassword(),
+                    Password = $"@{signatory.Mail}".HashPassword(),
                     Region = "0"
                 };
 
@@ -229,7 +237,7 @@ namespace ContractHome.Services.ContractService
         /// <param name="contract"></param>
         /// <param name="sendMails"></param>
         /// <param name="emailContent"></param>
-        private void SendMail(Contract contract, List<string> sendMails, IEmailContent emailContent)
+        private async void SendMail(Contract contract, List<string> sendMails, IEmailContent emailContent)
         {
             using DCDataContext db = new();
 
@@ -251,7 +259,7 @@ namespace ContractHome.Services.ContractService
                 EmailContentBodyDto emailContentBodyDto = new(contract, initiatorOrg, user);
 
                 emailContent.CreateBody(emailContentBodyDto);
-                _emailFactory.SendEmailToCustomer(user.EMail, emailContent);
+                await _emailFactory.SendEmailToCustomer(user.EMail, emailContent);
             }
 
             db.Dispose();
@@ -331,12 +339,14 @@ namespace ContractHome.Services.ContractService
                 CreateDocumentProcessLog(contract, promisor?.UID ?? 0, model.IsPassStamp);
 
                 db.SubmitChanges();
-                db.Transaction.Commit();
+                
 
                 // 發送簽署通知
                 var emailContent = (model.IsPassStamp) ? _emailFactory.GetNotifySign() : _emailFactory.GetNotifySeal();
                 var targetUsers = (model.IsPassStamp) ? sendMails.ToList() : [model.NotifyMail];
-                BackgroundJob.Enqueue(() => SendMail(contract, targetUsers, emailContent));
+                SendMail(contract, targetUsers, emailContent);
+
+                db.Transaction.Commit();
             } 
             catch(Exception ex)
             {
@@ -355,7 +365,7 @@ namespace ContractHome.Services.ContractService
                 msgRes = new MsgRes
                 {
                     type = (transFail) ? ContractResultType.F.ToString() : ContractResultType.S.ToString(),
-                    code = ICustomContractService.ResultCodeHeader + (int)ContractResultCode.ContractCreate,
+                    code = ContractResultCode.ContractCreate.GetFullCode(),
                     desc = $"合約編號({model.ContractNo})-建立" + ((transFail) ? "失敗" : "成功")
                 }
             };
@@ -384,7 +394,7 @@ namespace ContractHome.Services.ContractService
                               };
                 if (company.FirstOrDefault() == null)
                 {
-                    modelState.AddModelError(nameof(model.NotifyMail), "通知mail帳號或公司不存在");
+                    modelState.AddModelError(nameof(model.NotifyMail), "通知mail帳號不存在");
                 }
                 else
                 {
@@ -467,7 +477,7 @@ namespace ContractHome.Services.ContractService
                 msgRes = new MsgRes()
                 {
                     type = (!modelState.IsValid) ? ContractResultType.F.ToString() : ContractResultType.S.ToString(),
-                    code = ICustomContractService.ResultCodeHeader + (int)ContractResultCode.ContractInfoVerify,
+                    code = ContractResultCode.ContractInfoVerify.GetFullCode(),
                     desc = (!modelState.IsValid) ? modelState.ErrorMessage() : "合約資訊正確"
                 }
             };
@@ -502,7 +512,7 @@ namespace ContractHome.Services.ContractService
                     msgRes = new MsgRes()
                     {
                         type = ContractResultType.F.ToString(),
-                        code = ICustomContractService.ResultCodeHeader + (int)ContractResultCode.ContractDownload,
+                        code = ContractResultCode.ContractDownload.GetFullCode(),
                         desc = chunkResult.Message
                     }
                 };
@@ -513,10 +523,159 @@ namespace ContractHome.Services.ContractService
                 msgRes = new MsgRes()
                 {
                     type = ContractResultType.S.ToString(),
-                    code = ICustomContractService.ResultCodeHeader + (int)ContractResultCode.ContractDownload,
+                    code = ContractResultCode.ContractDownload.GetFullCode(),
                     desc = $"合約PDF下載成功-{chunkResult.Message}"
                 }
             };
+        }
+        /// <summary>
+        /// 建議簽署合約PDF
+        /// </summary>
+        /// <param name="contract"></param>
+        public async Task<string> CreateSignaturePDF(Contract contract)
+        {
+            if (contract.ContractSignature == null)
+            {
+                return string.Empty;
+            }
+
+            ContractSignatureRequest request = contract.ContractSignature.ContractSignatureRequest;
+
+            if (request.ResponsePath == null)
+            {
+                return string.Empty;
+            }
+
+            if (!request.RequestPath.EndsWith(".json", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return string.Empty;
+            }
+
+            JObject content = JObject.Parse(File.ReadAllText(request.ResponsePath));
+            if ((string)content["code"] != "0")
+            {
+                return string.Empty;
+            }
+
+
+            byte[] pdfBytes = Convert.FromBase64String((string)content["msg"]);
+            //PdfDocument pdfDocument = new(pdfBytes);
+            string fileName = $"{_KNFileUploadSetting.SignatureQueueid}_{contract.ContractNo}_{_KNFileUploadSetting.FileCurrentDateTime}.pdf";
+            string saveFilePath = Path.Combine(_KNFileUploadSetting.DownloadFolderPath, fileName);
+            //pdfDocument.SaveAs(saveFilePath);
+
+            File.WriteAllBytes(saveFilePath, pdfBytes);
+
+            return saveFilePath;
+        }
+
+        /// <summary>
+        /// 建議簽署軌跡PDF
+        /// </summary>
+        /// <param name="contract"></param>
+        public async Task<string> CreateFootprintsPDF(Contract contract)
+        {
+            using DCDataContext db = new();
+
+            SignHistoryPager signHistoryPager = new()
+            {
+                FileNo = contract.ContractNo,
+                FileName = contract.Title
+            };
+            // 取得合約發起人資訊
+            var initiatorInfo = (from u in db.UserProfile
+                                join ou in db.OrganizationUser on u.UID equals ou.UID
+                                join o in db.Organization on ou.CompanyID equals o.CompanyID
+                                join dp in db.DocumentProcessLog on u.UID equals dp.ActorID
+                                where dp.DocID == contract.ContractID && dp.StepID == (int)CDS_Document.StepEnum.Establish
+                                select new
+                                {
+                                    u.UserName,
+                                    u.EMail,
+                                    o.CompanyName
+                                }).FirstOrDefault();
+            // 設定起約人資訊
+            if (initiatorInfo != null)
+            {
+                signHistoryPager.InitiatorName = $"{initiatorInfo.EMail}({initiatorInfo.CompanyName})";
+                signHistoryPager.InitiatorMail = initiatorInfo.EMail;
+            }
+
+            // 設定簽署軌跡
+            signHistoryPager.Histories = from dp in db.DocumentProcessLog
+                                        join u in db.UserProfile on dp.ActorID equals u.UID
+                                        join ou in db.OrganizationUser on u.UID equals ou.UID
+                                        join o in db.Organization on ou.CompanyID equals o.CompanyID
+                                        where dp.DocID == contract.ContractID
+                                        select new History
+                                        {
+                                            CompanyName = o.CompanyName,
+                                            LogDate = dp.LogDate,
+                                            StepID = dp.StepID,
+                                            Mail = u.EMail,
+                                            IP = dp.ClientIP,
+                                            Device = dp.ClientDevice
+                                        };
+            // 設定建立時間
+            signHistoryPager.CreateDateTime = signHistoryPager.Histories
+                                             .Where(db => db.StepID == (int)CDS_Document.StepEnum.Establish)
+                                             .Select(db => db.LogDate).FirstOrDefault()?.ToString("yyyy/MM/dd HH:mm:ss") ?? "";
+
+            // 設定完成時間
+            signHistoryPager.FinishedDateTime = signHistoryPager.Histories
+                                             .Where(db => db.StepID == (int)CDS_Document.StepEnum.Committed)
+                                             .Select(db => db.LogDate).FirstOrDefault()?.ToString("yyyy/MM/dd HH:mm:ss") ?? "";
+
+            // 設定簽署人
+            signHistoryPager.Signers = from cs in db.ContractSignatureRequest
+                                       join u in db.UserProfile on cs.SignerID equals u.UID
+                                       join ou in db.OrganizationUser on u.UID equals ou.UID
+                                       join o in db.Organization on ou.CompanyID equals o.CompanyID
+                                       where cs.ContractID == contract.ContractID
+                                       select new Signer
+                                       {
+                                           CompanyName = o.CompanyName,
+                                           Name = u.UserName,
+                                           Mail = u.EMail,
+                                           Region = u.Region
+                                       };
+
+            var rptViewRenderString = await _viewRenderService.RenderToStringAsync(
+                                      viewName: signHistoryPager.TemplateItem,
+                                      model: signHistoryPager);
+
+            var renderer = new ChromePdfRenderer();
+            PdfDocument pdfDocument = renderer.RenderHtmlAsPdf(rptViewRenderString);
+            string fileName = $"{_KNFileUploadSetting.HistoryQueueid}_{contract.ContractNo}_{_KNFileUploadSetting.FileCurrentDateTime}.pdf";
+            string saveFilePath = Path.Combine(_KNFileUploadSetting.DownloadFolderPath, fileName);
+            pdfDocument.SaveAs(saveFilePath);
+
+            return saveFilePath;
+        }
+        /// <summary>
+        /// 上傳簽屬及軌跡PDF檔案
+        /// </summary>
+        public async Task UploadSignatureAndFootprintsPdfFile(Contract contract)
+        {
+            var createTasks = new List<Task<string>>
+            {
+                this.CreateSignaturePDF(contract),
+                this.CreateFootprintsPDF(contract)
+            };
+
+            var results = await Task.WhenAll(createTasks);
+            
+            var uploadTasks = new List<Task>();
+
+            foreach (var filePath in results)
+            {
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    uploadTasks.Add(_chunkFileUploader.UploadAsync(filePath));
+                }
+            }
+
+            await Task.WhenAll(uploadTasks);
         }
     }
 }

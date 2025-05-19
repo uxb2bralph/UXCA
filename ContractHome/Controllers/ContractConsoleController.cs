@@ -28,6 +28,7 @@ using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
 using ContractHome.Security.Authorization;
 using System.Diagnostics.CodeAnalysis;
+using ContractHome.Services.ContractService;
 
 
 namespace ContractHome.Controllers
@@ -42,13 +43,16 @@ namespace ContractHome.Controllers
         private readonly ICacheStore _cacheStore;
         private readonly EmailFactory _emailContentFactories;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ICustomContractService _customContractService;
+
         public ContractConsoleController(ILogger<HomeController> logger,
             IServiceProvider serviceProvider,
             ICacheStore cacheStore,
             ContractServices contractServices,
             EmailFactory emailContentFactories,
             IHttpContextAccessor httpContextAccessor,
-            BaseResponse baseResponse
+            BaseResponse baseResponse,
+            ICustomContractService customContractService
           ) : base(serviceProvider)
         {
             _logger = logger;
@@ -57,6 +61,7 @@ namespace ContractHome.Controllers
             _emailContentFactories = emailContentFactories;
             _httpContextAccessor = httpContextAccessor;
             _baseResponse = baseResponse;
+            _customContractService = customContractService;
         }
 
         public IActionResult ApplyContract(TemplateResourceViewModel viewModel)
@@ -396,7 +401,7 @@ namespace ContractHome.Controllers
                 if (IsNotNull(targetUsers))
                 {
                     _contractServices.CDS_DocumentTransitStep(contract, profile!.UID, CDS_Document.StepEnum.Sealed);
-                    _contractServices.SendUsersNotifyEmailAboutContractAsync(
+                    await _contractServices.SendUsersNotifyEmailAboutContractAsync(
                         contract,
                         _emailContentFactories.GetNotifySign(),
                         targetUsers);
@@ -1446,13 +1451,16 @@ namespace ContractHome.Controllers
                     {
                         _contractServices.CDS_DocumentTransitStep(item.Contract, profile!.UID, CDS_Document.StepEnum.Committed);
 
+                        // 上傳簽署及足跡PDF
+                        await _customContractService.UploadSignatureAndFootprintsPdfFile(item.Contract);
+
                         EmailContentBodyDto emailContentBodyDto =
                             new EmailContentBodyDto(contract: item?.Contract, initiatorOrg: null, userProfile: profile);
 
-                        var targetUsers = _contractServices.GetUsersbyContract(item.Contract);
+                        var targetUsers = _contractServices.GetUsersByContractSignatureRequest(item.Contract);
                         if (targetUsers!=null)
                         {
-                            _contractServices.SendUsersNotifyEmailAboutContractAsync(
+                            await _contractServices.SendUsersNotifyEmailAboutContractAsync(
                                 item.Contract,
                                 _emailContentFactories.GetFinishContract(emailContentBodyDto),
                                 targetUsers);
@@ -1582,11 +1590,14 @@ namespace ContractHome.Controllers
                     {
                         _contractServices.CDS_DocumentTransitStep(item.Contract, profile!.UID, CDS_Document.StepEnum.Committed);
 
+                        // 上傳簽署及足跡PDF
+                        await _customContractService.UploadSignatureAndFootprintsPdfFile(item.Contract);
+
                         EmailContentBodyDto emailContentBodyDto =
                             new EmailContentBodyDto(contract: item.Contract, initiatorOrg: null, userProfile: profile);
 
-                        var targetUsers = _contractServices.GetUsersbyContract(item.Contract);
-                        _contractServices.SendUsersNotifyEmailAboutContractAsync(
+                        var targetUsers = _contractServices.GetUsersByContractSignatureRequest(item.Contract);
+                        await _contractServices.SendUsersNotifyEmailAboutContractAsync(
                             item.Contract,
                             _emailContentFactories.GetFinishContract(emailContentBodyDto),
                             targetUsers);
@@ -1894,7 +1905,7 @@ namespace ContractHome.Controllers
                 var targetUsers = _contractServices.GetUsersbyContract(contract);
                 if (IsNotNull(targetUsers))
                 {
-                    _contractServices.SendUsersNotifyEmailAboutContractAsync(
+                    await _contractServices.SendUsersNotifyEmailAboutContractAsync(
                         contract,
                         (contract.IsPassStamp==true) ? _emailContentFactories.GetNotifySign() : _emailContentFactories.GetNotifySeal(),
                         targetUsers);
