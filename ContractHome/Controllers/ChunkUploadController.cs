@@ -1,4 +1,5 @@
 ﻿using System.Security.Cryptography;
+using CommonLib.Core.Utility;
 using ContractHome.Helper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -46,6 +47,7 @@ namespace ContractHome.Controllers
             }
             catch (Exception ex)
             {
+                FileLogger.Logger.Error(ex);
                 return StatusCode(500, new { error = ex.Message });
             }
         }
@@ -72,6 +74,7 @@ namespace ContractHome.Controllers
             }
             catch (Exception ex)
             {
+                FileLogger.Logger.Error(ex);
                 return StatusCode(500, new { error = ex.Message });
             }
         }
@@ -91,6 +94,7 @@ namespace ContractHome.Controllers
             }
             catch (Exception ex)
             {
+                FileLogger.Logger.Error(ex);
                 return StatusCode(500, new { error = ex.Message });
             }
 
