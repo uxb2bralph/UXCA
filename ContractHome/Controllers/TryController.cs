@@ -9,6 +9,7 @@ using ContractHome.Models.Email.Template;
 using ContractHome.Models.Helper;
 using ContractHome.Services.ContractService;
 using ContractHome.Services.HttpChunk;
+using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -19,6 +20,7 @@ using System.Net;
 using System.Web;
 using Wangkanai.Extensions;
 using static ContractHome.Helper.JwtTokenGenerator;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ContractHome.Controllers
 {
@@ -36,6 +38,7 @@ namespace ContractHome.Controllers
         private readonly KNFileUploadSetting _KNFileUploadSetting;
         private readonly ICustomContractService _customContractService;
         private readonly ChunkFileUploader _chunkFileUploader;
+        private readonly EmailFactory _emailContentFactories;
         public TryController(
             IMailService mailService,
             IViewRenderService viewRenderService,
@@ -45,6 +48,8 @@ namespace ContractHome.Controllers
             , IOptions<KNFileUploadSetting> kNFileUploadSetting
             , ICustomContractService customContractService
             , ChunkFileUploader chunkFileUploader
+            , EmailFactory emailContentFactories
+
             )
         {
             _contractServices = contractServices;
@@ -55,6 +60,7 @@ namespace ContractHome.Controllers
             _KNFileUploadSetting = kNFileUploadSetting.Value;
             _customContractService = customContractService;
             _chunkFileUploader = chunkFileUploader;
+            _emailContentFactories = emailContentFactories;
         }
 
         public class VO
@@ -115,7 +121,7 @@ namespace ContractHome.Controllers
                     var fileBytes = ms.ToArray();
                     PdfDocument pdfDocument = PdfDocument.FromFile(filePath);
                     IronPdfExtensions.ApplyStamp(pdfDocument, fileBytes, 1, 1, 1.01, 0);
-                    String extName = $"{Guid.NewGuid()}{Path.GetExtension(pdfFile.FullName)}";
+                    string extName = $"{Guid.NewGuid()}{Path.GetExtension(pdfFile.FullName)}";
                     string uploads = Path.Combine(_hostingEnvironment.WebRootPath, "logs", extName);
                     pdfDocument.SaveAs(uploads);
                     return Ok();
@@ -287,12 +293,45 @@ namespace ContractHome.Controllers
                     msgRes = new MsgRes()
                     {
                         type = ContractResultType.E.ToString(),
-                        code = ICustomContractService.ResultCodeHeader + ContractResultCode.ContractCreate,
+                        code = ContractResultCode.ContractCreate.GetFullCode(),
                         desc = ex.ToString()
                     }
                 });
             }
             
+        }
+
+        [HttpGet]
+        [Route("CreatePDF")]
+        public async Task<IActionResult> CreatePDF()
+        {
+            DCDataContext models = new DCDataContext();
+            var contract = models.GetTable<Models.DataEntity.Contract>().Where(x => x.ContractID == 5200).FirstOrDefault();
+            if (contract == null)
+            {
+                return NotFound("Contract not found");
+            }
+
+            //var tasks = new List<Task<string>>
+            //{
+            //     _customContractService.CreateSignaturePDF(contract),
+            //     _customContractService.CreateFootprintsPDF(contract)
+            //};
+            //var results = await Task.WhenAll(tasks);
+
+            await _customContractService.UploadSignatureAndFootprintsPdfFile(contract);
+
+            return Ok();
+        }
+
+        [HttpGet]
+        [Route("SendEmail")]
+        public async Task<IActionResult> SendEmail()
+        {
+            
+            //await _contractServices.NotifyTerminationContract();
+
+            return Ok();
         }
     }
 }
