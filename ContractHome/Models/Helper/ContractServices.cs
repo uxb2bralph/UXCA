@@ -541,6 +541,91 @@ namespace ContractHome.Models.Helper
             _models.SubmitChanges();
         }
 
+        /// <summary>
+        /// 合約終止
+        /// </summary>
+        /// <param name="contract"></param>
+        public void TerminationContractByInitiator(Contract contract)
+        {
+            var db = _models.DataContext;
+            // 取得合約建立人
+            var initiator = (from dp in db.DocumentProcessLog
+                                join u in db.UserProfile on dp.ActorID equals u.UID
+                                where dp.DocID == contract.ContractID && dp.StepID == (int)CDS_Document.StepEnum.Establish
+                                select u).FirstOrDefault();
+
+            if (initiator == null)
+            {
+                FileLogger.Logger.Info($"TerminationContractByInitiator Contract: {contract.Title}-{contract.ContractNo} 合約建立人不存在!?");
+                return;
+            }
+            // 合約終止
+            DocumentProcessLog terminatedLog = new()
+            {
+                LogDate = DateTime.Now,
+                ActorID = initiator.UID,
+                StepID = (int)CDS_Document.StepEnum.Terminated,
+                ClientIP = "-1",
+                ClientDevice = "System"
+            };
+
+            contract.CDS_Document.DocumentProcessLog.Add(terminatedLog);
+            contract.CDS_Document.CurrentStep = (int)CDS_Document.StepEnum.Terminated;
+            _models.SubmitChanges();
+            FileLogger.Logger.Info($"TerminationContractByInitiator Contract: {contract.Title}-{contract.ContractNo} 已終止");
+        }
+
+        public async Task TerminationContractFlow()
+        {
+            StringBuilder sb = new StringBuilder();
+            try
+            {
+                _models = new GenericManager<DCDataContext>();
+                var contracts = _models
+                    .GetTable<Contract>()
+                    .Where(d => CDS_Document.DocumentEditable.Contains((CDS_Document.StepEnum)d.CDS_Document.CurrentStep!))
+                    .Where(x => x.NotifyUntilDate != null)
+                    .Where(x => x.NotifyUntilDate.Value.AddDays(1) == DateTime.Now.Date)
+                    .ToList();
+                if (contracts.Count > 0)
+                {
+                    sb.AppendLine($"TerminationContractFlow:contracts.Count()={contracts.Count()}");
+                    foreach (var contract in contracts)
+                    {
+                        await NotifyTerminationContract(contract);
+                        TerminationContractByInitiator(contract);
+                    }
+                }
+                else
+                {
+                    sb.AppendLine("TerminationContractFlow:contracts.Count()=0");
+                }
+                FileLogger.Logger.Info(sb.ToString());
+            }
+            catch (Exception ex)
+            {
+                FileLogger.Logger.Error(ex);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 發送合約終止通知
+        /// </summary>
+        /// <returns></returns>
+        public async Task NotifyTerminationContract(Contract contract)
+        {
+            var users = GetUsersByWhoNotFinished(contract, contract.CurrentStep);
+            await SendUsersNotifyEmailAboutContractAsync(
+                        contract,
+                        _emailContentFactories.GetTerminationContract(),
+                        users
+            );
+
+            var usersString = string.Join(" ", users.Select(x => $"{x.UID}"));
+            FileLogger.Logger.Info($"NotifyTerminationContract ContractID: {contract.ContractID} {(CDS_Document.StepEnum)contract.CurrentStep} UID: {usersString}");
+        }
+
         public async Task NotifyWhoNotFinishedDoc()
         {
             StringBuilder sb = new StringBuilder();
@@ -559,7 +644,7 @@ namespace ContractHome.Models.Helper
 
                 if (contracts.Count()>0)
                 {
-                    sb.AppendLine($"NotifyWhoNotFinishedDoc:contracts.Count()={contracts.Count()}");
+                    sb.AppendLine($"NotifyWhoNotFinishedDoc:contracts.Count()={contracts.Count}");
 
                     foreach (var contract in contracts)
                     {

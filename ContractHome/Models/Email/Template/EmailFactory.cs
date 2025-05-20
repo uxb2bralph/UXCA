@@ -135,6 +135,21 @@ namespace ContractHome.Models.Email.Template
             return emailContent;
         }
 
+        public IEmailContent GetTerminationContract(EmailContentBodyDto dto)
+        {
+            var emailContent = _emailContents.OfType<TerminationContract>()
+                .FirstOrDefault()!;
+            emailContent.CreateBody(dto);
+            return emailContent;
+        }
+
+        public IEmailContent GetTerminationContract()
+        {
+            var emailContent = _emailContents.OfType<TerminationContract>()
+                .FirstOrDefault()!;
+            return emailContent;
+        }
+
         public IEmailContent GetLoginSuccessed(string emailUserName, string email)
         {
             var emailContent = _emailContents.OfType<LoginSuccessed>()

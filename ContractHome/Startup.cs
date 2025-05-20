@@ -130,6 +130,7 @@ namespace ContractHome
             services.AddScoped<IEmailContent, PasswordUpdated>();
             services.AddScoped<IEmailContent, ApplyPassword>();
             services.AddScoped<IEmailContent, FinishContract>();
+            services.AddScoped<IEmailContent, TerminationContract>();
 
             #region 中鋼 KN 合約配置
             services.Configure<KNFileUploadSetting>(Configuration.GetSection(nameof(KNFileUploadSetting)));
@@ -157,6 +158,7 @@ namespace ContractHome
             services.Configure<List<JobSetting>>(this.Configuration.GetSection("JobSetting"));
             services.AddJobManager()
                     .AddrecurringJob<JobNotifyWhoNotFinishedDoc>()
+                    .AddrecurringJob<JobNotifyTerminationContract>()
                     .AddrecurringJob<JobTouchWebEveryday>();
 
             #endregion
