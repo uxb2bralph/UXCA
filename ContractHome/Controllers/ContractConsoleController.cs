@@ -29,6 +29,7 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using ContractHome.Security.Authorization;
 using System.Diagnostics.CodeAnalysis;
 using ContractHome.Services.ContractService;
+using Wangkanai.Detection.Services;
 
 
 namespace ContractHome.Controllers
@@ -44,6 +45,7 @@ namespace ContractHome.Controllers
         private readonly EmailFactory _emailContentFactories;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ICustomContractService _customContractService;
+        private readonly IDetectionService _detectionService;
 
         public ContractConsoleController(ILogger<HomeController> logger,
             IServiceProvider serviceProvider,
@@ -52,7 +54,8 @@ namespace ContractHome.Controllers
             EmailFactory emailContentFactories,
             IHttpContextAccessor httpContextAccessor,
             BaseResponse baseResponse,
-            ICustomContractService customContractService
+            ICustomContractService customContractService,
+            IDetectionService detectionService
           ) : base(serviceProvider)
         {
             _logger = logger;
@@ -62,6 +65,7 @@ namespace ContractHome.Controllers
             _httpContextAccessor = httpContextAccessor;
             _baseResponse = baseResponse;
             _customContractService = customContractService;
+            _detectionService = detectionService;
         }
 
         public IActionResult ApplyContract(TemplateResourceViewModel viewModel)
@@ -764,6 +768,8 @@ namespace ContractHome.Controllers
                     LogDate = DateTime.Now,
                     ActorID = profile!.UID,
                     StepID = (int)CDS_Document.StepEnum.Browsed,
+                    ClientIP = HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    ClientDevice = $"{_detectionService.Platform.Name} {_detectionService.Platform.Version.ToString()}/{_detectionService.Browser.Name}"
                 });
 
                 models.SubmitChanges();
