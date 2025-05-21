@@ -172,17 +172,17 @@
             :class="{ 'd-flex flex-row' : !isLayoutCard }">
             <div class="d-flex justify-content-between" :class="{ 'col-4' : !isLayoutCard }">
               <!-- 已取消 -->
-              <span v-if="contract.CurrentStep === 1" class="fs-4 text-primary opacity-75"
+              <span v-if="contract.CurrentStep === @((int)CDS_Document.StepEnum.Config)" class="fs-4 text-primary opacity-75"
                 style="position: absolute;left: 24px; top: 25px;">
                 <i class="far fa-trash-alt"></i>
               </span>
               <!-- 已完成 -->
-              <span v-if="contract.CurrentStep === 18" class="fs-4 text-success opacity-75"
+              <span v-if="contract.CurrentStep === @((int)CDS_Document.StepEnum.Committed)" class="fs-4 text-success opacity-75"
                 style="position: absolute;left: 24px; top: 25px;">
                 <i class="fas fa-check-circle"></i>
               </span>
               <!-- 已終止 -->
-              <span v-if="contract.CurrentStep === 19" class="fs-4 text-danger opacity-75"
+              <span v-if="contract.CurrentStep === @((int)CDS_Document.StepEnum.Revoked) || contract.CurrentStep === @((int)CDS_Document.StepEnum.Terminated)" class="fs-4 text-danger opacity-75"
                 style="position: absolute;left: 24px; top: 25px;">
                 <i class="fas fa-ban"></i>
               </span>
@@ -825,7 +825,7 @@
       // 是否可簽署
       canSigner(contract) {
         const { CurrentStep } = contract;
-        return CurrentStep === 7 || CurrentStep === 10;
+        return CurrentStep === @((int)CDS_Document.StepEnum.Sealed) || CurrentStep === @((int)CDS_Document.StepEnum.DigitalSigning);
       },
 
       // 重設查詢

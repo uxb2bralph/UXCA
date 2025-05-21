@@ -80,7 +80,6 @@
           @{
             if (ViewBag.CanCreateContract)
             {
-              <!--<span class="px-3 text-black-50"> | </span>-->
               <div id="addContract" class="tooltip__wrapper">
                 <button type="button" class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="addHandler">
                   <i class="fal fa-file-plus"></i>
@@ -1448,13 +1447,13 @@
       // 是否可簽署
       canSigner(contract) {
         const { CurrentStep } = contract;
-        return CurrentStep === 7 || CurrentStep === 10;
+        return CurrentStep === @((int)CDS_Document.StepEnum.Sealed) || CurrentStep === @((int)CDS_Document.StepEnum.DigitalSigning);
       },
 
       // 是否可簽署
       canSignerByCsr(csr) {
           const { Step } = csr;
-          return Step === 10;
+          return Step === @((int)CDS_Document.StepEnum.DigitalSigning);
       },
 
       // 新增文件 Modal

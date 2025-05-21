@@ -476,7 +476,7 @@
     },
     computed: {
       isEdit() {
-        return this.CurrentStep === 1;
+        return this.CurrentStep === @((int)CDS_Document.StepEnum.Config);
       },
       isContractorEmpty() {
         const isZero = this.selectedContractor[0]?.id === '0';
