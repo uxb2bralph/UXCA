@@ -387,7 +387,7 @@ namespace ContractHome.Services.ContractService
             {
                 var company = from u in db.UserProfile
                               join ou in db.OrganizationUser on u.UID equals ou.UID
-                              where u.EMail.Equals(model.NotifyMail) && ou.CompanyID == 21
+                              where u.EMail.Equals(model.NotifyMail)
                               select new
                               {
                                   ou.CompanyID
