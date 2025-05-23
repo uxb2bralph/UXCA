@@ -49,7 +49,7 @@ namespace ContractHome.Services.ContractService
             // 取得起約人資訊
             var promisor = (from u in db.UserProfile
                             join ou in db.OrganizationUser on u.UID equals ou.UID
-                            where u.EMail.Equals(model.NotifyMail) && ou.CompanyID == 21
+                            where u.EMail.Equals(model.NotifyMail)
                             select new Promisor()
                             {
                                 UID = u.UID,
@@ -552,19 +552,28 @@ namespace ContractHome.Services.ContractService
             }
 
             JObject content = JObject.Parse(File.ReadAllText(request.ResponsePath));
-            if ((string)content["code"] != "0")
+            string code = content["code"]?.ToString() ?? "";
+
+            if (code != "0")
             {
                 return string.Empty;
             }
 
+            string msg = content["msg"]?.ToString() ?? "";
 
-            byte[] pdfBytes = Convert.FromBase64String((string)content["msg"]);
+            if (string.IsNullOrEmpty(msg))
+            {
+                return string.Empty;
+            }
+
+            byte[] pdfBytes = Convert.FromBase64String(msg);
             //PdfDocument pdfDocument = new(pdfBytes);
             string fileName = $"{_KNFileUploadSetting.SignatureQueueid}_{contract.ContractNo}_{_KNFileUploadSetting.FileCurrentDateTime}.pdf";
             string saveFilePath = Path.Combine(_KNFileUploadSetting.DownloadFolderPath, fileName);
+            // 透過 IronPdf 儲存PDF檔案 會洗掉簽章有效性
             //pdfDocument.SaveAs(saveFilePath);
 
-            File.WriteAllBytes(saveFilePath, pdfBytes);
+            await File.WriteAllBytesAsync(saveFilePath, pdfBytes);
 
             return saveFilePath;
         }
@@ -645,7 +654,7 @@ namespace ContractHome.Services.ContractService
                                       model: signHistoryPager);
 
             var renderer = new ChromePdfRenderer();
-            PdfDocument pdfDocument = renderer.RenderHtmlAsPdf(rptViewRenderString);
+            PdfDocument pdfDocument = await renderer.RenderHtmlAsPdfAsync(rptViewRenderString);
             string fileName = $"{_KNFileUploadSetting.HistoryQueueid}_{contract.ContractNo}_{_KNFileUploadSetting.FileCurrentDateTime}.pdf";
             string saveFilePath = Path.Combine(_KNFileUploadSetting.DownloadFolderPath, fileName);
             pdfDocument.SaveAs(saveFilePath);
