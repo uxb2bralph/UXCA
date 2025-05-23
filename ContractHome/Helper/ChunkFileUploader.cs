@@ -147,7 +147,7 @@ namespace ContractHome.Helper
 
                     var content = BuildMultipartContent(fileId, chunkIndex, totalChunks, buffer);
                     var resp = await httpClient.PostAsync(_kNFileUploadSetting.ChunkUploadUrl, content);
-                    //await Task.Delay(2000);
+
                     if (resp.IsSuccessStatusCode)
                     {
                         WriteLog($"fileId:{fileId} Chunk {chunkIndex} 成功：{resp.StatusCode} - 嘗試 {attempt}/{MaxRetries}");
@@ -160,8 +160,6 @@ namespace ContractHome.Helper
                 {
                     WriteLog($"[!] fileId:{fileId} Chunk {chunkIndex} 發生錯誤：{ex.Message} - 嘗試 {attempt}/{MaxRetries}");
                 }
-
-                await Task.Delay(2000);
             }
 
             throw new Exception($"Chunk {chunkIndex} 上傳失敗");
