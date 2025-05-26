@@ -11,17 +11,18 @@ namespace ContractHome.Helper
     /// <summary>
     /// 分塊檔案上傳 將檔案分塊後 同時上傳至Server 並通知Server合併檔案
     /// </summary>
-    public class ChunkFileUploader(IOptions<KNFileUploadSetting> kNFileUploadSetting)
+    public class ChunkFileUploader(IOptions<KNFileUploadSetting> kNFileUploadSetting, IHttpClientFactory httpClientFactory)
     {
         private readonly KNFileUploadSetting _kNFileUploadSetting = kNFileUploadSetting.Value;
+        private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
 
         const int MaxRetries = 3;
         const int ThreadPoolSize = 4;
 
-        static readonly HttpClient httpClient = new()
-        {
-            Timeout = TimeSpan.FromSeconds(30)
-        };
+        //static readonly HttpClient httpClient = new()
+        //{
+        //    Timeout = TimeSpan.FromSeconds(30)
+        //};
 
         // 取得當前時間字串
         private static string CurrentDateTime => DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff");
@@ -105,6 +106,7 @@ namespace ContractHome.Helper
         private async Task<HashSet<int>> CheckUploadStatus(string fileId, int totalChunks)
         {
             var url = $"{_kNFileUploadSetting.ChunkUploadUrl}/status?identifier={fileId}&totalChunks={totalChunks}";
+            var httpClient = _httpClientFactory.CreateClient();
             var resp = await httpClient.GetAsync(url);
             if (!resp.IsSuccessStatusCode)
             {
@@ -146,6 +148,7 @@ namespace ContractHome.Helper
                     }
 
                     var content = BuildMultipartContent(fileId, chunkIndex, totalChunks, buffer);
+                    var httpClient = _httpClientFactory.CreateClient();
                     var resp = await httpClient.PostAsync(_kNFileUploadSetting.ChunkUploadUrl, content);
 
                     if (resp.IsSuccessStatusCode)
@@ -197,6 +200,7 @@ namespace ContractHome.Helper
                 new KeyValuePair<string, string>("identifier", fileId),
                 new KeyValuePair<string, string>("originalFilename", originalFileName)
             ]);
+            var httpClient = _httpClientFactory.CreateClient();
             var resp = await httpClient.PostAsync(url, content);
             var result = await resp.Content.ReadAsStringAsync();
             WriteLog("伺服器回應：" + result);

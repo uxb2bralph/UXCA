@@ -112,6 +112,8 @@ namespace ContractHome
                 //options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
             });
 
+            services.AddHttpClient();
+
             services.AddScoped<IViewRenderService, ViewRenderService>();
 
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
