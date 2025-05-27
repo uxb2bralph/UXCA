@@ -6,9 +6,7 @@ name: .NET
 on:
   push:
     branches: [ "KNChunk_dev" ]
-  pull_request:
-    branches: [ "KNChunk_dev" ]
-
+    
 jobs:
   build:
 
