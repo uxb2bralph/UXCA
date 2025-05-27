@@ -1458,7 +1458,7 @@ namespace ContractHome.Controllers
                         _contractServices.CDS_DocumentTransitStep(item.Contract, profile!.UID, CDS_Document.StepEnum.Committed);
 
                         // 上傳簽署及足跡PDF
-                        await _customContractService.UploadSignatureAndFootprintsPdfFile(item.Contract);
+                        _customContractService.UploadSignatureAndFootprintsPdfFile(item.Contract);
 
                         EmailContentBodyDto emailContentBodyDto =
                             new EmailContentBodyDto(contract: item?.Contract, initiatorOrg: null, userProfile: profile);
@@ -1597,7 +1597,7 @@ namespace ContractHome.Controllers
                         _contractServices.CDS_DocumentTransitStep(item.Contract, profile!.UID, CDS_Document.StepEnum.Committed);
 
                         // 上傳簽署及足跡PDF
-                        await _customContractService.UploadSignatureAndFootprintsPdfFile(item.Contract);
+                        _customContractService.UploadSignatureAndFootprintsPdfFile(item.Contract);
 
                         EmailContentBodyDto emailContentBodyDto =
                             new EmailContentBodyDto(contract: item.Contract, initiatorOrg: null, userProfile: profile);
