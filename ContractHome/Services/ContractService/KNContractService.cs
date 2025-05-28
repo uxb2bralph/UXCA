@@ -64,7 +64,7 @@ namespace ContractHome.Services.ContractService
                 ContractNo = model.ContractNo,
                 Title = model.Title,
                 IsPassStamp = model.IsPassStamp,
-                CompanyID = promisor?.CompanyID ?? 0,
+                CompanyID = promisor.CompanyID,
                 NotifyUntilDate = DateTime.Parse(model.ExpiryDateTime)
             };
 
@@ -168,7 +168,7 @@ namespace ContractHome.Services.ContractService
         /// <param name="signatory"></param>
         /// <param name="companyId"></param>
         /// <returns></returns>
-        private int CreateUserProfile(DCDataContext db, Signatory signatory, int companyId)
+        private int CreateUserProfile(DCDataContext db, Signatory signatory, int companyId, int createrUID)
         {
             // 檢查簽屬者是否存在
             var signatoryUser = (from u in db.UserProfile
@@ -191,7 +191,8 @@ namespace ContractHome.Services.ContractService
                     EMail = signatory.Mail,
                     PID = signatory.Mail,
                     Password = $"@{signatory.Mail}".HashPassword(),
-                    Region = "0"
+                    Region = "0",
+                    Creator = createrUID
                 };
 
                 db.UserProfile.InsertOnSubmit(userProfile);
@@ -306,10 +307,10 @@ namespace ContractHome.Services.ContractService
                 var (contract, promisor) = CreateContract(db, model);
 
                 // 建立起約者合約簽署要求
-                CreateContractSignatureRequest(contract, promisor?.CompanyID ?? 0, promisor?.UID ?? 0, model.IsPassStamp);
+                CreateContractSignatureRequest(contract, promisor.CompanyID, promisor.UID, model.IsPassStamp);
 
                 // 建立起約者相關合約公司
-                CreateContractingParty(contract, promisor?.CompanyID ?? 0, (int)ContractingIntent.ContractingIntentEnum.Initiator, true);
+                CreateContractingParty(contract, promisor.CompanyID, (int)ContractingIntent.ContractingIntentEnum.Initiator, true);
 
                 // 相關合約公司ID
                 HashSet<int> companyCPIds = [];
@@ -319,9 +320,9 @@ namespace ContractHome.Services.ContractService
                 foreach (var signatory in model.Signatories)
                 {
                     // 建立簽署者公司
-                    int companyId = CreateOrganization(db, signatory, promisor?.CompanyID ?? 0);
+                    int companyId = CreateOrganization(db, signatory, promisor.CompanyID);
                     // 建立簽署者
-                    int uid = CreateUserProfile(db, signatory, companyId);
+                    int uid = CreateUserProfile(db, signatory, companyId, promisor.UID);
                     // 建立簽署者合約簽署要求
                     CreateContractSignatureRequest(contract, companyId, uid, model.IsPassStamp);
 
@@ -336,7 +337,7 @@ namespace ContractHome.Services.ContractService
                 }
 
                 // 合約建立步驟
-                CreateDocumentProcessLog(contract, promisor?.UID ?? 0, model.IsPassStamp);
+                CreateDocumentProcessLog(contract, promisor.UID, model.IsPassStamp);
 
                 db.SubmitChanges();
                 
