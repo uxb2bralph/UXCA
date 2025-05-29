@@ -1,35 +1,28 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using ContractHome.Models.DataEntity;
-using ContractHome.Models.ViewModel;
+﻿using ClosedXML.Excel;
+using CommonLib.Core.Utility;
 using CommonLib.Utility;
 using ContractHome.Helper;
-using CommonLib.Core.Utility;
-using System.Drawing;
-using System.Linq.Dynamic.Core;
-using ContractHome.Models.Helper;
-using System.Data.Linq;
-using System.Data;
 using ContractHome.Helper.DataQuery;
-using System.Web;
-using Newtonsoft.Json;
-using ContractHome.Models.Email.Template;
-using static ContractHome.Models.DataEntity.CDS_Document;
-using ContractHome.Models.Dto;
-using FluentValidation;
-using static ContractHome.Models.Helper.ContractServices;
-using static ContractHome.Helper.JwtTokenGenerator;
 using ContractHome.Models.Cache;
+using ContractHome.Models.DataEntity;
+using ContractHome.Models.Dto;
+using ContractHome.Models.Email.Template;
+using ContractHome.Models.Helper;
+using ContractHome.Models.ViewModel;
 using ContractHome.Properties;
-using static CommonLib.Utility.PredicateBuilder;
-using Newtonsoft.Json.Linq;
-using System.Reflection;
-using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Spreadsheet;
-using ContractHome.Security.Authorization;
-using System.Diagnostics.CodeAnalysis;
 using ContractHome.Services.ContractService;
+using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.Data;
+using System.Data.Linq;
+using System.Linq.Dynamic.Core;
+using System.Web;
 using Wangkanai.Detection.Services;
+using static CommonLib.Utility.PredicateBuilder;
+using static ContractHome.Helper.JwtTokenGenerator;
+using static ContractHome.Models.Helper.ContractServices;
 
 
 namespace ContractHome.Controllers
@@ -820,15 +813,25 @@ namespace ContractHome.Controllers
 
             if (contract != null)
             {
-                String? imgFile = contract.GetContractImage(viewModel.PageIndex ?? 0);
-                if (imgFile != null)
+                //String? imgFile = contract.GetContractImage(viewModel.PageIndex ?? 0);
+                //if (imgFile != null)
+                //{
+                //    var img = Bitmap.FromFile(imgFile);
+                //    return Json(new
+                //    {
+                //        width = img.Width,
+                //        height = img.Height,
+                //        backgroundImage = $"url('../{imgFile!.Substring(imgFile.IndexOf("logs")).Replace('\\', '/')}')",
+                //    });
+                //}
+                var img = contract.GetContractImageData(viewModel.PageIndex ?? 0);
+                if (img.Width != 0)
                 {
-                    var img = Bitmap.FromFile(imgFile);
                     return Json(new
                     {
                         width = img.Width,
                         height = img.Height,
-                        backgroundImage = $"url('../{imgFile!.Substring(imgFile.IndexOf("logs")).Replace('\\', '/')}')",
+                        backgroundImage = $"url('{img.ImgUrl}')",
                     });
                 }
             }

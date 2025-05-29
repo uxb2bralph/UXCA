@@ -1,30 +1,31 @@
-﻿using CommonLib.DataAccess;
-using CommonLib.Core.Utility;
+﻿using CommonLib.Core.Utility;
+using CommonLib.DataAccess;
+using CommonLib.Utility;
+using ContractHome.Models.DataEntity;
+using ContractHome.Properties;
+using IronPdf.Editing;
+using IronPdf.Signing;
+using IronSoftware.Drawing;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Linq;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using ContractHome.Models.DataEntity;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using System.Drawing;
-using ContractHome.Properties;
-using Newtonsoft.Json.Linq;
-using IronPdf.Editing;
-using CommonLib.Utility;
-using IronPdf.Signing;
-using IronSoftware.Drawing;
-using System.Drawing.Imaging;
-using System.Text.RegularExpressions;
 
 namespace ContractHome.Models.Helper
 {
@@ -44,6 +45,23 @@ namespace ContractHome.Models.Helper
             return new MemoryStream();
         }
 
+        public static (int Width, int Height, string ImgUrl) GetContractImageData(this Contract contract, int pageIndex)
+        {
+            using PdfDocument? pdf = BuildContractDocument(contract, pageIndex);
+            if (pdf != null)
+            {
+                using AnyBitmap bmp = pdf.PageToBitmap(0);
+                using MemoryStream stream = new();
+                
+                bmp.ExportStream(stream, AnyBitmap.ImageFormat.Png);
+                string imgBase64 = Convert.ToBase64String(stream.ToArray());
+                string imgUrl = $"data:image/png;base64,{imgBase64}";
+                return (bmp.Width, bmp.Height, imgUrl);
+            }
+
+            return (0,0,"");
+        }
+
         public static String? GetContractImage(this Contract contract, int pageIndex)
         {
             using PdfDocument? pdf = BuildContractDocument(contract);
@@ -53,6 +71,64 @@ namespace ContractHome.Models.Helper
                 String filePath = Path.Combine(FileLogger.Logger.LogDailyPath, $"{contract.ContractID:00000000}-{pageIndex:000}-{DateTime.Now.Ticks}.jpg");
                 bmp.SaveAs(filePath, AnyBitmap.ImageFormat.Jpeg);
                 return filePath;
+            }
+
+            return null;
+        }
+
+        public static PdfDocument? BuildContractDocument(this Contract contract, int pageIndex = -1)
+        {
+            PdfDocument? pdf = null;
+            if (contract.FilePath != null && System.IO.File.Exists(contract.FilePath))
+            {
+                pdf = PdfDocument.FromFile(contract.FilePath/*, TrackChanges: true*/);
+            }
+            else if (contract.ContractContent != null)
+            {
+                pdf = new PdfDocument(contract.ContractContent.ToArray());
+            }
+
+            if (pdf != null)
+            {
+                PdfDocument outputDocument = pdf.CopyPage(pageIndex);
+                using DCDataContext db = new();
+                // Load Word document from file's path.
+                //var sig = contract.ContractSignatureRequest.Where(x => x.PageIndex == pageIndex).FirstOrDefault();
+
+                var sig = (from c in db.Contract
+                           join s in db.ContractSignatureRequest on c.ContractID equals s.ContractID
+                           where s.PageIndex == pageIndex && c.ContractID == contract.ContractID
+                           select s).FirstOrDefault();
+
+                if (sig != null && sig.SealImage != null)
+                {
+                    byte[] buf = sig.SealImage.ToArray();
+                    ApplyStamp(outputDocument, buf, sig.MarginLeft, sig.MarginTop, sig.SealScale, 0);
+
+                }
+
+                //var csr = contract.ContractSealRequest.Where(x => x.PageIndex == pageIndex).FirstOrDefault();
+                var csr = (from c in db.Contract
+                           join s in db.ContractSealRequest on c.ContractID equals s.ContractID
+                           where s.PageIndex == pageIndex && c.ContractID == contract.ContractID
+                           select s).FirstOrDefault();
+                if (csr != null && csr.SealTemplate?.SealImage != null)
+                {
+                    byte[] buf = csr.SealTemplate.SealImage.ToArray();
+                    ApplyStamp(outputDocument, buf, csr.MarginLeft, csr.MarginTop, csr.SealScale, 0);
+                }
+
+                //var note = contract.ContractNoteRequest.Where(x => x.PageIndex == pageIndex).FirstOrDefault();
+                var note = (from c in db.Contract
+                            join n in db.ContractNoteRequest on c.ContractID equals n.ContractID
+                            where n.PageIndex == pageIndex && c.ContractID == contract.ContractID
+                            select n).FirstOrDefault();
+                if (note != null)
+                {
+                    ApplyStamp(outputDocument, note.Note, note.MarginLeft, note.MarginTop, 0, note.SealScale);
+                }
+
+                return outputDocument;
             }
 
             return null;
