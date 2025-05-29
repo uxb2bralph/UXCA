@@ -48,18 +48,19 @@ namespace ContractHome.Models.Helper
         public static (int Width, int Height, string ImgUrl) GetContractImageData(this Contract contract, int pageIndex)
         {
             using PdfDocument? pdf = BuildContractDocument(contract, pageIndex);
-            if (pdf != null)
+
+            if (pdf == null)
             {
-                using AnyBitmap bmp = pdf.PageToBitmap(0);
-                using MemoryStream stream = new();
-                
-                bmp.ExportStream(stream, AnyBitmap.ImageFormat.Png);
-                string imgBase64 = Convert.ToBase64String(stream.ToArray());
-                string imgUrl = $"data:image/png;base64,{imgBase64}";
-                return (bmp.Width, bmp.Height, imgUrl);
+                return (0, 0, "");
             }
 
-            return (0,0,"");
+            using AnyBitmap bmp = pdf.PageToBitmap(0);
+            using MemoryStream stream = new();
+
+            bmp.ExportStream(stream, AnyBitmap.ImageFormat.Png);
+            string imgBase64 = Convert.ToBase64String(stream.ToArray());
+            string imgUrl = $"data:image/png;base64,{imgBase64}";
+            return (bmp.Width, bmp.Height, imgUrl);
         }
 
         public static String? GetContractImage(this Contract contract, int pageIndex)
@@ -88,50 +89,47 @@ namespace ContractHome.Models.Helper
                 pdf = new PdfDocument(contract.ContractContent.ToArray());
             }
 
-            if (pdf != null)
+            if (pdf == null)
             {
-                PdfDocument outputDocument = pdf.CopyPage(pageIndex);
-                using DCDataContext db = new();
-                // Load Word document from file's path.
-                //var sig = contract.ContractSignatureRequest.Where(x => x.PageIndex == pageIndex).FirstOrDefault();
-
-                var sig = (from c in db.Contract
-                           join s in db.ContractSignatureRequest on c.ContractID equals s.ContractID
-                           where s.PageIndex == pageIndex && c.ContractID == contract.ContractID
-                           select s).FirstOrDefault();
-
-                if (sig != null && sig.SealImage != null)
-                {
-                    byte[] buf = sig.SealImage.ToArray();
-                    ApplyStamp(outputDocument, buf, sig.MarginLeft, sig.MarginTop, sig.SealScale, 0);
-
-                }
-
-                //var csr = contract.ContractSealRequest.Where(x => x.PageIndex == pageIndex).FirstOrDefault();
-                var csr = (from c in db.Contract
-                           join s in db.ContractSealRequest on c.ContractID equals s.ContractID
-                           where s.PageIndex == pageIndex && c.ContractID == contract.ContractID
-                           select s).FirstOrDefault();
-                if (csr != null && csr.SealTemplate?.SealImage != null)
-                {
-                    byte[] buf = csr.SealTemplate.SealImage.ToArray();
-                    ApplyStamp(outputDocument, buf, csr.MarginLeft, csr.MarginTop, csr.SealScale, 0);
-                }
-
-                //var note = contract.ContractNoteRequest.Where(x => x.PageIndex == pageIndex).FirstOrDefault();
-                var note = (from c in db.Contract
-                            join n in db.ContractNoteRequest on c.ContractID equals n.ContractID
-                            where n.PageIndex == pageIndex && c.ContractID == contract.ContractID
-                            select n).FirstOrDefault();
-                if (note != null)
-                {
-                    ApplyStamp(outputDocument, note.Note, note.MarginLeft, note.MarginTop, 0, note.SealScale);
-                }
-
-                return outputDocument;
+                return null;
             }
 
-            return null;
+            PdfDocument outputDocument = pdf.CopyPage(pageIndex);
+
+            using DCDataContext db = new();
+
+            var sig = (from c in db.Contract
+                       join s in db.ContractSignatureRequest on c.ContractID equals s.ContractID
+                       where s.PageIndex == pageIndex && c.ContractID == contract.ContractID
+                       select s).FirstOrDefault();
+
+            if (sig != null && sig.SealImage != null)
+            {
+                byte[] buf = sig.SealImage.ToArray();
+                ApplyStamp(outputDocument, buf, sig.MarginLeft, sig.MarginTop, sig.SealScale, 0);
+
+            }
+
+            var csr = (from c in db.Contract
+                       join s in db.ContractSealRequest on c.ContractID equals s.ContractID
+                       where s.PageIndex == pageIndex && c.ContractID == contract.ContractID
+                       select s).FirstOrDefault();
+            if (csr != null && csr.SealTemplate?.SealImage != null)
+            {
+                byte[] buf = csr.SealTemplate.SealImage.ToArray();
+                ApplyStamp(outputDocument, buf, csr.MarginLeft, csr.MarginTop, csr.SealScale, 0);
+            }
+
+            var note = (from c in db.Contract
+                        join n in db.ContractNoteRequest on c.ContractID equals n.ContractID
+                        where n.PageIndex == pageIndex && c.ContractID == contract.ContractID
+                        select n).FirstOrDefault();
+            if (note != null)
+            {
+                ApplyStamp(outputDocument, note.Note, note.MarginLeft, note.MarginTop, 0, note.SealScale);
+            }
+
+            return outputDocument;
         }
 
         public static PdfDocument? BuildContractDocument(this Contract contract)
