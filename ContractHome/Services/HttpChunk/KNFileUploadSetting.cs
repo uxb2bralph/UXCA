@@ -6,6 +6,10 @@
     public class KNFileUploadSetting
     {
         /// <summary>
+        /// 是否啟用分段上傳功能
+        /// </summary>
+        public bool Enable { get; set; } = false;
+        /// <summary>
         /// 分段上傳URL
         /// </summary>
         public string ChunkUploadUrl { get; set; } = string.Empty;

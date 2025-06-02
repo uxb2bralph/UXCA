@@ -43,6 +43,12 @@ namespace ContractHome.Helper
         /// <returns></returns>
         public async Task UploadAsync(string filePath)
         {
+            if (!_kNFileUploadSetting.Enable)
+            {
+                WriteLog($"kNFileUploadSetting.Enable:{_kNFileUploadSetting.Enable}");
+                return;
+            }
+
             string fileId = await GenerateFileId(filePath);
             var fileInfo = new FileInfo(filePath);
             long fileSize = fileInfo.Length;
