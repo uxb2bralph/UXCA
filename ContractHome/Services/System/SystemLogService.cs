@@ -5,6 +5,12 @@
     /// </summary>
     public class SystemLogService : ISystemLogService
     {
+        private string GetPath(DateTime dateTime)
+        {
+            return Path.Combine(Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory), "logs",
+                                $"{dateTime:yyyy}", $"{dateTime:MM}", $"{dateTime:dd}");
+        }
+
         /// <summary>
         /// 取得Log檔案的位元組陣列
         /// </summary>
@@ -14,12 +20,9 @@
         public byte[] GetLogByte(string fileName, DateTime? dateTime = null)
         {
             dateTime ??= DateTime.Now;
-            string path = Path.Combine(Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory), "logs",
-                                $"{dateTime:yyyy}", $"{dateTime:MM}", $"{dateTime:dd}");
-            if (!Directory.Exists(path))
-            {
-                return [];
-            }
+
+            string path = GetPath(dateTime.Value);
+
             string filePath = Path.Combine(path, fileName);
 
             if (!File.Exists(filePath))
@@ -37,8 +40,7 @@
         {
             dateTime ??= DateTime.Now;
 
-            string path = Path.Combine(Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory), "logs",
-                                $"{dateTime:yyyy}", $"{dateTime:MM}", $"{dateTime:dd}");
+            string path = GetPath(dateTime.Value);
 
             if (!Directory.Exists(path))
             {
