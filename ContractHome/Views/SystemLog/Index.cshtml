@@ -10,28 +10,25 @@
         <h4 class="mb-2 mt-0 fw-bolder">系統LOG查詢</h4>
         <!-- Section: 查詢欄位 -->
         <div class="card shadow-sm">
-            <form v-on:submit.prevent="inquireData" id="queryArea" method="post" enctype="multipart/form-data">
-                <div class="container">
-                    <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3 m-3 mb-lg-0 data-item">
- 
-                        <div class="col input__height">
-                            <div class="row">
-                                <label class="col-sm-12 col-md-3 col-form-label fw-bolder">查詢日期</label>
-                                <div class="col-sm-12 col-md-9">
-                                    <input v-model="dateTime" type="date" class="form-control" />
-                                </div>
+            <div class="container">
+                <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3 m-3 mb-lg-0 data-item">
+                    <div class="col input__height">
+                        <div class="row">
+                            <label class="col-sm-12 col-md-3 col-form-label fw-bolder">查詢日期</label>
+                            <div class="col-sm-12 col-md-9">
+                                <input v-model="dateTime" type="date" class="form-control" />
                             </div>
                         </div>
-
-                        <div>
-                            <button type="button" class="btn btn-primary" v-on:click="getLogList">
-                                查詢
-                            </button>
-                        </div>
-
                     </div>
+
+                    <div>
+                        <button type="button" class="btn btn-primary" v-on:click="getLogList">
+                            查詢
+                        </button>
+                    </div>
+
                 </div>
-            </form>
+            </div>
         </div>
     </section>
 
