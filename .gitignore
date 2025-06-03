@@ -357,3 +357,6 @@ logs.lnk
 .sonar/
 .scannerwork/
 .sonarqube/
+
+ContractHome/KN_Uploaded/
+ContractHome/KN_Chunks/
