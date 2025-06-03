@@ -1,22 +1,23 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
+using CommonLib.Core.Utility;
 using ContractHome.Controllers.Filters;
 using ContractHome.Helper;
-using CommonLib.Core.Utility;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using ContractHome.Properties;
+using ContractHome.Models.Cache;
+using ContractHome.Models.Dto;
 using ContractHome.Models.Email;
 using ContractHome.Models.Email.Template;
 using ContractHome.Models.Helper;
-using FluentValidation.AspNetCore;
-using ContractHome.Models.Cache;
-using Microsoft.Extensions.Caching.Memory;
+using ContractHome.Properties;
+using ContractHome.Services.ContractService;
+using ContractHome.Services.HttpChunk;
 using ContractHome.Services.Jobs;
+using ContractHome.Services.System;
+using FluentValidation.AspNetCore;
 using Hangfire;
 using Hangfire.Dashboard;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
-using ContractHome.Models.Dto;
-using ContractHome.Services.HttpChunk;
-using ContractHome.Services.ContractService;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace ContractHome
 {
@@ -150,6 +151,9 @@ namespace ContractHome
             services.AddScoped<ChunkFileUploader>();
 
             #endregion
+
+            // 系統Log檔案
+            services.AddScoped<ISystemLogService, SystemLogService>();
 
             services.AddScoped<ContractServices>();
             services.AddScoped<BaseResponse>();

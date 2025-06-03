@@ -88,13 +88,16 @@
                     <a class="dropdown-item" href="@Html.Raw(Url.Action("HistoryReport","Organization"))">簽署文件報表</a>
                   </li>
                   <li>
+                     <a class="dropdown-item" href="@Html.Raw(Url.Action("Index", "SystemLog"))">系統LOG查詢</a>
+                  </li>
+@*                   <li>
                     <a class="dropdown-item" href="@Html.Raw(Url.Action("WebSocket","Organization"))">WebSocket
                       測試</a>
-                  </li>
-                  <li>
+                  </li> *@
+@*                   <li>
                     <a class="dropdown-item" href="@Html.Raw(Url.Action("signHistoryPaper","Organization"))"
                       target="_blank">簽署歷程文件樣板</a>
-                  </li>
+                  </li> *@
                 }
                 @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.MemberAdmin,
                 (int)UserRoleDefinition.RoleEnum.User))
