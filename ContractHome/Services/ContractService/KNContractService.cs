@@ -207,6 +207,15 @@ namespace ContractHome.Services.ContractService
 
                 db.OrganizationUser.InsertOnSubmit(organizationUser);
                 db.SubmitChanges();
+
+                UserRole userRole = new()
+                {
+                    RoleID = (int)UserRoleDefinition.RoleEnum.User,
+                    UID = userProfile.UID
+                };
+
+                db.UserRole.InsertOnSubmit(userRole);
+                db.SubmitChanges();
             }
 
             return uid;
