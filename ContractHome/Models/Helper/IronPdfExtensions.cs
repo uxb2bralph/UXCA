@@ -98,26 +98,33 @@ namespace ContractHome.Models.Helper
 
             using DCDataContext db = new();
 
-            var sig = (from c in db.Contract
+            var sigs = from c in db.Contract
                        join s in db.ContractSignatureRequest on c.ContractID equals s.ContractID
                        where s.PageIndex == pageIndex && c.ContractID == contract.ContractID
-                       select s).FirstOrDefault();
+                       select s;
 
-            if (sig != null && sig.SealImage != null)
+            foreach (var sig in sigs)
             {
-                byte[] buf = sig.SealImage.ToArray();
-                ApplyStamp(outputDocument, buf, sig.MarginLeft, sig.MarginTop, sig.SealScale, 0);
+                if (sig.SealImage != null)
+                {
+                    byte[] buf = sig.SealImage.ToArray();
+                    ApplyStamp(outputDocument, buf, sig.MarginLeft, sig.MarginTop, sig.SealScale, 0);
 
+                }
             }
 
-            var csr = (from c in db.Contract
+            var csrs = from c in db.Contract
                        join s in db.ContractSealRequest on c.ContractID equals s.ContractID
                        where s.PageIndex == pageIndex && c.ContractID == contract.ContractID
-                       select s).FirstOrDefault();
-            if (csr != null && csr.SealTemplate?.SealImage != null)
+                       select s;
+
+            foreach (var csr in csrs)
             {
-                byte[] buf = csr.SealTemplate.SealImage.ToArray();
-                ApplyStamp(outputDocument, buf, csr.MarginLeft, csr.MarginTop, csr.SealScale, 0);
+                if (csr.SealTemplate?.SealImage != null)
+                {
+                    byte[] buf = csr.SealTemplate.SealImage.ToArray();
+                    ApplyStamp(outputDocument, buf, csr.MarginLeft, csr.MarginTop, csr.SealScale, 0);
+                }
             }
 
             var cnr = from c in db.Contract
