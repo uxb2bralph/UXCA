@@ -120,11 +120,12 @@ namespace ContractHome.Models.Helper
                 ApplyStamp(outputDocument, buf, csr.MarginLeft, csr.MarginTop, csr.SealScale, 0);
             }
 
-            var note = (from c in db.Contract
-                        join n in db.ContractNoteRequest on c.ContractID equals n.ContractID
-                        where n.PageIndex == pageIndex && c.ContractID == contract.ContractID
-                        select n).FirstOrDefault();
-            if (note != null)
+            var cnr = from c in db.Contract
+                      join n in db.ContractNoteRequest on c.ContractID equals n.ContractID
+                      where n.PageIndex == pageIndex && c.ContractID == contract.ContractID
+                      select n;
+
+            foreach (var note in cnr)
             {
                 ApplyStamp(outputDocument, note.Note, note.MarginLeft, note.MarginTop, 0, note.SealScale);
             }
