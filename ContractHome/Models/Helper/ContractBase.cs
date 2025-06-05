@@ -73,6 +73,12 @@ namespace ContractHome.Models.Helper
 
             }
             isInitiator = contractingParty.IsInitiator ?? false;
+            // 假如合約在設定狀態 則設定甲方人員為設定狀態
+            if (isInitiator && contract.CDS_Document.CurrentStep == (int)CDS_Document.StepEnum.Config)
+            {
+                Step = (int)CDS_Document.StepEnum.Config;
+            }
+
             IsCurrentUserCompany = userCompanyID != null ? ID == userCompanyID : false;
         }
 

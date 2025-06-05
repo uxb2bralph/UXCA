@@ -171,10 +171,10 @@
           <div :id="`contractNo-${index}`" class="card justify-content-between p-2 pb-2 h-100 shadow-sm"
             :class="{ 'd-flex flex-row' : !isLayoutCard }">
             <div class="d-flex justify-content-between" :class="{ 'col-4' : !isLayoutCard }">
-              <!-- 已取消 -->
+              <!-- 待設定 -->
               <span v-if="contract.CurrentStep === @((int)CDS_Document.StepEnum.Config)" class="fs-4 text-primary opacity-75"
                 style="position: absolute;left: 24px; top: 25px;">
-                <i class="far fa-trash-alt"></i>
+                <i class="far fas fa-sliders-h-square"></i>
               </span>
               <!-- 已完成 -->
               <span v-if="contract.CurrentStep === @((int)CDS_Document.StepEnum.Committed)" class="fs-4 text-success opacity-75"
@@ -263,7 +263,7 @@
               <template v-for="(item, idx) in contract.Parties">
                 <!-- 起約方 -->
                 <div v-if="idx === 0" class="progresses__companyGroup" :key="`contract${idx}`">
-                  <div class="progresses__company">
+                  <div v-if="item.Step != @((int)CDS_Document.StepEnum.Config)" class="progresses__company">
                     <span v-if="!item.StampDate" class="fw-bolder text-primary opacity-75">
                       待用印
                     </span>
@@ -274,24 +274,41 @@
                       已完成
                     </span>
                   </div>
+
+                  <div v-else class="progresses__company">
+                    <span class="fw-bolder text-primary opacity-75">
+                        待設定
+                    </span>
+                  </div>
+
                   <!-- 已完成 -->
-                  <button v-if="!!item.StampDate && !!item.SignerDate" type="button"
-                    class="btn progresses__steps progresses__steps--done disabled">
-                    <i class="fas fa-circle"></i>
-                  </button>
+                  <div v-if="item.Step != @((int)CDS_Document.StepEnum.Config)">
+                      <button v-if="!!item.StampDate && !!item.SignerDate" type="button"
+                        class="btn progresses__steps progresses__steps--done disabled">
+                        <i class="fas fa-circle"></i>
+                      </button>
 
-                  <!-- 待用印 -->
-                  <button v-if="!item.StampDate" type="button" class="btn progresses__steps disabled"
-                    :class="{ 'progresses__steps--actived': item.IsCurrentUserCompany }">
-                    <i class="fas fa-stamp"></i>
-                  </button>
+                      <!-- 待用印 -->
+                      <button v-if="!item.StampDate" type="button" class="btn progresses__steps disabled"
+                        :class="{ 'progresses__steps--actived': item.IsCurrentUserCompany }">
+                        <i class="fas fa-stamp"></i>
+                      </button>
 
-                  <!-- 待簽署 -->
-                  <button v-if="!!item.StampDate && !item.SignerDate" type="button"
-                    class="btn progresses__steps disabled"
-                    :class="{ 'progresses__steps--signActived': canSigner(contract) && item.IsCurrentUserCompany }">
-                    <i class="fas fa-signature"></i>
-                  </button>
+                      <!-- 待簽署 -->
+                      <button v-if="!!item.StampDate && !item.SignerDate" type="button"
+                        class="btn progresses__steps disabled"
+                        :class="{ 'progresses__steps--signActived': canSigner(contract) && item.IsCurrentUserCompany }">
+                        <i class="fas fa-signature"></i>
+                      </button>
+                  </div>
+                  <div v-else>
+                        <!-- 待設定 -->
+                        <button type="button" class="btn progresses__steps" v-on:click="openContractConfig(contract)"
+                                :class="{ 'progresses__steps--actived': item.IsCurrentUserCompany }">
+                          <i class="fas fa-sliders-h-square"></i>
+                        </button>
+                  </div>
+
                   <div class="progresses__company" v-on:mouseover="tipHandler(`in_${index}_${idx}`)">
                     <span data-bs-toggle="tooltip" :id="`in_${index}_${idx}`" :title="item.Name">
                       <span class=" progresses__name" :class="{ 'bg-lightBlue': item.IsCurrentUserCompany }">
@@ -910,6 +927,10 @@
       // 下載檔案
       downloadPdf(contract) {
         showContract(contract.KeyID, @((int)DataResultMode.Download));
+      },
+      // 開啟合約設定
+      openContractConfig(contract) {
+        $('').launchDownload('@Html.Raw(Url.Action("AffixPdfSeal", "ContractConsole"))', { 'KeyID': contract.KeyID });
       },
 
       // 格式化名稱
