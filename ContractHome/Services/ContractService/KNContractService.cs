@@ -191,7 +191,7 @@ namespace ContractHome.Services.ContractService
                     EMail = signatory.Mail,
                     PID = signatory.Mail,
                     Password = $"@{signatory.Mail}".HashPassword(),
-                    Region = "0",
+                    Region = "O",
                     Creator = createrUID
                 };
 
@@ -589,10 +589,11 @@ namespace ContractHome.Services.ContractService
         }
 
         /// <summary>
-        /// 建議簽署軌跡PDF
+        /// 取得簽署軌跡PdfDocument
         /// </summary>
         /// <param name="contract"></param>
-        public async Task<string> CreateFootprintsPDF(Contract contract)
+        /// <returns></returns>
+        public async Task<PdfDocument> GetFootprintsPdfDocument(Contract contract)
         {
             using DCDataContext db = new();
 
@@ -603,16 +604,16 @@ namespace ContractHome.Services.ContractService
             };
             // 取得合約發起人資訊
             var initiatorInfo = (from u in db.UserProfile
-                                join ou in db.OrganizationUser on u.UID equals ou.UID
-                                join o in db.Organization on ou.CompanyID equals o.CompanyID
-                                join dp in db.DocumentProcessLog on u.UID equals dp.ActorID
-                                where dp.DocID == contract.ContractID && dp.StepID == (int)CDS_Document.StepEnum.Establish
-                                select new
-                                {
-                                    u.UserName,
-                                    u.EMail,
-                                    o.CompanyName
-                                }).FirstOrDefault();
+                                 join ou in db.OrganizationUser on u.UID equals ou.UID
+                                 join o in db.Organization on ou.CompanyID equals o.CompanyID
+                                 join dp in db.DocumentProcessLog on u.UID equals dp.ActorID
+                                 where dp.DocID == contract.ContractID && dp.StepID == (int)CDS_Document.StepEnum.Establish
+                                 select new
+                                 {
+                                     u.UserName,
+                                     u.EMail,
+                                     o.CompanyName
+                                 }).FirstOrDefault();
             // 設定起約人資訊
             if (initiatorInfo != null)
             {
@@ -622,19 +623,19 @@ namespace ContractHome.Services.ContractService
 
             // 設定簽署軌跡
             signHistoryPager.Histories = from dp in db.DocumentProcessLog
-                                        join u in db.UserProfile on dp.ActorID equals u.UID
-                                        join ou in db.OrganizationUser on u.UID equals ou.UID
-                                        join o in db.Organization on ou.CompanyID equals o.CompanyID
-                                        where dp.DocID == contract.ContractID
-                                        select new History
-                                        {
-                                            CompanyName = o.CompanyName,
-                                            LogDate = dp.LogDate,
-                                            StepID = dp.StepID,
-                                            Mail = u.EMail,
-                                            IP = dp.ClientIP,
-                                            Device = dp.ClientDevice
-                                        };
+                                         join u in db.UserProfile on dp.ActorID equals u.UID
+                                         join ou in db.OrganizationUser on u.UID equals ou.UID
+                                         join o in db.Organization on ou.CompanyID equals o.CompanyID
+                                         where dp.DocID == contract.ContractID
+                                         select new History
+                                         {
+                                             CompanyName = o.CompanyName,
+                                             LogDate = dp.LogDate,
+                                             StepID = dp.StepID,
+                                             Mail = u.EMail,
+                                             IP = dp.ClientIP,
+                                             Device = dp.ClientDevice
+                                         };
             // 設定建立時間
             signHistoryPager.CreateDateTime = signHistoryPager.Histories
                                              .Where(db => db.StepID == (int)CDS_Document.StepEnum.Establish)
@@ -665,6 +666,17 @@ namespace ContractHome.Services.ContractService
 
             var renderer = new ChromePdfRenderer();
             PdfDocument pdfDocument = await renderer.RenderHtmlAsPdfAsync(rptViewRenderString);
+
+            return pdfDocument;
+        }
+
+        /// <summary>
+        /// 建議簽署軌跡PDF
+        /// </summary>
+        /// <param name="contract"></param>
+        public async Task<string> CreateFootprintsPDF(Contract contract)
+        {
+            PdfDocument pdfDocument = await GetFootprintsPdfDocument(contract);
             string fileName = $"{_KNFileUploadSetting.HistoryQueueid}_{contract.ContractNo}_{_KNFileUploadSetting.FileCurrentDateTime}.pdf";
             string saveFilePath = Path.Combine(_KNFileUploadSetting.DownloadFolderPath, fileName);
             pdfDocument.SaveAs(saveFilePath);

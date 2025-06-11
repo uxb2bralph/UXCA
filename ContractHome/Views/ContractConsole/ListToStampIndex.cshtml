@@ -208,8 +208,16 @@
                         <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
                           <i class="far fa-download text-info"></i>
                         </span>
-                        下載檔案
+                        下載合約
                       </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item d-flex align-items-center fs-13" v-on:click="downloadFootprintsPdf(contract)">
+                        <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
+                            <i class="far fa-download text-info"></i>
+                        </span>
+                        下載稽核軌跡
+                    </button>
                     </li>
                     <li v-if="showStopCase(contract)">
                       <button class="dropdown-item d-flex align-items-center fs-13"
@@ -1684,6 +1692,11 @@
       // 下載檔案
       downloadPdf(contract) {
         showContract(contract.KeyID, @((int)DataResultMode.Download));
+      },
+
+      // 下載稽核軌跡
+      downloadFootprintsPdf(contract) {
+        $('').launchDownload('@Html.Raw(Url.Action("DownloadFootprintsPdf", "ContractConsole"))', { 'KeyID': contract.KeyID });
       },
 
       // 格式化名稱

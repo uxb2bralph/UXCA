@@ -381,7 +381,7 @@ namespace ContractHome.Controllers
             //{
             //    return Json(new { result = false, message = "簽約人尚未用印!!" });
             //}
-
+            requestItem.SignerID = profile.UID;
             requestItem.StampDate = DateTime.Now;
             models.SubmitChanges();
 
@@ -733,6 +733,43 @@ namespace ContractHome.Controllers
             ViewResult result = (ViewResult)(await ListToStampAsync(viewModel));
             result.ViewName = "~/Views/ContractConsole/ListToStampIndex.cshtml";
             return result;
+        }
+
+        /// <summary>
+        /// 下載合約軌跡PDF
+        /// </summary>
+        /// <param name="viewModel"></param>
+        /// <returns></returns>
+        public async Task<ActionResult> DownloadFootprintsPdfAsync(SignContractViewModel viewModel)
+        {
+            ViewBag.ViewModel = viewModel;
+            viewModel.KeyID = viewModel.KeyID.GetEfficientString();
+            
+            if (viewModel.KeyID != null)
+            {
+                viewModel.ContractID = viewModel.DecryptKeyValue();
+            }
+
+            var contract = models.GetTable<Contract>()
+                            .Where(c => c.ContractID == viewModel.ContractID)
+                            .FirstOrDefault();
+
+            if (contract == null)
+            {
+                return Json(new { result = false, message = "合約資料錯誤!!" });
+            }
+            Response.Clear();
+            Response.ContentType = "application/pdf";
+            Response.Headers.Add("Cache-control", "max-age=1");
+            Response.Headers.Add("Content-Disposition", String.Format("attachment;filename={0}_history.pdf", HttpUtility.UrlEncode(contract.ContractNo)));
+            var pdfDoc = await _customContractService.GetFootprintsPdfDocument(contract);
+
+            using (MemoryStream output = pdfDoc.Stream)
+            {
+                await Response.Body.WriteAsync(output.ToArray());
+            }
+
+            return new EmptyResult { };
         }
 
         public async Task<ActionResult> ShowCurrentContractAsync(SignContractViewModel viewModel)

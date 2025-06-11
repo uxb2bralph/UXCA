@@ -49,6 +49,13 @@ namespace ContractHome.Services.ContractService
         public Task<string> CreateSignaturePDF(Contract contract);
 
         /// <summary>
+        /// 取得簽署PdfDocument
+        /// </summary>
+        /// <param name="contract"></param>
+        /// <returns></returns>
+        public Task<PdfDocument> GetFootprintsPdfDocument(Contract contract);
+
+        /// <summary>
         /// 建立軌跡PDF
         /// </summary>
         /// <param name="contract"></param>
