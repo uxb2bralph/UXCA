@@ -219,6 +219,14 @@
                         下載稽核軌跡
                     </button>
                     </li>
+                    <li>
+                        <button class="dropdown-item d-flex align-items-center fs-13" v-on:click="resendEmail(contract)">
+                            <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
+                                <i class="far fa-envelope text-info"></i>
+                            </span>
+                            重發通知信
+                        </button>
+                    </li>
                     <li v-if="showStopCase(contract)">
                       <button class="dropdown-item d-flex align-items-center fs-13"
                         v-on:click="openStopContractModal(contract)">
@@ -1697,6 +1705,29 @@
       // 下載稽核軌跡
       downloadFootprintsPdf(contract) {
         $('').launchDownload('@Html.Raw(Url.Action("DownloadFootprintsPdf", "ContractConsole"))', { 'KeyID': contract.KeyID });
+      },
+
+      // 重發通知信
+      resendEmail(contract) {
+        const payload = {
+            'keyID': contract.KeyID,
+        };
+        showLoading();
+
+        postData('@(Url.Action("ResendEmail", "ContractConsole"))', payload)
+        .then((res) => {
+            const { data, hasError, message, result } = res;
+            if (!hasError) {
+                // 成功
+                // 開啟訊息視窗
+                this.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base">通知信已寄出。</div>`;
+            } else {
+                // 失敗
+                this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${message} </div>`;
+            }
+            hideLoading();
+            $("#infoModal").modal("show");
+        })
       },
 
       // 格式化名稱

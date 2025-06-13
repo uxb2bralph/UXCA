@@ -406,6 +406,63 @@ namespace ContractHome.Models.Helper
         }
 
         /// <summary>
+        /// 取得未簽署合約的使用者
+        /// </summary>
+        /// <param name="contract"></param>
+        /// <returns></returns>
+        public IQueryable<UserProfile> GetNoSignUsers(Contract contract)
+        {
+            DCDataContext db = _models.DataContext;
+            // 抓 ContractSignatureRequest SignerID 不為 NULL 且 未簽署 的 UserProfile
+            var noSignUsers = from u in db.UserProfile
+                              join c in db.ContractSignatureRequest on u.UID equals c.SignerID
+                              where c.ContractID == contract.ContractID && 
+                                    c.SignatureDate == null && 
+                                    c.StampDate != null
+                              select u;
+            // 抓 ContractSignatureRequest SignerID 為 NULL 且 未簽署 的 UserProfile
+            var noSignOrgUsers = from c in db.ContractSignatureRequest
+                                 join ou in db.OrganizationUser on c.CompanyID equals ou.CompanyID
+                                 join u in db.UserProfile on ou.UID equals u.UID
+                                 where c.ContractID == contract.ContractID && 
+                                       c.SignerID == null && 
+                                       c.SignatureDate == null && 
+                                       c.StampDate != null
+                                 select u;
+
+            // 合併兩個查詢結果
+            var users = noSignUsers.Union(noSignOrgUsers);
+
+            return users;
+        }
+        /// <summary>
+        /// 取得未用印的使用者
+        /// </summary>
+        /// <param name="contract"></param>
+        /// <returns></returns>
+        public IQueryable<UserProfile> GetNoSealUsers(Contract contract)
+        {
+            DCDataContext db = _models.DataContext;
+            // 抓 ContractSignatureRequest SignerID 不為 NULL 且 未用印 的 UserProfile
+            var noSealUsers = from u in db.UserProfile
+                              join c in db.ContractSignatureRequest on u.UID equals c.SignerID
+                              where c.ContractID == contract.ContractID && 
+                                    c.StampDate == null
+                              select u;
+            // 抓 ContractSignatureRequest SignerID 為 NULL 且 未用印 的 UserProfile
+            var noSealOrgUsers = from c in db.ContractSignatureRequest
+                                 join ou in db.OrganizationUser on c.CompanyID equals ou.CompanyID
+                                 join u in db.UserProfile on ou.UID equals u.UID
+                                 where c.ContractID == contract.ContractID && 
+                                       c.SignerID == null && 
+                                       c.StampDate == null
+                                 select u;
+            // 合併兩個查詢結果
+            var users = noSealUsers.Union(noSealOrgUsers);
+            return users;
+        }
+
+        /// <summary>
         /// 取得合約簽署人
         /// </summary>
         /// <param name="contract"></param>
@@ -470,6 +527,25 @@ namespace ContractHome.Models.Helper
 
         }
 
+        /// <summary>
+        /// 是否是合約發起公司
+        /// </summary>
+        /// <param name="contract"></param>
+        /// <param name="companyID"></param>
+        /// <returns></returns>
+        public bool IsContractInitiatorCompany(Contract contract, UserProfile profile)
+        {
+            DCDataContext db = _models.DataContext;
+
+            return (from c in db.ContractingParty
+                    join o in db.Organization on c.CompanyID equals o.CompanyID
+                    join u in db.OrganizationUser on o.CompanyID equals u.CompanyID
+                    where c.ContractID == contract.ContractID && 
+                          c.IsInitiator == true && 
+                          u.UID == profile.UID
+                    select c.CompanyID)
+                    .Any();
+        }
 
         public (BaseResponse, JwtToken, UserProfile) TokenValidate(string token)
         {

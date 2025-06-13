@@ -155,8 +155,11 @@ namespace ContractHome.Models.DataEntity
             };
 
         public bool IsPendingState() => (this.CurrentStep==null) ? 
-                false:PendingState.Contains((CDS_Document.StepEnum)this.CurrentStep!); 
-       
+                false:PendingState.Contains((CDS_Document.StepEnum)this.CurrentStep!);
+
+        public bool IsStopState() => this.CurrentStep != null && StopState.Contains((CDS_Document.StepEnum)this.CurrentStep!);
+
+
         public static StepEnum[] PendingState =
         {
             StepEnum.Establish,
@@ -172,6 +175,14 @@ namespace ContractHome.Models.DataEntity
             StepEnum.Sealing,
             StepEnum.Sealed,
             StepEnum.DigitalSigning
+        };
+
+        public static StepEnum[] StopState =
+        {
+            StepEnum.Terminated,
+            StepEnum.Committed,
+            StepEnum.Revoked,
+            StepEnum.Config
         };
 
         public bool IsPDF => ProcessType == (int)ProcessTypeEnum.PDF;

@@ -1963,6 +1963,56 @@ namespace ContractHome.Controllers
             return Json(_baseResponse.ErrorMessage());
         }
 
+        /// <summary>
+        /// 重寄簽章通知信
+        /// </summary>
+        /// <param name="keyID"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<ActionResult> ResendEmailAsync([FromBody] SignatureRequestViewModel viewModel)
+        {
+            var profile = await HttpContext.GetUserAsync();
+            
+            _contractServices.SetModels(models);
+
+            var contract = _contractServices.GetContractByID(viewModel.KeyID.DecryptKeyValue());
+
+            if (contract == null)
+            {
+                return Json(new BaseResponse(true, "合約不存在"));
+            }
+
+            if (contract.CDS_Document.IsStopState())
+            {
+                return Json(new BaseResponse(true, "無權限操作"));
+            }
+
+            if (!profile.IsSysAdmin() && !_contractServices.IsContractInitiatorCompany(contract, profile))
+            {
+                return Json(new BaseResponse(true, "無權限操作"));
+            }
+
+            var noSignUsers = _contractServices.GetNoSignUsers(contract);
+
+            var noSealUsers = _contractServices.GetNoSealUsers(contract);
+
+            var tasks = new List<Task>
+            {
+                _contractServices.SendUsersNotifyEmailAboutContractAsync(
+                                contract,
+                                _emailContentFactories.GetNotifySign(),
+                                noSignUsers),
+                _contractServices.SendUsersNotifyEmailAboutContractAsync(
+                                contract,
+                                _emailContentFactories.GetNotifySeal(),
+                                noSealUsers)
+            };
+
+            await Task.WhenAll(tasks);
+
+            return Json(_baseResponse);
+        }
+
         public class ContractSignaturePositionRequest
         {
             public string CompanyID { get; set; }
