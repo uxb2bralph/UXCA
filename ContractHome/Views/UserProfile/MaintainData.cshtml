@@ -164,15 +164,15 @@
               </td>
               <td class="text-nowrap text-center">
                 <!-- 編輯 -->
-                <!--
-                <span class="tooltip__wrapper mx-1">
+
+                <span v-if="user.PID !== 'ifsadmin'" class="tooltip__wrapper mx-1">
                   <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded"
                     v-on:click="editData('edit', user)">
                     <i class="fal fa-edit"></i>
                   </button>
                   <div class="tooltip__text">修改</div>
                 </span>
-                -->
+
                 <!-- 可進行印鑑管理 -->
                 <span v-if="user.PID !== 'ifsadmin'" class="tooltip__wrapper mx-1">
                   <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded"
@@ -190,7 +190,7 @@
                   </button>
                   <div class="tooltip__text">發送密碼修改通知</div>
                 </span>
-                <span class="text-black-50 opacity-75"> | </span>
+                @* <span class="text-black-50 opacity-75"> | </span> *@
                 <!-- 停用 -->
                 <span v-if="user.PID !== 'ifsadmin'" class="tooltip__wrapper mx-1">
                   <button type="button" id="stopCompany"
@@ -610,8 +610,11 @@
         this.editTitle = isNew ? '新增' : '編輯';
         // 新增時加入一筆uuid
         // this.formData.uuid = isNew ? ui_uuid() : this.formData.uuid;
+        this.isPassword = false;
+        this.validatePwd = false;
         if (type === 'addNew') {
           this.formData = JSON.parse(JSON.stringify(this.initialFormData));
+
         } else if (type === 'edit') {
           this.formData = data; //JSON.parse(JSON.stringify(data));
           // 輸入欄位檢核
@@ -738,14 +741,17 @@
         this.isCompanyName = !this.formData.CompanyName;
         this.isPID = !this.formData.PID;
         // this.isUserName = !this.formData.UserName;
-        this.isPassword = !this.formData.Password;
+        // 新增資料時檢查密碼
+        if (this.formData.KeyID == null) {
+            this.isPassword = !this.formData.Password;
+        }
         this.isEMail = !this.formData.EMail;
         this.isRoleID = !this.formData.RoleID;
         this.isRegion = !this.formData.Region;
         // 檢核email格式是否正確
         this.checkMail('isEMail', this.formData.EMail);
         // 如果檢核通過，就會送出表單
-        if (this.isCompanyName || this.isPID || this.isPassword || this.isEMail || this.isRoleID || this.isRegion) return;
+        if (this.isCompanyName || this.isPID || this.isPassword || this.validatePwd || this.isEMail || this.isRoleID || this.isRegion) return;
 
         console.log('儲存表單', this.formData);
         // return;
@@ -848,6 +854,11 @@
       },
       // 欄位檢核
       validateField(status, data) {
+        // 編輯資料時不檢查密碼
+        if (status === "isPassword" && this.formData.KeyID != null) {
+            this[status] = false;
+            return;
+        }
         this[status] = !data;
       },
       // 初始化檢核
