@@ -44,8 +44,15 @@ namespace ContractHome.Helper.Security.MembershipManagement
             //UserProfile? profile = CreateInstance(pid);
             using UserProfileManager mgr = new();
             UserProfile profile = mgr.GetUserProfileByPID(pid);
+
+            if (profile == null)
+            {
+                loginFailedCount = 0;
+                return null;
+            }
+
             loginFailedCount = 0;
-            if (profile.LoginFailedCount>=3)
+            if (profile?.LoginFailedCount>=3)
             {
                 loginFailedCount = profile.LoginFailedCount;
                 profile = null;
