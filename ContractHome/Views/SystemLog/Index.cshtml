@@ -75,7 +75,7 @@
         methods: {
             getLogList() {
               showLoading();
-              getData('/api/SystemLog/LogList?dateTime=' + this.dateTime)
+              getData('@Url.Content("~")/api/SystemLog/LogList?dateTime=' + this.dateTime)
               .then((res) => {
                 hideLoading();
                 this.logFiles = res.logFiles;
