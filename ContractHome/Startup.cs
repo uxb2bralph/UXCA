@@ -1,6 +1,7 @@
 using CommonLib.Core.Utility;
 using ContractHome.Controllers.Filters;
 using ContractHome.Helper;
+using ContractHome.Hubs;
 using ContractHome.Models.Cache;
 using ContractHome.Models.Dto;
 using ContractHome.Models.Email;
@@ -111,6 +112,7 @@ namespace ContractHome
             services.AddControllersWithViews(options => {
                 //↓和CSRF資安有關，這裡就加入全域驗證範圍Filter的話，待會Controller就不必再加上[AutoValidateAntiforgeryToken]屬性
                 //options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+                options.Filters.Add<ExecutionLogFilter>();
             });
 
             services.AddHttpClient();
@@ -168,6 +170,8 @@ namespace ContractHome
                     .AddrecurringJob<JobTouchWebEveryday>();
 
             #endregion
+
+            services.AddSignalR();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -225,6 +229,8 @@ namespace ContractHome
                     name: "actionName",
                     pattern: "{controller}/{*actionName}",
                     defaults: new { action = "HandleUnknownAction" });
+
+                endpoints.MapHub<SignatureHub>("/SignatureHub");
 
             });
 

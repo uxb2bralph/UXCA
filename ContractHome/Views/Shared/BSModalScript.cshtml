@@ -11,6 +11,11 @@
 
         $('#@(_dialogID) [data-dismiss="modal"]').on('click',function() {
             $('#@(_dialogID)').modal('hide');
+            var closeAlertModalCallback = $global.CloseAlertModalCallback;
+            if (closeAlertModalCallback) {
+                $global.CloseAlertModalCallback = null;
+                closeAlertModalCallback();
+            }
         });
 
         $('#@(_dialogID)').modal('show');

@@ -68,13 +68,38 @@
   <button type="button" class="btn btn-primary waves-effect btn-confirm">執行簽署</button>
   <script nonce="Y2hiY29kZQ==">
     $(function () {
+     
+      const connection = new signalR.HubConnectionBuilder().withUrl("@Url.Content("~")/SignatureHub").build();
+      // 設定 timeout 時間為 4 分鐘
+      connection.serverTimeoutInMilliseconds = 240000;
+
+      connection.start().then(() => {
+        //$('#@(_viewModel.DialogID) button.btn-confirm').hide();
+        connection.invoke("AddConnection", "@Html.Raw(_item?.ContractID.EncryptKey())").catch((err) => {
+           return console.error(err.toString());
+        });
+      }).catch((err) => {
+        //$('#@(_viewModel.DialogID) button.btn-confirm').show();
+        return console.error(err.toString());
+      });
+
+      connection.on("ReceiveUpdateNotice", (groupKey, result, resultMessage) => {
+         console.log(groupKey);
+         console.log(result);
+         console.log(resultMessage);
+         if (result === 1) {
+            $('#@(_viewModel.DialogID) button.btn-confirm').click();
+         } else {
+            alertModal(`<div class="pb-4 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ( ${resultMessage} )簽署失敗！</div>`);
+         }
+      });
 
       var $currentModal = $('#@(_viewModel.DialogID)');
       $('#@(_viewModel.DialogID) button.btn-confirm').on('click', function () {
 
-        if (!confirm('確認已取得簽署憑證授權？')) {
-          return;
-        }
+        // if (!confirm('確認已取得簽署憑證授權？')) {
+        //   return;
+        // }
 
         var $formData = $currentModal.find('input,select,textarea').serializeObject();
         $formData.KeyID = '@Html.Raw(_item?.ContractID.EncryptKey())';
@@ -87,10 +112,15 @@
           const { hasError, result, message } = res;
           if ($.isPlainObject(res)) {
             if (!hasError) {
-              alertModal('<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base">簽署完成！ 即將返回文件清單</div>');
-              setTimeout(() => {
-                window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
-              }, 3000);
+              // alertModal('<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base">簽署完成！ 即將返回文件清單</div>');
+              // setTimeout(() => {
+              //   window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+              // }, 3000);
+              alertModal('<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base">簽署完成！</div>');
+              $global.CloseAlertModalCallback = function() {
+                  window.location.href = '@(Url.Action("ListToStampIndex", "ContractConsole"))';
+              };
+
             } else {   
               switch (message) {
                 case '060':

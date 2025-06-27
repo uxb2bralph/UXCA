@@ -244,5 +244,33 @@ namespace ContractHome.Helper
         }
 
         public static CHT_Token? SystemToken => _DefaultToken;
+
+        public static (string oneTimeToken, string signature) GetApplicationResponse()
+        {
+            if (_DefaultToken == null)
+            {
+                return (string.Empty, string.Empty);
+            }
+
+            string privateKey = _DefaultToken.ApplicationKey;
+            // 創建RSA加密服務提供者
+            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
+            rsa.ImportFromPem(privateKey);
+
+            // 輸入要加密的字串
+            string inputString = $"{_DefaultToken.Token}{DateTime.Now:yyyyMMddHHmmss}";
+            using SHA256 hash = SHA256.Create();
+            byte[] inputBytes = hash.ComputeHash(Encoding.Default.GetBytes(inputString));
+            // 將輸入字串轉換為byte陣列
+
+            // 進行RSA加密運算
+            byte[] encryptedBytes = rsa.SignData(inputBytes, hash); //rsa.Encrypt(inputBytes, false);
+
+            encryptedBytes = rsa.SignHash(inputBytes, "SHA256");
+            var apSignature = encryptedBytes.ToHexString(format: "x2");
+
+
+            return (inputString, apSignature);
+        }
     }
 }
