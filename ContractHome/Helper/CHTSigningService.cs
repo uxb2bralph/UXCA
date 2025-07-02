@@ -177,6 +177,8 @@ namespace ContractHome.Helper
             };
 
             String dataToSign = data.JsonStringify();
+            // 檢查是否簽署過
+            bool hasSignedRecord = signer.ContractSignatureRequest.Where(x => !string.IsNullOrEmpty(x.RequestTicket)).Any();
 
             using (WebClientEx client = new WebClientEx())
             {
@@ -187,6 +189,7 @@ namespace ContractHome.Helper
                 File.WriteAllText(responsePath, result);
 
                 JObject content = JObject.Parse(result);
+                content.Add("hasSignedRecord", hasSignedRecord);
                 return content;
             }
         }
