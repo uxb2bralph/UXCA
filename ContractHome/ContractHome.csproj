@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Controllers\DataExchangeController.cs" />
     <Compile Remove="Models\Helper\MSWordExtensions.cs" />
   </ItemGroup>
 

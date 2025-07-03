@@ -24,8 +24,8 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ContractHome.Controllers
 {
-    [ApiController]
-    [Route("[controller]")]
+    //[ApiController]
+    //[Route("[controller]")]
     public class TryController : ControllerBase
     {
 
