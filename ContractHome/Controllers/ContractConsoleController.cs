@@ -1794,6 +1794,11 @@ namespace ContractHome.Controllers
             //}
             //#endif
 
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
             _contractServices.SetModels(models);
             var contractID = req.ContractID.ToString().DecryptKeyValue();
             Contract? contract = _contractServices.GetContractByID(contractID: contractID);

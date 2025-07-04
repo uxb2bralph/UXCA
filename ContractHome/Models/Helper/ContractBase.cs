@@ -193,6 +193,12 @@ namespace ContractHome.Models.Helper
         public string CreatedDateTime { get; set; }
         [JsonProperty]
         public int? CurrentStep { get; set; }
+
+        [JsonProperty]
+        public string NotifyUntilDate { get; set; }
+        [JsonProperty]
+        public bool IsExpiringSoon { get; set; } = false;
+
         [JsonProperty]
         public int? PageCount { get; set; }
         [JsonProperty]
@@ -206,7 +212,11 @@ namespace ContractHome.Models.Helper
             CreatedDateTime = contract.CDS_Document.DocDate.ReportDateTimeString();
             PageCount = contract.GetPdfPageCount();
             CurrentStep = contract.CDS_Document.CurrentStep;
-            
+
+            NotifyUntilDate = contract.NotifyUntilDate?.ToString("yyyy/MM/dd") ?? "";
+            IsExpiringSoon = contract.NotifyUntilDate.HasValue &&
+                             contract.NotifyUntilDate <= DateTime.Now.Date.AddDays(2);
+
             if ((queryItem!=null)&&(queryItem.Equals("ProcessLog")))
             {
                 ProcessLogs = contract.CDS_Document.DocumentProcessLog.Select(l =>

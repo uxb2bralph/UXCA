@@ -757,7 +757,11 @@ namespace ContractHome.Models.Helper
             req.Signatories.ForEach(x => {
                 AddParty(contract, x.DecryptKeyValue());
             });
-            contract.NotifyUntilDate = Convert.ToDateTime(req.ExpiryDateTime);
+
+            if (!string.IsNullOrWhiteSpace(req.ExpiryDateTime))
+            {
+                contract.NotifyUntilDate = Convert.ToDateTime(req.ExpiryDateTime);
+            }
             SaveContract();
 
             CDS_DocumentTransitStep(contract, uid, CDS_Document.StepEnum.Config);
