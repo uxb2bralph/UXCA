@@ -2,7 +2,8 @@
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860  
 *@  
 @{  
-    Layout = "~/Views/Shared/MasterPage.cshtml";  
+    Layout = "~/Views/Shared/MasterPage.cshtml";
+    string virtualPath = Context.Request.PathBase.ToString();
 }  
 <div id="logList" class="container-lg py-4">  
     <section class="queryform">  
@@ -23,7 +24,7 @@
 
                     <div>  
                         <button type="button" class="btn btn-primary" v-on:click="getLogList">  
-                            查詢  
+                            查詢
                         </button>  
                     </div>  
 
@@ -46,7 +47,7 @@
                     </thead>  
                     <tbody>  
                         <tr v-for="file in logFiles">  
-                            <td class="fs-13"><a v-bind:href="file.downLoadUrl">{{file.fileName}} ({{file.fileSize}})</a></td>  
+                            <td class="fs-13"><a v-bind:href="'@virtualPath' + file.downLoadUrl">{{file.fileName}} ({{file.fileSize}})</a></td>  
                         </tr>  
                     </tbody>  
                 </table>  
@@ -75,7 +76,7 @@
         methods: {  
             getLogList() {  
               showLoading();  
-              getData('@Url.Content("~/api/SystemLog/LogList?dateTime=")' + this.dateTime)  
+              getData('@virtualPath/api/SystemLog/LogList?dateTime=' + this.dateTime)
               .then((res) => {  
                 hideLoading();  
                 this.logFiles = res.logFiles;  
