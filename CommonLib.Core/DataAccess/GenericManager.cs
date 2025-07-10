@@ -149,6 +149,9 @@ namespace CommonLib.DataAccess
             {
                 _logWriter = new SqlLogger { /*IgnoreSelect = Settings.Default.SqlLogIgnoreSelect*/ }; 
                 _db.Log = _logWriter;
+                #if DEBUG
+                _db.Log = Console.Out;
+                #endif
             }
         }
 

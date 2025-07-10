@@ -1,22 +1,24 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
+using CommonLib.Core.Utility;
 using ContractHome.Controllers.Filters;
 using ContractHome.Helper;
-using CommonLib.Core.Utility;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using ContractHome.Properties;
+using ContractHome.Hubs;
+using ContractHome.Models.Cache;
+using ContractHome.Models.Dto;
 using ContractHome.Models.Email;
 using ContractHome.Models.Email.Template;
 using ContractHome.Models.Helper;
-using FluentValidation.AspNetCore;
-using ContractHome.Models.Cache;
-using Microsoft.Extensions.Caching.Memory;
+using ContractHome.Properties;
+using ContractHome.Services.ContractService;
+using ContractHome.Services.HttpChunk;
 using ContractHome.Services.Jobs;
+using ContractHome.Services.System;
+using FluentValidation.AspNetCore;
 using Hangfire;
 using Hangfire.Dashboard;
-using Microsoft.Extensions.DependencyInjection;
-using Google.Protobuf.WellKnownTypes;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
-using ContractHome.Models.Dto;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace ContractHome
 {
@@ -64,6 +66,7 @@ namespace ContractHome
 
             #endregion
 
+
             services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(Settings.Default.SessionTimeoutInMinutes);
@@ -109,7 +112,10 @@ namespace ContractHome
             services.AddControllersWithViews(options => {
                 //↓和CSRF資安有關，這裡就加入全域驗證範圍Filter的話，待會Controller就不必再加上[AutoValidateAntiforgeryToken]屬性
                 //options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+                options.Filters.Add<ExecutionLogFilter>();
             });
+
+            services.AddHttpClient();
 
             services.AddScoped<IViewRenderService, ViewRenderService>();
 
@@ -120,6 +126,7 @@ namespace ContractHome
             //services.AddTransient<EmailFactory>();
             services.AddScoped<EmailBody>();
             services.AddScoped<EmailFactory>();
+
             services.AddScoped<IEmailBodyBuilder, EmailBodyBuilder>();
             services.AddScoped<IEmailContent, NotifySeal>();
             services.AddScoped<IEmailContent, NotifySign>();
@@ -128,7 +135,27 @@ namespace ContractHome
             services.AddScoped<IEmailContent, PasswordUpdated>();
             services.AddScoped<IEmailContent, ApplyPassword>();
             services.AddScoped<IEmailContent, FinishContract>();
+            services.AddScoped<IEmailContent, TerminationContract>();
 
+            #region 中鋼 KN 合約配置
+            services.Configure<KNFileUploadSetting>(Configuration.GetSection(nameof(KNFileUploadSetting)));
+            services.PostConfigure<KNFileUploadSetting>(x =>
+            {
+                x.TempFolderPath = Path.Combine(Directory.GetCurrentDirectory(), x.TempFolderPath);
+                x.DownloadFolderPath = Path.Combine(Directory.GetCurrentDirectory(), x.DownloadFolderPath);
+
+                Directory.CreateDirectory(x.TempFolderPath);
+                Directory.CreateDirectory(x.DownloadFolderPath);
+            });
+
+            services.AddScoped<IHttpChunkService, KNHttpChunkService>();
+            services.AddScoped<ICustomContractService, KNContractService>();
+            services.AddScoped<ChunkFileUploader>();
+
+            #endregion
+
+            // 系統Log檔案
+            services.AddScoped<ISystemLogService, SystemLogService>();
 
             services.AddScoped<ContractServices>();
             services.AddScoped<BaseResponse>();
@@ -139,11 +166,12 @@ namespace ContractHome
             services.Configure<List<JobSetting>>(this.Configuration.GetSection("JobSetting"));
             services.AddJobManager()
                     .AddrecurringJob<JobNotifyWhoNotFinishedDoc>()
+                    .AddrecurringJob<JobNotifyTerminationContract>()
                     .AddrecurringJob<JobTouchWebEveryday>();
 
             #endregion
 
-
+            services.AddSignalR();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -201,6 +229,8 @@ namespace ContractHome
                     name: "actionName",
                     pattern: "{controller}/{*actionName}",
                     defaults: new { action = "HandleUnknownAction" });
+
+                endpoints.MapHub<SignatureHub>("/SignatureHub");
 
             });
 

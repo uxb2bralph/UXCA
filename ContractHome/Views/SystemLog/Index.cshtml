@@ -1,0 +1,88 @@
+﻿@*  
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860  
+*@  
+@{  
+    Layout = "~/Views/Shared/MasterPage.cshtml";
+    string virtualPath = Context.Request.PathBase.ToString();
+}  
+<div id="logList" class="container-lg py-4">  
+    <section class="queryform">  
+        <!-- Section title -->  
+        <h4 class="mb-2 mt-0 fw-bolder">系統LOG查詢</h4>  
+        <!-- Section: 查詢欄位 -->  
+        <div class="card shadow-sm">  
+            <div class="container">  
+                <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3 m-3 mb-lg-0 data-item">  
+                    <div class="col input__height">  
+                        <div class="row">  
+                            <label class="col-sm-12 col-md-3 col-form-label fw-bolder">查詢日期</label>  
+                            <div class="col-sm-12 col-md-9">  
+                                <input v-model="dateTime" type="date" class="form-control" />  
+                            </div>  
+                        </div>  
+                    </div>  
+
+                    <div>  
+                        <button type="button" class="btn btn-primary" v-on:click="getLogList">  
+                            查詢
+                        </button>  
+                    </div>  
+
+                </div>  
+            </div>  
+        </div>  
+    </section>  
+
+    <!-- 使用者資料查詢列表 -->  
+    <section>  
+        <!-- 標題 -->  
+        <h4 class="mb-2 mt-4 fw-bolder"></h4>  
+        <div v-if="logFiles.length > 0">  
+            <div class="card shadow-sm p-2 mb-3 table-responsive">  
+                <table class="table table-hover mb-0">  
+                    <thead>  
+                        <tr>  
+                            <th scope="col">檔案</th>  
+                        </tr>  
+                    </thead>  
+                    <tbody>  
+                        <tr v-for="file in logFiles">  
+                            <td class="fs-13"><a v-bind:href="'@virtualPath' + file.downLoadUrl">{{file.fileName}} ({{file.fileSize}})</a></td>  
+                        </tr>  
+                    </tbody>  
+                </table>  
+            </div>  
+        </div>  
+        <div v-else class="card shadow-sm p-3 text-center">  
+            <span class="text-primary opacity-75" style="font-size: 50px;">  
+                <i class="fad fa-folder-open"></i>  
+            </span>  
+            <span class="text-primary opacity-75 fw-bolder">查無資料</span>  
+        </div>  
+    </section>  
+
+</div>  
+<script src="~/js/api.js"></script>  
+<script>  
+    var app = new Vue({  
+        el: '#logList',  
+        data: {  
+            dateTime: '@DateTime.Now.ToString("yyyy-MM-dd")',  
+            logFiles: []  
+        },  
+        mounted() {  
+            this.getLogList();  
+        },  
+        methods: {  
+            getLogList() {  
+              showLoading();  
+              getData('@virtualPath/api/SystemLog/LogList?dateTime=' + this.dateTime)
+              .then((res) => {  
+                hideLoading();  
+                this.logFiles = res.logFiles;  
+                this.dateTime = res.dateTime;  
+              })  
+            }  
+        }  
+    })  
+</script>

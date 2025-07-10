@@ -23,12 +23,13 @@
     _modelState = (ModelStateDictionary)ViewBag.ModelState;
     QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
 
-    Image? img = null;
-    String? imgFile = _model.GetContractImage(_viewModel.PageIndex ?? 0);
-    if(imgFile!=null)
-    {
-        img = Bitmap.FromFile(imgFile);
-    }
+    // Image? img = null;
+    // String? imgFile = _model.GetContractImage(_viewModel.PageIndex ?? 0);
+    // if(imgFile!=null)
+    // {
+    //     img = Bitmap.FromFile(imgFile);
+    // }
+    var img = _model.GetContractImageData(_viewModel.PageIndex ?? 0);
 
 }
 @functions
@@ -44,11 +45,11 @@
         }
     }
 }
-@if (img != null)
+@if (img.Width != 0)
 {
 
-    String css = $"width:{img.Width}px; height:{img.Height}px; background-image: url('../{imgFile!.Substring(imgFile.IndexOf("logs")).Replace('\\', '/')}');"; 
-    
+    String css = $"width:{img.Width}px; height:{img.Height}px; background-image: url('{img.ImgUrl}');";
+
     <div id="contractImg" class="contractImg" style="@Html.Raw(css)"></div>
     @*<script>
          $(function () {

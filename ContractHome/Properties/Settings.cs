@@ -20,7 +20,7 @@
     public String LogoutUrl { get; set; } = "/Account/Logout";
     public String WebAppDomain { get; set; } = "https://localhost:5153";
     public String ContractListUrl { get; set; } = $"https://localhost:5153/ContractConsole/ListToStampIndex";
-    public String DCDBConnection { get; set; } = "Integrated Security=SSPI;Persist Security Info=False;Initial Catalog=DigitalContract;Data Source=192.168.200.70";
+    public String DCDBConnection { get; set; } = "Integrated Security=SSPI;Persist Security Info=False;Initial Catalog=DigitalContract;Data Source=.\\SQLEXPRESS";
     public double? LeftMargins { get; set; }
     public double LineSpacing { get; set; } = 0;
     public String GemboxKey { get; set; } = string.Empty;
@@ -30,11 +30,13 @@
     public String StoreRoot { get; set; } = "WebStore";
     public String DefaultUILanguage { get; set; } = "zh-TW";
     public bool IsIdentityCertCheck { get; set; } = false;
+
+    public string HttpChunkUploadUrl { get; set; } = "http://192.168.7.124:5150/Try/ChunkDownload";
     public String[][] ConnectionList { get; set; } =
-        new[]
-        {
-                new [] { "電子簽章", "Integrated Security=SSPI;Persist Security Info=False;Initial Catalog=DigitalContract;Data Source=192.168.200.70" }
-        };
+    new[]
+    {
+            new [] { "電子簽章", "Integrated Security=SSPI;Persist Security Info=False;Initial Catalog=DigitalContract;Data Source=.\\SQLEXPRESS" }
+    };
     public CHTSigningService CHTSigning { get; set; } = new CHTSigningService();
 
   }

@@ -1,0 +1,142 @@
+﻿@using ContractHome.Models.DataEntity
+@*
+For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model ContractHome.Models.Report.SignHistoryPager
+@{
+    Layout = null;
+}
+@functions {
+    // 憑證類型: O 工商憑證 P 自然人憑證 E 企業憑證
+    string GetRegion(string region)
+    {
+        if (region == "O")
+        {
+            return "工商憑證";
+        }
+
+        if (region == "P")
+        {
+            return "自然人憑證";
+        }
+
+        if (region == "E")
+        {
+            return "企業憑證";
+        }
+
+        return string.Empty;
+    }
+}
+<!DOCTYPE html>
+<html lang="zh-tw">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>UX SIGN 數位簽署歷程報告</title>
+    <style>
+        h4 {
+        border-bottom: 2px solid #000;
+        margin-bottom: 10px
+        }
+
+        table {
+        border: 1px solid #000;
+        border-collapse: collapse;
+        width: 100%;
+        text-align: left;
+        }
+
+        thead tr {
+        background-color: lightblue;
+        border-bottom: 1px solid #000;
+        height: 50px;
+        font-size: small;
+        }
+
+        tbody tr {
+        border-bottom: 1px solid #000
+        }
+
+        th, td {
+        padding: 10px;
+        font-size: small;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="text-align:center">
+        <h2><strong>UX SIGN 電子簽章簽署歷程文件</strong></h2>
+        <p style="font-size: small; margin:-20px">製表日期: @DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")</p>
+    </div>
+    <div style="margin:10px">
+        <h4>基本資訊</h4>
+        <p style="font-size: small"><strong>文件名稱：</strong>@Model.FileName</p>
+        <p style="font-size: small"><strong>文件編號：</strong>@Model.FileNo</p>
+        <p style="font-size: small"><strong>文件簽署發起者：</strong>@Model.InitiatorName</p>
+        <p style="font-size: small"><strong>文件建立時間：</strong>@Model.CreateDateTime</p>
+        <p style="font-size: small"><strong>文件簽署完成時間：</strong>@Model.FinishedDateTime</p>
+    </div>
+    <div style="margin:10px">
+        <h4>簽署者清單</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>電子信箱(公司名稱)</th>
+                    <th>身分識別方式</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var Signer in @Model.Signers)
+                {
+                    <tr>
+                        <td>@($"{Signer.Mail}({Signer.CompanyName})")</td>
+                        <td>@GetRegion(Signer.Region)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div style="margin:10px">
+        <h4>簽署歷程</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>時間和動作</th>
+                    <th>電子信箱(公司名稱)</th>
+                    <th>IP位址及裝置</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var History in @Model.Histories)
+                {
+                    <tr>
+                        <td>@History.LogDate.Value.ToString("yyyy/MM/dd HH:mm:ss")<br>@CDS_Document.StepNaming[History.StepID]</td>
+                        <td>@($"{History.Mail}({History.CompanyName})")</td>
+                        <td>@History.IP<br>@History.Device</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div style="margin: 10px;">
+        <h5 style="border-bottom: 1.8px solid #000; margin-bottom: 10px">補充說明</h5>
+        <ol style="font-size: small">
+            <li><strong>時區：</strong>本簽署歷程文件之時區，預設使用(UTC+8)台北時間</li>
+            <li>
+                <strong>Adobe Reader 警示訊息：</strong><br>
+                使用Adobe Reader閱讀文件時，若在簽名面板上出現訊息如「至少有一個簽名發生問題」、「簽名有效性不詳」，表示簽署者之身分驗證方式為「Email
+                驗證碼、手機簡訊驗證碼、或個人驗證：驗證手機門號」，仍不影響文件有效性。<br>
+                前述簽署者之身分驗證方式，係由文件簽署發起者指示 UX SIGN 平台執行，該驗證方式僅透過簡易程序進行簽署者對 Email 或手機掌控權之查證，以確認為本人進行簽署。
+            </li>
+            <li>
+                <strong>簽署模式：</strong><br>
+                遠端簽署：文件簽署發起者登入後，從 UX SIGN 平台遠端發送簽署邀請給簽署者。<br>
+                簽署者無論是否登入 UX SIGN 平台，皆可完成簽署。
+            </li>
+        </ol>
+    </div>
+</body>
+
+</html>

@@ -18,7 +18,9 @@ namespace ContractHome.Services.Jobs
 
         public async Task Execute()
         {
-            if (IsEnable) { _contractServices.NotifyWhoNotFinishedDoc(); }
+            if (IsEnable) { 
+                await _contractServices.NotifyWhoNotFinishedDoc(); 
+            }
         }
     }
 }

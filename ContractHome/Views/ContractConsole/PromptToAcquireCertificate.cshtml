@@ -79,5 +79,7 @@
     maintainDataHandler.addEventListener('click', function () {
       window.location.href = '@Html.Raw(Url.Action("ListToStampIndex", "ContractConsole"))';
     });
+
+    $global.hasSignedRecord = ('@_model["hasSignedRecord"]?.ToString().ToLower()' === 'false') ? false : true;
   </script>
 }

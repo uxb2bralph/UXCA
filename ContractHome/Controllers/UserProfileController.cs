@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Text.RegularExpressions;
 using ContractHome.Models.Email.Template;
 using ContractHome.Models.Helper;
+using System.Data.SqlClient;
 
 namespace ContractHome.Controllers
 {
@@ -279,26 +280,42 @@ namespace ContractHome.Controllers
                 .FirstOrDefault();
 
             int? companyID = viewModel.GetCompanyID();
-            if (dataItem == null)
+            // 新增帳號 檢查密碼
+            if (dataItem == null && String.IsNullOrEmpty(viewModel.Password))
             {
-                if (String.IsNullOrEmpty(viewModel.Password))
-                {
-                    ModelState.AddModelError("Password", "請設定密碼");
-                }
+                ModelState.AddModelError("Password", "請設定密碼");
             }
 
             var pidUser = models.GetTable<UserProfile>()
                 .Where(u => u.PID == viewModel.PID)
                 .FirstOrDefault();
 
-            if (ContractServices.IsNotNull(pidUser))
+            // 新增帳號 檢查PID
+            if (dataItem == null && ContractServices.IsNotNull(pidUser))
+            {
+                ModelState.AddModelError("PID", "帳號已存在");
+            }
+            // 編輯帳號 排除自己UID外的帳號
+            if (dataItem != null && ContractServices.IsNotNull(pidUser) && pidUser.UID != dataItem.UID)
             {
                 ModelState.AddModelError("PID", "帳號已存在");
             }
 
+            Organization? organization = null;
+
             if (!companyID.HasValue)
             {
                 ModelState.AddModelError("EncCompanyID", "請選擇隸屬公司");
+            } else
+            {
+                organization = models.GetTable<Organization>()
+                                            .Where(o => o.CompanyID == companyID.Value)
+                                            .FirstOrDefault();
+
+                if (organization == null)
+                {
+                    ModelState.AddModelError("EncCompanyID", "公司資料錯誤");
+                }
             }
 
             if (!viewModel.RoleID.HasValue)
@@ -318,6 +335,22 @@ namespace ContractHome.Controllers
                 ModelState.AddModelError("EMail", "請輸入EMail");
             }
 
+            var mailCount = models.GetTable<UserProfile>()
+                            .Where(u => u.EMail == viewModel.EMail)
+                            .Count();
+
+            // 新增帳號 無任何人使用此mail
+            if (dataItem == null && mailCount > 0)
+            {
+                ModelState.AddModelError("EMail", "EMail已被其他帳號使用");
+            }
+            // 編輯帳號 除了自己有其他相同mail
+            if (dataItem != null && mailCount > 1)
+            {
+                ModelState.AddModelError("EMail", "EMail已被其他帳號使用");
+            }
+
+
             if (!ModelState.IsValid)
             {
                 return Json(new { result = false, message = ModelState.ErrorMessage() });
@@ -328,7 +361,7 @@ namespace ContractHome.Controllers
             item.PID = viewModel.PID;
             item.EMail = viewModel.EMail;
             item.UserName = viewModel.UserName.GetEfficientString();
-            item.Region = viewModel.Region.GetEfficientString();
+            item.Region = organization?.CHT_Token != null ? "E" : viewModel.Region.GetEfficientString();
 
             if (!String.IsNullOrEmpty(viewModel.Password))
             {
@@ -340,10 +373,24 @@ namespace ContractHome.Controllers
 
             models.SubmitChanges();
 
-            models.GetTable<OrganizationUser>().InsertOnSubmit(
-                new OrganizationUser() { UID = item.UID, CompanyID = companyID ?? 0 });
+            // 新增帳號 新增公司
+            if (dataItem == null && companyID.HasValue)
+            {
+                OrganizationUser orgUser = new()
+                {
+                    UID = item.UID,
+                    CompanyID = companyID.Value
+                };
+                models.GetTable<OrganizationUser>().InsertOnSubmit(orgUser);
+                models.SubmitChanges();
+            }
 
-            models.SubmitChanges();
+                        // 編輯帳號 換公司
+            if (dataItem != null && companyID.HasValue) {
+                item.OrganizationUser.CompanyID = companyID.Value;
+                models.SubmitChanges();
+            }
+
             if (viewModel.RoleID.HasValue)
             {
                 models.ExecuteCommand(@"DELETE FROM UserRole WHERE (UID = {0})", item.UID);
@@ -481,10 +528,16 @@ namespace ContractHome.Controllers
                     models.SubmitChanges();
                     return Json(new { result = true });
                 }
-                catch (Exception ex)
+                catch (SqlException ex)
                 {
                     FileLogger.Logger.Error(ex);
-                    return Json(new { result = false, message = ex.Message });
+                    string message = ex.Message;
+                    if (ex.Number == 547)
+                    {
+                        message = "刪除失敗：此帳號已有簽署記錄";
+                    }
+
+                    return Json(new { result = false, message = message });
                 }
             }
 
