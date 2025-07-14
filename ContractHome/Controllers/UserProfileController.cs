@@ -336,7 +336,7 @@ namespace ContractHome.Controllers
             }
 
             var mailCount = models.GetTable<UserProfile>()
-                            .Where(u => u.EMail == viewModel.EMail)
+                            .Where(u => u.EMail == viewModel.EMail && u.UID != pidUser.UID)
                             .Count();
 
             // 新增帳號 無任何人使用此mail
@@ -345,7 +345,7 @@ namespace ContractHome.Controllers
                 ModelState.AddModelError("EMail", "EMail已被其他帳號使用");
             }
             // 編輯帳號 除了自己有其他相同mail
-            if (dataItem != null && mailCount > 1)
+            if (dataItem != null && mailCount >= 1)
             {
                 ModelState.AddModelError("EMail", "EMail已被其他帳號使用");
             }
