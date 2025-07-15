@@ -16,5 +16,11 @@
         /// </summary>
         /// <param name="request"></param>
         public void ModifyContractCategroy(ContractCategroyModifyRequest request);
+
+        /// <summary>
+        /// 刪除合約分類
+        /// </summary>
+        /// <param name="request"></param>
+        public void DeleteContractCategroy(ContractCategroyDeleteRequest request);
     }
 }

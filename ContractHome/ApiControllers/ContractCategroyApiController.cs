@@ -9,13 +9,13 @@ namespace ContractHome.ApiControllers
     //[Authorize]
     //[RoleAuthorize(roleID: [(int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin])]
     [ApiController]
-    public class ContractCategroyApiController(IContractCategroyService contractCategroyService) : ControllerBase
+    public class ContractCategroyApiController(IContractCategoryService contractCategroyService) : ControllerBase
     {
-        private readonly IContractCategroyService _contractCategroyService = contractCategroyService;
+        private readonly IContractCategoryService _contractCategroyService = contractCategroyService;
 
         [HttpPost]
         [Route("Create")]
-        public IActionResult Create([FromBody] ContractCategroyCreateRequest request)
+        public IActionResult Create([FromBody] ContractCategoryCreateRequest request)
         {
             request.CreateUID = 39;
 
@@ -31,7 +31,7 @@ namespace ContractHome.ApiControllers
 
         [HttpPost]
         [Route("Modify")]
-        public IActionResult Modify([FromBody] ContractCategroyModifyRequest request)
+        public IActionResult Modify([FromBody] ContractCategoryModifyRequest request)
         {
             request.ModifyUID = 39;
 

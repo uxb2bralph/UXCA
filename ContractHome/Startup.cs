@@ -155,7 +155,7 @@ namespace ContractHome
 
             #endregion
 
-            services.AddScoped<IContractCategroyService, ContractCategroyService>();
+            services.AddScoped<IContractCategoryService, ContractCategoryService>();
 
             // 系統Log檔案
             services.AddScoped<ISystemLogService, SystemLogService>();

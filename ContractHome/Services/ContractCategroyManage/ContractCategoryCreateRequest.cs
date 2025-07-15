@@ -1,22 +1,19 @@
-﻿using ContractHome.Models.DataEntity;
-using ContractHome.Services.ContractCategroy;
+﻿using ContractHome.Services.ContractCategroy;
 using FluentValidation;
 
 namespace ContractHome.Services.ContractCategroyManage
 {
-    public class ContractCategroyModifyRequest : ContractCategroyModel
+    /// <summary>
+    /// 合約分類建立
+    /// </summary>
+    public class ContractCategroyCreateRequest : ContractCategoryModel
     {
         public IEnumerable<ContractCategroyPermissionCreateRequest> Permissions { get; set; } = [];
 
-        public class Validator : AbstractValidator<ContractCategroyModifyRequest>
+        public class Validator : AbstractValidator<ContractCategroyCreateRequest>
         {
             public Validator()
             {
-                RuleFor(x => x.ContractCategroyID)
-                    .NotEmpty()
-                    .GreaterThan(0)
-                    .Must(IsValidContractCategroyID);
-
                 RuleFor(x => x.CompanyID)
                     .NotEmpty()
                     .GreaterThan(0);
@@ -25,7 +22,7 @@ namespace ContractHome.Services.ContractCategroyManage
                     .NotEmpty()
                     .MaximumLength(50);
 
-                RuleFor(x => x.ModifyUID)
+                RuleFor(x => x.CreateUID)
                     .NotEmpty()
                     .GreaterThan(0);
 
@@ -35,15 +32,6 @@ namespace ContractHome.Services.ContractCategroyManage
                     RuleForEach(x => x.Permissions)
                     .SetValidator(new ContractCategroyPermissionCreateRequest.Validator());
                 });
-            }
-
-            private bool IsValidContractCategroyID(int contractCategroyID)
-            {
-                var db = new DCDataContext();
-
-                var cc = db.ContractCategory.Where(x => x.ContractCategoryID == contractCategroyID).FirstOrDefault();
-
-                return cc != null;
             }
         }
     }

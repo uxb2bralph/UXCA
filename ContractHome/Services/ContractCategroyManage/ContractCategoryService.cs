@@ -40,6 +40,28 @@ namespace ContractHome.Services.ContractCategroyManage
         }
 
         /// <summary>
+        /// 刪除合約分類及權限
+        /// </summary>
+        /// <param name="request"></param>
+        public void DeleteContractCategroy(ContractCategroyDeleteRequest request)
+        {
+            using var db = new DCDataContext();
+
+            ContractCategory cc = db.ContractCategory.FirstOrDefault(c => c.ContractCategoryID == request.ContractCategoryID) 
+                                  ?? throw new Exception("Contract category not found.");
+
+            // 刪除合約分類
+            db.ContractCategory.DeleteOnSubmit(cc);
+
+            // 刪除合約分類權限
+            db.ContractCategoryPermission.DeleteAllOnSubmit(
+                db.ContractCategoryPermission.Where(p => p.ContractCategoryID == request.ContractCategoryID));
+
+
+            db.SubmitChanges();
+        }
+
+        /// <summary>
         /// 修改合約分類及權限
         /// </summary>
         /// <param name="request"></param>
@@ -48,7 +70,7 @@ namespace ContractHome.Services.ContractCategroyManage
         {
             using var db = new DCDataContext();
 
-            ContractCategory cc = db.ContractCategory.FirstOrDefault(c => c.ContractCategoryID == request.ContractCategroyID) 
+            ContractCategory cc = db.ContractCategory.FirstOrDefault(c => c.ContractCategoryID == request.ContractCategoryID) 
                                   ?? throw new Exception("Contract category not found.");
 
             cc.CategoryName = request.CategoryName;
@@ -56,7 +78,7 @@ namespace ContractHome.Services.ContractCategroyManage
             cc.ModifyDate = request.ModifyDate;
 
             db.ContractCategoryPermission.DeleteAllOnSubmit(
-                db.ContractCategoryPermission.Where(p => p.ContractCategoryID == request.ContractCategroyID));
+                db.ContractCategoryPermission.Where(p => p.ContractCategoryID == request.ContractCategoryID));
 
             if (!request.Permissions.Any())
             {

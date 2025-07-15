@@ -1,4 +1,5 @@
 ﻿using ContractHome.Models.DataEntity;
+using ContractHome.Services.ContractCategroyManage;
 using FluentValidation;
 
 namespace ContractHome.Services.ContractCategroy

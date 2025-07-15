@@ -1,14 +1,31 @@
-﻿namespace ContractHome.Services.ContractCategroy
+﻿namespace ContractHome.Services.ContractCategroyManage
 {
+    public class ContractCategoryBaseModel
+    {
+        public string Key { get; set; } = string.Empty;
+    }
+
+    public class ContractCategoryQueryModel : ContractCategoryBaseModel
+    {
+        /// <summary>
+        /// 公司ID
+        /// </summary>
+        public int CompanyID { get; set; }
+        /// <summary>
+        /// 分類名稱
+        /// </summary>
+        public string CategoryName { get; set; } = string.Empty;
+    }
+
     /// <summary>
     /// 合約分類Model
     /// </summary>
-    public class ContractCategroyModel
+    public class ContractCategoryModel : ContractCategoryBaseModel
     {
         /// <summary>
         /// 分類流水號
         /// </summary>
-        public int ContractCategroyID { get; set; }
+        public int ContractCategoryID { get; set; }
         /// <summary>
         /// 公司ID
         /// </summary>
