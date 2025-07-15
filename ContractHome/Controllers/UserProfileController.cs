@@ -335,9 +335,18 @@ namespace ContractHome.Controllers
                 ModelState.AddModelError("EMail", "請輸入EMail");
             }
 
-            var mailCount = models.GetTable<UserProfile>()
-                            .Where(u => u.EMail == viewModel.EMail && u.UID != pidUser.UID)
-                            .Count();
+            int mailCount = 0;
+            if (ContractServices.IsNotNull(pidUser))
+            {
+                mailCount = models.GetTable<UserProfile>()
+                                .Where(u => u.EMail == viewModel.EMail && u.UID != pidUser.UID)
+                                .Count();
+            } else
+            {
+                mailCount = models.GetTable<UserProfile>()
+                .Where(u => u.EMail == viewModel.EMail)
+                .Count();
+            }
 
             // 新增帳號 無任何人使用此mail
             if (dataItem == null && mailCount > 0)
