@@ -1872,7 +1872,7 @@ namespace ContractHome.Controllers
                 .Select(x => new ContractSignaturePositionRequest()
                 {
                     RequestID = x.RequestID,
-                    CompanyID = x.ContractorID.EncryptKey(),
+                    CompanyID = x.ContractorID.Value.EncryptKey(),
                     PositionID = x.PositionID,
                     ScaleWidth = x.ScaleWidth,
                     ScaleHeight = x.ScaleHeight,

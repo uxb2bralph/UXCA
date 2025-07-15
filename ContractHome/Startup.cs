@@ -8,6 +8,7 @@ using ContractHome.Models.Email;
 using ContractHome.Models.Email.Template;
 using ContractHome.Models.Helper;
 using ContractHome.Properties;
+using ContractHome.Services.ContractCategroyManage;
 using ContractHome.Services.ContractService;
 using ContractHome.Services.HttpChunk;
 using ContractHome.Services.Jobs;
@@ -153,6 +154,8 @@ namespace ContractHome
             services.AddScoped<ChunkFileUploader>();
 
             #endregion
+
+            services.AddScoped<IContractCategroyService, ContractCategroyService>();
 
             // 系統Log檔案
             services.AddScoped<ISystemLogService, SystemLogService>();
