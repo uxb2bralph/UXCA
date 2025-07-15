@@ -6,11 +6,11 @@ namespace ContractHome.Services.ContractCategroyManage
     /// <summary>
     /// 合約分類建立
     /// </summary>
-    public class ContractCategroyCreateRequest : ContractCategoryModel
+    public class ContractCategoryCreateRequest : ContractCategoryModel
     {
-        public IEnumerable<ContractCategroyPermissionCreateRequest> Permissions { get; set; } = [];
+        public IEnumerable<ContractCategoryPermissionCreateRequest> Permissions { get; set; } = [];
 
-        public class Validator : AbstractValidator<ContractCategroyCreateRequest>
+        public class Validator : AbstractValidator<ContractCategoryCreateRequest>
         {
             public Validator()
             {
@@ -30,7 +30,7 @@ namespace ContractHome.Services.ContractCategroyManage
                 When(x => x.Permissions != null && x.Permissions.Any(), () =>
                 {
                     RuleForEach(x => x.Permissions)
-                    .SetValidator(new ContractCategroyPermissionCreateRequest.Validator());
+                    .SetValidator(new ContractCategoryPermissionCreateRequest.Validator());
                 });
             }
         }

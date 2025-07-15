@@ -4,11 +4,11 @@ using FluentValidation;
 
 namespace ContractHome.Services.ContractCategroyManage
 {
-    public class ContractCategroyModifyRequest : ContractCategoryModel
+    public class ContractCategoryModifyRequest : ContractCategoryModel
     {
-        public IEnumerable<ContractCategroyPermissionCreateRequest> Permissions { get; set; } = [];
+        public IEnumerable<ContractCategoryPermissionCreateRequest> Permissions { get; set; } = [];
 
-        public class Validator : AbstractValidator<ContractCategroyModifyRequest>
+        public class Validator : AbstractValidator<ContractCategoryModifyRequest>
         {
             public Validator()
             {
@@ -33,7 +33,7 @@ namespace ContractHome.Services.ContractCategroyManage
                 When(x => x.Permissions != null && x.Permissions.Any(), () =>
                 {
                     RuleForEach(x => x.Permissions)
-                    .SetValidator(new ContractCategroyPermissionCreateRequest.Validator());
+                    .SetValidator(new ContractCategoryPermissionCreateRequest.Validator());
                 });
             }
 

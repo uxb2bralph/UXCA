@@ -6,13 +6,13 @@ namespace ContractHome.Services.ContractCategroyManage
     /// <summary>
     /// 合約分類service
     /// </summary>
-    public class ContractCategroyService : IContractCategroyService
+    public class ContractCategoryService : IContractCategoryService
     {
         /// <summary>
         /// 建立合約分類及權限
         /// </summary>
         /// <param name="request"></param>
-        public void CreateContractCategroy(ContractCategroyCreateRequest request)
+        public void CreateContractCategroy(ContractCategoryCreateRequest request)
         {
             using var db = new DCDataContext();
 
@@ -43,7 +43,7 @@ namespace ContractHome.Services.ContractCategroyManage
         /// 刪除合約分類及權限
         /// </summary>
         /// <param name="request"></param>
-        public void DeleteContractCategroy(ContractCategroyDeleteRequest request)
+        public void DeleteContractCategroy(ContractCategoryDeleteRequest request)
         {
             using var db = new DCDataContext();
 
@@ -66,7 +66,7 @@ namespace ContractHome.Services.ContractCategroyManage
         /// </summary>
         /// <param name="request"></param>
         /// <exception cref="Exception"></exception>
-        public void ModifyContractCategroy(ContractCategroyModifyRequest request)
+        public void ModifyContractCategroy(ContractCategoryModifyRequest request)
         {
             using var db = new DCDataContext();
 

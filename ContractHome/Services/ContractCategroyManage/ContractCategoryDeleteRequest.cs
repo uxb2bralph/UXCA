@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace ContractHome.Services.ContractCategroyManage
 {
-    public class ContractCategroyDeleteRequest : ContractCategoryModel
+    public class ContractCategoryDeleteRequest : ContractCategoryModel
     {
-        public class Validator : AbstractValidator<ContractCategroyDeleteRequest>
+        public class Validator : AbstractValidator<ContractCategoryDeleteRequest>
         {
             public Validator()
             {
@@ -24,4 +24,5 @@ namespace ContractHome.Services.ContractCategroyManage
                 return cc != null;
             }
         }
+    }
 }
