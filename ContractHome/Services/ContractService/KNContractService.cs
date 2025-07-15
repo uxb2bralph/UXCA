@@ -349,7 +349,7 @@ namespace ContractHome.Services.ContractService
                 CreateDocumentProcessLog(contract, promisor.UID, model.IsPassStamp);
 
                 db.SubmitChanges();
-                
+
 
                 // 發送簽署通知
                 var emailContent = (model.IsPassStamp) ? _emailFactory.GetNotifySign() : _emailFactory.GetNotifySeal();
@@ -357,8 +357,8 @@ namespace ContractHome.Services.ContractService
                 SendMail(contract, targetUsers, emailContent);
 
                 db.Transaction.Commit();
-            } 
-            catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 FileLogger.Logger.Error(ex.ToString());
                 transFail = true;
@@ -412,7 +412,7 @@ namespace ContractHome.Services.ContractService
                 }
             }
 
-            
+
             if (!string.IsNullOrEmpty(model.ContractNo) && companyId != 0)
             {
                 // 檢查合約編號是否已存在
@@ -686,27 +686,38 @@ namespace ContractHome.Services.ContractService
         /// <summary>
         /// 上傳簽屬及軌跡PDF檔案
         /// </summary>
-        public async Task UploadSignatureAndFootprintsPdfFile(Contract contract)
+        public async Task<bool> UploadSignatureAndFootprintsPdfFile(Contract contract)
         {
-            var createTasks = new List<Task<string>>
+            try
             {
-                this.CreateSignaturePDF(contract),
-                this.CreateFootprintsPDF(contract)
-            };
-
-            var results = await Task.WhenAll(createTasks);
-            
-            var uploadTasks = new List<Task>();
-
-            foreach (var filePath in results)
-            {
-                if (!string.IsNullOrEmpty(filePath))
+                var createTasks = new List<Task<string>>
                 {
-                    uploadTasks.Add(_chunkFileUploader.UploadAsync(filePath));
-                }
-            }
+                    this.CreateSignaturePDF(contract),
+                    this.CreateFootprintsPDF(contract)
+                };
 
-            await Task.WhenAll(uploadTasks);
+                var results = await Task.WhenAll(createTasks);
+
+                var uploadTasks = new List<Task>();
+
+                foreach (var filePath in results)
+                {
+                    if (!string.IsNullOrEmpty(filePath))
+                    {
+                        uploadTasks.Add(_chunkFileUploader.UploadAsync(filePath));
+                    }
+                }
+
+                await Task.WhenAll(uploadTasks);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                FileLogger.Logger.Info("UploadSignatureAndFootprintsPdfFile 合約檔案處理錯誤:" + contract.ContractNo);
+                FileLogger.Logger.Error(ex.ToString());
+                return false;
+            }
         }
     }
 }

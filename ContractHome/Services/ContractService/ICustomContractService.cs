@@ -67,6 +67,6 @@ namespace ContractHome.Services.ContractService
         /// </summary>
         /// <param name="contract"></param>
         /// <returns></returns>
-        public Task UploadSignatureAndFootprintsPdfFile(Contract contract);
+        public Task<bool> UploadSignatureAndFootprintsPdfFile(Contract contract);
     }
 }
