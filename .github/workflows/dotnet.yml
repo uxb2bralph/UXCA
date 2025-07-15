@@ -5,7 +5,7 @@ name: .NET
 
 on:
   push:
-    branches: [ "KNChunk_dev" ]
+    branches: [ "feat/Permission_dev" ]
     
 jobs:
   build:
