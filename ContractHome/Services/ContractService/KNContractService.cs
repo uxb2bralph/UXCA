@@ -375,7 +375,7 @@ namespace ContractHome.Services.ContractService
                 msgRes = new MsgRes
                 {
                     type = (transFail) ? ContractResultType.F.ToString() : ContractResultType.S.ToString(),
-                    code = ContractResultCode.ContractCreate.GetFullCode(),
+                    code = (transFail) ? ContractResultCode.ContractCreate.GetFullCode() : ContractResultCode.Success.GetFullCode(),
                     desc = $"合約編號({model.ContractNo})-建立" + ((transFail) ? "失敗" : "成功")
                 }
             };
@@ -487,7 +487,7 @@ namespace ContractHome.Services.ContractService
                 msgRes = new MsgRes()
                 {
                     type = (!modelState.IsValid) ? ContractResultType.F.ToString() : ContractResultType.S.ToString(),
-                    code = ContractResultCode.ContractInfoVerify.GetFullCode(),
+                    code = (!modelState.IsValid) ? ContractResultCode.ContractInfoVerify.GetFullCode() : ContractResultCode.Success.GetFullCode(),
                     desc = (!modelState.IsValid) ? modelState.ErrorMessage() : "合約資訊正確"
                 }
             };
@@ -533,7 +533,7 @@ namespace ContractHome.Services.ContractService
                 msgRes = new MsgRes()
                 {
                     type = ContractResultType.S.ToString(),
-                    code = ContractResultCode.ContractDownload.GetFullCode(),
+                    code = ContractResultCode.Success.GetFullCode(),
                     desc = $"合約PDF下載成功-{chunkResult.Message}"
                 }
             };
