@@ -59,10 +59,11 @@ namespace ContractHome.Helper
             WriteLog($"fileId={fileId} 上傳檔案: {fileInfo.Name} (大小: {fileSize / (1024 * 1024)} MB, 分塊數: {totalChunks})");
 
             var missingChunks = await CheckUploadStatus(fileId, totalChunks);
-            // 查無檔案分段檔案 重新傳送
+            // 分段檔案還在 傳送重組通知
             if (missingChunks.Count == 0)
             {
-                WriteLog($"fileId={fileId}-{fileInfo.Name}-檔案已完整上傳，跳過");
+                WriteLog($"fileId={fileId}-{fileInfo.Name}-檔案已完整上傳 通知重組");
+                await NotifyAssemble(fileId, fileInfo.Name);
                 return;
             }
 
