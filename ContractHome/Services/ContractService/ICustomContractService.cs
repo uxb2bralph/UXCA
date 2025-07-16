@@ -12,7 +12,7 @@ namespace ContractHome.Services.ContractService
         /// <summary>
         /// 合約結果代碼
         /// </summary>
-        public static readonly string ResultCodeHeader = "US";
+        public static readonly string ResultCodeHeader = "UX";
 
         ///// <summary>
         ///// 設定 dbContext
