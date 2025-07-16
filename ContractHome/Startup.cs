@@ -115,7 +115,14 @@ namespace ContractHome
                 options.Filters.Add<ExecutionLogFilter>();
             });
 
-            services.AddHttpClient();
+            services.AddHttpClient("GatewayClient")
+                    .ConfigurePrimaryHttpMessageHandler(() =>
+                    {
+                        return new HttpClientHandler
+                        {
+                            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                        };
+                    });
 
             services.AddScoped<IViewRenderService, ViewRenderService>();
 

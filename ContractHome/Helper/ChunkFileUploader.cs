@@ -19,6 +19,8 @@ namespace ContractHome.Helper
         const int MaxRetries = 3;
         const int ThreadPoolSize = 4;
 
+        const string HttpClientName = "GatewayClient";
+
         //static readonly HttpClient httpClient = new()
         //{
         //    Timeout = TimeSpan.FromSeconds(30)
@@ -112,7 +114,7 @@ namespace ContractHome.Helper
         private async Task<HashSet<int>> CheckUploadStatus(string fileId, int totalChunks)
         {
             var url = $"{_kNFileUploadSetting.ChunkUploadUrl}/status?identifier={fileId}&totalChunks={totalChunks}";
-            var httpClient = _httpClientFactory.CreateClient();
+            var httpClient = _httpClientFactory.CreateClient(HttpClientName);
             var resp = await httpClient.GetAsync(url);
             if (!resp.IsSuccessStatusCode)
             {
@@ -154,7 +156,7 @@ namespace ContractHome.Helper
                     }
 
                     var content = BuildMultipartContent(fileId, chunkIndex, totalChunks, buffer);
-                    var httpClient = _httpClientFactory.CreateClient();
+                    var httpClient = _httpClientFactory.CreateClient(HttpClientName);
                     var resp = await httpClient.PostAsync(_kNFileUploadSetting.ChunkUploadUrl, content);
 
                     if (resp.IsSuccessStatusCode)
@@ -206,7 +208,7 @@ namespace ContractHome.Helper
                 new KeyValuePair<string, string>("identifier", fileId),
                 new KeyValuePair<string, string>("originalFilename", originalFileName)
             ]);
-            var httpClient = _httpClientFactory.CreateClient();
+            var httpClient = _httpClientFactory.CreateClient(HttpClientName);
             var resp = await httpClient.PostAsync(url, content);
             var result = await resp.Content.ReadAsStringAsync();
             WriteLog("伺服器回應：" + result);
