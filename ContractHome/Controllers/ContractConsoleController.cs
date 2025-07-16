@@ -712,7 +712,12 @@ namespace ContractHome.Controllers
 
             if (profile.IsSysAdmin())
             {
-
+                items = items.Where(c => models.GetTable<ContractingParty>()
+                            .Where(p => models.GetTable<Organization>()
+                                    .Where(o => models.GetTable<OrganizationUser>()
+                                        .Any(u => u.CompanyID == o.CompanyID))
+                                .Any(o => o.CompanyID == p.CompanyID))
+                        .Any(p => p.ContractID == c.ContractID));
             }
             else
             {

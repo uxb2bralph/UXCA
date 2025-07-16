@@ -315,7 +315,7 @@
                                     </div>
                                     <div v-else>
                                         <!-- 待設定 -->
-                                        <button type="button" class="btn progresses__steps" v-on:click="openContractConfig(contract)"
+                                        <button type="button" class="btn progresses__steps" v-on:click="item.IsCurrentUserCompany && openContractConfig(contract)"
                                                 :class="{ 'progresses__steps--actived': item.IsCurrentUserCompany }">
                                             <i class="fas fa-sliders-h-square"></i>
                                         </button>
