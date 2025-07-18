@@ -48,7 +48,8 @@
     <Type Name="ContractCategory">
       <Column Name="ContractCategoryID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="CompanyID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="CategoryName" Type="System.String" DbType="NChar(10) NOT NULL" CanBeNull="false" />
+	  <Column Name="Code" Type="System.String" DbType="NVarChar(256) NOT NULL" CanBeNull="false" />	
+      <Column Name="CategoryName" Type="System.String" DbType="NVarChar(512) NOT NULL" CanBeNull="false" />
       <Column Name="CreateUID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="CreateDate" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
       <Column Name="ModifyUID" Type="System.Int32" DbType="Int" CanBeNull="true" />
