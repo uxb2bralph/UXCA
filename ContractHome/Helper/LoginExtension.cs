@@ -1,21 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Security.Claims;
-using System.Text;
-using System.Web;
-using Microsoft.AspNetCore.Http;  //System.Web.Mvc;
-using Microsoft.Extensions.Logging;
-using CommonLib.Utility;
-using ContractHome.Models.DataEntity;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
+﻿using CommonLib.Utility;
 using ContractHome.Helper.Security.MembershipManagement;
-using System.Data.Linq.SqlClient;
+using ContractHome.Models.DataEntity;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Security.Claims;
 
 namespace ContractHome.Helper
 {
@@ -25,7 +13,11 @@ namespace ContractHome.Helper
         public static async Task SignOnAsync(this HttpContext context, UserProfile profile, bool remeberMe = true)
         {
             //帳密都輸入正確，ASP.net Core要多寫三行程式碼 
-            Claim[] claims = new[] { new Claim("Name", profile.PID), new Claim("IsAdmin", profile.IsSysAdmin().ToString()) }; //Key取名"Name"，在登入後的頁面，讀取登入者的帳號會用得到，自己先記在大腦
+            Claim[] claims = new[] { 
+                new Claim("Name", profile.PID), 
+                new Claim("IsAdmin", profile.IsSysAdmin().ToString()),
+                new Claim("RoleIDs", profile.GetRoleIDs())
+            }; //Key取名"Name"，在登入後的頁面，讀取登入者的帳號會用得到，自己先記在大腦
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);//Scheme必填
             ClaimsPrincipal principal = new ClaimsPrincipal(claimsIdentity);
 
@@ -40,26 +32,17 @@ namespace ContractHome.Helper
                     ExpiresUtc = DateTime.UtcNow.AddMinutes(loginExpireMinute)
                 });
 
-            context.ClearCache();
-            context.SetCacheValue("userProfile", profile);
+            string enPid = profile.PID.EncryptData();
 
-            if (remeberMe)
+            context.Response.Cookies.Append("userID", enPid,
+            new CookieOptions
             {
-                context.Response.Cookies.Append("userID", profile.PID.EncryptData(),
-                    new CookieOptions
-                    {
-                        MaxAge = TimeSpan.FromDays(14),
-                    });
-            }
-            else
-            {
-                context.Response.Cookies.Append("userID", profile.PID.EncryptData(),
-                    new CookieOptions
-                    {
-                        MaxAge = TimeSpan.FromHours(24),
-                    });
-            }
+                MaxAge = TimeSpan.FromHours(24),
+            });
 
+            //context.ClearCache();
+            context.RemoveCache($"{enPid}-userProfile");
+            context.SetCacheValue($"{enPid}-userProfile", profile);
 
             /// process sign-on user profile
             /// 
@@ -76,7 +59,8 @@ namespace ContractHome.Helper
 
         public static void RemoveCache(this HttpContext context, String keyName)
         {
-            context.SetCacheValue(keyName, null);
+            HttpContextDataModelCache caching = new(context);
+            caching.Remove(keyName);
         }
 
 
@@ -94,16 +78,26 @@ namespace ContractHome.Helper
 
         public static async void Logout(this HttpContext context)
         {
+            var pid = context.Request.Cookies["userID"];
+            if (!String.IsNullOrEmpty(pid))
+            {
+                context.RemoveCache($"{pid}-userProfile");
+            }
+
             context.Response.Cookies.Delete("userID");
             await context.SignOutAsync();
-            context.ClearCache();
         }
 
         public static async void TrustLogout(this HttpContext context)
         {
+            var pid = context.Request.Cookies["userID"];
+            if (!String.IsNullOrEmpty(pid))
+            {
+                context.RemoveCache($"{pid}-userProfile");
+            }
+
             context.Response.Cookies.Delete("userID");
             await context.SignOutAsync();
-            context.ClearCache();
         }
 
         public static UserProfile GetUser(this HttpContext context)
@@ -115,24 +109,30 @@ namespace ContractHome.Helper
 
         public static async Task<UserProfile> GetUserAsync(this HttpContext context)
         {
-            UserProfile profile = (UserProfile)context.GetCacheValue("userProfile");
-            //CommonLib.Core.Utility.FileLogger.Logger.Debug("profile cache:" + (profile != null));
+            var pid = context.Request.Cookies["userID"];
+
+            if (String.IsNullOrEmpty(pid))
+            {
+                pid = string.Empty;
+            }
+
+            UserProfile profile = (UserProfile)context.GetCacheValue($"{pid}-userProfile");
+            
             if (profile == null)
             {
                 if (context.User.Identity.IsAuthenticated)
                 {
-                    //CommonLib.Core.Utility.FileLogger.Logger.Debug("Has Identity:" + context.User.Identity.Name);
                     profile = (context.User.Identity as ClaimsIdentity)?
                         .Claims.FirstOrDefault()?.Value.getLoginUser();
                 }
                 else
                 {
-                    var cookie = context.Request.Cookies["userID"];
-                    if (!String.IsNullOrEmpty(cookie))
+                   
+                    if (!String.IsNullOrEmpty(pid))
                     {
                         try
                         {
-                            profile = cookie.DecryptData().getLoginUser();
+                            profile = pid.DecryptData().getLoginUser();
                             if (profile != null)
                             {
                                 await context.SignOnAsync(profile);
@@ -146,7 +146,20 @@ namespace ContractHome.Helper
                         }
                     }
                 }
-                context.SetCacheValue("userProfile", profile);
+
+                if (profile == null)
+                {
+                    return null;
+                } 
+
+                string enPid = profile.PID.EncryptData();
+                context.Response.Cookies.Append("userID", enPid,
+                new CookieOptions
+                {
+                    MaxAge = TimeSpan.FromHours(24),
+                });
+
+                context.SetCacheValue($"{enPid}-userProfile", profile);
             }
             return profile;
         }
@@ -174,9 +187,26 @@ namespace ContractHome.Helper
             return profile != null && profile.UserRole.Join(roleID, r => r.RoleID, o => o, (r, o) => r).Any();
         }
 
+        public static bool IsAuthorized(this UserProfile profile, string userRoleIDs, int[] checkRoleIDs)
+        {
+            if (profile == null || string.IsNullOrEmpty(userRoleIDs) || checkRoleIDs == null || checkRoleIDs.Length == 0)
+                return false;
+
+            var roleIDs = userRoleIDs.Split(',').Select(int.Parse).ToArray();
+            var roleSet = new HashSet<int>(roleIDs);
+            bool isAuthorized = checkRoleIDs.Any(roleID => roleSet.Contains(roleID));
+            return isAuthorized;
+        }
+
         public static bool IsUser(this UserProfile profile)
         {
             return profile != null && (profile.UserRole.Any(r => r.RoleID == (int)UserRoleDefinition.RoleEnum.User));
+        }
+
+        public static string GetRoleIDs(this UserProfile profile)
+        {
+            if (profile == null) return string.Empty;
+            return string.Join(",", profile.UserRole.OrderBy(c => c.RoleID).Select(r => r.RoleID));
         }
 
         public static bool CanCreateContract(this UserProfile profile)
