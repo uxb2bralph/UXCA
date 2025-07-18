@@ -54,16 +54,16 @@
     /// <summary>
     /// 合約分類權限Model
     /// </summary>
-    public class ContractCategroyPermissionModel
+    public class ContractCategoryPermissionModel
     {
         /// <summary>
         /// 合約分類權限流水號
         /// </summary>
-        public int ContractCategroyPermissionID { get; set; }
+        public int ContractCategoryPermissionID { get; set; }
         /// <summary>
         /// 合約分類流水號
         /// </summary>
-        public int ContractCategroyID { get; set; }
+        public int ContractCategoryID { get; set; }
         /// <summary>
         /// 使用者UID
         /// </summary>

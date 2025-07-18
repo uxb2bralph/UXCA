@@ -12,10 +12,10 @@ namespace ContractHome.Services.ContractCategroyManage
                 RuleFor(x => x.ContractCategoryID)
                     .NotEmpty()
                     .GreaterThan(0)
-                    .Must(IsValidContractCategroyID);
+                    .Must(IsValidContractCategoryID);
             }
 
-            private bool IsValidContractCategroyID(int contractCategroyID)
+            private bool IsValidContractCategoryID(int contractCategroyID)
             {
                 var db = new DCDataContext();
 

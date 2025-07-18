@@ -15,7 +15,7 @@ namespace ContractHome.Services.ContractCategroyManage
                 RuleFor(x => x.ContractCategoryID)
                     .NotEmpty()
                     .GreaterThan(0)
-                    .Must(IsValidContractCategroyID);
+                    .Must(IsValidContractCategoryID);
 
                 RuleFor(x => x.CompanyID)
                     .NotEmpty()
@@ -37,7 +37,7 @@ namespace ContractHome.Services.ContractCategroyManage
                 });
             }
 
-            private bool IsValidContractCategroyID(int contractCategroyID)
+            private bool IsValidContractCategoryID(int contractCategroyID)
             {
                 var db = new DCDataContext();
 

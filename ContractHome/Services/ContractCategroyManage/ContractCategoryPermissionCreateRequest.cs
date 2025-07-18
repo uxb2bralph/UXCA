@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace ContractHome.Services.ContractCategroy
 {
-    public class ContractCategoryPermissionCreateRequest : ContractCategroyPermissionModel
+    public class ContractCategoryPermissionCreateRequest : ContractCategoryPermissionModel
     {
         public class Validator : AbstractValidator<ContractCategoryPermissionCreateRequest>
         {
