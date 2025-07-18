@@ -61,6 +61,11 @@ namespace ContractHome.Controllers
             _detectionService = detectionService;
         }
 
+        public IActionResult QueryIndex()
+        {
+            ViewBag.ViewModel = new QueryViewModel();
+            return View();
+        }
         public IActionResult ApplyContract(TemplateResourceViewModel viewModel)
         {
             return View();
