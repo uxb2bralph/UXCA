@@ -1,21 +1,9 @@
-﻿using System.IO;
-using System.Net;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Web;
-using Microsoft.AspNetCore.Mvc;
-
-using CommonLib.Utility;
-using ContractHome.Helper;
+﻿using ContractHome.Helper;
 using ContractHome.Models.DataEntity;
-using ContractHome.Models.ViewModel;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Routing;
-using System;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+
 
 namespace ContractHome.Security.Authorization
 {
@@ -23,7 +11,7 @@ namespace ContractHome.Security.Authorization
     {
         public AuthorizedSysAdminAttribute() : base(typeof(RoleRequirementFilter))
         {
-            Arguments = new object[] { (Func<UserProfile, bool>)(u => u.IsSysAdmin()) };
+            Arguments = [(Func<UserProfile, string, bool>)((u, x) => u.IsAuthorized(x, [(int)UserRoleDefinition.RoleEnum.SystemAdmin]))];
         }
     }
 
@@ -31,7 +19,7 @@ namespace ContractHome.Security.Authorization
     {
         public UserAuthorizeAttribute() : base(typeof(RoleRequirementFilter))
         {
-            Arguments = new object[] { (Func<UserProfile, bool>)(u => u.IsUser()) };
+            Arguments = [(Func<UserProfile, string, bool>)((u, x) => u.IsAuthorized(x, [(int)UserRoleDefinition.RoleEnum.User, (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin]))];
         }
     }
 
@@ -40,15 +28,15 @@ namespace ContractHome.Security.Authorization
     {
         public RoleAuthorizeAttribute(int[] roleID) : base(typeof(RoleRequirementFilter))
         {
-            Arguments = new object[] { (Func<UserProfile, bool>)(u => u.IsAuthorized(roleID)) };
+            Arguments = [(Func<UserProfile, string, bool>)((u, x) => u.IsAuthorized(x, roleID))];
         }
     }
 
     public class RoleRequirementFilter : IAuthorizationFilter
     {
-        protected Func<UserProfile, bool> _auth;
+        protected Func<UserProfile, string, bool> _auth;
 
-        public RoleRequirementFilter(Func<UserProfile, bool> checkAuth)
+        public RoleRequirementFilter(Func<UserProfile, string, bool> checkAuth)
         {
             _auth = checkAuth;
         }
@@ -56,9 +44,12 @@ namespace ContractHome.Security.Authorization
         {
             if (context.HttpContext.User.Identity.IsAuthenticated)
             {
+                var user = context.HttpContext.User;
+                var roleIDs = user.FindFirst("RoleIDs")?.Value ?? "";
+
                 var result = context.HttpContext.GetUserAsync();
                 result.Wait();
-                if (!_auth(result.Result))
+                if (!_auth(result.Result, roleIDs))
                 {
                     context.Result = new RedirectToRouteResult(
                         new RouteValueDictionary
