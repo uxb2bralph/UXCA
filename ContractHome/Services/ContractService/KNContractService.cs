@@ -233,7 +233,7 @@ namespace ContractHome.Services.ContractService
             {
                 LogDate = DateTime.Now,
                 ActorID = uid,
-                StepID = (isPassStamp) ? (int)CDS_Document.StepEnum.Establish : (int)CDS_Document.StepEnum.Config,
+                StepID = (isPassStamp) ? (int)CDS_Document.StepEnum.DigitalSigning : (int)CDS_Document.StepEnum.Config,
                 ClientIP = "-1",
                 ClientDevice = "System"
             };
