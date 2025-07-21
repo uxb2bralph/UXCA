@@ -22,5 +22,12 @@
         /// </summary>
         /// <param name="request"></param>
         public void DeleteContractCategroy(ContractCategoryDeleteRequest request);
+
+        /// <summary>
+        /// 搜尋合約分類
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public IEnumerable<ContractCategoryInfoModel> QuertyContractCategory(ContractCategoryQueryModel request);
     }
 }

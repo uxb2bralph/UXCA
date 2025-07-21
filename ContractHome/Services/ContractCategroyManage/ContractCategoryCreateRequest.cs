@@ -22,6 +22,10 @@ namespace ContractHome.Services.ContractCategroyManage
                     .NotEmpty()
                     .MaximumLength(50);
 
+                RuleFor(x => x.Code)
+                    .NotEmpty()
+                    .MaximumLength(25);
+
                 RuleFor(x => x.CreateUID)
                     .NotEmpty()
                     .GreaterThan(0);

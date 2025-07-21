@@ -1,4 +1,6 @@
-﻿using ContractHome.Services.ContractCategroyManage;
+﻿using ContractHome.Models.DataEntity;
+using ContractHome.Security.Authorization;
+using ContractHome.Services.ContractCategroyManage;
 using DocumentFormat.OpenXml.InkML;
 using Microsoft.AspNetCore.Mvc;
 using Wangkanai.Extensions;
@@ -6,9 +8,8 @@ using Wangkanai.Extensions;
 namespace ContractHome.ApiControllers
 {
     [Route("api/ContractCategroy")]
-    //[Authorize]
-    //[RoleAuthorize(roleID: [(int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin])]
     [ApiController]
+    [RoleAuthorize(roleID: [(int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin])]
     public class ContractCategroyApiController(IContractCategoryService contractCategroyService) : ControllerBase
     {
         private readonly IContractCategoryService _contractCategroyService = contractCategroyService;
@@ -41,6 +42,30 @@ namespace ContractHome.ApiControllers
             }
             contractCategroyService.ModifyContractCategroy(request);
             return Ok();
+        }
+
+        [HttpPost]
+        [Route("Delete")]
+        public IActionResult Delete([FromBody] ContractCategoryDeleteRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            contractCategroyService.DeleteContractCategroy(request);
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("Query")]
+        public IActionResult Query([FromBody] ContractCategoryQueryModel request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            var result = contractCategroyService.QuertyContractCategory(request);
+            return Ok(result);
         }
     }
 }

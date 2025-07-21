@@ -19,6 +19,7 @@ namespace ContractHome.Services.ContractCategroyManage
             ContractCategory cc = new()
             {
                 CategoryName = request.CategoryName,
+                Code = request.Code,
                 CompanyID = request.CompanyID,
                 CreateUID = request.CreateUID,
                 CreateDate = request.CreateDate
@@ -76,6 +77,7 @@ namespace ContractHome.Services.ContractCategroyManage
             cc.CategoryName = request.CategoryName;
             cc.ModifyUID = request.ModifyUID;
             cc.ModifyDate = request.ModifyDate;
+            cc.Code = request.Code;
 
             db.ContractCategoryPermission.DeleteAllOnSubmit(
                 db.ContractCategoryPermission.Where(p => p.ContractCategoryID == request.ContractCategoryID));
@@ -95,6 +97,64 @@ namespace ContractHome.Services.ContractCategroyManage
             }));
 
             db.SubmitChanges();
+        }
+        /// <summary>
+        /// 合約分類搜尋
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public IEnumerable<ContractCategoryInfoModel> QuertyContractCategory(ContractCategoryQueryModel request)
+        {
+            using var db = new DCDataContext();
+
+            var queryInfos = from cc in db.ContractCategory
+                        join o in db.Organization on cc.CompanyID equals o.CompanyID
+                        where cc.CompanyID == request.CompanyID
+                        select new ContractCategoryInfoModel
+                        {
+                            ContractCategoryID = cc.ContractCategoryID,
+                            CategoryName = cc.CategoryName,
+                            Code = cc.Code,
+                            CompanyID = cc.CompanyID,
+                            CompanyName = o.CompanyName
+                        };
+
+            if (!string.IsNullOrEmpty(request.Keyword))
+            {
+                queryInfos = queryInfos.Where(x => x.CategoryName.Contains(request.Keyword) || x.Code.Contains(request.Keyword));
+            }
+
+            var categoryInfos = queryInfos.ToList();
+
+            var categoryIds = categoryInfos.Select(x => x.ContractCategoryID).ToList();
+
+            var permissionQuery = from cp in db.ContractCategoryPermission
+                              join u in db.UserProfile on cp.UID equals u.UID
+                              where categoryIds.Contains(cp.ContractCategoryID)
+                              select new
+                              {
+                                  cp.ContractCategoryID,
+                                  Info = new ContractCategoryPermissionInfoModel
+                                  {
+                                      ContractCategoryPermissionID = cp.ContractCategoryPermissionID,
+                                      UID = cp.UID,
+                                      UserName = u.UserName
+                                  }
+                              };
+            var permissionInfos = permissionQuery.ToList()
+                .GroupBy(x => x.ContractCategoryID)
+                .ToDictionary(g => g.Key, g => g.Select(x => x.Info).ToList());
+
+            foreach (var categoryInfo in categoryInfos)
+            {
+                if (permissionInfos.TryGetValue(categoryInfo.ContractCategoryID, out var permissions))
+                {
+                    categoryInfo.Permissions = permissions;
+
+                }
+            }
+
+            return categoryInfos;
         }
     }
 }

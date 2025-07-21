@@ -2,19 +2,69 @@
 {
     public class ContractCategoryBaseModel
     {
-        public string Key { get; set; } = string.Empty;
+        public string KeyID { get; set; } = string.Empty;
     }
-
-    public class ContractCategoryQueryModel : ContractCategoryBaseModel
+    /// <summary>
+    /// 合約分類基本Model
+    /// </summary>
+    public class  ContractCategoryInfoModel : ContractCategoryBaseModel
     {
+        /// <summary>
+        /// 分類流水號
+        /// </summary>
+        public int ContractCategoryID { get; set; }
+        /// <summary>
+        /// 分類名稱
+        /// </summary>
+        public string CategoryName { get; set; } = string.Empty;
+        /// <summary>
+        /// 分類代碼
+        /// </summary>
+        public string Code { get; set; } = string.Empty;
         /// <summary>
         /// 公司ID
         /// </summary>
         public int CompanyID { get; set; }
         /// <summary>
-        /// 分類名稱
+        /// 公司名稱
         /// </summary>
-        public string CategoryName { get; set; } = string.Empty;
+        public string CompanyName { get; set; } = string.Empty;
+        /// <summary>
+        /// 授權人員資訊
+        /// </summary>
+        public IEnumerable<ContractCategoryPermissionInfoModel> Permissions { get; set; } = [];
+    }
+    /// <summary>
+    /// 授權人員資訊Model
+    /// </summary>
+    public class ContractCategoryPermissionInfoModel : ContractCategoryBaseModel
+    {
+        /// <summary>
+        /// 合約分類權限流水號
+        /// </summary>
+        public int ContractCategoryPermissionID { get; set; }
+        /// <summary>
+        /// 使用者UID
+        /// </summary>
+        public int UID { get; set; }
+        /// <summary>
+        /// 使用者名稱
+        /// </summary>
+        public string UserName { get; set; } = string.Empty;
+    }
+    /// <summary>
+    /// 合約分類搜尋Model
+    /// </summary>
+    public class ContractCategoryQueryModel : ContractCategoryBaseModel
+    {
+        /// <summary>
+        /// 公司ID
+        /// </summary>
+        public int CompanyID { get; set; } = 0;
+        /// <summary>
+        /// 關鍵字
+        /// </summary>
+        public string Keyword { get; set; } = string.Empty;
     }
 
     /// <summary>
@@ -34,6 +84,10 @@
         /// 分類名稱
         /// </summary>
         public string CategoryName { get; set; } = string.Empty;
+        /// <summary>
+        /// 分類代碼
+        /// </summary>
+        public string Code { get; set; } = string.Empty;
         /// <summary>
         /// 建立人UID
         /// </summary>
