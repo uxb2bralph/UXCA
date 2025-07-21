@@ -26,8 +26,12 @@ namespace ContractHome.Models.Dto
 
         public static bool MustAfterOrIsToday(string dateTimeString)
         {
-            return DateTime.TryParse(dateTimeString, out DateTime dateValue)
-                && (dateValue.CompareTo(DateTime.Now)>=0);
+            if (DateTime.TryParse(dateTimeString, out DateTime dateValue))
+            {
+                return dateValue.CompareTo(DateTime.Now.Date) >= 0;
+            }
+
+            return false;
         }
 
         public static bool MustBeforeToday(string dateTimeString)
