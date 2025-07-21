@@ -2002,23 +2002,22 @@ namespace ContractHome.Controllers
                 return Json(new BaseResponse(true, "無權限操作"));
             }
 
-            var noSignUsers = _contractServices.GetNoSignUsers(contract);
-
-            var noSealUsers = _contractServices.GetNoSealUsers(contract);
-
-            var tasks = new List<Task>
+            var unSealUsers = _contractServices.GetUnSealUsersByContract(contract);
+            //必須全部完成用印流程才能做簽署  所以只要有一個待用印 就不用通知待簽署人
+            if (unSealUsers != null && unSealUsers.Any())
             {
-                _contractServices.SendUsersNotifyEmailAboutContractAsync(
-                                contract,
-                                _emailContentFactories.GetNotifySign(),
-                                noSignUsers),
-                _contractServices.SendUsersNotifyEmailAboutContractAsync(
+                await _contractServices.SendUsersNotifyEmailAboutContractAsync(
                                 contract,
                                 _emailContentFactories.GetNotifySeal(),
-                                noSealUsers)
-            };
-
-            await Task.WhenAll(tasks);
+                                unSealUsers);
+            } else
+            {
+                var noSignUsers = _contractServices.GetUnSignUsersByContract(contract);
+                await _contractServices.SendUsersNotifyEmailAboutContractAsync(
+                                contract,
+                                _emailContentFactories.GetNotifySign(),
+                                noSignUsers);
+            }
 
             return Json(_baseResponse);
         }
