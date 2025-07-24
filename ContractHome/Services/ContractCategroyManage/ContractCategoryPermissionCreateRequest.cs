@@ -13,11 +13,12 @@ namespace ContractHome.Services.ContractCategroy
                 RuleFor(x => x.UID)
                     .NotEmpty()
                     .GreaterThan(0)
-                    .Must(IsValidUID).WithMessage("查無此UID");
+                    .Must(IsValidUID)
+                    .WithMessage("查無授權帳號");
 
-                RuleFor(x => x.CreateUID)
-                    .NotEmpty()
-                    .GreaterThan(0);
+                //RuleFor(x => x.CreateUID)
+                //    .NotEmpty()
+                //    .GreaterThan(0);
             }
 
             private bool IsValidUID(int UID)

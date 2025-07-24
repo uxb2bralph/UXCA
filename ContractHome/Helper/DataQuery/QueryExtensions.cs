@@ -10,5 +10,14 @@ namespace ContractHome.Helper.DataQuery
             return models.GetTable<UserProfile>().Where(u => u.UID == profile.UID).First();
         }
 
+        public static int GetCompanyID(this UserProfile profile)
+        {
+            using var db = new DCDataContext();
+            return (from u in db.UserProfile
+                   join o in db.OrganizationUser on u.UID equals o.UID
+                   where u.UID == profile.UID
+                   select o.CompanyID).First();
+        }
+
     }
 }

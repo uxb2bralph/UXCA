@@ -1,4 +1,7 @@
-﻿namespace ContractHome.Services.ContractCategroyManage
+﻿using ContractHome.Helper;
+using System.Text.Json.Serialization;
+
+namespace ContractHome.Services.ContractCategroyManage
 {
     public class ContractCategoryBaseModel
     {
@@ -7,12 +10,13 @@
     /// <summary>
     /// 合約分類基本Model
     /// </summary>
-    public class  ContractCategoryInfoModel : ContractCategoryBaseModel
+    public class ContractCategoryInfoModel : ContractCategoryBaseModel
     {
         /// <summary>
         /// 分類流水號
         /// </summary>
-        public int ContractCategoryID { get; set; }
+        [JsonIgnore]
+        public int ContractCategoryID => KeyID.DecryptKeyValue();
         /// <summary>
         /// 分類名稱
         /// </summary>
@@ -42,11 +46,13 @@
         /// <summary>
         /// 合約分類權限流水號
         /// </summary>
+        [JsonIgnore]
         public int ContractCategoryPermissionID { get; set; }
         /// <summary>
         /// 使用者UID
         /// </summary>
-        public int UID { get; set; }
+        [JsonIgnore]
+        public int UID => KeyID.DecryptKeyValue();
         /// <summary>
         /// 使用者名稱
         /// </summary>
@@ -60,7 +66,7 @@
         /// <summary>
         /// 公司ID
         /// </summary>
-        public int CompanyID { get; set; } = 0;
+        public int CompanyID => KeyID.DecryptKeyValue();
         /// <summary>
         /// 關鍵字
         /// </summary>
@@ -75,7 +81,8 @@
         /// <summary>
         /// 分類流水號
         /// </summary>
-        public int ContractCategoryID { get; set; }
+        [JsonIgnore]
+        public int ContractCategoryID => (!string.IsNullOrEmpty(KeyID)) ? KeyID.DecryptKeyValue() : -1;
         /// <summary>
         /// 公司ID
         /// </summary>
@@ -108,7 +115,7 @@
     /// <summary>
     /// 合約分類權限Model
     /// </summary>
-    public class ContractCategoryPermissionModel
+    public class ContractCategoryPermissionModel : ContractCategoryBaseModel
     {
         /// <summary>
         /// 合約分類權限流水號
@@ -121,7 +128,7 @@
         /// <summary>
         /// 使用者UID
         /// </summary>
-        public int UID { get; set; }
+        public int UID => KeyID.DecryptKeyValue();
         /// <summary>
         /// 建立人UID
         /// </summary>
@@ -130,5 +137,13 @@
         /// 建立日期
         /// </summary>
         public DateTime CreateDate { get; set; } = DateTime.Now;
+    }
+
+    public class UserInfoModel : ContractCategoryBaseModel
+    {
+        /// <summary>
+        /// 使用者名稱
+        /// </summary>
+        public string UserName { get; set; } = string.Empty;
     }
 }

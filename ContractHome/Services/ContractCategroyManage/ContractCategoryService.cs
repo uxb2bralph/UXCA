@@ -63,6 +63,27 @@ namespace ContractHome.Services.ContractCategroyManage
         }
 
         /// <summary>
+        /// 取得公司所有使用者
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public IEnumerable<UserInfoModel> GetCompanyUsers(ContractCategoryQueryModel request)
+        {
+            using var db = new DCDataContext();
+
+            var users = from u in db.UserProfile
+                        join o in db.OrganizationUser on u.UID equals o.UID
+                        where o.CompanyID == request.CompanyID
+                        select new UserInfoModel
+                        {
+                            KeyID = u.UID.EncryptKey(),
+                            UserName = $"{u.PID}({u.EMail})",
+                        };
+
+            return users.ToList();
+        }
+
+        /// <summary>
         /// 修改合約分類及權限
         /// </summary>
         /// <param name="request"></param>
@@ -112,7 +133,7 @@ namespace ContractHome.Services.ContractCategroyManage
                         where cc.CompanyID == request.CompanyID
                         select new ContractCategoryInfoModel
                         {
-                            ContractCategoryID = cc.ContractCategoryID,
+                            KeyID = cc.ContractCategoryID.EncryptKey(),
                             CategoryName = cc.CategoryName,
                             Code = cc.Code,
                             CompanyID = cc.CompanyID,
@@ -136,9 +157,9 @@ namespace ContractHome.Services.ContractCategroyManage
                                   cp.ContractCategoryID,
                                   Info = new ContractCategoryPermissionInfoModel
                                   {
-                                      ContractCategoryPermissionID = cp.ContractCategoryPermissionID,
-                                      UID = cp.UID,
-                                      UserName = u.UserName
+                                      //ContractCategoryPermissionID = cp.ContractCategoryPermissionID,
+                                      KeyID = cp.UID.EncryptKey(),
+                                      UserName = $"{u.PID}({u.EMail})"
                                   }
                               };
             var permissionInfos = permissionQuery.ToList()

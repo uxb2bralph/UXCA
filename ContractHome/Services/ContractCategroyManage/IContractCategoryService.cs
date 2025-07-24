@@ -29,5 +29,12 @@
         /// <param name="request"></param>
         /// <returns></returns>
         public IEnumerable<ContractCategoryInfoModel> QuertyContractCategory(ContractCategoryQueryModel request);
+
+        /// <summary>
+        /// 取得公司所有使用者
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public IEnumerable<UserInfoModel> GetCompanyUsers(ContractCategoryQueryModel request);
     }
 }

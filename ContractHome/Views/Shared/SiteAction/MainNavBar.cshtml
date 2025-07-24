@@ -99,10 +99,11 @@
                       target="_blank">簽署歷程文件樣板</a>
                   </li> *@
                 }
-                @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.MemberAdmin))
+
+                @if (profile.IsMemberAdmin())
                 {
                     <li>
-                        <a class="dropdown-item" href="@Html.Raw(Url.Action("MaintainData", "Organization"))">合約分類管理</a>
+                        <a class="dropdown-item" href="@Html.Raw(Url.Action("ContractGategoryList", "ContractGategory"))">分類管理</a>
                     </li>
                 }
                 @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.MemberAdmin,
