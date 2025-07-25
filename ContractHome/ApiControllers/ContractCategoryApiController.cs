@@ -37,14 +37,17 @@ namespace ContractHome.ApiControllers
 
         [HttpPost]
         [Route("Modify")]
-        public IActionResult Modify([FromBody] ContractCategoryModifyRequest request)
+        public async Task<IActionResult> ModifyAsync([FromBody] ContractCategoryModifyRequest request)
         {
-            request.ModifyUID = 39;
-
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
+
+            var profile = await HttpContext.GetUserAsync();
+            request.CompanyID = profile.GetCompanyID();
+            request.ModifyUID = profile.UID;
+
             contractCategroyService.ModifyContractCategroy(request);
             return Ok(new BaseResponse());
         }
@@ -65,10 +68,6 @@ namespace ContractHome.ApiControllers
         [Route("Query")]
         public IActionResult Query([FromBody] ContractCategoryQueryModel request)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
             var result = contractCategroyService.QuertyContractCategory(request);
             return Ok(new BaseResponse()
             {
@@ -80,11 +79,18 @@ namespace ContractHome.ApiControllers
         [Route("GetCompanyUsers")]
         public IActionResult GetCompanyUsers([FromBody] ContractCategoryQueryModel request)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
             var result = contractCategroyService.GetCompanyUsers(request);
+            return Ok(new BaseResponse()
+            {
+                Data = result
+            });
+        }
+
+        [HttpPost]
+        [Route("GetContractCategoryInfo")]
+        public IActionResult GetContractCategoryInfo([FromBody] ContractCategoryQueryModel request)
+        {
+            var result = contractCategroyService.GetContractCategoryInfo(request);
             return Ok(new BaseResponse()
             {
                 Data = result

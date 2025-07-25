@@ -36,5 +36,12 @@
         /// <param name="request"></param>
         /// <returns></returns>
         public IEnumerable<UserInfoModel> GetCompanyUsers(ContractCategoryQueryModel request);
+
+        /// <summary>
+        /// 取得合約分類資訊
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public ContractCategoryInfoModel GetContractCategoryInfo(ContractCategoryQueryModel request);
     }
 }

@@ -25,10 +25,13 @@ namespace ContractHome.Services.ContractCategroyManage
         /// 分類代碼
         /// </summary>
         public string Code { get; set; } = string.Empty;
+
         /// <summary>
         /// 公司ID
         /// </summary>
+        [JsonIgnore]
         public int CompanyID { get; set; }
+
         /// <summary>
         /// 公司名稱
         /// </summary>
@@ -56,7 +59,24 @@ namespace ContractHome.Services.ContractCategroyManage
         /// <summary>
         /// 使用者名稱
         /// </summary>
-        public string UserName { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 帳號
+        /// </summary>
+        [JsonIgnore]
+        public string PID { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Email
+        /// </summary>
+        [JsonIgnore]
+        public string Email { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 選取狀態
+        /// </summary>
+        public bool Selected { get; set; } = false;
     }
     /// <summary>
     /// 合約分類搜尋Model
@@ -66,11 +86,24 @@ namespace ContractHome.Services.ContractCategroyManage
         /// <summary>
         /// 公司ID
         /// </summary>
+        [JsonIgnore]
         public int CompanyID => KeyID.DecryptKeyValue();
+
+        /// <summary>
+        /// 分類流水號
+        /// </summary>
+        [JsonIgnore]
+        public int ContractCategoryID => KeyID.DecryptKeyValue();
+
         /// <summary>
         /// 關鍵字
         /// </summary>
         public string Keyword { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 帳號
+        /// </summary>
+        public string Name { get; set; } = string.Empty;
     }
 
     /// <summary>
@@ -144,6 +177,6 @@ namespace ContractHome.Services.ContractCategroyManage
         /// <summary>
         /// 使用者名稱
         /// </summary>
-        public string UserName { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
     }
 }

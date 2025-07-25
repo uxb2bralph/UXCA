@@ -103,7 +103,7 @@
                 @if (profile.IsMemberAdmin())
                 {
                     <li>
-                        <a class="dropdown-item" href="@Html.Raw(Url.Action("ContractGategoryList", "ContractGategory"))">分類管理</a>
+                        <a class="dropdown-item" href="@Html.Raw(Url.Action("ContractGategoryList", "ContractGategory"))">分類授權管理</a>
                     </li>
                 }
                 @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.MemberAdmin,

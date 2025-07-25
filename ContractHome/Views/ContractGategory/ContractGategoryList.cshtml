@@ -15,20 +15,27 @@
 <div id="categoryInfos" class="container-lg py-4">
     <section class="queryform">
         <!-- Section title -->
-        <h4 class="mb-2 mt-0 fw-bolder">分類管理</h4>
+        <h4 class="mb-2 mt-0 fw-bolder">分類授權管理</h4>
         <!-- Section: 查詢欄位 -->
         <div class="card shadow-sm">
             <div class="container">
                 <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3 m-3 mb-lg-0 data-item">
                     <div class="col input__height">
                         <div class="row">
-                            <label class="col-sm-12 col-md-3 col-form-label fw-bolder">分類名稱</label>
+                            <label class="col-sm-12 col-md-3 col-form-label fw-bolder">分類</label>
                             <div class="col-sm-12 col-md-9">
-                                <input v-model="Keyword" type="text" class="form-control" />
+                                <input v-model="Keyword" type="text" class="form-control" placeholder="可輸入名稱或代碼" />
                             </div>
                         </div>
                     </div>
-
+                    <div class="col input__height">
+                        <div class="row">
+                            <label class="col-sm-12 col-md-3 col-form-label fw-bolder">帳號</label>
+                            <div class="col-sm-12 col-md-9">
+                                <input v-model="Name" type="text" class="form-control" placeholder="可輸入帳號或Email" />
+                            </div>
+                        </div>
+                    </div>
 
                 </div>
             </div>
@@ -37,16 +44,15 @@
             <div class="col-12 hstack gap-3 py-3">
 
                 <div class="tooltip__wrapper">
-                    <button type="button" class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="showNewDialog">
+                    <button type="button" class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="showCreateDialog">
                         <i class="fal fa-file-plus"></i>
                     </button>
                     <div class="tooltip__text">新增分類</div>
                 </div>
                 
                 <div class="ms-auto">
-                    <button type="button" class="btn btn-primary" v-on:click="queryList">
-                        查詢
-                    </button>
+                    <button type="button" class="btn btn-secondary opacity-75 me-2" v-on:click="resetKeyword">重設</button>
+                    <button type="button" class="btn btn-primary" v-on:click="queryList">查詢</button>
                 </div>
             </div>
         </div>
@@ -63,6 +69,7 @@
                         <tr>
                             <th scope="col">名稱</th>
                             <th scope="col">代碼</th>
+                            <th scope="col">授權</th>
                             <th scope="col" class="text-center">功能</th>
                         </tr>
                     </thead>
@@ -70,10 +77,20 @@
                         <tr v-for="info in categoryInfos">
                             <td class="fs-13">{{info.categoryName}}</td>
                             <td class="fs-13">{{info.code}}</td>
+                            <td class="fs-13">
+                                <div v-if="info.permissions && info.permissions.length">
+                                <span v-for="(p, index) in info.permissions" :key="index" class="badge rounded-pill bg-success text-dark fs-13 bg-opacity-10">
+                                    {{ p.name }}
+                                </span>
+                                </div>
+                                <span v-else class="badge rounded-pill bg-success text-dark fs-13 bg-opacity-10">
+                                    全部
+                                </span>
+                            </td>
                             <td class="text-nowrap text-center">
                                 <span class="tooltip__wrapper mx-1">
                                     <button type="button" class="btn btn-sm btn-primary opacity-75 rounded-pill icon__rounded"
-                                            v-on:click="editData(info)">
+                                            v-on:click="showEditDialog(info)">
                                         <i class="fal fa-edit"></i>
                                     </button>
                                     <div class="tooltip__text">修改</div>
@@ -103,12 +120,12 @@
 
 
     <!-- 新增 Dialog -->
-    <div class="modal fade" id="addNewModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-         aria-labelledby="addNewModalLabel" aria-hidden="true">
+    <div class="modal fade" id="formModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+         aria-labelledby="formModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bolder" id="staticBackdropLabel">新增分類資料</h5>
+                    <h5 class="modal-title fw-bolder" id="staticBackdropLabel">{{ isCreate ? '新增' : '編輯' }}分類資料</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -119,8 +136,8 @@
                                     <div class="row">
                                         <label class="col-sm-12 col-md-3 col-form-label fw-bolder">分類名稱</label>
                                         <div class="col-sm-12 col-md-9">
-                                            <input v-model="categoryInfo.CategoryName" class="form-control form-control-sm"
-                                                   :class="{ 'is-invalid': isSubmitted && !categoryInfo.CategoryName?.trim() }" />
+                                            <input v-model="categoryInfo.categoryName" class="form-control form-control-sm"
+                                                   :class="{ 'is-invalid': isSubmitted && !categoryInfo.categoryName?.trim() }" />
                                             <div class="invalid-feedback">
                                                 請輸入分類名稱
                                             </div>
@@ -131,8 +148,8 @@
                                     <div class="row">
                                         <label class="col-sm-12 col-md-3 col-form-label fw-bolder">分類代碼</label>
                                         <div class="col-sm-12 col-md-9">
-                                            <input v-model="categoryInfo.Code" class="form-control form-control-sm"
-                                                   :class="{ 'is-invalid': isSubmitted && !categoryInfo.Code?.trim() }" />
+                                            <input v-model="categoryInfo.code" class="form-control form-control-sm"
+                                                   :class="{ 'is-invalid': isSubmitted && !categoryInfo.code?.trim() }" />
                                             <div class="invalid-feedback">
                                                 請輸入分類代碼
                                             </div>
@@ -149,8 +166,8 @@
                                                     <input class="form-check-input" type="checkbox" v-model="user.selected" :id="'check-' + user.keyID">
                                                     <label class="form-check-label" :for="'check-' + user.keyID">
                                                         {{ user.name }}
-                                                </label>
-                                            </div>
+                                                    </label>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -160,11 +177,9 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                            >
-                        取消
-                    </button>
-                    <button type="button" class="btn btn-primary" v-on:click="create">確定</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button v-if="isCreate" type="button" class="btn btn-primary" v-on:click="createData">確定</button>
+                    <button v-else type="button" class="btn btn-primary" v-on:click="editData">確定</button>
                 </div>
             </div>
         </div>
@@ -184,10 +199,6 @@
                     </div>
                 </div>
                 <div class="modal-footer border-top-0 justify-content-center">
-                    @* <button v-if="deleteConfirm" type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                            v-on:click="inquireData">
-                        關閉
-                    </button> *@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" v-on:click="queryList">關閉</button>
                 </div>
             </div>
@@ -216,7 +227,7 @@
 
 <style>
     .personnel-list-container {
-        max-height: 400px;
+        max-height: 500px;
         overflow-y: auto;
         border: 1px solid #dee2e6;
         padding: 1rem;
@@ -233,25 +244,37 @@
             apiPath: '@virtualPath/api/ContractCategory/',
             categoryInfos: [],
             Keyword: '',
+            Name: '',
             KeyID: '@Html.Raw(companyKeyID)',
             categoryInfo: {
-                CategoryName: '',
-                Code: '',
-                Permissions: []
+                categoryName: '',
+                code: '',
+                permissions: []
             },
             companyUsers: [],
             infoMsg: '',
             confirmMsg: '',
             isSubmitted: false,
             isSuccess: true,
-            deleteInfo: null
+            deleteInfo: null,
+            isCreate: true,
+            actionMsg: {
+                QueryError: '搜尋失敗，原因：',
+                CreateError: '存檔失敗，原因：',
+                ModifyError: '存檔失敗，原因：',
+                DeleteError: '存檔失敗，原因：',
+                GetCompanyUsersError: '搜尋失敗，原因：',
+                GetContractCategoryInfoError: '搜尋失敗，原因：',
+                SaveSuccess: '存檔完成',
+                DeleteConfirm: '確定要刪除分類'
+            }
         },
         async mounted() {
             await this.queryList();
             await this.getCompanyUsers();
         },
         methods: {
-            async postData(errorMsg, apiAction, data) {
+            async postData(apiAction, data) {
 
                 this.isSuccess = true;
                 showLoading();
@@ -259,22 +282,21 @@
                 hideLoading();
 
                 if (result.hasError) {
-                    this.infoMsg = errorMsg + result.message;
+                    this.infoMsg = this.actionMsg[apiAction + 'Error'] + result.message;
                     this.isSuccess = false;
                     $('#infoModal').modal('show');
-                    return;
+                    return result;
                 }
 
                 return result;
             },
             async queryList() {
-                const data = { "KeyID": this.KeyID, "Keyword": this.Keyword };
+                const data = { "KeyID": this.KeyID, "Keyword": this.Keyword, "Name": this.Name };
 
-                const errorMsg = "搜尋失敗，原因：";
-                const result = await this.postData(errorMsg, 'Query', data);
+                const result = await this.postData('Query', data);
 
                 if (result.hasError) {
-                    return;
+                    return result;
                 }
 
                 this.categoryInfos = result.data;
@@ -282,75 +304,113 @@
             async getCompanyUsers() {
                 const data = { "KeyID": this.KeyID };
 
-                const errorMsg = "搜尋失敗，原因：";
-                const result = await this.postData(errorMsg, 'GetCompanyUsers', data);
+                const result = await this.postData('GetCompanyUsers', data);
 
                 if (result.hasError) {
-                    return;
+                    return result;
                 }
 
                 this.companyUsers = result.data.map(user => ({
-                            name: user.userName,
+                            name: user.name,
                             keyID: user.keyID,
                             selected: false
                         }));
             },
-            async create() {
-
+            async createData() {
                 this.isSubmitted = true;
 
                 if (!this.isValidField()) {
                     return;
                 }
 
-                this.categoryInfo.Permissions = this.companyUsers.filter(user => user.selected)
+                this.categoryInfo.permissions = this.companyUsers.filter(user => user.selected)
                                                 .map(user => ({ KeyID: user.keyID }));
 
-                const errorMsg = "存檔失敗，原因：";
-                const result = await this.postData(errorMsg, 'Create', this.categoryInfo);
+                const result = await this.postData('Create', this.categoryInfo);
 
                 if (result.hasError) {
-                    return;
+                    return result;
                 }
 
                 this.isSubmitted = false;
-                this.infoMsg = '存檔完成';
-                this.categoryInfo = {
-                    CategoryName: '',
-                    Code: '',
-                    Permissions: []
-                }
-                this.companyUsers = this.companyUsers.map(user => ({ ...user, selected: false }));
+
+                this.infoMsg = this.actionMsg['SaveSuccess'];
                 $('#infoModal').modal('show');
-                $('#addNewModal').modal('hide');
+                $('#formModal').modal('hide');
+            },
+            async editData() {
+                this.isSubmitted = true;
+
+                if (!this.isValidField()) {
+                    return;
+                }
+                this.categoryInfo.permissions = this.companyUsers.filter(user => user.selected)
+                                                .map(user => ({ KeyID: user.keyID }));
+
+                const data = { KeyID: this.categoryInfo.keyID, ...this.categoryInfo };
+
+                const result = await this.postData('Modify', data);
+
+                if (result.hasError) {
+                    return result;
+                }
+
+                this.isSubmitted = false;
+                this.infoMsg = this.actionMsg['SaveSuccess'];
+                $('#infoModal').modal('show');
+                $('#formModal').modal('hide');
             },
             async deleteCategory() {
                 $('#confirmModal').modal('hide');
                 const data = { KeyID: this.deleteInfo.keyID };
 
-                const errorMsg = "存檔失敗，原因：";
-                const result = await this.postData(errorMsg, 'Delete', data);
+                const result = await this.postData('Delete', data);
 
                 if (result.hasError) {
-                    return;
+                    return result;
                 }
 
-                this.infoMsg = '存檔完成';
+                this.infoMsg = this.actionMsg['SaveSuccess'];
                 $('#infoModal').modal('show');
             },
-            showNewDialog() {
-                $('#addNewModal').modal('show');
+            async showEditDialog(info) {
+                const data = { KeyID: info.keyID };
+
+                const result = await this.postData('GetContractCategoryInfo', data);
+                if (result.hasError) {
+                    return result;
+                }
+
+                this.isCreate = false;
+                this.categoryInfo = result.data;
+                this.companyUsers = this.categoryInfo.permissions;
+                
+                $('#formModal').modal('show');
+            },
+            showCreateDialog() {
+                this.isCreate = true;
+                this.categoryInfo = {
+                    categoryName: '',
+                    code: '',
+                    permissions: []
+                }
+                this.companyUsers = this.companyUsers.map(user => ({ ...user, selected: false }));
+                $('#formModal').modal('show');
             },
             openConfirmDialog(info) {
-                this.confirmMsg = `確定要刪除分類：${info.categoryName}？`;
+                this.confirmMsg = `${this.actionMsg['DeleteConfirm']}：${info.categoryName}？`;
                 this.deleteInfo = info;
                 $('#confirmModal').modal('show');
             },
             isValidField() {
-                if (!this.categoryInfo.CategoryName?.trim() || !this.categoryInfo.Code?.trim()) {
+                if (!this.categoryInfo.categoryName?.trim() || !this.categoryInfo.code?.trim()) {
                     return false;
                 }
                 return true;
+            },
+            resetKeyword() {
+                this.Keyword = ''
+                this.Name = '';
             }
         }
     })

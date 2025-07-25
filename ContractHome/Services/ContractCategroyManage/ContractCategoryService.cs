@@ -74,13 +74,57 @@ namespace ContractHome.Services.ContractCategroyManage
             var users = from u in db.UserProfile
                         join o in db.OrganizationUser on u.UID equals o.UID
                         where o.CompanyID == request.CompanyID
+                        orderby u.UID
                         select new UserInfoModel
                         {
                             KeyID = u.UID.EncryptKey(),
-                            UserName = $"{u.PID}({u.EMail})",
+                            Name = $"{u.PID}({u.EMail})",
                         };
 
             return users.ToList();
+        }
+
+        /// <summary>
+        /// 取得合約分類資訊
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public ContractCategoryInfoModel GetContractCategoryInfo(ContractCategoryQueryModel request)
+        {
+            using var db = new DCDataContext();
+
+            var cc = from c in db.ContractCategory
+                     join o in db.Organization on c.CompanyID equals o.CompanyID
+                     where c.ContractCategoryID == request.ContractCategoryID
+                     select new ContractCategoryInfoModel
+                     {
+                         KeyID = c.ContractCategoryID.EncryptKey(),
+                         CategoryName = c.CategoryName,
+                         Code = c.Code,
+                         CompanyID = c.CompanyID,
+                         CompanyName = o.CompanyName,
+                     };
+
+            var categoryInfo = cc.FirstOrDefault() 
+                               ?? throw new Exception("Contract category not found.");
+
+            var permissions = from u in db.UserProfile
+                              join o in db.OrganizationUser on u.UID equals o.UID
+                              join cp in db.ContractCategoryPermission 
+                              on new { o.UID, ContractCategoryID = categoryInfo.ContractCategoryID } equals new { cp.UID, cp.ContractCategoryID } into userPermissions
+                              from up in userPermissions.DefaultIfEmpty()
+                              where o.CompanyID == categoryInfo.CompanyID
+                              orderby u.UID
+                              select new ContractCategoryPermissionInfoModel
+                              {
+                                  KeyID = u.UID.EncryptKey(),
+                                  Name = $"{u.PID}({u.EMail})",
+                                  Selected = up != null // 如果有對應的權限則為選中狀態
+                              };
+
+            categoryInfo.Permissions = permissions.ToList();
+            return categoryInfo;
         }
 
         /// <summary>
@@ -159,7 +203,9 @@ namespace ContractHome.Services.ContractCategroyManage
                                   {
                                       //ContractCategoryPermissionID = cp.ContractCategoryPermissionID,
                                       KeyID = cp.UID.EncryptKey(),
-                                      UserName = $"{u.PID}({u.EMail})"
+                                      Name = $"{u.PID}({u.EMail})",
+                                      PID = u.PID,
+                                      Email = u.EMail,
                                   }
                               };
             var permissionInfos = permissionQuery.ToList()
@@ -173,6 +219,12 @@ namespace ContractHome.Services.ContractCategroyManage
                     categoryInfo.Permissions = permissions;
 
                 }
+            }
+
+            if (!string.IsNullOrEmpty(request.Name))
+            {
+                var name = request.Name.Trim();
+                categoryInfos = categoryInfos.Where(x => x.Permissions.Any(p => p.Name.Contains(name) || p.Email.Contains(name))).ToList();
             }
 
             return categoryInfos;

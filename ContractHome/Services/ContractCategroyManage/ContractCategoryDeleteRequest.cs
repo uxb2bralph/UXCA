@@ -36,7 +36,7 @@ namespace ContractHome.Services.ContractCategroyManage
 
                 var cc = db.Contract.Where(x => x.ContractCategoryID == contractCategroyID).FirstOrDefault();
 
-                return cc != null;
+                return cc == null;
             }
         }
     }
