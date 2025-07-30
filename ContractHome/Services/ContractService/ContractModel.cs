@@ -26,7 +26,6 @@ namespace ContractHome.Services.ContractService
         /// <summary>
         /// 合約到期日
         /// </summary>
-        [Required(ErrorMessage = "合約到期日為必填")]
         [ValidDate("yyyy/MM/dd", ErrorMessage = "合約到期日格式不正確")]
         public string ExpiryDateTime { get; set; } = "";
         /// <summary>
