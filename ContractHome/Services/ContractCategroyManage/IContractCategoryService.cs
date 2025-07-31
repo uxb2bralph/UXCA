@@ -43,5 +43,12 @@
         /// <param name="request"></param>
         /// <returns></returns>
         public ContractCategoryInfoModel GetContractCategoryInfo(ContractCategoryQueryModel request);
+
+        /// <summary>
+        /// 取得合約分類選項
+        /// </summary>
+        /// <param name="UID"></param>
+        /// <returns></returns>
+        public IEnumerable<ContractCategoryOptionModel> GetContractCategoryOption(int UID, int companyID);
     }
 }

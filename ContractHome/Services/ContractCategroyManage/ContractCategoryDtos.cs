@@ -107,6 +107,26 @@ namespace ContractHome.Services.ContractCategroyManage
     }
 
     /// <summary>
+    /// 合約分類選項
+    /// </summary>
+    public class ContractCategoryOptionModel : ContractCategoryBaseModel
+    {
+        /// <summary>
+        /// 分類流水號
+        /// </summary>
+        [JsonIgnore]
+        public int ContractCategoryID => (!string.IsNullOrEmpty(KeyID)) ? KeyID.DecryptKeyValue() : -1;
+        /// <summary>
+        /// 分類名稱
+        /// </summary>
+        public string CategoryName { get; set; } = string.Empty;
+        /// <summary>
+        /// 選取狀態
+        /// </summary>
+        public bool Selected { get; set; } = false;
+    }
+
+    /// <summary>
     /// 合約分類Model
     /// </summary>
     public class ContractCategoryModel : ContractCategoryBaseModel

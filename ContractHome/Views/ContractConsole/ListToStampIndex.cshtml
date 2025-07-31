@@ -175,6 +175,9 @@
                                         <span class="text-black-50 fw-bolder">{{ contract.ContractNo }}</span>
                                     </div>
                                     <div class="fs-13 fw-bolder">
+                                        <span v-if="contract.CategoryName != ''" class="badge rounded-pill bg-success text-dark fs-13 bg-opacity-10">
+                                        {{contract.CategoryName}}
+                                        </span>
                                         <a :href="`javascript:showContract('${contract.KeyID}');`">
                                             {{ contract.Title }}
                                         </a>
@@ -532,6 +535,14 @@
                                         <div class="invalid-feedback text-end">
                                             請輸入專案編號
                                         </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="ContractCategory" class="form-label fw-bolder text-primary">文件分類</label>
+                                        <select v-model="configFormData.ContractCategory" class="form-select">
+                                            <option v-for="option in contractCategoryOptions" :value="option.keyID">
+                                                {{option.categoryName}}
+                                            </option>
+                                        </select>
                                     </div>
                                     <!--
                                     <div class="col-12">
@@ -1100,6 +1111,7 @@
             ExpiryDateTime: null,
             //IsInBulk: false,
             IsPassStamp: false,
+            ContractCategory: null
           },
           selectedContractor: [
             {
@@ -1191,6 +1203,9 @@
           },
           agree: false,
           isCommitSuccess: false,
+          contractCategoryOptions: [
+            { CategoryName: '請選擇', KeyID: 0 }
+          ],
         };
       },
       computed: {
@@ -1209,7 +1224,7 @@
           immediate: true,
         }
       },
-      mounted() {
+      async mounted() {
         // 取得當前使用者資料
         this.getCurrentUserInfo();
 
@@ -1224,9 +1239,6 @@
         //    localStorage.setItem("isContractTour", true);
         //  }, 100);
         //};
-
-        // 初始化新增文件表單
-        this.initContract();
 
         // 查詢文件表單
         this.queryHandler(3);
@@ -1317,6 +1329,12 @@
             },
           };
         }
+
+        // 取得分類選項
+        await this.getContractCategoryOption();
+
+        // 初始化新增文件表單
+        this.initContract();
       },
       methods: {
         // 導覽小幫手
@@ -1389,8 +1407,37 @@
             })
         },
 
+        async getContractCategoryOption() {
+
+          const result = await getData('@(Url.Content("~"))/api/ContractCategory/GetContractCategoryOption');
+
+          if (!result.hasError) {
+             // 成功
+             this.contractCategoryOptions = result.data;
+          } else {
+             // 失敗
+             this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${message.replace(/、/g, '<br>')} </div>`;
+             $("#infoModal").modal("show");
+          }
+
+
+          // getData('@(Url.Content("~"))/api/ContractCategory/GetContractCategoryOption')
+          //   .then((res) => {
+          //     const { data, hasError, message } = res;
+          //     if (!hasError) {
+          //       // 成功
+          //       this.contractCategoryOptions = data;
+          //     } else {
+          //       // 失敗
+          //       this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${message.replace(/、/g, '<br>')} </div>`;
+          //       $("#infoModal").modal("show");
+          //     }
+          //   });
+        },
+
         // 初始化簽署人設定表單
         initContract() {
+          this.initialFormData.ContractCategory = this.contractCategoryOptions[0].keyID;
           this.configFormData = JSON.parse(JSON.stringify(this.initialFormData));
           //this.configFormData.ExpiryDateTime = this.getExpiryDateTime(7);
         },
@@ -1523,11 +1570,11 @@
           if (!this.configFormData.Title) return;
           if (!this.configFormData.ContractNo) return;
           if (this.checkSignatories(this.selectedContractor)) return;
-          const { ContractNo, KeyID, Title, IsPassStamp } = this.configFormData;
+          const { ContractNo, KeyID, Title, IsPassStamp, ContractCategory } = this.configFormData;
           const ContractID = KeyID;
           const Signatories = this.selectedContractor.map(item => item.id);
           const ExpiryDateTime = this.configFormData.ExpiryDateTime ?? "";
-          const payload = { ContractNo, ContractID, Title, Signatories, ExpiryDateTime, IsPassStamp };
+          const payload = { ContractNo, ContractID, Title, Signatories, ExpiryDateTime, IsPassStamp, ContractCategory };
 
           showLoading();
           postData('@(Url.Action("Config", "ContractConsole"))', payload)

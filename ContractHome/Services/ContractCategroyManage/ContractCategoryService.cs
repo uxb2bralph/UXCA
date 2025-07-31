@@ -128,6 +128,41 @@ namespace ContractHome.Services.ContractCategroyManage
         }
 
         /// <summary>
+        /// 取得合約分類選項
+        /// </summary>
+        /// <param name="UID"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public IEnumerable<ContractCategoryOptionModel> GetContractCategoryOption(int UID, int companyID)
+        {
+            using var db = new DCDataContext();
+
+            var option = (from cc in db.ContractCategory
+                          join cp in db.ContractCategoryPermission on cc.ContractCategoryID equals cp.ContractCategoryID
+                          into cpGroup
+                          from cp in cpGroup.DefaultIfEmpty()
+                          where cc.CompanyID == companyID && (cp == null || cp.UID == UID)
+                          group cc by new { cc.ContractCategoryID, cc.CategoryName } into g
+                          select new ContractCategoryOptionModel
+                          {
+                              KeyID = g.Key.ContractCategoryID.EncryptKey(),
+                              CategoryName = g.Key.CategoryName,
+                              Selected = false
+                          }).ToList()
+                          .Union([
+                          new ContractCategoryOptionModel
+                          {
+                              KeyID = 0.EncryptKey(),
+                              CategoryName = "請選擇",
+                              Selected = true
+                          } 
+                          ]).OrderBy(x => x.ContractCategoryID);
+
+
+            return option.ToList();
+        }
+
+        /// <summary>
         /// 修改合約分類及權限
         /// </summary>
         /// <param name="request"></param>

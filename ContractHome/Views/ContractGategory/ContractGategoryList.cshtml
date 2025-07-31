@@ -161,7 +161,10 @@
                                     <div class="row">
                                         <label class="col-sm-12 col-md-3 col-form-label fw-bolder">授權帳號</label>
                                         <div class="col-sm-12 col-md-9">
-                                            <div class="personnel-list-container mt-3">
+                                            <span class="fs-12 text-black-50">
+                                                全部不勾選：代表所有人都有權限觀看此分類合約
+                                            </span>
+                                            <div class="personnel-list-container mt-1">
                                                 <div v-for="user in companyUsers" :key="user.keyID" class="form-check fs-5 mb-2">
                                                     <input class="form-check-input" type="checkbox" v-model="user.selected" :id="'check-' + user.keyID">
                                                     <label class="form-check-label" :for="'check-' + user.keyID">

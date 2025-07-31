@@ -2,6 +2,7 @@
 using ContractHome.Helper.Validation;
 using ContractHome.Models.ViewModel;
 using FluentValidation;
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 
@@ -10,6 +11,10 @@ namespace ContractHome.Models.Dto
     public class PostConfigRequest
     {
         public string ContractID { get; set; }
+        public string ContractCategory { get; set; }
+        [JsonIgnore]
+        public int ContractCategoryID => (!string.IsNullOrEmpty(ContractCategory)) ? ContractCategory.DecryptKeyValue() : 0;
+
         public string Title { get; set; }
         public string ContractNo { get; set; }
         public string? ExpiryDateTime { get; set; }

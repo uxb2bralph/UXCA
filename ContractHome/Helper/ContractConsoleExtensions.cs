@@ -146,8 +146,8 @@ namespace ContractHome.Helper
             models.SubmitChanges();
         }
 
-        public static void TransitStep(this CDS_Document document, GenericManager<DCDataContext> models, 
-            int actorID, 
+        public static void TransitStep(this CDS_Document document, GenericManager<DCDataContext> models,
+            int actorID,
             CDS_Document.StepEnum step
             )
         {
@@ -241,6 +241,16 @@ namespace ContractHome.Helper
         public static IEnumerable<ContractSignatureRequest> whoNotDigitalSigned(this Contract contract)
         {
             return (contract.ContractSignatureRequest.Where(x => x.SignatureDate == null).AsEnumerable());
+        }
+
+        public static string GetCategoryName(this Contract contract)
+        {
+            using var db = new DCDataContext();
+            var categoryName = (from c in db.Contract
+                                join cc in db.ContractCategory on c.ContractCategoryID equals cc.ContractCategoryID
+                                where c.ContractID == contract.ContractID
+                                select cc.CategoryName).FirstOrDefault() ?? string.Empty;
+            return categoryName;
         }
     }
 }

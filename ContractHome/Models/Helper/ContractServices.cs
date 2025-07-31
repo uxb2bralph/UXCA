@@ -752,6 +752,7 @@ namespace ContractHome.Models.Helper
         public Contract SetConfigAndSave(Contract contract, PostConfigRequest req, int uid)
         {
             contract.ContractNo = req.ContractNo;
+            contract.ContractCategoryID = req.ContractCategoryID;
             contract.Title = req.Title;
             contract.IsPassStamp = req.IsPassStamp;
             req.Signatories.ForEach(x => {

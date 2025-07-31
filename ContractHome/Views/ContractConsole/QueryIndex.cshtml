@@ -191,6 +191,9 @@
                                         <span class="text-black-50 fw-bolder">{{ contract.ContractNo }}</span>
                                     </div>
                                     <div class="fs-13 fw-bolder">
+                                        <span v-if="contract.CategoryName != ''" class="badge rounded-pill bg-success text-dark fs-13 bg-opacity-10">
+                                            {{contract.CategoryName}}
+                                        </span>
                                         <a :href="`javascript:showContract('${contract.KeyID}');`">
                                             {{ contract.Title }}
                                         </a>

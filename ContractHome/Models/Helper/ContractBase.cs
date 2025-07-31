@@ -186,6 +186,11 @@ namespace ContractHome.Models.Helper
         [JsonProperty]
         public string ContractNo { get; set; }
         [JsonProperty]
+        public string ContractCategory { get; set; } = string.Empty;
+        [JsonProperty]
+        public string CategoryName { get; set; }
+
+        [JsonProperty]
         public string Title { get; set; }
         [JsonProperty]
         public bool? IsPassStamp { get; set; }
@@ -207,6 +212,8 @@ namespace ContractHome.Models.Helper
         {
             KeyID = contract.ContractID.EncryptKey();
             ContractNo = contract.ContractNo;
+            ContractCategory = contract.ContractCategoryID.EncryptKey();
+            CategoryName = contract.GetCategoryName();
             Title = contract.Title;
             IsPassStamp = contract.IsPassStamp ?? false;
             CreatedDateTime = contract.CDS_Document.DocDate.ReportDateTimeString();
