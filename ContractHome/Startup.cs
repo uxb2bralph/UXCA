@@ -160,6 +160,8 @@ namespace ContractHome
             // 系統Log檔案
             services.AddScoped<ISystemLogService, SystemLogService>();
 
+            services.AddScoped<IContractSearchService, ContractSearchService>();
+
             services.AddScoped<ContractServices>();
             services.AddScoped<BaseResponse>();
             // Wangkanai.Detection:Add detection services container and device resolver service.

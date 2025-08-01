@@ -829,7 +829,7 @@
           const self = this;
           $.ajax({
             type: 'POST',
-            url: '@(Url.Action("InquireData", "ContractConsole"))',
+            url: '@(Url.Content("~"))/api/ContractSearch/SearchContract',
             data: JSON.stringify(viewModel),
             type: "POST",
             //dataType: "json",

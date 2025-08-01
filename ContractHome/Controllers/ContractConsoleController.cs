@@ -23,6 +23,7 @@ using Wangkanai.Detection.Services;
 using static CommonLib.Utility.PredicateBuilder;
 using static ContractHome.Helper.JwtTokenGenerator;
 using static ContractHome.Models.Helper.ContractServices;
+using static ContractHome.Services.ContractService.ContractSearchDtos;
 
 
 namespace ContractHome.Controllers
@@ -39,6 +40,7 @@ namespace ContractHome.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ICustomContractService _customContractService;
         private readonly IDetectionService _detectionService;
+        private readonly IContractSearchService _contractSearchService;
 
         public ContractConsoleController(ILogger<HomeController> logger,
             IServiceProvider serviceProvider,
@@ -48,7 +50,8 @@ namespace ContractHome.Controllers
             IHttpContextAccessor httpContextAccessor,
             BaseResponse baseResponse,
             ICustomContractService customContractService,
-            IDetectionService detectionService
+            IDetectionService detectionService,
+            IContractSearchService contractSearchService
           ) : base(serviceProvider)
         {
             _logger = logger;
@@ -59,6 +62,7 @@ namespace ContractHome.Controllers
             _baseResponse = baseResponse;
             _customContractService = customContractService;
             _detectionService = detectionService;
+            _contractSearchService = contractSearchService;
         }
 
         public IActionResult QueryIndex()
@@ -627,6 +631,17 @@ namespace ContractHome.Controllers
             models.SubmitChanges();
 
             return Json(new { result = true });
+        }
+
+        public async Task<ActionResult> SearchContractAsync([FromBody] ContractSearchModel searchModel)
+        {
+            var profile = await HttpContext.GetUserAsync();
+
+            searchModel.SearchUID = profile.UID;
+
+            var result = _contractSearchService.SearchContract(searchModel);
+
+            return Json(result);
         }
 
         public async Task<ActionResult> InquireDataAsync([FromBody] ContractQueryViewModel viewModel)

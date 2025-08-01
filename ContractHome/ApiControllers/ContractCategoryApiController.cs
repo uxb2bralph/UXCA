@@ -74,6 +74,7 @@ namespace ContractHome.ApiControllers
         public IActionResult Query([FromBody] ContractCategoryQueryModel request)
         {
             var result = contractCategroyService.QuertyContractCategory(request);
+
             return Ok(new BaseResponse()
             {
                 Data = result
