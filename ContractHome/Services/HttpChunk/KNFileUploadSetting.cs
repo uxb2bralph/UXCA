@@ -6,6 +6,10 @@
     public class KNFileUploadSetting
     {
         /// <summary>
+        /// 中鋼統編
+        /// </summary>
+        public string KNReceiptNo { get; set; } = string.Empty;
+        /// <summary>
         /// 是否啟用分段上傳功能
         /// </summary>
         public bool Enable { get; set; } = false;

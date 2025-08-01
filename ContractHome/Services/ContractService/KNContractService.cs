@@ -65,7 +65,7 @@ namespace ContractHome.Services.ContractService
                 Title = model.Title,
                 IsPassStamp = model.IsPassStamp,
                 CompanyID = promisor.CompanyID,
-                NotifyUntilDate = DateTime.Parse(model.ExpiryDateTime)
+                NotifyUntilDate = (string.IsNullOrEmpty(model.ExpiryDateTime)) ? null : DateTime.Parse(model.ExpiryDateTime)
             };
 
             // 合約步驟資訊
@@ -233,7 +233,7 @@ namespace ContractHome.Services.ContractService
             {
                 LogDate = DateTime.Now,
                 ActorID = uid,
-                StepID = (isPassStamp) ? (int)CDS_Document.StepEnum.Establish : (int)CDS_Document.StepEnum.Config,
+                StepID = (isPassStamp) ? (int)CDS_Document.StepEnum.DigitalSigning : (int)CDS_Document.StepEnum.Config,
                 ClientIP = "-1",
                 ClientDevice = "System"
             };
@@ -261,6 +261,7 @@ namespace ContractHome.Services.ContractService
 
             if (initiatorOrg == null)
             {
+                db.Dispose();
                 return;
             }
 
@@ -349,16 +350,14 @@ namespace ContractHome.Services.ContractService
                 CreateDocumentProcessLog(contract, promisor.UID, model.IsPassStamp);
 
                 db.SubmitChanges();
-                
+                db.Transaction.Commit();
 
                 // 發送簽署通知
                 var emailContent = (model.IsPassStamp) ? _emailFactory.GetNotifySign() : _emailFactory.GetNotifySeal();
                 var targetUsers = (model.IsPassStamp) ? sendMails.ToList() : [model.NotifyMail];
                 SendMail(contract, targetUsers, emailContent);
-
-                db.Transaction.Commit();
-            } 
-            catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 FileLogger.Logger.Error(ex.ToString());
                 transFail = true;
@@ -375,7 +374,7 @@ namespace ContractHome.Services.ContractService
                 msgRes = new MsgRes
                 {
                     type = (transFail) ? ContractResultType.F.ToString() : ContractResultType.S.ToString(),
-                    code = ContractResultCode.ContractCreate.GetFullCode(),
+                    code = (transFail) ? ContractResultCode.ContractCreate.GetFullCode() : ContractResultCode.Success.GetFullCode(),
                     desc = $"合約編號({model.ContractNo})-建立" + ((transFail) ? "失敗" : "成功")
                 }
             };
@@ -397,10 +396,12 @@ namespace ContractHome.Services.ContractService
             {
                 var company = from u in db.UserProfile
                               join ou in db.OrganizationUser on u.UID equals ou.UID
-                              where u.EMail.Equals(model.NotifyMail)
+                              join o in db.Organization on ou.CompanyID equals o.CompanyID
+                              where u.EMail.Equals(model.NotifyMail) && o.ReceiptNo.Equals(_KNFileUploadSetting.KNReceiptNo)
                               select new
                               {
-                                  ou.CompanyID
+                                  o.CompanyID,
+                                  o.ReceiptNo
                               };
                 if (company.FirstOrDefault() == null)
                 {
@@ -412,7 +413,7 @@ namespace ContractHome.Services.ContractService
                 }
             }
 
-            
+
             if (!string.IsNullOrEmpty(model.ContractNo) && companyId != 0)
             {
                 // 檢查合約編號是否已存在
@@ -438,10 +439,10 @@ namespace ContractHome.Services.ContractService
 
             db.Dispose();
 
-            if (!model.Signatories.Any())
-            {
-                modelState.AddModelError(nameof(model.Signatories), "簽署者至少要一個");
-            }
+            //if (!model.Signatories.Any())
+            //{
+            //    modelState.AddModelError(nameof(model.Signatories), "簽署者至少要一個");
+            //}
 
             List<string> errorMsg = [];
             List<string> errorList = [];
@@ -487,7 +488,7 @@ namespace ContractHome.Services.ContractService
                 msgRes = new MsgRes()
                 {
                     type = (!modelState.IsValid) ? ContractResultType.F.ToString() : ContractResultType.S.ToString(),
-                    code = ContractResultCode.ContractInfoVerify.GetFullCode(),
+                    code = (!modelState.IsValid) ? ContractResultCode.ContractInfoVerify.GetFullCode() : ContractResultCode.Success.GetFullCode(),
                     desc = (!modelState.IsValid) ? modelState.ErrorMessage() : "合約資訊正確"
                 }
             };
@@ -533,7 +534,7 @@ namespace ContractHome.Services.ContractService
                 msgRes = new MsgRes()
                 {
                     type = ContractResultType.S.ToString(),
-                    code = ContractResultCode.ContractDownload.GetFullCode(),
+                    code = ContractResultCode.Success.GetFullCode(),
                     desc = $"合約PDF下載成功-{chunkResult.Message}"
                 }
             };
@@ -686,27 +687,52 @@ namespace ContractHome.Services.ContractService
         /// <summary>
         /// 上傳簽屬及軌跡PDF檔案
         /// </summary>
-        public async Task UploadSignatureAndFootprintsPdfFile(Contract contract)
+        public async Task<bool> UploadSignatureAndFootprintsPdfFile(Contract contract)
         {
-            var createTasks = new List<Task<string>>
+            try
             {
-                this.CreateSignaturePDF(contract),
-                this.CreateFootprintsPDF(contract)
-            };
+                using DCDataContext db = new();
+                // 檢查合約公司編號是否符合中鋼KN公司編號
+                var KNReceiptNo = (from c in db.Contract
+                                   join o in db.Organization on c.CompanyID equals o.CompanyID
+                                   where c.ContractID == contract.ContractID && o.ReceiptNo.Equals(_KNFileUploadSetting.KNReceiptNo)
+                                   select o.ReceiptNo).FirstOrDefault();
 
-            var results = await Task.WhenAll(createTasks);
-            
-            var uploadTasks = new List<Task>();
-
-            foreach (var filePath in results)
-            {
-                if (!string.IsNullOrEmpty(filePath))
+                if (KNReceiptNo == null)
                 {
-                    uploadTasks.Add(_chunkFileUploader.UploadAsync(filePath));
+                    //FileLogger.Logger.Info("UploadSignatureAndFootprintsPdfFile 中鋼KN公司編號不存在:" + _KNFileUploadSetting.KNReceiptNo);
+                    return false;
                 }
-            }
 
-            await Task.WhenAll(uploadTasks);
+
+                var createTasks = new List<Task<string>>
+                {
+                    this.CreateSignaturePDF(contract),
+                    this.CreateFootprintsPDF(contract)
+                };
+
+                var results = await Task.WhenAll(createTasks);
+
+                var uploadTasks = new List<Task>();
+
+                foreach (var filePath in results)
+                {
+                    if (!string.IsNullOrEmpty(filePath))
+                    {
+                        uploadTasks.Add(_chunkFileUploader.UploadAsync(filePath));
+                    }
+                }
+
+                await Task.WhenAll(uploadTasks);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                FileLogger.Logger.Info("UploadSignatureAndFootprintsPdfFile 合約檔案處理錯誤:" + contract.ContractNo);
+                FileLogger.Logger.Error(ex.ToString());
+                return false;
+            }
         }
     }
 }

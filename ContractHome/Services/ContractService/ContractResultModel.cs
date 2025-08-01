@@ -34,6 +34,10 @@
     public enum ContractResultCode
     {
         /// <summary>
+        /// 執行成功
+        /// </summary>
+        Success = 0,
+        /// <summary>
         /// 合約資訊驗證
         /// </summary>
         ContractInfoVerify = 1,

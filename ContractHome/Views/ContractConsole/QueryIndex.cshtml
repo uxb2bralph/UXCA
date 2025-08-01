@@ -18,6 +18,8 @@
     _modelState = (ModelStateDictionary)ViewBag.ModelState;
     QueryViewModel _viewModel = (QueryViewModel)ViewBag.ViewModel;
 
+    var profile = await Context.GetUserAsync();
+
     _viewModel.UrlAction = Url.Action("InquireData", "ContractConsole");
 }
 @{
@@ -89,6 +91,20 @@
                                                 {{ result.CompanyName }}
                                             </li>
                                         </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col input__height">
+                                <div class="row">
+                                    <label for="QueryStep" class="col-sm-12 col-md-3 col-form-label fs-14 fw-bolder">文件狀態</label>
+                                    <div id="queryStepField" class="col-sm-12 col-md-9">
+                                        <select v-model="QueryStep" class="form-select">
+                                            <option v-for="(item, index) in ContractStep" :key="index" :value="item.value">
+                                                {{ item.text }}
+                                            </option>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -244,7 +260,7 @@
                                                 下載稽核軌跡
                                             </button>
                                         </li>
-                                        <li v-if="contract.CurrentStep != @((int)CDS_Document.StepEnum.Config) && contract.CurrentStep != @((int)CDS_Document.StepEnum.Committed) && contract.CurrentStep != @((int)CDS_Document.StepEnum.Revoked) && contract.CurrentStep != @((int)CDS_Document.StepEnum.Terminated)">
+                                        <li v-if="showMenu(contract) && contract.CurrentStep != @((int)CDS_Document.StepEnum.Config) && contract.CurrentStep != @((int)CDS_Document.StepEnum.Committed) && contract.CurrentStep != @((int)CDS_Document.StepEnum.Revoked) && contract.CurrentStep != @((int)CDS_Document.StepEnum.Terminated)">
                                             <button class="dropdown-item d-flex align-items-center fs-13" v-on:click="resendEmail(contract)">
                                                 <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
                                                     <i class="far fa-envelope text-info"></i>
@@ -253,7 +269,7 @@
                                             </button>
                                         </li>
 
-                                        <li v-if="contract.CurrentStep == @((int)CDS_Document.StepEnum.Config)">
+                                        <li v-if="showMenu(contract) && contract.CurrentStep != @((int)CDS_Document.StepEnum.Terminated) && contract.CurrentStep != @((int)CDS_Document.StepEnum.Revoked) && contract.CurrentStep != @((int)CDS_Document.StepEnum.Committed)">
                                             <button class="dropdown-item d-flex align-items-center fs-13"
                                                     v-on:click="openStopContractModal(contract)">
                                                 <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
@@ -318,7 +334,7 @@
                                     </div>
                                     <div v-else>
                                         <!-- 待設定 -->
-                                        <button type="button" class="btn progresses__steps" v-on:click="openContractConfig(contract)"
+                                        <button type="button" class="btn progresses__steps" v-on:click="item.IsCurrentUserCompany && openContractConfig(contract)"
                                                 :class="{ 'progresses__steps--actived': item.IsCurrentUserCompany }">
                                             <i class="fas fa-sliders-h-square"></i>
                                         </button>
@@ -701,7 +717,8 @@
           ContractDateFrom: null,
           ContractDateTo: null,
           Initiator: null,
-          Contractor: null
+          Contractor: null,
+          QueryStep: null
         },
         /** 分頁 options
          * totalRecordCount: 總筆數
@@ -736,20 +753,29 @@
         historyData: {},
         stopContractData: {},
         isLayoutCard: false,
+        QueryStep: null,
+        ContractStep: [
+            { text: '請選擇', value: null },
+            { text: '待用印', value: @((int)CDS_Document.StepEnum.Establish) },
+            { text: '待簽署', value: @((int)CDS_Document.StepEnum.Sealed) },
+            { text: '待設定', value: @((int)CDS_Document.StepEnum.Config) },
+            { text: '已終止', value: @((int)CDS_Document.StepEnum.Terminated) },
+            { text: '已完成', value: @((int)CDS_Document.StepEnum.Committed) },
+        ],
         // 文件狀態
         StepEnum: {
-          0: '開始',
-          1: '設定',
-          3: '欄位設定',
-          5: '建立',
-          6: '用印中',
-          7: '用印完成',
-          10: '簽章中',
-          11: '簽章完成',
-          16: '瀏覽',
-          17: '已終止',
-          18: '完成',
-          19: '撤銷',
+          @((int)CDS_Document.StepEnum.Initial): '開始',
+          @((int)CDS_Document.StepEnum.Config): '設定',
+          @((int)CDS_Document.StepEnum.FieldSet): '欄位設定',
+          @((int)CDS_Document.StepEnum.Establish): '建立',
+          @((int)CDS_Document.StepEnum.Sealing): '用印中',
+          @((int)CDS_Document.StepEnum.Sealed): '用印完成',
+          @((int)CDS_Document.StepEnum.DigitalSigning): '簽章中',
+          @((int)CDS_Document.StepEnum.DigitalSigned): '簽章完成',
+          @((int)CDS_Document.StepEnum.Browsed): '瀏覽',
+          @((int)CDS_Document.StepEnum.Terminated): '已終止',
+          @((int)CDS_Document.StepEnum.Committed): '完成',
+          @((int)CDS_Document.StepEnum.Revoked): '撤銷',
         }
       },
       watch: {
@@ -818,6 +844,14 @@
         },
         fetchAPI() {
           // 執行查詢合約列表
+          const map = {
+              @((int)CDS_Document.StepEnum.Establish): [@((int)CDS_Document.StepEnum.Establish), @((int)CDS_Document.StepEnum.Sealing)],
+              @((int)CDS_Document.StepEnum.Sealed): [@((int)CDS_Document.StepEnum.Sealed), @((int)CDS_Document.StepEnum.DigitalSigning)],
+          }
+
+          this.formData.QueryStep = (this.QueryStep != null) ? 
+                                    (map[this.QueryStep] || [this.QueryStep]) : null;
+
           var viewModel = {
             ...this.formData,
             PageIndex: this.page,
@@ -860,6 +894,19 @@
           return CurrentStep === @((int)CDS_Document.StepEnum.Sealed) || CurrentStep === @((int)CDS_Document.StepEnum.DigitalSigning);
         },
 
+        // 是否顯示選單
+        showMenu(contract) {
+
+        @if (profile.IsSysAdmin())
+        {
+          <text>return true;</text>
+        }
+
+
+          const partyFilter = contract.Parties.filter(item => item.IsCurrentUserCompany && item.isInitiator);
+          return partyFilter.length > 0;
+        },
+
         // 重設查詢
         resetHandler() {
           this.formData = {
@@ -867,8 +914,11 @@
             ContractDateFrom: null,
             ContractDateTo: null,
             Initiator: null,
-            Contractor: null
+            Contractor: null,
+            QueryStep: null
           }
+
+          this.QueryStep = null
         },
 
         // 取得排序項目，目前只有單選

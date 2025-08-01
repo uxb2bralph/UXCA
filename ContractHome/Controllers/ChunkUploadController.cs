@@ -1,8 +1,9 @@
-﻿using System.Security.Cryptography;
-using CommonLib.Core.Utility;
+﻿using CommonLib.Core.Utility;
 using ContractHome.Helper;
+using ContractHome.Services.ContractService;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Cryptography;
 
 namespace ContractHome.Controllers
 {
@@ -48,7 +49,15 @@ namespace ContractHome.Controllers
             catch (Exception ex)
             {
                 FileLogger.Logger.Error(ex);
-                return StatusCode(500, new { error = ex.Message });
+                return StatusCode(500, new ContractResultModel()
+                {
+                    msgRes = new MsgRes()
+                    {
+                        type = ContractResultType.E.ToString(),
+                        code = ContractResultCode.ContractUpdate.GetFullCode(),
+                        desc = ex.ToString()
+                    }
+                });
             }
         }
         /// <summary>
@@ -75,7 +84,15 @@ namespace ContractHome.Controllers
             catch (Exception ex)
             {
                 FileLogger.Logger.Error(ex);
-                return StatusCode(500, new { error = ex.Message });
+                return StatusCode(500, new ContractResultModel()
+                {
+                    msgRes = new MsgRes()
+                    {
+                        type = ContractResultType.E.ToString(),
+                        code = ContractResultCode.ContractUpdate.GetFullCode(),
+                        desc = ex.ToString()
+                    }
+                });
             }
         }
         /// <summary>
@@ -95,7 +112,15 @@ namespace ContractHome.Controllers
             catch (Exception ex)
             {
                 FileLogger.Logger.Error(ex);
-                return StatusCode(500, new { error = ex.Message });
+                return StatusCode(500, new ContractResultModel()
+                {
+                    msgRes = new MsgRes()
+                    {
+                        type = ContractResultType.E.ToString(),
+                        code = ContractResultCode.ContractUpdate.GetFullCode(),
+                        desc = ex.ToString()
+                    }
+                });
             }
 
         }

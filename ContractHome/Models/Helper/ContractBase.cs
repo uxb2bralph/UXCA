@@ -174,7 +174,7 @@ namespace ContractHome.Models.Helper
         public List<PartyRefs> Parties { get; set; }
         public ContractRefs(Contract contract, string queryItem="", int? userCompanyID = null) : base(contract, queryItem)
         {
-            Parties = contract.ContractingParty
+            Parties = contract.ContractingParty.OrderByDescending(x => x.IsInitiator)
                 .Select(x => new PartyRefs(contract, x, queryItem, userCompanyID)).ToList();
         }
     }

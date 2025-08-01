@@ -228,7 +228,7 @@
                                                 下載稽核軌跡
                                             </button>
                                         </li>
-                                        <li>
+                                        <li v-if="showMenu(contract)">
                                             <button class="dropdown-item d-flex align-items-center fs-13" v-on:click="resendEmail(contract)">
                                                 <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
                                                     <i class="far fa-envelope text-info"></i>
@@ -236,7 +236,7 @@
                                                 重發通知信
                                             </button>
                                         </li>
-                                        <li v-if="showStopCase(contract)">
+                                        <li v-if="showMenu(contract)">
                                             <button class="dropdown-item d-flex align-items-center fs-13"
                                                     v-on:click="openStopContractModal(contract)">
                                                 <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
@@ -286,7 +286,7 @@
 
                                     <!-- 待簽署 -->
                                     <button v-if="!!item.StampDate && !item.SignerDate" class="btn progresses__steps"
-                                            :class="[canSignerByCsr(item) && item.IsCurrentUserCompany ? 'progresses__steps--signActived' : 'disabled']"
+                                            :class="[canSignerByCsr(contract, item) && item.IsCurrentUserCompany ? 'progresses__steps--signActived' : 'disabled']"
                                             v-on:click="signerHandler(contract.KeyID, item.Name, contract.ContractNo, contract.Title)">
                                         <i class="fas fa-signature"></i>
                                     </button>
@@ -335,7 +335,7 @@
 
                                             <!-- 待簽署 -->
                                             <button v-if="!!item.StampDate && !item.SignerDate" type="button" class="btn progresses__steps"
-                                                    :class="[canSignerByCsr(item) && item.IsCurrentUserCompany ? 'progresses__steps--signActived' : 'disabled']"
+                                                    :class="[canSignerByCsr(contract, item) && item.IsCurrentUserCompany ? 'progresses__steps--signActived' : 'disabled']"
                                                     v-on:click="signerHandler(contract.KeyID, item.Name, contract.ContractNo, contract.Title)">
                                                 <i class="fas fa-signature"></i>
                                             </button>
@@ -1519,9 +1519,15 @@
           });
         },
 
-        // 是否可終止文件
-        showStopCase(contract) {
-          const partyFilter = contract.Parties.filter(item => item.Name.includes(this.currentUserInfo.companyName) && item.isInitiator);
+        // // 是否可終止文件
+        // showStopCase(contract) {
+        //   const partyFilter = contract.Parties.filter(item => item.Name.includes(this.currentUserInfo.companyName) && item.isInitiator);
+        //   return partyFilter.length > 0;
+        // },
+
+        // 是否可顯示選單
+        showMenu(contract) {
+          const partyFilter = contract.Parties.filter(item => item.IsCurrentUserCompany && item.isInitiator);
           return partyFilter.length > 0;
         },
 
@@ -1532,7 +1538,13 @@
         },
 
         // 是否可簽署
-        canSignerByCsr(csr) {
+        canSignerByCsr(contract, csr) {
+            const unSealUsers = contract.Parties.filter(item => item.StampDate === "");
+
+            if (unSealUsers.length > 0) {
+                return false;
+            }
+
             const { Step } = csr;
             return Step === @((int)CDS_Document.StepEnum.DigitalSigning);
         },

@@ -216,6 +216,11 @@ namespace ContractHome.Models.Helper
                 return (new BaseResponse(reason: WebReasonEnum.ContractNotExisted), item, profile);
             }
 
+            if (item.CurrentStep == (int)CDS_Document.StepEnum.Establish || item.CurrentStep == (int)CDS_Document.StepEnum.Sealing)
+            {
+                return (new BaseResponse(true, "合約未完成用印流程, 無法執行簽署.").AddContractMessage(item), item, profile);
+            }
+
             if (item.CurrentStep >= (int)CDS_Document.StepEnum.DigitalSigned)
             {
                 return (new BaseResponse(true, "合約已完成簽署流程, 無法再次簽署.").AddContractMessage(item), item, profile);
@@ -406,63 +411,6 @@ namespace ContractHome.Models.Helper
         }
 
         /// <summary>
-        /// 取得未簽署合約的使用者
-        /// </summary>
-        /// <param name="contract"></param>
-        /// <returns></returns>
-        public IQueryable<UserProfile> GetNoSignUsers(Contract contract)
-        {
-            DCDataContext db = _models.DataContext;
-            // 抓 ContractSignatureRequest SignerID 不為 NULL 且 未簽署 的 UserProfile
-            var noSignUsers = from u in db.UserProfile
-                              join c in db.ContractSignatureRequest on u.UID equals c.SignerID
-                              where c.ContractID == contract.ContractID && 
-                                    c.SignatureDate == null && 
-                                    c.StampDate != null
-                              select u;
-            // 抓 ContractSignatureRequest SignerID 為 NULL 且 未簽署 的 UserProfile
-            var noSignOrgUsers = from c in db.ContractSignatureRequest
-                                 join ou in db.OrganizationUser on c.CompanyID equals ou.CompanyID
-                                 join u in db.UserProfile on ou.UID equals u.UID
-                                 where c.ContractID == contract.ContractID && 
-                                       c.SignerID == null && 
-                                       c.SignatureDate == null && 
-                                       c.StampDate != null
-                                 select u;
-
-            // 合併兩個查詢結果
-            var users = noSignUsers.Union(noSignOrgUsers);
-
-            return users;
-        }
-        /// <summary>
-        /// 取得未用印的使用者
-        /// </summary>
-        /// <param name="contract"></param>
-        /// <returns></returns>
-        public IQueryable<UserProfile> GetNoSealUsers(Contract contract)
-        {
-            DCDataContext db = _models.DataContext;
-            // 抓 ContractSignatureRequest SignerID 不為 NULL 且 未用印 的 UserProfile
-            var noSealUsers = from u in db.UserProfile
-                              join c in db.ContractSignatureRequest on u.UID equals c.SignerID
-                              where c.ContractID == contract.ContractID && 
-                                    c.StampDate == null
-                              select u;
-            // 抓 ContractSignatureRequest SignerID 為 NULL 且 未用印 的 UserProfile
-            var noSealOrgUsers = from c in db.ContractSignatureRequest
-                                 join ou in db.OrganizationUser on c.CompanyID equals ou.CompanyID
-                                 join u in db.UserProfile on ou.UID equals u.UID
-                                 where c.ContractID == contract.ContractID && 
-                                       c.SignerID == null && 
-                                       c.StampDate == null
-                                 select u;
-            // 合併兩個查詢結果
-            var users = noSealUsers.Union(noSealOrgUsers);
-            return users;
-        }
-
-        /// <summary>
         /// 取得合約簽署人
         /// </summary>
         /// <param name="contract"></param>
@@ -474,6 +422,60 @@ namespace ContractHome.Models.Helper
                         join c in db.ContractSignatureRequest on u.UID equals c.SignerID
                         where c.ContractID == contract.ContractID
                         select u;
+        }
+
+
+        /// <summary>
+        /// 取得合約待用印人
+        /// </summary>
+        /// <param name="contract"></param>
+        /// <returns></returns>
+        public IQueryable<UserProfile>? GetUnSealUsersByContract(Contract contract)
+        {
+            if (contract.IsPassStamp.HasValue && contract.IsPassStamp.Value)
+            {
+                return null; // 如果合約已設定為免用印，則返回 null
+            }
+
+            DCDataContext db = _models.DataContext;
+            // 抓 ContractSignatureRequest SignerID 不為 NULL 未用印的使用者
+            var sealers = from u in db.UserProfile
+                          join c in db.ContractSignatureRequest on u.UID equals c.SignerID
+                          where c.ContractID == contract.ContractID && c.StampDate == null
+                          select u;
+            // 抓 ContractSignatureRequest SignerID 為 NULL 的 未用印的使用者
+            var orgUsers = from c in db.ContractSignatureRequest
+                           join ou in db.OrganizationUser on c.CompanyID equals ou.CompanyID
+                           join u in db.UserProfile on ou.UID equals u.UID
+                           where c.ContractID == contract.ContractID && c.SignerID == null && c.StampDate == null
+                           select u;
+            // 合併兩個查詢結果
+            var users = sealers.Union(orgUsers);
+            return users;
+        }
+
+        /// <summary>
+        /// 取得已用印但待簽署的使用者
+        /// </summary>
+        /// <param name="contract"></param>
+        /// <returns></returns>
+        public IQueryable<UserProfile>? GetUnSignUsersByContract(Contract contract)
+        {
+            DCDataContext db = _models.DataContext;
+            // 抓 ContractSignatureRequest SignerID 不為 NULL 未用印的使用者
+            var sealers = from u in db.UserProfile
+                          join c in db.ContractSignatureRequest on u.UID equals c.SignerID
+                          where c.ContractID == contract.ContractID && c.StampDate != null && c.SignatureDate == null
+                          select u;
+            // 抓 ContractSignatureRequest SignerID 為 NULL 的 未用印的使用者
+            var orgUsers = from c in db.ContractSignatureRequest
+                           join ou in db.OrganizationUser on c.CompanyID equals ou.CompanyID
+                           join u in db.UserProfile on ou.UID equals u.UID
+                           where c.ContractID == contract.ContractID && c.SignerID == null && c.StampDate != null && c.SignatureDate == null
+                           select u;
+            // 合併兩個查詢結果
+            var users = sealers.Union(orgUsers);
+            return users;
         }
 
         public IQueryable<UserProfile>? GetUsersByWhoNotFinished(Contract contract, 
@@ -489,7 +491,7 @@ namespace ContractHome.Models.Helper
                           join c in db.ContractSignatureRequest on u.UID equals c.SignerID
                           where c.ContractID == contract.ContractID && (c.SignatureDate == null || c.StampDate == null)
                           select u;
-            // 抓 ContractSignatureRequest SignerID 為 NULL 的 OrganizationUser
+            // 抓 ContractSignatureRequest SignerID 為 NULL 的 OrganizationUser - 沒用印及簽署的使用者
             var orgUsers = from c in db.ContractSignatureRequest
                            join ou in db.OrganizationUser on c.CompanyID equals ou.CompanyID
                            join u in db.UserProfile on ou.UID equals u.UID
@@ -701,10 +703,13 @@ namespace ContractHome.Models.Helper
             var usersString = string.Join(" ", users.Select(x => $"{x.UID}"));
             FileLogger.Logger.Info($"NotifyTerminationContract ContractID: {contract.ContractID} {(CDS_Document.StepEnum)contract.CurrentStep} UID: {usersString}");
         }
-
+        /// <summary>
+        /// 通知未完成合約簽署人
+        /// </summary>
+        /// <returns></returns>
         public async Task NotifyWhoNotFinishedDoc()
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
 
             try
             {
@@ -718,20 +723,37 @@ namespace ContractHome.Models.Helper
                     .Where(x => x.NotifyUntilDate.Value.AddDays(-1) == DateTime.Now.Date || x.NotifyUntilDate == DateTime.Now.Date)
                     .ToList();
 
-                if (contracts.Count()>0)
+                if (contracts.Count > 0)
                 {
                     sb.AppendLine($"NotifyWhoNotFinishedDoc:contracts.Count()={contracts.Count}");
 
                     foreach (var contract in contracts)
                     {
-                        var users = GetUsersByWhoNotFinished(contract, contract.CurrentStep);
+                        var usersString = string.Empty;
+                        // 取得待用印人
+                        var unSealers = GetUnSealUsersByContract(contract);
+                        if (unSealers != null && unSealers.Any())
+                        {
+                            await SendUsersNotifyEmailAboutContractAsync(
+                                        contract,
+                                        _emailContentFactories.GetNotifySeal(),
+                                        unSealers
+                            );
+                            usersString = string.Join(" ", unSealers.Select(x => $"{x.UID}"));
+                            sb.Append($" ContractID: {contract.ContractID} {(CDS_Document.StepEnum)contract.CurrentStep} NotifySeal UID: {usersString}");
+                            continue;
+                        }
+
+                        var unSigners = GetUnSignUsersByContract(contract);
                         await SendUsersNotifyEmailAboutContractAsync(
                                     contract,
                                     _emailContentFactories.GetNotifySign(),
-                                    users
+                                    unSigners
                         );
-                        var usersString = string.Join(" ", users.Select(x => $"{x.UID}"));
-                        sb.Append($" ContractID: {contract.ContractID} {(CDS_Document.StepEnum)contract.CurrentStep} UID: {usersString}");
+                        usersString = string.Join(" ", unSigners.Select(x => $"{x.UID}"));
+                        sb.Append($" ContractID: {contract.ContractID} {(CDS_Document.StepEnum)contract.CurrentStep} NotifySign UID: {usersString}");
+
+
                     }
                 } 
                 else
