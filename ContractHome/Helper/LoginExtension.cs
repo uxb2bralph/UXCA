@@ -1,4 +1,5 @@
 ﻿using CommonLib.Utility;
+using ContractHome.Helper.DataQuery;
 using ContractHome.Helper.Security.MembershipManagement;
 using ContractHome.Models.DataEntity;
 using Microsoft.AspNetCore.Authentication;
@@ -12,10 +13,11 @@ namespace ContractHome.Helper
 
         public static async Task SignOnAsync(this HttpContext context, UserProfile profile, bool remeberMe = true)
         {
-            //帳密都輸入正確，ASP.net Core要多寫三行程式碼 
+            //帳密都輸入正確，ASP.net Core要多寫三行程式碼
+            bool isSysAdmin = profile.IsSysAdmin();
             Claim[] claims = new[] { 
                 new Claim("Name", profile.PID), 
-                new Claim("IsAdmin", profile.IsSysAdmin().ToString()),
+                new Claim("IsAdmin", isSysAdmin.ToString()),
                 new Claim("RoleIDs", profile.GetRoleIDs())
             }; //Key取名"Name"，在登入後的頁面，讀取登入者的帳號會用得到，自己先記在大腦
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);//Scheme必填
@@ -33,6 +35,10 @@ namespace ContractHome.Helper
                 });
 
             string enPid = profile.PID.EncryptData();
+
+            profile.CurrentCompanyID = profile.GetCompanyID();
+            profile.CategoryPermission = profile.GetCategoryPermission();
+            profile.IsSysAdmin = profile.GetUserRole().RoleID == (int)UserRoleDefinition.RoleEnum.SystemAdmin;
 
             context.Response.Cookies.Append("userID", enPid,
             new CookieOptions
@@ -109,59 +115,28 @@ namespace ContractHome.Helper
 
         public static async Task<UserProfile> GetUserAsync(this HttpContext context)
         {
-            var pid = context.Request.Cookies["userID"];
-
-            if (String.IsNullOrEmpty(pid))
-            {
-                pid = string.Empty;
-            }
-
-            UserProfile profile = (UserProfile)context.GetCacheValue($"{pid}-userProfile");
+            var pid = context.Request.Cookies["userID"]?.ToString() ?? string.Empty;
             
-            if (profile == null)
+            if (string.IsNullOrEmpty(pid) && !context.User.Identity.IsAuthenticated)
             {
-                if (context.User.Identity.IsAuthenticated)
-                {
-                    profile = (context.User.Identity as ClaimsIdentity)?
-                        .Claims.FirstOrDefault()?.Value.getLoginUser();
-                }
-                else
-                {
-                   
-                    if (!String.IsNullOrEmpty(pid))
-                    {
-                        try
-                        {
-                            profile = pid.DecryptData().getLoginUser();
-                            if (profile != null)
-                            {
-                                await context.SignOnAsync(profile);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            ApplicationLogging.LoggerFactory.CreateLogger(typeof(LoginExtension))
-                                .LogError(ex, ex.Message);
-                            profile = null;
-                        }
-                    }
-                }
-
-                if (profile == null)
-                {
-                    return null;
-                } 
-
-                string enPid = profile.PID.EncryptData();
-                context.Response.Cookies.Append("userID", enPid,
-                new CookieOptions
-                {
-                    MaxAge = TimeSpan.FromHours(24),
-                });
-
-                context.SetCacheValue($"{enPid}-userProfile", profile);
+                return null;
             }
-            return profile;
+
+            if (!string.IsNullOrEmpty(pid))
+            {
+                UserProfile profile = (UserProfile)context.GetCacheValue($"{pid}-userProfile");
+                return profile;
+            }
+
+            if (context.User.Identity.IsAuthenticated)
+            {
+                UserProfile profile = (context.User.Identity as ClaimsIdentity)?
+                    .Claims.FirstOrDefault()?.Value.getLoginUser();
+                await context.SignOnAsync(profile);
+                return profile;
+            }
+
+            return null;
         }
 
         private static UserProfile? getLoginUser(this String pid)

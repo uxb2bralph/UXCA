@@ -11,6 +11,7 @@ using ContractHome.Models.Helper;
 using ContractHome.Models.ViewModel;
 using ContractHome.Properties;
 using ContractHome.Services.ContractService;
+using DocumentFormat.OpenXml.InkML;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -942,7 +943,7 @@ namespace ContractHome.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult> Trust(string token)
+        public async Task<ActionResult> Trust(string token, bool isLogin = false)
         {
             _contractServices.SetModels(models);
             (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile)
@@ -960,7 +961,12 @@ namespace ContractHome.Controllers
 
             //wait to do:Trust進來可能沒有正常user權限,
             //但因為controller都有用var profile = await HttpContext.GetUserAsync();, 暫時先用
-            HttpContext.SignOnAsync(userProfile);
+            if (!isLogin)
+            {
+                await HttpContext.SignOnAsync(userProfile);
+                return RedirectToAction("Trust", "ContractConsole", new { token = token, isLogin = true });
+            }
+
             var userSession = UserSession.Create(_httpContextAccessor);
 
             if (jwtTokenObj.IsSeal)

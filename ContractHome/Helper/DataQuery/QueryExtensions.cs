@@ -1,5 +1,6 @@
 ﻿using CommonLib.DataAccess;
 using ContractHome.Models.DataEntity;
+using Microsoft.Identity.Client;
 
 namespace ContractHome.Helper.DataQuery
 {
@@ -20,6 +21,17 @@ namespace ContractHome.Helper.DataQuery
                          select o.CompanyID).FirstOrDefault();
 
             return companyID;
+        }
+
+        public static UserRole GetUserRole(this UserProfile profile)
+        {
+            using var db = new DCDataContext();
+            var userRole = db.UserRole.FirstOrDefault(r => r.UID == profile.UID);
+            if (userRole != null)
+            {
+                userRole.UserRoleDefinition = db.UserRoleDefinition.FirstOrDefault(rd => rd.RoleID == userRole.RoleID);
+            }
+            return userRole;
         }
 
     }
