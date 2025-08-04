@@ -29,7 +29,7 @@ namespace ContractHome.ApiControllers
             }
 
             var profile = await HttpContext.GetUserAsync();
-            request.CompanyID = profile.GetCompanyID();
+            request.CompanyID = profile.CurrentCompanyID;
             request.CreateUID = profile.UID;
 
             contractCategroyService.CreateContractCategroy(request);
@@ -48,7 +48,7 @@ namespace ContractHome.ApiControllers
             }
 
             var profile = await HttpContext.GetUserAsync();
-            request.CompanyID = profile.GetCompanyID();
+            request.CompanyID = profile.CurrentCompanyID;
             request.ModifyUID = profile.UID;
 
             contractCategroyService.ModifyContractCategroy(request);
@@ -110,7 +110,7 @@ namespace ContractHome.ApiControllers
         public async Task<IActionResult> GetContractCategoryOptionAsync()
         {
             var profile = await HttpContext.GetUserAsync();
-            var result = contractCategroyService.GetContractCategoryOption(profile.UID, profile.GetCompanyID());
+            var result = contractCategroyService.GetContractCategoryOption(profile.UID, profile.CurrentCompanyID);
             return Ok(new BaseResponse()
             {
                 Data = result

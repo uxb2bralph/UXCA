@@ -634,17 +634,6 @@ namespace ContractHome.Controllers
             return Json(new { result = true });
         }
 
-        public async Task<ActionResult> SearchContractAsync([FromBody] ContractSearchModel searchModel)
-        {
-            var profile = await HttpContext.GetUserAsync();
-
-            searchModel.SearchUID = profile.UID;
-
-            var result = _contractSearchService.SearchContract(searchModel);
-
-            return Json(result);
-        }
-
         public async Task<ActionResult> InquireDataAsync([FromBody] ContractQueryViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;

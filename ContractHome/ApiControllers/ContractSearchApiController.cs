@@ -21,13 +21,21 @@ namespace ContractHome.ApiControllers
         public async Task<IActionResult> SearchContract([FromBody] ContractSearchModel searchModel)
         {
             var profile = await HttpContext.GetUserAsync();
-            searchModel.SearchUID = profile.UID;
-            searchModel.SearchCompanyID = profile.GetCompanyID();
-            var result = _contractSearchService.SearchContract(searchModel);
+
+            if (!profile.IsSysAdmin)
+            {
+                searchModel.SearchUID = profile.UID;
+                searchModel.SearchCompanyID = profile.CurrentCompanyID;
+                searchModel.ContractCategoryID = (searchModel.ContractCategoryID.Count > 0) ?
+                                                 [.. searchModel.ContractCategoryID.Intersect(profile.CategoryPermission)]
+                                                 : profile.CategoryPermission;
+            }
+
+            var result = _contractSearchService.Search(searchModel);
             return Ok(new BaseResponse()
             {
                 Data = result
             });
         }
-        }
+    }
 }

@@ -108,10 +108,11 @@ namespace ContractHome.Services.ContractService
         /// </summary>
         public class PartyRefs : ContractBaseModel
         {
+            [JsonIgnore]
             public int CompanyID => KeyID.DecryptKeyValue();
 
             public string CompanyName { get; set; } = string.Empty;
-
+            [JsonIgnore]
             public int? ContractID { get; set; }
 
             public int? Step { get; set; }

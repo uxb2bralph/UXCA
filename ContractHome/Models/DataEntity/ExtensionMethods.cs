@@ -1,9 +1,10 @@
-﻿using ContractHome.Models.ViewModel;
+﻿using CommonLib.Utility;
+using ContractHome.Models.ViewModel;
+using System.Data.Linq;
 using System.Data.Linq.Mapping;
 using System.Linq.Dynamic.Core;
+using System.Linq.Expressions;
 using System.Reflection;
-using CommonLib.Utility;
-using System.Data.Linq;
 
 namespace ContractHome.Models.DataEntity
 {
@@ -110,6 +111,23 @@ namespace ContractHome.Models.DataEntity
             }
 
             return dataItem;
+        }
+
+        public static IQueryable<T> OrderByDynamic<T>(this IQueryable<T> source, string propertyName, bool descending)
+        {
+            var parameter = Expression.Parameter(typeof(T), "x");
+            var property = Expression.PropertyOrField(parameter, propertyName);
+            var lambda = Expression.Lambda(property, parameter);
+
+            string methodName = descending ? "OrderByDescending" : "OrderBy";
+
+            var result = typeof(Queryable).GetMethods()
+                .Where(m => m.Name == methodName && m.GetParameters().Length == 2)
+                .Single()
+                .MakeGenericMethod(typeof(T), property.Type)
+                .Invoke(null, new object[] { source, lambda });
+
+            return (IQueryable<T>)result;
         }
     }
 }

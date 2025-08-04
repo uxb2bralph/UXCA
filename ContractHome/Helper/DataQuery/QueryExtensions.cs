@@ -23,6 +23,16 @@ namespace ContractHome.Helper.DataQuery
             return companyID;
         }
 
+        public static List<int> GetCategoryPermission(this UserProfile profile)
+        {
+            using var db = new DCDataContext();
+            var categoryPermissions = (from u in db.UserProfile
+                                       join c in db.ContractCategoryPermission on u.UID equals c.UID
+                                       where u.UID == profile.UID
+                                       select c.ContractCategoryID).ToList().Union([0]);
+            return categoryPermissions.ToList();
+        }
+
         public static UserRole GetUserRole(this UserProfile profile)
         {
             using var db = new DCDataContext();

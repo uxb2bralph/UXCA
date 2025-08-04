@@ -4,6 +4,6 @@ namespace ContractHome.Services.ContractService
 {
     public interface IContractSearchService
     {
-        public ContractListDataModel SearchContract(ContractSearchModel searchModel);
+        public ContractListDataModel Search(ContractSearchModel searchModel);
     }
 }
