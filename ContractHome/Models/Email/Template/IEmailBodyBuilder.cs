@@ -14,6 +14,11 @@ namespace ContractHome.Models.Email.Template
         IEmailBodyBuilder SetRecipientUserEmail(string recipientUserEmail);
         IEmailBodyBuilder SetContractLink(string contractLink);
         IEmailBodyBuilder SetVerifyLink(string verifyLink);
+
+        IEmailBodyBuilder SetDownloadContractLink(string downloadLink);
+
+        IEmailBodyBuilder SetDownloadFootprintsLink(string downloadLink);
+
         EmailBody Build();
     }
 }

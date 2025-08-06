@@ -28,13 +28,27 @@ namespace ContractHome.Models.Email.Template
 
     public void CreateBody(EmailContentBodyDto emailContentBodyDto)
     {
-      this.EmailBody = _emailBodyBuilder
-              .SetTemplateItem(this.GetType().Name)
-              .SetContractNo(emailContentBodyDto.Contract.ContractNo)
-              .SetTitle(emailContentBodyDto.Contract.Title)
-              .SetRecipientUserName(emailContentBodyDto.UserProfile.PID)
-              .SetRecipientUserEmail(emailContentBodyDto.UserProfile.EMail)
-              .Build();
+        JwtTokenGenerator.JwtPayloadData jwtPayloadData = new JwtTokenGenerator.JwtPayloadData()
+        {
+            UID = emailContentBodyDto.UserProfile.UID.EncryptKey(),
+            Email = emailContentBodyDto.UserProfile.EMail,
+            ContractID = emailContentBodyDto.Contract.ContractID.EncryptKey(),
+            Func = this.GetType().Name
+        };
+
+        var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData, 20160);
+        var downloadContractLink = $"{Settings.Default.WebAppDomain}/api/ContractDownload/DownloadContract?token={JwtTokenGenerator.Base64UrlEncode((jwtToken.EncryptData()))}";
+        var downloadFootprintsLink = $"{Settings.Default.WebAppDomain}/api/ContractDownload/DownloadFootprints?token={JwtTokenGenerator.Base64UrlEncode((jwtToken.EncryptData()))}";
+
+        this.EmailBody = _emailBodyBuilder
+        .SetTemplateItem(this.GetType().Name)
+        .SetContractNo(emailContentBodyDto.Contract.ContractNo)
+        .SetTitle(emailContentBodyDto.Contract.Title)
+        .SetRecipientUserName(emailContentBodyDto.UserProfile.PID)
+        .SetRecipientUserEmail(emailContentBodyDto.UserProfile.EMail)
+        .SetDownloadContractLink(downloadContractLink)
+        .SetDownloadFootprintsLink(downloadFootprintsLink)
+        .Build();
     }
   }
 }

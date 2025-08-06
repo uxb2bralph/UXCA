@@ -126,6 +126,8 @@ namespace ContractHome
                         };
                     });
 
+            services.AddScoped<DCDataContext>();
+
             services.AddScoped<IViewRenderService, ViewRenderService>();
 
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
