@@ -56,12 +56,12 @@
                     new LogFileModel
                     {
                         FileName = fileInfo.Name,
-                        FileSize = $"{fileInfo.Length / 1024} KB",
-                        DateTime = dateTime.Value.ToString("yyyy-MM-dd")
+                        FileSize = $"{fileInfo.Length / 1024.0:F2} KB",
+                        DateTime = fileInfo.CreationTime.ToString("yyyy-MM-dd HH:mm:ss")
                     });
             }
 
-            return logFiles;
+            return [.. logFiles.OrderByDescending(x => x.DateTime)];
         }
     }
 }
