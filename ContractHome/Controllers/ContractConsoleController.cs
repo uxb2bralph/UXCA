@@ -941,6 +941,14 @@ namespace ContractHome.Controllers
             //wait to do:Trust進來可能沒有正常user權限,
             //但因為controller都有用var profile = await HttpContext.GetUserAsync();, 暫時先用
             HttpContext.SignOnAsync(userProfile);
+
+            if (userProfile.PasswordUpdatedDate == null)
+            {
+                //密碼未更新, 需要先更新密碼
+                return RedirectToAction("ContractPasswordChangeView", "UserProfile", new { token });
+
+            }
+
             var userSession = UserSession.Create(_httpContextAccessor);
 
             if (jwtTokenObj.IsSeal)

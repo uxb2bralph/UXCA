@@ -3,6 +3,7 @@ using ContractHome.Controllers.Filters;
 using ContractHome.Helper;
 using ContractHome.Hubs;
 using ContractHome.Models.Cache;
+using ContractHome.Models.DataEntity;
 using ContractHome.Models.Dto;
 using ContractHome.Models.Email;
 using ContractHome.Models.Email.Template;
@@ -12,6 +13,7 @@ using ContractHome.Services.ContractService;
 using ContractHome.Services.HttpChunk;
 using ContractHome.Services.Jobs;
 using ContractHome.Services.System;
+using ContractHome.Services.UserProfileManage;
 using FluentValidation.AspNetCore;
 using Hangfire;
 using Hangfire.Dashboard;
@@ -163,8 +165,11 @@ namespace ContractHome
 
             // 系統Log檔案
             services.AddScoped<ISystemLogService, SystemLogService>();
+            services.AddScoped<IUserProfileService, UserProfileService>();
 
             services.AddScoped<ContractServices>();
+            
+
             services.AddScoped<BaseResponse>();
             // Wangkanai.Detection:Add detection services container and device resolver service.
             services.AddDetection();

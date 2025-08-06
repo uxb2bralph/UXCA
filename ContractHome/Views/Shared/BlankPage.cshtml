@@ -1,0 +1,72 @@
+﻿
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="zh-tw">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <title>UX SIGN 數位簽章管理系統</title>
+    <!-- MDB icon -->
+    @* <link rel="icon" href="~/images/uxSign.ico" type="image/x-icon" /> *@
+    <link rel="icon" href="~/images/uxsign_48-48.ico" type="image/x-icon" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="~/css/fontawesome/all.css" />
+    <!-- Google Fonts Roboto -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
+    <!-- Boostrap -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <!-- Custom scripts -->
+    <link rel="stylesheet" href="~/lib/jquery-ui/Content/themes/base/all.css" />
+    <!-- 拖曳上傳模組 -->
+    <link rel="stylesheet" href="~/lib/dropzone/dropzone.min.css" type="text/css" />
+    <!-- datepicker 和語系檔 -->
+    <link href="~/lib/datepicker/core.min.css" rel="stylesheet" type="text/css">
+    <link href="~/lib/datepicker/datepicker.min.css" rel="stylesheet" type="text/css">
+    <!-- selecter2 for bootstrap5 -->
+    <link rel="stylesheet" href="~/lib/select2/css/select2.min.css" />
+    <link rel="stylesheet" href="~/lib/select2/css/select2-bootstrap-5-theme.min.css" />
+    <!-- 網站設定樣式 -->
+    <link rel="stylesheet" href="~/css/site.css" />
+    <script type="text/javascript" src="~/lib/jquery/dist/jquery.js"></script>
+    <script type="text/javascript" src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js" integrity="sha512-7SRCYIJtR6F8ocwW7UxW6wGKqbSyqREDbfCORCbGLatU0iugBLwyOXpzhkPyHIFdBO0K2VCu57fvP2Twgx1o2A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    @{
+        await Html.RenderPartialAsync("~/Views/Shared/CommonScriptInclude.cshtml");
+        await Html.RenderPartialAsync("~/Views/Shared/DataOperationScript.cshtml");
+    }
+</head>
+
+<body>
+    <!-- Container -->
+    @RenderBody()
+
+    <div id="infoAlert"
+         class="justify-content-between align-items-center alert alert-warning infoAlert alert-dismissible fade shadow">
+        <div class="pe-5">
+            <div class="pb-2 fs-5 fw-bolder">UX SIGN 網站更新條款</div>
+            <p class="mb-1 fs-14">
+                為了使用 UX SIGN，我們要求您先閱讀我們的 <a class="navbar-brand fs-14"
+                                            href="@Url.Action("Privacy", "Home")">隱私政策</a>
+                ( <a class="navbar-brand fs-14" href="@Url.Action("Gdpr", "Home")">GDPR 聲明</a> )、<a class="navbar-brand fs-14"
+                                                                                                    href="@Url.Action("Security", "Home")">安全宣告</a>
+                和
+                UX SIGN <a class="navbar-brand fs-14" href="@Url.Action("Personal", "Home")">個資保護</a>。
+                為了獲得最佳的瀏覽體驗，UX SIGN 將從您的瀏覽器收集並儲存 cookie，如果您繼續使用本網站，我們將假定您同意這些條款。
+            </p>
+            <p class="mb-0 fs-14">如有任何疑問，請聯絡我們的服務中心以獲取更多資訊。</p>
+        </div>
+        <div>
+            <button type="button" id="agreement" class="btn btn-primary opacity-75 px-5 text-nowrap"
+                    data-bs-dismiss="alert">
+                同意
+            </button>
+        </div>
+    </div>
+</body>
+
+</html>

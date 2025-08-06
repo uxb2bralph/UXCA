@@ -1,23 +1,24 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using ContractHome.Models.DataEntity;
-using ContractHome.Models.ViewModel;
+﻿using CommonLib.Core.Utility;
 using CommonLib.Utility;
-using Newtonsoft.Json;
 using ContractHome.Helper;
-using CommonLib.Core.Utility;
-using System.Drawing;
-using System.Linq.Dynamic.Core;
-using System.Data.Linq;
-using ContractHome.Security.Authorization;
-using ContractHome.Helper.Security.MembershipManagement;
-using ContractHome.Models.Dto;
-using static ContractHome.Models.Helper.ContractServices;
 using ContractHome.Helper.DataQuery;
-using Microsoft.AspNetCore.Authorization;
-using System.Text.RegularExpressions;
+using ContractHome.Helper.Security.MembershipManagement;
+using ContractHome.Models.DataEntity;
+using ContractHome.Models.Dto;
 using ContractHome.Models.Email.Template;
 using ContractHome.Models.Helper;
+using ContractHome.Models.ViewModel;
+using ContractHome.Security.Authorization;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.Data.Linq;
 using System.Data.SqlClient;
+using System.Drawing;
+using System.Linq.Dynamic.Core;
+using System.Text.RegularExpressions;
+using static ContractHome.Helper.JwtTokenGenerator;
+using static ContractHome.Models.Helper.ContractServices;
 
 namespace ContractHome.Controllers
 {
@@ -26,14 +27,17 @@ namespace ContractHome.Controllers
         private readonly ILogger<UserProfileController> _logger;
         private readonly EmailFactory _emailFactory;
         private readonly BaseResponse _baseResponse;
+        private readonly ContractServices _contractServices;
         public UserProfileController(ILogger<UserProfileController> logger, 
                         IServiceProvider serviceProvider,
                         EmailFactory emailContentFactories,
+                        ContractServices contractServices,
                         BaseResponse baseResponse) : base(serviceProvider)
         {
             _logger = logger;
             _emailFactory = emailContentFactories;
-            _baseResponse = baseResponse;   
+            _baseResponse = baseResponse;
+            _contractServices = contractServices;
         }
 
         [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
@@ -171,11 +175,40 @@ namespace ContractHome.Controllers
             return View("~/Views/UserProfile/Module/EditItem.cshtml", dataItem);
         }
 
-        [UserAuthorize]
+        [RoleAuthorize(roleID: [(int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin, (int)UserRoleDefinition.RoleEnum.User])]
         public async Task<ActionResult> PasswordChangeView(
             UserPasswordChangeViewModel userPasswordChange)
         {
             return View("~/Views/UserProfile/VueModule/PasswordChange.cshtml");
+        }
+
+        [RoleAuthorize(roleID: [(int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin, (int)UserRoleDefinition.RoleEnum.User])]
+        public async Task<ActionResult> ContractPasswordChangeView(string token)
+        {
+            _contractServices.SetModels(models);
+            (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile)
+                    = _contractServices.TokenValidate(JwtTokenValidator.Base64UrlDecodeToString(token).DecryptData());
+            if (resp.HasError)
+            {
+                //return View("SignatureTrust",resp);
+                throw new ArgumentException(resp.Message);
+            }
+
+            if (string.IsNullOrEmpty(jwtTokenObj.ContractID))
+            {
+                throw new ArgumentException("contractID is null.");
+            }
+
+            if (userProfile.PasswordUpdatedDate != null)
+            {
+                return RedirectToAction("Trust", "ContractConsole", new { token });
+            }
+
+
+            ViewBag.UserProfile = userProfile;
+            ViewBag.Token = token;
+
+            return View("~/Views/UserProfile/VueModule/ContractPasswordChange.cshtml");
         }
 
         //[RoleAuthorize(roleID: new int[] {
