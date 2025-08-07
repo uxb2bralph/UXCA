@@ -36,7 +36,7 @@ namespace ContractHome.Models.Email.Template
             Func = this.GetType().Name
         };
 
-        var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData, 20160);
+        var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData, 10080);
         var downloadContractLink = $"{Settings.Default.WebAppDomain}/api/ContractDownload/DownloadContract?token={JwtTokenGenerator.Base64UrlEncode((jwtToken.EncryptData()))}";
         var downloadFootprintsLink = $"{Settings.Default.WebAppDomain}/api/ContractDownload/DownloadFootprints?token={JwtTokenGenerator.Base64UrlEncode((jwtToken.EncryptData()))}";
 
