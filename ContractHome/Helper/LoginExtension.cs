@@ -125,7 +125,11 @@ namespace ContractHome.Helper
             if (!string.IsNullOrEmpty(pid))
             {
                 UserProfile profile = (UserProfile)context.GetCacheValue($"{pid}-userProfile");
-                return profile;
+
+                if (profile != null)
+                {
+                    return profile;
+                }
             }
 
             if (context.User.Identity.IsAuthenticated)
