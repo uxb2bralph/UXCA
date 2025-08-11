@@ -21,7 +21,7 @@ namespace ContractHome.ApiControllers
         private readonly ICustomContractService _customContractService = _customContractService;
         private readonly IDetectionService _detectionService = detectionService;
 
-        private Contract? GetContract(string token)
+        private Contract? GetContract(string token, bool isDownloadContract = true)
         {
             (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile)
                     = _contractServices.TokenDownloadValidate(JwtTokenValidator.Base64UrlDecodeToString(token).DecryptData());
@@ -46,7 +46,7 @@ namespace ContractHome.ApiControllers
             {
                 LogDate = DateTime.Now,
                 ActorID = jwtTokenObj.UID.DecryptKeyValue(),
-                StepID = (int)CDS_Document.StepEnum.Browsed,
+                StepID = (isDownloadContract) ? (int)CDS_Document.StepEnum.DownloadContract : (int)CDS_Document.StepEnum.DownloadFootprint,
                 ClientIP = HttpContext.Connection.RemoteIpAddress?.ToString(),
                 ClientDevice = $"{_detectionService.Platform.Name} {_detectionService.Platform.Version.ToString()}/{_detectionService.Browser.Name}"
             });
@@ -59,7 +59,7 @@ namespace ContractHome.ApiControllers
         [Route("DownloadContract")]
         public async Task<IActionResult> DownloadContractAsync(string token)
         {
-            Contract? contract = GetContract(token);
+            Contract? contract = GetContract(token, true);
 
             if (contract == null)
             {
@@ -75,7 +75,7 @@ namespace ContractHome.ApiControllers
         [Route("DownloadFootprints")]
         public async Task<IActionResult> DownloadFootprintsAsync(string token)
         {
-            Contract? contract = GetContract(token);
+            Contract? contract = GetContract(token, false);
 
             if (contract == null)
             {

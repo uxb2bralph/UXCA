@@ -763,6 +763,20 @@ namespace ContractHome.Controllers
             {
                 return Json(new { result = false, message = "合約資料錯誤!!" });
             }
+
+            var profile = await HttpContext.GetUserAsync();
+
+            contract.CDS_Document.DocumentProcessLog.Add(new DocumentProcessLog
+            {
+                LogDate = DateTime.Now,
+                ActorID = profile!.UID,
+                StepID = (int)CDS_Document.StepEnum.DownloadFootprint,
+                ClientIP = HttpContext.Connection.RemoteIpAddress?.ToString(),
+                ClientDevice = $"{_detectionService.Platform.Name} {_detectionService.Platform.Version.ToString()}/{_detectionService.Browser.Name}"
+            });
+
+            models.SubmitChanges();
+
             Response.Clear();
             Response.ContentType = "application/pdf";
             Response.Headers.Add("Cache-control", "max-age=1");
@@ -798,21 +812,24 @@ namespace ContractHome.Controllers
             {
                 var profile = await HttpContext.GetUserAsync();
 
+                int stepID = (int)CDS_Document.StepEnum.Browsed;
+
+                if (viewModel.ResultMode == DataResultMode.Download)
+                {
+                    stepID = (int)CDS_Document.StepEnum.DownloadContract;
+                    Response.Headers.Add("Content-Disposition", String.Format("attachment;filename={0}.pdf", HttpUtility.UrlEncode(contract.ContractNo)));
+                }
+
                 contract.CDS_Document.DocumentProcessLog.Add(new DocumentProcessLog
                 {
                     LogDate = DateTime.Now,
                     ActorID = profile!.UID,
-                    StepID = (int)CDS_Document.StepEnum.Browsed,
+                    StepID = stepID,
                     ClientIP = HttpContext.Connection.RemoteIpAddress?.ToString(),
                     ClientDevice = $"{_detectionService.Platform.Name} {_detectionService.Platform.Version.ToString()}/{_detectionService.Browser.Name}"
                 });
 
                 models.SubmitChanges();
-
-                if (viewModel.ResultMode == DataResultMode.Download)
-                {
-                    Response.Headers.Add("Content-Disposition", String.Format("attachment;filename={0}.pdf", HttpUtility.UrlEncode(contract.ContractNo)));
-                }
 
                 if (contract.CDS_Document.IsPDF)
                 {
