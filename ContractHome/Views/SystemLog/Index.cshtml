@@ -43,11 +43,15 @@
                     <thead>  
                         <tr>  
                             <th scope="col">檔案</th>  
-                        </tr>  
+                            <th scope="col">大小</th>  
+                            <th scope="col">時間</th>
+                        </tr>
                     </thead>  
                     <tbody>  
                         <tr v-for="file in logFiles">  
-                            <td class="fs-13"><a v-bind:href="'@virtualPath' + file.downLoadUrl">{{file.fileName}} ({{file.fileSize}})</a></td>  
+                            <td class="fs-13"><a v-bind:href="'@virtualPath' + file.downLoadUrl">{{file.fileName}}</a></td>
+                            <td class="fs-13">{{file.fileSize}}</td>
+                            <td class="fs-13">{{file.dateTime}}</td>
                         </tr>  
                     </tbody>  
                 </table>  

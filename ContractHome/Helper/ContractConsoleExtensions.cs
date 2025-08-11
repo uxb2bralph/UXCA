@@ -95,6 +95,31 @@ namespace ContractHome.Helper
             return contract.BuildContractWithSeal();
         }
 
+        public static MemoryStream BuildContractWithSignature(this Contract contract, bool preview = false)
+        {
+            if (contract.ContractSignature != null)
+            {
+                ContractSignatureRequest request = contract.ContractSignature.ContractSignatureRequest;
+                if (request.ResponsePath != null && File.Exists(request.ResponsePath))
+                {
+                    if (request.RequestPath.EndsWith(".json", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        JObject content = JObject.Parse(File.ReadAllText(request.ResponsePath));
+                        if ((String)content["code"] == "0")
+                        {
+                            return new MemoryStream(Convert.FromBase64String((String)content["msg"]));
+                        }
+                    }
+                    else
+                    {
+                        return new MemoryStream(File.ReadAllBytes(request.ResponsePath));
+                    }
+                }
+            }
+
+            return contract.BuildContractWithSeal();
+        }
+
         public static String BuildContractWithSignatureBase64(this Contract contract, GenericManager<DCDataContext> models, bool preview = false)
         {
             if (contract.ContractSignature != null)

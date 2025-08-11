@@ -25,6 +25,10 @@ namespace ContractHome.Models.Email.Template
         public string ContractLink { get; set; }
         public string VerifyLink { get; set; }
 
+        public string DownloadContractLink { get; set; }
+
+        public string DownloadFootprintsLink { get; set; } = string.Empty;
+
         public string TemplateItem { get; set; }
 
         public enum EmailTemplate
@@ -75,6 +79,17 @@ namespace ContractHome.Models.Email.Template
         {
             this.ContractLink = contractLink;
         }
+
+        public void SetDownloadContractLink(string downloadLink)
+        {
+            this.DownloadContractLink = downloadLink;
+        }
+
+        public void SetDownloadFootprintsLink(string downloadLink)
+        {
+            this.DownloadFootprintsLink = downloadLink;
+        }
+
         public void SetVerifyLink(string verifyLink)
         {
             this.VerifyLink = verifyLink;

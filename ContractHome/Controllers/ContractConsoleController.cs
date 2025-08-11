@@ -11,7 +11,6 @@ using ContractHome.Models.Helper;
 using ContractHome.Models.ViewModel;
 using ContractHome.Properties;
 using ContractHome.Services.ContractService;
-using DocumentFormat.OpenXml.InkML;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,8 +23,6 @@ using Wangkanai.Detection.Services;
 using static CommonLib.Utility.PredicateBuilder;
 using static ContractHome.Helper.JwtTokenGenerator;
 using static ContractHome.Models.Helper.ContractServices;
-using static ContractHome.Services.ContractService.ContractSearchDtos;
-
 
 namespace ContractHome.Controllers
 {
@@ -41,7 +38,6 @@ namespace ContractHome.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ICustomContractService _customContractService;
         private readonly IDetectionService _detectionService;
-        private readonly IContractSearchService _contractSearchService;
 
         public ContractConsoleController(ILogger<HomeController> logger,
             IServiceProvider serviceProvider,
@@ -51,8 +47,7 @@ namespace ContractHome.Controllers
             IHttpContextAccessor httpContextAccessor,
             BaseResponse baseResponse,
             ICustomContractService customContractService,
-            IDetectionService detectionService,
-            IContractSearchService contractSearchService
+            IDetectionService detectionService
           ) : base(serviceProvider)
         {
             _logger = logger;
@@ -63,7 +58,6 @@ namespace ContractHome.Controllers
             _baseResponse = baseResponse;
             _customContractService = customContractService;
             _detectionService = detectionService;
-            _contractSearchService = contractSearchService;
         }
 
         public IActionResult QueryIndex()
@@ -773,6 +767,20 @@ namespace ContractHome.Controllers
             {
                 return Json(new { result = false, message = "合約資料錯誤!!" });
             }
+
+            var profile = await HttpContext.GetUserAsync();
+
+            contract.CDS_Document.DocumentProcessLog.Add(new DocumentProcessLog
+            {
+                LogDate = DateTime.Now,
+                ActorID = profile!.UID,
+                StepID = (int)CDS_Document.StepEnum.DownloadFootprint,
+                ClientIP = HttpContext.Connection.RemoteIpAddress?.ToString(),
+                ClientDevice = $"{_detectionService.Platform.Name} {_detectionService.Platform.Version.ToString()}/{_detectionService.Browser.Name}"
+            });
+
+            models.SubmitChanges();
+
             Response.Clear();
             Response.ContentType = "application/pdf";
             Response.Headers.Add("Cache-control", "max-age=1");
@@ -808,21 +816,24 @@ namespace ContractHome.Controllers
             {
                 var profile = await HttpContext.GetUserAsync();
 
+                int stepID = (int)CDS_Document.StepEnum.Browsed;
+
+                if (viewModel.ResultMode == DataResultMode.Download)
+                {
+                    stepID = (int)CDS_Document.StepEnum.DownloadContract;
+                    Response.Headers.Add("Content-Disposition", String.Format("attachment;filename={0}.pdf", HttpUtility.UrlEncode(contract.ContractNo)));
+                }
+
                 contract.CDS_Document.DocumentProcessLog.Add(new DocumentProcessLog
                 {
                     LogDate = DateTime.Now,
                     ActorID = profile!.UID,
-                    StepID = (int)CDS_Document.StepEnum.Browsed,
+                    StepID = stepID,
                     ClientIP = HttpContext.Connection.RemoteIpAddress?.ToString(),
                     ClientDevice = $"{_detectionService.Platform.Name} {_detectionService.Platform.Version.ToString()}/{_detectionService.Browser.Name}"
                 });
 
                 models.SubmitChanges();
-
-                if (viewModel.ResultMode == DataResultMode.Download)
-                {
-                    Response.Headers.Add("Content-Disposition", String.Format("attachment;filename={0}.pdf", HttpUtility.UrlEncode(contract.ContractNo)));
-                }
 
                 if (contract.CDS_Document.IsPDF)
                 {
@@ -932,7 +943,7 @@ namespace ContractHome.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult> Trust(string token, bool isLogin = false)
+        public async Task<ActionResult> Trust(string token)
         {
             _contractServices.SetModels(models);
             (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile)
@@ -950,10 +961,13 @@ namespace ContractHome.Controllers
 
             //wait to do:Trust進來可能沒有正常user權限,
             //但因為controller都有用var profile = await HttpContext.GetUserAsync();, 暫時先用
-            if (!isLogin)
+            HttpContext.SignOnAsync(userProfile);
+
+            if (userProfile.PasswordUpdatedDate == null)
             {
-                await HttpContext.SignOnAsync(userProfile);
-                return RedirectToAction("Trust", "ContractConsole", new { token = token, isLogin = true });
+                //密碼未更新, 需要先更新密碼
+                return RedirectToAction("ContractPasswordChangeView", "UserProfile", new { token });
+
             }
 
             var userSession = UserSession.Create(_httpContextAccessor);

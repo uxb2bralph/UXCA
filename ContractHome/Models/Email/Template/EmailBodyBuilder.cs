@@ -74,5 +74,17 @@ namespace ContractHome.Models.Email.Template
             _emailTemplate.SetVerifyLink(verifyLink);
             return this;
         }
+
+        public IEmailBodyBuilder SetDownloadContractLink(string downloadLink)
+        {
+            _emailTemplate.SetDownloadContractLink(downloadLink);
+            return this;
+        }
+
+        public IEmailBodyBuilder SetDownloadFootprintsLink(string downloadLink)
+        {
+            _emailTemplate.SetDownloadFootprintsLink(downloadLink);
+            return this;
+        }
     }
 }

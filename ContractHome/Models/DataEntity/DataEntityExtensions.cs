@@ -133,6 +133,8 @@ namespace ContractHome.Models.DataEntity
             Terminated = 17,
             Committed = 18,
             Revoked = 19,
+            DownloadContract = 20,
+            DownloadFootprint = 21
         }
 
         public static readonly String[] StepNaming =
@@ -157,7 +159,8 @@ namespace ContractHome.Models.DataEntity
                 "已終止",//17
                 "完成",//18
                 "撤銷",//19
-                ""//20
+                "下載合約",//20
+                "下載軌跡"//21
             };
 
         public bool IsPendingState() => (this.CurrentStep==null) ? 

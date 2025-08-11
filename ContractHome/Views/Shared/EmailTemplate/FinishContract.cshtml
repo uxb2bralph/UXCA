@@ -1,4 +1,5 @@
-﻿@*
+﻿@using ContractHome.Properties
+@*
 For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @model ContractHome.Models.Email.Template.EmailBody
@@ -38,11 +39,35 @@ For more information on enabling MVC for empty projects, visit https://go.micros
                   </td>
                 </tr>
                 <tr>
+                    <td align="center" style="padding: 0pt 35pt 20pt 35pt">
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td height="60" align="center" style="background: #0970d1;padding:0 20px 0 20px">
+                                        <a href="@(Model.DownloadContractLink)" target="_blank"
+                                            style="font-size: 12pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#FFFFFF;text-decoration: none;">
+                                            合約下載
+                                        </a>
+                                    </td>
+                                    <td height="60" align="center" style="background: #0970d1;padding:0 20px 0 20px">
+                                        <a href="@(Model.DownloadFootprintsLink)" target="_blank"
+                                            style="font-size: 12pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#FFFFFF;text-decoration: none;">
+                                            軌跡下載
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
                   <td style="padding: 0pt 35pt 30pt 35pt">
                     <span style="font-size:12pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#333333;">
                       Hello @(Model.RecipientUserName)
                       <br>
-                      @(Model.Title)(@(Model.ContractNo)) 簽署任務已完成。您可以在 UX SIGN 中查看並下載檔案。
+                      @(Model.Title)(@(Model.ContractNo)) 簽署任務已完成。
+                      <br>合約及軌跡下載連結期限為 @(DateTime.Now.AddMinutes(10080).ToString("yyyy-MM-dd"))
+                      <br>您也可以登入 <a href="@(Settings.Default.WebAppDomain)" target="_blank">UX SIGN</a> 查看並下載檔案。
                       <br>
                       <br>
                       祝一切順心。

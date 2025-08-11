@@ -590,6 +590,48 @@ namespace ContractHome.Models.Helper
             }
         }
 
+        public (BaseResponse, JwtToken, UserProfile) TokenDownloadValidate(string token)
+        {
+            try
+            {
+                token = token.GetEfficientString();
+
+                if (string.IsNullOrEmpty(token))
+                {
+                    return (new BaseResponse(true, "驗證資料為空值。"), null, null);
+                }
+
+                if (!JwtTokenValidator.ValidateJwtToken(token, JwtTokenGenerator.secretKey))
+                {
+                    return (new BaseResponse(true, "Token已失效，請重新申請。"), null, null);
+                }
+                var jwtTokenObj = JwtTokenValidator.DecodeJwtToken(token);
+                if (jwtTokenObj == null)
+                {
+                    return (new BaseResponse(true, "Token已失效，請重新申請。"), null, null);
+                }
+
+                using var db = new DCDataContext();
+                UserProfile userProfile
+                    = db.UserProfile
+                        .Where(x => x.EMail.Equals(jwtTokenObj.Email))
+                        .Where(x => x.UID.Equals(jwtTokenObj.UID.DecryptKeyValue()))
+                        .FirstOrDefault();
+
+                if (userProfile == null)
+                {
+                    return (new BaseResponse(true, "驗證資料有誤。"), jwtTokenObj, userProfile);
+                }
+
+                return (new BaseResponse(false, ""), jwtTokenObj, userProfile);
+            }
+            catch (Exception ex)
+            {
+                FileLogger.Logger.Error($"TokenValidate failed. JwtToken={token};   {ex}");
+                return (new BaseResponse(true, "驗證資料有誤。"), null, null);
+            }
+        }
+
         public async Task SendUsersNotifyEmailAboutContractAsync(
             Contract contract,
             IEmailContent emailContent,
