@@ -15,7 +15,7 @@ namespace ContractHome.Services.UserProfileManage
                 RuleLevelCascadeMode = CascadeMode.Stop;
 
                 RuleFor(x => x.PID).NotEmpty().WithMessage("請輸入帳號")
-                                    .Matches(@"^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z]).{6,30}$")
+                                    .Matches(@"^(?=.*[a-z]).{6,30}$")
                                     .WithMessage("帳號格式錯誤");
 
                 RuleFor(x => x.PID).Must((x, pid) => ValidatePID(x.UID, pid)).WithMessage("帳號已被使用");
