@@ -48,7 +48,7 @@ namespace ContractHome.Services.ContractService
                         join cc in db.ContractCategory on c.ContractCategoryID equals cc.ContractCategoryID into ccl
                         from ccu in ccl.DefaultIfEmpty()
                         join cd in db.CDS_Document on c.ContractID equals cd.DocID
-                        where cd.CurrentStep != (int)CDS_Document.StepEnum.Initial
+                        where cd.CurrentStep != (int)StepEnum.Initial
                         select new ContractInfoMode
                         {
                             ContractID = c.ContractID,
@@ -71,7 +71,7 @@ namespace ContractHome.Services.ContractService
 
             if (searchModel.QueryStep != null && searchModel.QueryStep.Length != 0)
             {
-                query = query.Where(c => searchModel.QueryStep.Contains((CDS_Document.StepEnum)c.CurrentStep));
+                query = query.Where(c => searchModel.QueryStep.Contains((StepEnum)c.CurrentStep));
 
             }
 
@@ -105,7 +105,7 @@ namespace ContractHome.Services.ContractService
                 query = query.Where(c => parties.Any(p => p == c.ContractID));
             }
 
-            // 是否為 合約簽署人
+            // 登入者 是否為 合約簽署人
             if (searchModel.SearchUID > 0 || searchModel.SearchCompanyID > 0)
             {
                 // 取出有指定簽署人ID的合約ID
@@ -120,14 +120,19 @@ namespace ContractHome.Services.ContractService
                 // 合併兩個查詢結果
                 signContractIDs = signContractIDs.Union(unSignContractIDs);
 
-                query = query.Where(c => signContractIDs.Any(s => s == c.ContractID));
+                // 登入者 授權分類
+                if (searchModel.ContractCategoryID.Count > 0)
+                {
+                    query = query.Where(c => signContractIDs.Any(s => s == c.ContractID) || 
+                                             searchModel.ContractCategoryID.Contains(c.ContractCategoryID) &&
+                                             c.ContractCategoryID != 0);
+                } else
+                {
+                    query = query.Where(c => signContractIDs.Any(s => s == c.ContractID));
+                }
             }
 
-            // 授權分類
-            if (searchModel.ContractCategoryID.Count > 0)
-            {
-                query = query.Where(c => searchModel.ContractCategoryID.Contains(c.ContractCategoryID));
-            }
+
 
             // 排序
             if (searchModel.SortName.Any() && searchModel.SortType.Any())
@@ -311,42 +316,36 @@ namespace ContractHome.Services.ContractService
         {
             int step = currentStep;
 
-            if (isPassStamp.HasValue && !isPassStamp.Value)
+            // 假如合約在設定狀態 則設定甲方人員為設定狀態
+            if (isInitiator == true && currentStep == (int)StepEnum.Config)
             {
-                // 先用印後簽署 判斷用印跟簽屬時間 設定 用印中 或 簽署中
+                return (int)StepEnum.Config;
+            }
 
+            if (isPassStamp == true && !signerDate.HasValue)
+            {
+                return (int)StepEnum.DigitalSigning;
+            }
+
+            if (isPassStamp == false)
+            {
                 // 未用印 未簽署
                 if (!stampDate.HasValue && !signerDate.HasValue)
                 {
-                    step = (int)StepEnum.Sealing;
+                    return (int)StepEnum.Sealing;
                 }
 
                 // 已用印 未簽署
                 if (stampDate.HasValue && !signerDate.HasValue)
                 {
-                    step = (int)StepEnum.DigitalSigning;
+                    return (int)StepEnum.DigitalSigning;
                 }
 
                 // 已用印 已簽署
                 if (stampDate.HasValue && signerDate.HasValue)
                 {
-                    step = (int)StepEnum.DigitalSigned;
+                    return (int)StepEnum.DigitalSigned;
                 }
-
-            }
-            else
-            {
-                // 跳過用印做簽署 判斷簽署時間
-                if (!signerDate.HasValue)
-                {
-                    step = (int)StepEnum.DigitalSigning;
-                }
-            }
-
-            // 假如合約在設定狀態 則設定甲方人員為設定狀態
-            if (isInitiator.HasValue && isInitiator.Value && currentStep == (int)CDS_Document.StepEnum.Config)
-            {
-                step = (int)CDS_Document.StepEnum.Config;
             }
 
             return step;

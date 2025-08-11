@@ -29,7 +29,7 @@ namespace ContractHome.Helper.DataQuery
             var categoryPermissions = (from u in db.UserProfile
                                        join c in db.ContractCategoryPermission on u.UID equals c.UID
                                        where u.UID == profile.UID
-                                       select c.ContractCategoryID).ToList().Union([0]);
+                                       select c.ContractCategoryID).ToList();
             return categoryPermissions.ToList();
         }
 
