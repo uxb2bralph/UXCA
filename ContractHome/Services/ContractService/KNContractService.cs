@@ -229,16 +229,43 @@ namespace ContractHome.Services.ContractService
         /// <param name="isPassStamp"></param>
         private void CreateDocumentProcessLog(Contract contract, int uid, bool isPassStamp)
         {
-            DocumentProcessLog establishLog = new()
+            if (isPassStamp)
+            {
+                DocumentProcessLog establishLog = new()
+                {
+                    LogDate = DateTime.Now,
+                    ActorID = uid,
+                    StepID = (int)CDS_Document.StepEnum.Establish,
+                    ClientIP = "-1",
+                    ClientDevice = "System"
+                };
+
+                contract.CDS_Document.DocumentProcessLog.Add(establishLog);
+
+                DocumentProcessLog sealedLog = new()
+                {
+                    LogDate = DateTime.Now,
+                    ActorID = uid,
+                    StepID = (int)CDS_Document.StepEnum.Sealed,
+                    ClientIP = "-1",
+                    ClientDevice = "System"
+                };
+
+                contract.CDS_Document.DocumentProcessLog.Add(sealedLog);
+
+                return;
+            }
+
+            DocumentProcessLog configLog = new()
             {
                 LogDate = DateTime.Now,
                 ActorID = uid,
-                StepID = (isPassStamp) ? (int)CDS_Document.StepEnum.DigitalSigning : (int)CDS_Document.StepEnum.Config,
+                StepID = (int)CDS_Document.StepEnum.Config,
                 ClientIP = "-1",
                 ClientDevice = "System"
             };
+            contract.CDS_Document.DocumentProcessLog.Add(configLog);
 
-            contract.CDS_Document.DocumentProcessLog.Add(establishLog);
         }
 
         /// <summary>
