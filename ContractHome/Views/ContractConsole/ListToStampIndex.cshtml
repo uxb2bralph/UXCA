@@ -39,26 +39,26 @@
                 <div class="col col-md-8 col-lg-6 pt-2 order-2 order-md-1">
                     <ul class="nav nav-pills nav--tab pt-1" id="pills-tab" role="tablist">
                         <li class="nav-item col-6 col-md-3" role="presentation">
-                            <button class="nav-link rounded-0 px-4 w-100" :class="{ active: navTab === 3}" data-bs-toggle="pill"
-                                    type="button" role="tab" aria-selected="true" v-on:click="queryHandler(3)">
+                            <button class="nav-link rounded-0 px-4 w-100" :class="{ active: navTab === 0}" data-bs-toggle="pill"
+                                    type="button" role="tab" aria-selected="true" v-on:click="queryHandler(0)">
                                 <span class="fs-6 fw-bolder text-nowrap">待自己用印</span>
                             </button>
                         </li>
                         <li class="nav-item col-6 col-md-3" role="presentation">
-                            <button class="nav-link rounded-0 px-4 w-100" :class="{ active: navTab === 5}" data-bs-toggle="pill"
-                                    type="button" role="tab" aria-selected="false" v-on:click="queryHandler(5)">
+                            <button class="nav-link rounded-0 px-4 w-100" :class="{ active: navTab === 2}" data-bs-toggle="pill"
+                                    type="button" role="tab" aria-selected="false" v-on:click="queryHandler(2)">
                                 <span class="fs-6 fw-bolder text-nowrap">待自己簽署</span>
                             </button>
                         </li>
                         <li class="nav-item col-6 col-md-3" role="presentation">
-                            <button class="nav-link rounded-0 px-4 w-100" :class="{ active: navTab === 2}" data-bs-toggle="pill"
-                                    type="button" role="tab" aria-selected="true" v-on:click="queryHandler(2)">
+                            <button class="nav-link rounded-0 px-4 w-100" :class="{ active: navTab === 1}" data-bs-toggle="pill"
+                                    type="button" role="tab" aria-selected="true" v-on:click="queryHandler(1)">
                                 <span class="fs-6 fw-bolder text-nowrap">待他人用印</span>
                             </button>
                         </li>
                         <li class="nav-item col-6 col-md-3" role="presentation">
-                            <button class="nav-link rounded-0 px-4 w-100" :class="{ active: navTab === 4}" data-bs-toggle="pill"
-                                    type="button" role="tab" aria-selected="false" v-on:click="queryHandler(4)">
+                            <button class="nav-link rounded-0 px-4 w-100" :class="{ active: navTab === 3}" data-bs-toggle="pill"
+                                    type="button" role="tab" aria-selected="false" v-on:click="queryHandler(3)">
                                 <span class="fs-6 fw-bolder text-nowrap">待他人簽署</span>
                             </button>
                         </li>
@@ -161,7 +161,7 @@
                     <div :id="`contractNo-${index}`" class="card justify-content-start p-2 pb-2 h-100 shadow-sm"
                          :class="{ 'd-flex flex-row' : !isLayoutCard }">
                         <div class="d-flex justify-content-between" :class="{ 'col-4' : !isLayoutCard }">
-                            <span v-if="contract.IsExpiringSoon" class="fs-4 text-danger opacity-75" style="position: absolute;left: 24px; top: 25px;">
+                            <span v-if="contract.isExpiringSoon" class="fs-4 text-danger opacity-75" style="position: absolute;left: 24px; top: 25px;">
                                 <i class="fas fa-light fa-alarm-clock"></i>
                             </span>
                             <div class="d-flex">
@@ -170,19 +170,19 @@
                                 </div>
                                 <div>
                                     <div class="fs-12">
-                                        <span class="text-black-50 opacity-75">{{ contract.CreatedDateTime }}</span>
+                                        <span class="text-black-50 opacity-75">{{ contract.createdDateTime }}</span>
                                         <span class="px-1 text-black-50 opacity-75">/</span>
-                                        <span class="text-black-50 fw-bolder">{{ contract.ContractNo }}</span>
+                                        <span class="text-black-50 fw-bolder">{{ contract.contractNo }}</span>
                                     </div>
                                     <div class="fs-13 fw-bolder">
-                                        <span v-if="contract.CategoryName != ''" class="badge rounded-pill bg-success text-dark fs-13 bg-opacity-10">
-                                        {{contract.CategoryName}}
+                                        <span v-if="contract.categoryName != ''" class="badge rounded-pill bg-success text-dark fs-13 bg-opacity-10">
+                                        {{contract.categoryName}}
                                         </span>
-                                        <a :href="`javascript:showContract('${contract.KeyID}');`">
-                                            {{ contract.Title }}
+                                        <a :href="`javascript:showContract('${contract.keyID}');`">
+                                            {{ contract.title }}
                                         </a>
                                         <br />
-                                        <span v-if="contract.NotifyUntilDate != ''" class="fw-bolder" :class="[contract.IsExpiringSoon ? 'text-danger' : 'text-black-50']">期限：{{ contract.NotifyUntilDate }}</span>
+                                        <span v-if="contract.notifyUntilDate != ''" class="fw-bolder" :class="[contract.isExpiringSoon ? 'text-danger' : 'text-black-50']">期限：{{ contract.notifyUntilDate }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -257,43 +257,43 @@
                         -->
                         <!-- 用印流程 -->
                         <div :id="`progresses_${index}`" class="progresses__wrapper pb-2" :class="{ 'col-8' : !isLayoutCard }">
-                            <template v-for="(item, idx) in contract.Parties">
+                            <template v-for="(item, idx) in contract.parties">
                                 <!-- 起約方 -->
                                 <div v-if="idx === 0" class="progresses__companyGroup" :key="`contract${idx}`">
                                     <div class="progresses__company">
-                                        <span v-if="!item.StampDate" class="fw-bolder text-primary opacity-75">
+                                        <span v-if="!item.stampDate" class="fw-bolder text-primary opacity-75">
                                             待用印
                                         </span>
-                                        <span v-if="!!item.StampDate && !item.SignerDate" class="fw-bolder text-primary opacity-75">
+                                        <span v-if="!!item.stampDate && !item.signerDate" class="fw-bolder text-primary opacity-75">
                                             待簽署
                                         </span>
-                                        <span v-if="!!item.StampDate && !! item.SignerDate" class="fw-bolder text-success opacity-75">
+                                        <span v-if="!!item.stampDate && !! item.signerDate" class="fw-bolder text-success opacity-75">
                                             已完成
                                         </span>
                                     </div>
                                     <!-- 已完成 -->
-                                    <button v-if="!!item.StampDate && !!item.SignerDate" type="button"
+                                    <button v-if="!!item.stampDate && !!item.signerDate" type="button"
                                             class="btn progresses__steps progresses__steps--done disabled">
                                         <i class="fas fa-circle"></i>
                                     </button>
 
                                     <!-- 待用印 -->
-                                    <button v-if="!item.StampDate" type="button" class="btn progresses__steps"
-                                            :class="[item.IsCurrentUserCompany ? 'progresses__steps--actived' : 'disabled']"
+                                    <button v-if="!item.stampDate" type="button" class="btn progresses__steps"
+                                            :class="[item.isCurrentUserCompany ? 'progresses__steps--actived' : 'disabled']"
                                             v-on:click="stampHandler(contract, 'item')">
                                         <i class="fas fa-stamp"></i>
                                     </button>
 
                                     <!-- 待簽署 -->
-                                    <button v-if="!!item.StampDate && !item.SignerDate" class="btn progresses__steps"
-                                            :class="[canSignerByCsr(contract, item) && item.IsCurrentUserCompany ? 'progresses__steps--signActived' : 'disabled']"
-                                            v-on:click="signerHandler(contract.KeyID, item.Name, contract.ContractNo, contract.Title)">
+                                    <button v-if="!!item.stampDate && !item.signerDate" class="btn progresses__steps"
+                                            :class="[canSignerByCsr(contract, item) && item.isCurrentUserCompany ? 'progresses__steps--signActived' : 'disabled']"
+                                            v-on:click="signerHandler(contract.keyID, item.companyName, contract.contractNo, contract.title)">
                                         <i class="fas fa-signature"></i>
                                     </button>
                                     <div class="progresses__company" v-on:mouseover="tipHandler(`in_${index}_${idx}`)">
-                                        <span data-bs-toggle="tooltip" :id="`in_${index}_${idx}`" :title="item.Name">
-                                            <span class=" progresses__name" :class="{ 'bg-lightBlue': item.IsCurrentUserCompany }">
-                                                {{ formatName(item.Name) }}
+                                        <span data-bs-toggle="tooltip" :id="`in_${index}_${idx}`" :title="item.companyName">
+                                            <span class=" progresses__name" :class="{ 'bg-lightBlue': item.isCurrentUserCompany }">
+                                                {{ formatName(item.companyName) }}
                                             </span>
                                         </span>
                                     </div>
@@ -301,50 +301,50 @@
                                 <!-- 簽約方 -->
                                 <div v-else class="progresses__stepGroup">
                                     <!-- 待用印 -->
-                                    <span v-if="item.StampDate" class="progresses__line"
-                                          :class="{'progresses__line--done': contract.ContractorStampDate }"></span>
+                                    <span v-if="item.stampDate" class="progresses__line"
+                                          :class="{'progresses__line--done': contract.contractorStampDate }"></span>
                                     <!-- 待簽署 -->
-                                    <span v-if="item.SignerDate" class="progresses__line progresses__line--sign"
-                                          :class="{'progresses__line--done': contract.ContractorStampDate }"></span>
+                                    <span v-if="item.signerDate" class="progresses__line progresses__line--sign"
+                                          :class="{'progresses__line--done': contract.contractorStampDate }"></span>
                                     <div class="progresses__companyGroup">
                                         <div class="progresses__company">
-                                            <span v-if="!item.StampDate" class="fw-bolder text-primary opacity-75">
+                                            <span v-if="!item.stampDate" class="fw-bolder text-primary opacity-75">
                                                 待用印
                                             </span>
-                                            <span v-if="!!item.StampDate && !item.SignerDate" class="fw-bolder text-primary opacity-75">
+                                            <span v-if="!!item.stampDate && !item.signerDate" class="fw-bolder text-primary opacity-75">
                                                 待簽署
                                             </span>
-                                            <span v-if="!!item.StampDate && !!item.SignerDate" class="fw-bolder text-success opacity-75">
+                                            <span v-if="!!item.stampDate && !!item.signerDate" class="fw-bolder text-success opacity-75">
                                                 已完成
                                             </span>
                                         </div>
                                         <div class="progresses__btn">
 
                                             <!-- 已完成 -->
-                                            <button v-if="!!item.StampDate && !!item.SignerDate" type="button"
+                                            <button v-if="!!item.stampDate && !!item.signerDate" type="button"
                                                     class="btn progresses__steps progresses__steps--done disabled">
                                                 <i class="fas fa-circle"></i>
                                             </button>
 
                                             <!-- 待用印 -->
-                                            <button v-if="!item.StampDate" type="button" class="btn progresses__steps"
-                                                    :class="[item.IsCurrentUserCompany ? 'progresses__steps--actived' : 'disabled']"
+                                            <button v-if="!item.stampDate" type="button" class="btn progresses__steps"
+                                                    :class="[item.isCurrentUserCompany ? 'progresses__steps--actived' : 'disabled']"
                                                     v-on:click="stampHandler(contract, 'Contractor')">
                                                 <i class="fas fa-stamp"></i>
                                             </button>
 
                                             <!-- 待簽署 -->
-                                            <button v-if="!!item.StampDate && !item.SignerDate" type="button" class="btn progresses__steps"
-                                                    :class="[canSignerByCsr(contract, item) && item.IsCurrentUserCompany ? 'progresses__steps--signActived' : 'disabled']"
-                                                    v-on:click="signerHandler(contract.KeyID, item.Name, contract.ContractNo, contract.Title)">
+                                            <button v-if="!!item.stampDate && !item.signerDate" type="button" class="btn progresses__steps"
+                                                    :class="[canSignerByCsr(contract, item) && item.isCurrentUserCompany ? 'progresses__steps--signActived' : 'disabled']"
+                                                    v-on:click="signerHandler(contract.keyID, item.companyName, contract.contractNo, contract.title)">
                                                 <i class="fas fa-signature"></i>
                                             </button>
                                         </div>
                                         <div class="progresses__company" v-on:mouseover="tipHandler(`co_${index}_${idx}`)">
-                                            <span data-bs-toggle="tooltip" :id="`co_${index}_${idx}`" :title="item.Name">
+                                            <span data-bs-toggle="tooltip" :id="`co_${index}_${idx}`" :title="item.companyName">
                                                 <span class=" progresses__name"
-                                                      :class="{ 'bg-warning opacity-75 text-dark': item.IsCurrentUserCompany }">
-                                                    {{ formatName(item.Name) }}
+                                                      :class="{ 'bg-warning opacity-75 text-dark': item.isCurrentUserCompany }">
+                                                    {{ formatName(item.companyName) }}
                                                 </span>
                                             </span>
                                         </div>
@@ -794,36 +794,36 @@
                                 </div>
                                 <div>
                                     <div class="fs-12 text-black-50">
-                                        <span>{{ signerStatusData.CreatedDateTime }}</span>
+                                        <span>{{ signerStatusData.createdDateTime }}</span>
                                     </div>
                                     <div class="fw-bolder">
-                                        {{ signerStatusData.Title }}
+                                        {{ signerStatusData.title }}
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <!-- 用印流程 -->
                         <div class="card p-2 my-2">
-                            <template v-for="(item, index) in signerStatusData.Parties">
+                            <template v-for="(item, index) in signerStatusData.parties">
                                 <div class="d-flex align-items-center" :key="index">
                                     <div class="col d-flex align-items-center">
                                         <div class="progresses__steps"
-                                             :class="{'progresses__steps--done': item.StampDate && item.SignerDate }">
+                                             :class="{'progresses__steps--done': item.stampDate && item.signerDate }">
                                             <span>
                                                 <i class="fas"
-                                                   :class="[!item.StampDate ? 'fa-stamp': !item.SignerDate ? 'fa-signature': 'fa-circle']"></i>
+                                                   :class="[!item.stampDate ? 'fa-stamp': !item.signerDate ? 'fa-signature': 'fa-circle']"></i>
                                             </span>
                                         </div>
                                         <div class="ps-2">
                                             <!-- 起約人 -->
-                                            <span v-if="item.isInitiator" class="badge bg-primary opacity-75">{{ item.Name }}</span>
+                                            <span v-if="item.isInitiator" class="badge bg-primary opacity-75">{{ item.companyName }}</span>
                                             <!-- 簽約人 -->
-                                            <span v-else class="badge bg-warning text-dark opacity-75">{{ item.Name }}</span>
+                                            <span v-else class="badge bg-warning text-dark opacity-75">{{ item.companyName }}</span>
                                         </div>
                                     </div>
                                     <div class="col fw-bolder text-end text-primary opacity-75 fs-13 pe-3"
-                                         :class="{'text-success': item.StampDate && item.SignerDate}">
-                                        {{ StepEnum[item.Step] }}
+                                         :class="{'text-success': item.stampDate && item.signerDate}">
+                                        {{ StepEnum[item.step] }}
                                     </div>
                                 </div>
                             </template>
@@ -850,20 +850,20 @@
                                 </div>
                                 <div>
                                     <div class="fs-12 text-black-50">
-                                        {{ historyData.CreatedDateTime }}
+                                        {{ historyData.createdDateTime }}
                                     </div>
                                     <div class="fw-bolder">
-                                        {{ historyData.Title }}
+                                        {{ historyData.title }}
                                     </div>
                                 </div>
                             </div>
                             <div class="w-50">
-                                <template v-for="(item, index) in historyData.Parties">
+                                <template v-for="(item, index) in historyData.parties">
                                     <div class="d-flex align-items-start" :class="{'py-1': item.isInitiator}" :key="index">
                                         <span v-if="item.isInitiator" class="badge bg-primary opacity-75">起約人</span>
                                         <span v-else class="badge bg-warning text-dark opacity-75">簽約人</span>
                                         ：
-                                        <span class="fs-13">{{ item.Name }}</span>
+                                        <span class="fs-13">{{ item.companyName }}</span>
                                     </div>
                                 </template>
                             </div>
@@ -879,7 +879,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="(item, index) in historyData.ProcessLogs" :key="index">
+                                    <tr v-for="(item, index) in historyData.processLogs" :key="index">
                                         <td class="fs-13">{{ item.time }}</td>
                                         <td class="fs-13">{{ item.action }}</td>
                                         <td class="fs-13">{{ item.role }}</td>
@@ -904,7 +904,7 @@
                     <div class="modal-body">
                         <div class="modal-body text-center h5 fw-bolder">
                             確定終止
-                            <span class="text-primary opacity-75">" {{ stopContractData.Title }} "</span>
+                            <span class="text-primary opacity-75">" {{ stopContractData.title }} "</span>
                             這份文件？
                         </div>
                     </div>
@@ -1243,7 +1243,7 @@
         //};
 
         // 查詢文件表單
-        this.queryHandler(3);
+        this.queryHandler(0);
 
         if (this.isUpload) {
           const self = this;
@@ -1494,8 +1494,35 @@
         fetchAPI() {
           const self = this;
           // 執行查詢文件列表
+          // const viewModel = {
+          //   ContractQueryStep: this.searchStatus,
+          //   PageIndex: this.page,
+          //   SortType: this.SortType,
+          //   PageSize: this.pageSize,
+          //   SortName: this.SortName,
+          // };
+          // showLoading();
+          // $.ajax({
+          //   type: 'POST',
+          //   url: '@(Url.Action("VueListToStamp", "ContractConsole"))',
+          //   data: JSON.stringify(viewModel),
+          //   type: "POST",
+          //   contentType: "application/json;charset=utf-8",
+          //   success: function (data) {
+          //     // 執行 data 中的 function 後，立即移除 function
+          //     $(data).appendTo($('body')).remove();
+
+          //     hideLoading();
+          //   },
+          //   error: function (xhr, ajaxOptions, thrownError) {
+          //     hideLoading();
+          //     console.log(thrownError);
+          //   }
+          // });
+
+
           const viewModel = {
-            ContractQueryStep: this.searchStatus,
+            WaittingStepEnum: this.searchStatus,
             PageIndex: this.page,
             SortType: this.SortType,
             PageSize: this.pageSize,
@@ -1504,13 +1531,13 @@
           showLoading();
           $.ajax({
             type: 'POST',
-            url: '@(Url.Action("VueListToStamp", "ContractConsole"))',
+            url: '@(Url.Content("~"))/api/ContractSearch/WaittingContract',
             data: JSON.stringify(viewModel),
             type: "POST",
             contentType: "application/json;charset=utf-8",
-            success: function (data) {
-              // 執行 data 中的 function 後，立即移除 function
-              $(data).appendTo($('body')).remove();
+            success: function (result) {
+              self.contractList = result.data.contracts;
+              self.totalRecordCount = result.data.totalRecordCount;
 
               hideLoading();
             },
@@ -1529,7 +1556,7 @@
 
         // 是否可顯示選單
         showMenu(contract) {
-          const partyFilter = contract.Parties.filter(item => item.IsCurrentUserCompany && item.isInitiator);
+          const partyFilter = contract.parties.filter(item => item.isCurrentUserCompany && item.isInitiator);
           return partyFilter.length > 0;
         },
 
@@ -1541,14 +1568,14 @@
 
         // 是否可簽署
         canSignerByCsr(contract, csr) {
-            const unSealUsers = contract.Parties.filter(item => item.StampDate === "");
+            const unSealUsers = contract.parties.filter(item => item.stampDate === "");
 
             if (unSealUsers.length > 0) {
                 return false;
             }
 
-            const { Step } = csr;
-            return Step === @((int)CDS_Document.StepEnum.DigitalSigning);
+            const { step } = csr;
+            return step === @((int)CDS_Document.StepEnum.DigitalSigning);
         },
 
         // 新增文件 Modal
@@ -1647,7 +1674,7 @@
 
         // 用印
         stampHandler(contract, rule) {
-          affixPdfSeal(contract.KeyID);
+          affixPdfSeal(contract.keyID);
         },
 
         // 開啟簽署 Modal
@@ -1775,23 +1802,23 @@
         // 終止文件料串API
         confirmStop(contractData) {
           $("#stopContractModal").modal('hide');
-          terminateContract(contractData.KeyID);
+          terminateContract(contractData.keyID);
         },
 
         // 下載檔案
         downloadPdf(contract) {
-          showContract(contract.KeyID, @((int)DataResultMode.Download));
+          showContract(contract.keyID, @((int)DataResultMode.Download));
         },
 
         // 下載稽核軌跡
         downloadFootprintsPdf(contract) {
-          $('').launchDownload('@Html.Raw(Url.Action("DownloadFootprintsPdf", "ContractConsole"))', { 'KeyID': contract.KeyID });
+          $('').launchDownload('@Html.Raw(Url.Action("DownloadFootprintsPdf", "ContractConsole"))', { 'KeyID': contract.keyID });
         },
 
         // 重發通知信
         resendEmail(contract) {
           const payload = {
-              'keyID': contract.KeyID,
+              'keyID': contract.keyID,
           };
           showLoading();
 

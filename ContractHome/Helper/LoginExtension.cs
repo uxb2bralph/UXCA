@@ -38,7 +38,11 @@ namespace ContractHome.Helper
 
             profile.CurrentCompanyID = profile.GetCompanyID();
             profile.CategoryPermission = profile.GetCategoryPermission();
-            profile.IsSysAdmin = profile.GetUserRole().RoleID == (int)UserRoleDefinition.RoleEnum.SystemAdmin;
+
+            int roleID = profile.GetUserRole().RoleID;
+
+            profile.IsSysAdmin = roleID == (int)UserRoleDefinition.RoleEnum.SystemAdmin;
+            profile.IsMemberAdmin = roleID == (int)UserRoleDefinition.RoleEnum.MemberAdmin;
 
             context.Response.Cookies.Append("userID", enPid,
             new CookieOptions

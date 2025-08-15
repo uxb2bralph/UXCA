@@ -108,6 +108,8 @@ namespace ContractHome.Models.DataEntity
         public List<int> CategoryPermission { get; set; } = new List<int>();
 
         public bool IsSysAdmin { get; set; } = false;
+
+        public bool IsMemberAdmin { get; set; } = false;
     }
 
     public partial class CDS_Document

@@ -19,6 +19,18 @@ namespace ContractHome.Services.ContractService
             public string KeyID { get; set; } = string.Empty;
         }
 
+        public enum WaittingStepEnum
+        {
+            // 待自己用印
+            MyStamp = 0,
+            // 待對方用印
+            CounterpartyStamp = 1,
+            // 待自己簽署
+            MySignature = 2,
+            // 待對方簽署
+            CounterpartySignature = 3,
+        }
+
         public class ContractSearchModel : ContractBaseModel
         {
             public string? ContractNo { get; set; } = String.Empty;
@@ -45,6 +57,8 @@ namespace ContractHome.Services.ContractService
             public int SearchUID { get; set; } = 0;
 
             public int SearchCompanyID { get; set; } = 0;
+
+            public WaittingStepEnum? WaittingStepEnum { get; set; } = null;
         }
 
         public class  ContractListDataModel

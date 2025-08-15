@@ -1,17 +1,15 @@
 ﻿using ContractHome.Helper;
 using ContractHome.Models.DataEntity;
-using DocumentFormat.OpenXml.Spreadsheet;
-using DocumentFormat.OpenXml.Wordprocessing;
-using System;
-using System.Diagnostics.Contracts;
 using static ContractHome.Models.DataEntity.CDS_Document;
 using static ContractHome.Services.ContractService.ContractSearchDtos;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ContractHome.Services.ContractService
 {
-    public class ContractSearchService : IContractSearchService
+    public class ContractSearchService(DCDataContext db) : IContractSearchService
     {
+        private readonly DCDataContext _db = db;
+
         /// <summary>
         /// 查詢功能
         /// </summary>
@@ -19,18 +17,16 @@ namespace ContractHome.Services.ContractService
         /// <returns></returns>
         public ContractListDataModel Search(ContractSearchModel searchModel)
         {
-            using DCDataContext db = new();
-
-            var query = GetContractMainQuery(db, searchModel);
+            var query = GetContractMainQuery(searchModel);
 
             var result = query
                 .Skip((searchModel.PageIndex - 1) * searchModel.PageSize)
                 .Take(searchModel.PageSize)
                 .ToList();
 
-            BuildProcessLog(db, result);
+            BuildProcessLog(result);
 
-            BuilldPartyRef(db, result, searchModel.SearchCompanyID);
+            BuilldPartyRef(result, searchModel.SearchCompanyID);
 
 
             ContractListDataModel contractListDataModel = new()
@@ -42,12 +38,12 @@ namespace ContractHome.Services.ContractService
             return contractListDataModel;
         }
 
-        private IQueryable<ContractInfoMode> GetContractMainQuery(DCDataContext db, ContractSearchModel searchModel)
+        private IQueryable<ContractInfoMode> GetContractMainQuery(ContractSearchModel searchModel)
         {
-            var query = from c in db.Contract
-                        join cc in db.ContractCategory on c.ContractCategoryID equals cc.ContractCategoryID into ccl
+            var query = from c in _db.Contract
+                        join cc in _db.ContractCategory on c.ContractCategoryID equals cc.ContractCategoryID into ccl
                         from ccu in ccl.DefaultIfEmpty()
-                        join cd in db.CDS_Document on c.ContractID equals cd.DocID
+                        join cd in _db.CDS_Document on c.ContractID equals cd.DocID
                         where cd.CurrentStep != (int)StepEnum.Initial
                         select new ContractInfoMode
                         {
@@ -89,7 +85,7 @@ namespace ContractHome.Services.ContractService
 
             if (!string.IsNullOrEmpty(searchModel.Initiator))
             {
-                var parties = from p in db.ContractingParty
+                var parties = from p in _db.ContractingParty
                               where p.CompanyID == searchModel.InitiatorID
                               where p.IsInitiator == true
                               select p.ContractID;
@@ -98,7 +94,7 @@ namespace ContractHome.Services.ContractService
 
             if (!string.IsNullOrEmpty(searchModel.Contractor))
             {
-                var parties = from p in db.ContractingParty
+                var parties = from p in _db.ContractingParty
                               where p.CompanyID == searchModel.ContractorID
                               where p.IsInitiator == false
                               select p.ContractID;
@@ -109,30 +105,34 @@ namespace ContractHome.Services.ContractService
             if (searchModel.SearchUID > 0 || searchModel.SearchCompanyID > 0)
             {
                 // 取出有指定簽署人ID的合約ID
-                var signContractIDs = from d in db.ContractSignatureRequest
+                var signContractIDs = from d in _db.ContractSignatureRequest
                                       where d.SignerID == searchModel.SearchUID
                                       select d.ContractID;
                 // 只取沒指定簽署人ID的合約
-                var unSignContractIDs = from d in db.ContractSignatureRequest
+                var unSignContractIDs = from d in _db.ContractSignatureRequest
+                                        join c in _db.Contract on d.ContractID equals c.ContractID
                                         where d.SignerID == null && d.CompanyID == searchModel.SearchCompanyID
                                         select d.ContractID;
+
+                // 追加分類條件
+                if (searchModel.ContractCategoryID.Count > 0)
+                {
+                    unSignContractIDs = from d in _db.ContractSignatureRequest
+                                        join c in _db.Contract on d.ContractID equals c.ContractID
+                                        where d.SignerID == null && d.CompanyID == searchModel.SearchCompanyID
+                                        && searchModel.ContractCategoryID.Contains(c.ContractCategoryID)
+                                        && c.ContractCategoryID != 0
+                                        select d.ContractID;
+                }
 
                 // 合併兩個查詢結果
                 signContractIDs = signContractIDs.Union(unSignContractIDs);
 
-                // 登入者 授權分類
-                if (searchModel.ContractCategoryID.Count > 0)
-                {
-                    query = query.Where(c => signContractIDs.Any(s => s == c.ContractID) || 
-                                             searchModel.ContractCategoryID.Contains(c.ContractCategoryID) &&
-                                             c.ContractCategoryID != 0);
-                } else
-                {
-                    query = query.Where(c => signContractIDs.Any(s => s == c.ContractID));
-                }
+                // 根據 WaittingStepEnum 過濾合約ID
+                var resultContractIDs = GetWaittingContractQuery(signContractIDs, searchModel);
+
+                query = query.Where(c => resultContractIDs.Any(s => s == c.ContractID));
             }
-
-
 
             // 排序
             if (searchModel.SortName.Any() && searchModel.SortType.Any())
@@ -154,18 +154,78 @@ namespace ContractHome.Services.ContractService
             return query;
         }
 
+        private IQueryable<int> GetWaittingContractQuery(IQueryable<int> signContractIDs, ContractSearchModel searchModel)
+        {
+            if (searchModel.WaittingStepEnum == WaittingStepEnum.MyStamp)
+            {
+                // 找出待自己用印合約
+                var stealingContractIDs = from d in _db.ContractSignatureRequest
+                                          where signContractIDs.Any(s => s == d.ContractID) &&
+                                          d.CompanyID == searchModel.SearchCompanyID &&
+                                          d.StampDate == null &&
+                                          d.SignatureDate == null
+                                          select d.ContractID;
+
+                return stealingContractIDs;
+            }
+
+            if (searchModel.WaittingStepEnum == WaittingStepEnum.MySignature)
+            {
+                // 找出待自己簽署合約
+                var signingContractIDs = from d in _db.ContractSignatureRequest
+                                         join c in _db.Contract on d.ContractID equals c.ContractID
+                                         where signContractIDs.Any(s => s == d.ContractID) &&
+                                         d.CompanyID == searchModel.SearchCompanyID &&
+                                         ((c.IsPassStamp == true && d.SignatureDate == null) ||
+                                          (c.IsPassStamp == false && d.StampDate != null && d.SignatureDate == null))
+                                         select d.ContractID;
+
+                return signingContractIDs;
+            }
+
+            if (searchModel.WaittingStepEnum == WaittingStepEnum.CounterpartyStamp)
+            {
+                // 找出待他人用印合約
+                var counterpartyStampContractIDs = from d in _db.ContractSignatureRequest
+                                                   where signContractIDs.Any(s => s == d.ContractID) &&
+                                                   d.CompanyID != searchModel.SearchCompanyID &&
+                                                   d.StampDate == null &&
+                                                   d.SignatureDate == null
+                                                   select d.ContractID;
+
+                return counterpartyStampContractIDs;
+            }
+
+
+            if (searchModel.WaittingStepEnum == WaittingStepEnum.CounterpartySignature)
+            {
+                // 找出待他人簽署合約
+                var counterpartySignContractIDs = from d in _db.ContractSignatureRequest
+                                                  join c in _db.Contract on d.ContractID equals c.ContractID
+                                                  where signContractIDs.Any(s => s == d.ContractID) &&
+                                                  d.CompanyID != searchModel.SearchCompanyID &&
+                                                  ((c.IsPassStamp == true && d.SignatureDate == null) ||
+                                                   (c.IsPassStamp == false && d.StampDate != null && d.SignatureDate == null))
+                                                  select d.ContractID;
+
+                return counterpartySignContractIDs;
+            }
+
+            return signContractIDs;
+        }
+
         /// <summary>
         /// 綁定 DocumentProcessLog 到 ContractInfoMode
         /// </summary>
         /// <param name="db"></param>
         /// <param name="contractInfoModes"></param>
-        private void BuildProcessLog(DCDataContext db, IEnumerable<ContractInfoMode> contractInfoModes)
+        private void BuildProcessLog(IEnumerable<ContractInfoMode> contractInfoModes)
         {
             // 取的目前合約ID集合
             var contractIDs = contractInfoModes.Select(c => c.ContractID).ToList();
 
-            var dblogs = (from dp in db.DocumentProcessLog
-                          join user in db.UserProfile on dp.ActorID equals user.UID
+            var dblogs = (from dp in _db.DocumentProcessLog
+                          join user in _db.UserProfile on dp.ActorID equals user.UID
                           where contractIDs.Contains(dp.DocID)
                           select new
                           {
@@ -218,15 +278,15 @@ namespace ContractHome.Services.ContractService
         /// <param name="db"></param>
         /// <param name="contractInfoModes"></param>
         /// <param name="currentCompanyID"></param>
-        private void BuilldPartyRef(DCDataContext db, IEnumerable<ContractInfoMode> contractInfoModes, int currentCompanyID)
+        private void BuilldPartyRef(IEnumerable<ContractInfoMode> contractInfoModes, int currentCompanyID)
         {
             // 取的目前合約ID集合
             var contractIDs = contractInfoModes.Select(c => c.ContractID).ToList();
 
             // 取出 合約的 甲方 乙方 簽約資訊 未指定簽署人
-            var unSingercsr = from c in db.ContractSignatureRequest
-                              join o in db.Organization on c.CompanyID equals o.CompanyID
-                              join p in db.ContractingParty on new { c.ContractID, c.CompanyID } equals new { p.ContractID, p.CompanyID }
+            var unSingercsr = from c in _db.ContractSignatureRequest
+                              join o in _db.Organization on c.CompanyID equals o.CompanyID
+                              join p in _db.ContractingParty on new { c.ContractID, c.CompanyID } equals new { p.ContractID, p.CompanyID }
                               where contractIDs.Contains(c.ContractID) && c.SignerID == null
                               select new
                               {
@@ -242,11 +302,11 @@ namespace ContractHome.Services.ContractService
                               };
 
             // 取出 合約的 甲方 乙方 簽約資訊 指定簽署人
-            var singercsr = from c in db.ContractSignatureRequest
-                            join u in db.UserProfile on c.SignerID equals u.UID
-                            join ou in db.OrganizationUser on u.UID equals ou.UID
-                            join o in db.Organization on ou.CompanyID equals o.CompanyID
-                            join p in db.ContractingParty on new { c.ContractID, c.CompanyID } equals new { p.ContractID, p.CompanyID }
+            var singercsr = from c in _db.ContractSignatureRequest
+                            join u in _db.UserProfile on c.SignerID equals u.UID
+                            join ou in _db.OrganizationUser on u.UID equals ou.UID
+                            join o in _db.Organization on ou.CompanyID equals o.CompanyID
+                            join p in _db.ContractingParty on new { c.ContractID, c.CompanyID } equals new { p.ContractID, p.CompanyID }
                             where contractIDs.Contains(c.ContractID)
                             select new
                             {
@@ -349,6 +409,43 @@ namespace ContractHome.Services.ContractService
             }
 
             return step;
+        }
+
+        public ContractListDataModel AllContract(ContractSearchModel searchModel, UserProfile profile)
+        {
+            if (profile.IsSysAdmin)
+            {
+                return Search(searchModel);
+            }
+
+            searchModel.SearchUID = profile.UID;
+            searchModel.SearchCompanyID = profile.CurrentCompanyID;
+            // 一般使用者追加分類條件
+            if (!profile.IsMemberAdmin)
+            {
+                searchModel.ContractCategoryID = (searchModel.ContractCategoryID.Count > 0) ?
+                                                 [.. searchModel.ContractCategoryID.Intersect(profile.CategoryPermission)]
+                                                 : profile.CategoryPermission;
+            }
+
+            return Search(searchModel);
+        }
+
+        public ContractListDataModel WaittingContract(ContractSearchModel searchModel, UserProfile profile)
+        {
+            if (!searchModel.WaittingStepEnum.HasValue)
+            {
+                searchModel.WaittingStepEnum = WaittingStepEnum.MyStamp;
+            }
+
+            searchModel.QueryStep = CDS_Document.PendingState;
+            searchModel.SearchUID = profile.UID;
+            searchModel.SearchCompanyID = profile.CurrentCompanyID;
+            searchModel.ContractCategoryID = (searchModel.ContractCategoryID.Count > 0) ?
+                                             [.. searchModel.ContractCategoryID.Intersect(profile.CategoryPermission)]
+                                             : profile.CategoryPermission;
+
+            return Search(searchModel);
         }
     }
 }

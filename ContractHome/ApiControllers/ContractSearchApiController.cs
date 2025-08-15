@@ -1,5 +1,6 @@
 ﻿using ContractHome.Helper;
 using ContractHome.Helper.DataQuery;
+using ContractHome.Models.DataEntity;
 using ContractHome.Models.Dto;
 using ContractHome.Services.ContractService;
 using Microsoft.AspNetCore.Authorization;
@@ -17,21 +18,27 @@ namespace ContractHome.ApiControllers
         private readonly IContractSearchService _contractSearchService = contractSearchService;
 
         [HttpPost]
-        [Route("SearchContract")]
-        public async Task<IActionResult> SearchContract([FromBody] ContractSearchModel searchModel)
+        [Route("AllContract")]
+        public async Task<IActionResult> AllContract([FromBody] ContractSearchModel searchModel)
         {
             var profile = await HttpContext.GetUserAsync();
 
-            if (!profile.IsSysAdmin)
-            {
-                searchModel.SearchUID = profile.UID;
-                searchModel.SearchCompanyID = profile.CurrentCompanyID;
-                searchModel.ContractCategoryID = (searchModel.ContractCategoryID.Count > 0) ?
-                                                 [.. searchModel.ContractCategoryID.Intersect(profile.CategoryPermission)]
-                                                 : profile.CategoryPermission;
-            }
+            var result = _contractSearchService.AllContract(searchModel, profile);
 
-            var result = _contractSearchService.Search(searchModel);
+            return Ok(new BaseResponse()
+            {
+                Data = result
+            });
+        }
+
+        [HttpPost]
+        [Route("WaittingContract")]
+        public async Task<IActionResult> WaittingContract([FromBody] ContractSearchModel searchModel)
+        {
+            var profile = await HttpContext.GetUserAsync();
+
+            var result = _contractSearchService.WaittingContract(searchModel, profile);
+
             return Ok(new BaseResponse()
             {
                 Data = result

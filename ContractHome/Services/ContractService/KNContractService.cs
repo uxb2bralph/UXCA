@@ -73,7 +73,7 @@ namespace ContractHome.Services.ContractService
             {
                 DocDate = DateTime.Now,
                 ProcessType = (int)CDS_Document.ProcessTypeEnum.PDF,
-                CurrentStep = (model.IsPassStamp) ? (int)CDS_Document.StepEnum.Establish : (int)CDS_Document.StepEnum.Config,
+                CurrentStep = (model.IsPassStamp) ? (int)CDS_Document.StepEnum.Sealed : (int)CDS_Document.StepEnum.Config,
             };
 
             contract.CDS_Document = cds;
