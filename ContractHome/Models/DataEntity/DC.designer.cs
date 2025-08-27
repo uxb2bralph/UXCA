@@ -225,6 +225,14 @@ namespace ContractHome.Models.DataEntity
 			}
 		}
 		
+		public System.Data.Linq.Table<FavoriteSigner> FavoriteSigner
+		{
+			get
+			{
+				return this.GetTable<FavoriteSigner>();
+			}
+		}
+		
 		public System.Data.Linq.Table<IdentityCert> IdentityCert
 		{
 			get
@@ -4076,6 +4084,69 @@ namespace ContractHome.Models.DataEntity
 			if ((this.PropertyChanged != null))
 			{
 				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.FavoriteSigner")]
+	public partial class FavoriteSigner
+	{
+		
+		private int _FavoriteSignerID;
+		
+		private int _SignerUID;
+		
+		private int _CreateUID;
+		
+		public FavoriteSigner()
+		{
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FavoriteSignerID", AutoSync=AutoSync.Always, DbType="Int NOT NULL IDENTITY", IsDbGenerated=true)]
+		public int FavoriteSignerID
+		{
+			get
+			{
+				return this._FavoriteSignerID;
+			}
+			set
+			{
+				if ((this._FavoriteSignerID != value))
+				{
+					this._FavoriteSignerID = value;
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_SignerUID", DbType="Int NOT NULL")]
+		public int SignerUID
+		{
+			get
+			{
+				return this._SignerUID;
+			}
+			set
+			{
+				if ((this._SignerUID != value))
+				{
+					this._SignerUID = value;
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreateUID", DbType="Int NOT NULL")]
+		public int CreateUID
+		{
+			get
+			{
+				return this._CreateUID;
+			}
+			set
+			{
+				if ((this._CreateUID != value))
+				{
+					this._CreateUID = value;
+				}
 			}
 		}
 	}

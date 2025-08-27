@@ -174,6 +174,13 @@
       <Association Name="FK_DocumentProcessLog_UserProfile" Member="UserProfile" ThisKey="ActorID" OtherKey="UID" Type="UserProfile" IsForeignKey="true" />
     </Type>
   </Table>
+  <Table Name="dbo.FavoriteSigner" Member="FavoriteSigner">
+    <Type Name="FavoriteSigner">
+      <Column Name="FavoriteSignerID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="SignerUID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="CreateUID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+    </Type>
+  </Table>
   <Table Name="dbo.IdentityCert" Member="IdentityCert">
     <Type Name="IdentityCert">
       <Column Name="SeqNo" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
