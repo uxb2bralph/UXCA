@@ -4,20 +4,20 @@ using ContractHome.Models.Dto;
 using ContractHome.Services.FavoriteSignerManage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static ContractHome.Services.FavoriteSignerManage.FavoriteSignerDtos;
 
 namespace ContractHome.ApiControllers
 {
     [Route("api/FavoriteSigner")]
     [ApiController]
     [Authorize]
-    public class FavoriteSignerApiController(DCDataContext db, IFavoriteSignerService favoriteSignerService) : ControllerBase
+    public class FavoriteSignerApiController(IFavoriteSignerService favoriteSignerService) : ControllerBase
     {
-        private readonly DCDataContext _db = db;
         private readonly IFavoriteSignerService _favoriteSignerService = favoriteSignerService;
 
         [HttpPost]
         [Route("Create")]
-        public IActionResult CreateFavoriteSigner([FromBody] FavoriteSignerCreateRequest request)
+        public async Task<IActionResult> CreateFavoriteSignerAsync([FromBody] FavoriteSignerCreateRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -50,6 +50,30 @@ namespace ContractHome.ApiControllers
             }
             _favoriteSignerService.DeleteFavoriteSigner(request);
             return Ok(new BaseResponse());
+        }
+
+        [HttpPost]
+        [Route("SearchCompany")]
+        public IActionResult SearchCompany([FromBody] QueryInfoModel query)
+        {
+            var result = _favoriteSignerService.SearchCompany(query);
+
+            return Ok(new BaseResponse()
+            {
+                Data = result
+            });
+        }
+
+        [HttpPost]
+        [Route("SearchSigner")]
+        public IActionResult SearchSigner([FromBody] QueryInfoModel query)
+        {
+            var result = _favoriteSignerService.SearchSigner(query);
+
+            return Ok(new BaseResponse()
+            {
+                Data = result
+            });
         }
     }
 }

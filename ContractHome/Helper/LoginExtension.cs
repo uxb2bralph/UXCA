@@ -15,7 +15,8 @@ namespace ContractHome.Helper
         {
             //帳密都輸入正確，ASP.net Core要多寫三行程式碼
             bool isSysAdmin = profile.IsSysAdmin();
-            Claim[] claims = new[] { 
+            Claim[] claims = new[] {
+                new Claim("UID", profile.UID.ToString()), //這是系統預設的ClaimTypes
                 new Claim("Name", profile.PID), 
                 new Claim("IsAdmin", isSysAdmin.ToString()),
                 new Claim("RoleIDs", profile.GetRoleIDs())

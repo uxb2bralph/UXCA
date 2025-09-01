@@ -9,8 +9,14 @@ namespace ContractHome.Services.FavoriteSignerManage
     {
         public class Validator : AbstractValidator<FavoriteSignerCreateRequest>
         {
-            public Validator()
+            private readonly IHttpContextAccessor _context;
+            private readonly DCDataContext _db;
+
+            public Validator(IHttpContextAccessor context, DCDataContext db)
             {
+                _context = context;
+                _db = db;
+
                 RuleFor(x => x.Email)
                     .NotEmpty()
                     .EmailAddress()
@@ -27,12 +33,12 @@ namespace ContractHome.Services.FavoriteSignerManage
 
                 RuleFor(x => x.ReceiptNo)
                     .NotEmpty()
-                    .MaximumLength(20);
+                    .MaximumLength(10);
 
-                RuleFor(x => x.CreatorKeyID)
-                    .NotEmpty()
-                    .Must(IsValidUID)
-                    .WithMessage("建立人ID不存在");
+                //RuleFor(x => x.CreatorKeyID)
+                //    .NotEmpty()
+                //    .Must(IsValidUID)
+                //    .WithMessage("建立人ID不存在");
             }
 
             private bool IsValidUID(string uid)
@@ -48,12 +54,26 @@ namespace ContractHome.Services.FavoriteSignerManage
 
             private bool IsValidSigner(FavoriteSignerCreateRequest request)
             {
-                var db = new DCDataContext();
-                var result = from u in db.UserProfile
-                             join f in db.FavoriteSigner on u.UID equals f.SignerUID
-                             where u.EMail == request.Email && f.CreateUID == request.CreatorUID
-                             select f;
+                var creatorUID = GetCreatorUID();
+
+                if (creatorUID == -1)
+                {
+                    return false;
+                }
+
+                request.CreatorUID = creatorUID;
+
+                var result = (from u in _db.UserProfile
+                              join f in _db.FavoriteSigner on u.UID equals f.SignerUID
+                              where u.EMail == request.Email && f.CreateUID == request.CreatorUID
+                              select f).FirstOrDefault();
                 return result == null;
+            }
+
+            private int GetCreatorUID()
+            {
+                var user = _context.HttpContext.GetUser();
+                return user?.UID ?? -1;
             }
         }
     }

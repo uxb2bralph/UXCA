@@ -1,0 +1,410 @@
+﻿@using ContractHome.Helper
+@using ContractHome.Helper.DataQuery
+@using ContractHome.Models.DataEntity
+@using System.Web
+@*  
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860  
+*@  
+@{
+    Layout = "~/Views/Shared/MasterPage.cshtml";
+    string virtualPath = Context.Request.PathBase.ToString();
+    ModelSource? models = (ModelSource?)ViewContext.HttpContext.Items["Models"];
+    var profile = (await Context.GetUserAsync()).LoadInstance(models!);
+    var companyKeyID = (profile != null) ? profile.CompanyID.EncryptKey() : string.Empty;
+}
+<div id="favoriteSignerInfos" class="container-lg py-4">
+    <section class="queryform">
+        <!-- Section title -->
+        <h4 class="mb-2 mt-0 fw-bolder">常用簽署人管理</h4>
+        <div class="row">
+            <div class="col-12 hstack gap-3 py-3">
+
+                <div class="tooltip__wrapper">
+                    <button type="button" class="btn btn-lg btn-success rounded-pill opacity-75" v-on:click="showCreateDialog">
+                        <i class="fal fa-file-plus"></i>
+                    </button>
+                    <div class="tooltip__text">新增</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 使用者資料查詢列表 -->
+    <section>
+        <!-- 標題 -->
+
+        <div v-if="favoriteSignerInfos.length > 0">
+            <div class="card shadow-sm p-2 mb-3 table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">公司</th>
+                            <th scope="col">統編</th>
+                            <th scope="col">Email</th>
+                            <th scope="col" class="text-center">功能</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="info in favoriteSignerInfos">
+                            <td class="fs-13">{{info.companyName}}</td>
+                            <td class="fs-13">{{info.receiptNo}}</td>
+                            <td class="fs-13">{{info.email}}</td>
+                            <td class="text-nowrap text-center">
+                                <span class="tooltip__wrapper mx-1">
+                                    <button type="button" id="deleteCompany"
+                                            class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded"
+                                            v-on:click="openConfirmDialog(info)">
+                                        <i class="fal fa-trash-alt"></i>
+                                    </button>
+                                    <div class="tooltip__text">刪除</div>
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div v-else class="card shadow-sm p-3 text-center">
+            <span class="text-primary opacity-75" style="font-size: 50px;">
+                <i class="fad fa-folder-open"></i>
+            </span>
+            <span class="text-primary opacity-75 fw-bolder">查無資料</span>
+        </div>
+    </section>
+
+
+    <!-- 新增 Dialog -->
+    <div class="modal fade" id="formModal" v-on:click="companyNamehandleBlur" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+         aria-labelledby="formModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bolder" id="staticBackdropLabel">新增簽署人資料</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form v-on:submit.prevent method="post" enctype="multipart/form-data">
+                        <div class="container">
+                            <div class="row row-cols-1 m-3 mb-lg-0 data-item">
+                                <div class="col input__height">
+                                    <div class="row">
+                                        <label class="col-sm-12 col-md-3 col-form-label fw-bolder">公司名稱</label>
+                                        <div class="col-sm-12 col-md-9">
+                                            <input v-model="favoriteSignerInfo.companyName" class="form-control form-control-sm"
+                                                   placeholder="可輸入關鍵字查詢公司"
+                                                   :class="{ 'is-invalid': isSubmitted && !favoriteSignerInfo.companyName?.trim() }" />
+                                            <ul v-show="isSearchOptionsOpen" class="list-group mb-3 shadow__card">
+                                                <li v-for="(result, index) in searchResults" :key="index"
+                                                    class="list-group-item list-group-item-action" v-on:click="setCompanyInfo(result)"
+                                                    :class="{'active': index === currentlyCounter}">
+                                                    {{ result.companyName }}({{ result.receiptNo }})
+                                                </li>
+                                            </ul>
+                                            <div class="invalid-feedback">
+                                                請輸入公司名稱
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col input__height">
+                                    <div class="row">
+                                        <label class="col-sm-12 col-md-3 col-form-label fw-bolder">公司統編</label>
+                                        <div class="col-sm-12 col-md-9">
+                                            <input v-model="favoriteSignerInfo.receiptNo" class="form-control form-control-sm"
+                                                   :class="{ 'is-invalid': isSubmitted && !favoriteSignerInfo.receiptNo?.trim() }" />
+                                            <div class="invalid-feedback">
+                                                請輸入公司統編
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col input__height">
+                                    <div class="row">
+                                        <label class="col-sm-12 col-md-3 col-form-label fw-bolder">Email</label>
+                                        <div class="col-sm-12 col-md-9">
+                                            <input v-model="favoriteSignerInfo.email" class="form-control form-control-sm"
+                                                   placeholder="可輸入關鍵字查詢Email"
+                                                   :class="{ 'is-invalid': isSubmitted && mailMsg !== '' }" />
+                                            <ul v-show="isSearchSignerOptionsOpen" class="list-group mb-3 shadow__card">
+                                                <li v-for="(result, index) in searchResults" :key="index"
+                                                    class="list-group-item list-group-item-action" v-on:click="setSignerInfo(result)"
+                                                    :class="{'active': index === currentlyCounter}">
+                                                    {{ result.companyName }}({{ result.receiptNo }}) {{ result.email }}
+                                                </li>
+                                            </ul>
+
+                                            <div class="invalid-feedback">
+                                                {{ mailMsg }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                 
+                                <div class="col-12 pt-3">
+                                    <div class="alert bg-warning bg-opacity-25" style="position: static">
+                                        <ul class="mb-0 small">
+                                            <li>可輸入新的公司資料及Email建立簽署人</li>
+                                            <li>可用公司及Email欄位查詢簽署人及公司資料</li>
+                                            <li>Email會以已經有加入的公司為主</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" v-on:click="createData">確定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 訊息 Dialog -->
+    <div class="modal fade" id="infoModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+         aria-labelledby="infoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center h5 fw-bolder pt-5">
+                    <div>
+                        <div class="pb-2 text-danger opacity-75" :class="isSuccess ? 'text-success' : 'text-danger'" style="font-size: 4rem">
+                            <i class="fas" :class="isSuccess ? 'fa-check-circle' : 'fa-exclamation-circle'"></i>
+                        </div>
+                        <div v-html="infoMsg"></div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" v-on:click="queryList">關閉</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 確認 Dialog -->
+    <div class="modal fade" id="confirmModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+         aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered ">
+            <div class="modal-content">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title" id="staticBackdropLabel"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center h5 fw-bolder" v-html="confirmMsg"></div>
+                <div class="modal-footer border-top-0 justify-content-center">
+                    <button type="button" class="btn btn-secondary opacity-50" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" v-on:click="deleteSigner">確定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .personnel-list-container {
+        max-height: 500px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        padding: 1rem;
+        border-radius: .25rem;
+    }
+</style>
+
+<script src="~/js/api.js"></script>
+<script>
+
+    var app = new Vue({
+        el: '#favoriteSignerInfos',
+        data: {
+            apiPath: '@virtualPath/api/FavoriteSigner/',
+            favoriteSignerInfos: [],
+            favoriteSignerInfo: {
+                companyName: '',
+                receiptNo: '',
+                email: ''
+            },
+            infoMsg: '',
+            confirmMsg: '',
+            isSuccess: true,
+            isSearchOptionsOpen: false,
+            isSearchSignerOptionsOpen: false,
+            isSubmitted: false,
+            searchResults: [],
+            searchKeywordTemp: 'c',
+            searchSignerKeywordTemp: 'c',
+            mailMsg: '',
+            currentlyCounter: -1,
+            actionMsg: {
+                QueryError: '搜尋失敗，原因：',
+                CreateError: '存檔失敗，原因：',
+                DeleteError: '存檔失敗，原因：',
+                SaveSuccess: '存檔完成',
+                DeleteConfirm: '確定要刪除'
+            }
+        },
+        async mounted() {
+            await this.queryList();
+        },
+        watch: {
+          'favoriteSignerInfo.companyName'() {
+            this.searchCompany();
+          },
+          'favoriteSignerInfo.email'() {
+            this.searchSigner();
+          }
+        },
+        methods: {
+            async postData(apiAction, data) {
+
+                this.isSuccess = true;
+                showLoading();
+                const result = await postData(this.apiPath + apiAction, data);
+                hideLoading();
+
+                if (result.hasError) {
+                    this.infoMsg = this.actionMsg[apiAction + 'Error'] + result.message;
+                    this.isSuccess = false;
+                    $('#infoModal').modal('show');
+                    return result;
+                }
+
+                return result;
+            },
+            async queryList() {
+                const result = await getData(this.apiPath + 'Query');
+
+                if (result.hasError) {
+                    return result;
+                }
+
+                this.favoriteSignerInfos = result.data;
+            },
+            async searchCompany() {
+
+                if (this.searchKeywordTemp == this.favoriteSignerInfo.companyName) {
+                    return;
+                }
+
+                const data = {
+                  Keyword: this.favoriteSignerInfo.companyName
+                };
+
+                const result = await postData(this.apiPath + 'SearchCompany', data);
+
+                if (result.hasError) {
+                    return result;
+                }
+
+                this.searchResults = result.data;
+                this.isSearchOptionsOpen = result.data.length > 0
+            },
+            setCompanyInfo(companyInfo) {
+                this.favoriteSignerInfo.companyName = companyInfo.companyName;
+                this.favoriteSignerInfo.receiptNo = companyInfo.receiptNo;
+                this.searchKeywordTemp = companyInfo.companyName;
+                this.isSearchOptionsOpen = false;
+            },
+            async searchSigner() {
+
+                if (this.searchSignerKeywordTemp == this.favoriteSignerInfo.email) {
+                    return;
+                }
+
+                const data = {
+                  Keyword: this.favoriteSignerInfo.email,
+                  ReceiptNo: this.favoriteSignerInfo.receiptNo
+                };
+
+                const result = await postData(this.apiPath + 'SearchSigner', data);
+
+                if (result.hasError) {
+                    return result;
+                }
+
+                this.searchResults = result.data;
+                this.isSearchSignerOptionsOpen = result.data.length > 0
+            },
+            setSignerInfo(signerInfo) {
+                this.favoriteSignerInfo.companyName = signerInfo.companyName;
+                this.favoriteSignerInfo.receiptNo = signerInfo.receiptNo;
+                this.favoriteSignerInfo.email = signerInfo.email;
+                this.searchSignerKeywordTemp = signerInfo.email;
+                this.isSearchSignerOptionsOpen = false;
+            },
+            async createData() {
+                this.isSubmitted = true;
+
+                if (!this.isValidField()) {
+                    return;
+                }
+
+                const result = await this.postData('Create', this.favoriteSignerInfo);
+
+                if (result.hasError) {
+                    return result;
+                }
+
+                this.isSubmitted = false;
+
+                this.infoMsg = this.actionMsg['SaveSuccess'];
+                $('#infoModal').modal('show');
+                $('#formModal').modal('hide');
+            },
+            async deleteSigner() {
+                $('#confirmModal').modal('hide');
+                const data = { KeyID: this.deleteInfo.keyID, ReceiptNo: this.deleteInfo.receiptNo };
+
+                const result = await this.postData('Delete', data);
+
+                if (result.hasError) {
+                    return result;
+                }
+
+                this.infoMsg = this.actionMsg['SaveSuccess'];
+                $('#infoModal').modal('show');
+            },
+            showCreateDialog() {
+                this.isSubmitted = false;
+                this.favoriteSignerInfo.companyName = '';
+                this.favoriteSignerInfo.receiptNo = '';
+                this.favoriteSignerInfo.email = '';
+                $('#formModal').modal('show');
+            },
+            openConfirmDialog(info) {
+                this.confirmMsg = `${this.actionMsg['DeleteConfirm']}：${info.email}？`;
+                this.deleteInfo = info;
+                $('#confirmModal').modal('show');
+            },
+            isValidField() {
+                let isValid = true;
+                if (!this.favoriteSignerInfo.companyName?.trim() || 
+                    !this.favoriteSignerInfo.receiptNo?.trim()) {
+                    isValid = false;
+                }
+
+                if (!this.favoriteSignerInfo.email?.trim()) {
+                    this.mailMsg = '請輸入Email'
+                    isValid = false;
+                    return isValid;
+                }
+
+                if (!this.isValidEmail(this.favoriteSignerInfo.email)) {
+                    this.mailMsg = 'Email格式錯誤'
+                    isValid = false;
+                    return isValid;
+                }
+
+                return isValid;
+            },
+            isValidEmail(email) {
+              return /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/.test(String(email).trim());
+            },
+            companyNamehandleBlur() {
+                this.isSearchOptionsOpen = false;
+                this.isSearchSignerOptionsOpen = false;
+            }
+        }
+    })
+</script>

@@ -11,6 +11,7 @@ using ContractHome.Models.Helper;
 using ContractHome.Properties;
 using ContractHome.Services.ContractCategroyManage;
 using ContractHome.Services.ContractService;
+using ContractHome.Services.FavoriteSignerManage;
 using ContractHome.Services.HttpChunk;
 using ContractHome.Services.Jobs;
 using ContractHome.Services.System;
@@ -173,6 +174,8 @@ namespace ContractHome
             services.AddScoped<IUserProfileService, UserProfileService>();
 
             services.AddScoped<IContractSearchService, ContractSearchService>();
+
+            services.AddScoped<IFavoriteSignerService, FavoriteSignerService>();
 
             services.AddScoped<ContractServices>();
             
