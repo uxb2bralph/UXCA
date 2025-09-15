@@ -11,7 +11,7 @@ namespace ContractHome.Services.FavoriteSignerManage
     {
         private readonly DCDataContext _db = db;
 
-        public void CreateFavoriteSigner(FavoriteSignerCreateRequest request)
+        public (int, int) CreateFavoriteSigner(FavoriteSignerCreateRequest request)
         {
             // 檢查簽署人是否已存在
             int signerUID = _db.UserProfile.Where(u => u.EMail == request.Email).Select(u => u.UID).FirstOrDefault();
@@ -33,7 +33,7 @@ namespace ContractHome.Services.FavoriteSignerManage
             {
                 // 直接忽視統編的檢查做存檔
                 CreateFavoriteSigner(signerUID, request.CreatorUID);
-                return;
+                return (signerUID, organizationUser.CompanyID);
             }
 
             // 檢查公司統編是否存在
@@ -42,7 +42,7 @@ namespace ContractHome.Services.FavoriteSignerManage
             if (companyID == 0)
             {
                 // 統編不存在 建立公司及關聯
-                CreateOrganizationAndUser(request.CompanyName, request.ReceiptNo, signerUID, request.CreatorUID);
+                companyID = CreateOrganizationAndUser(request.CompanyName, request.ReceiptNo, signerUID, request.CreatorUID);
             }
             else
             {
@@ -52,6 +52,8 @@ namespace ContractHome.Services.FavoriteSignerManage
 
             // 建立常用簽署人
             CreateFavoriteSigner(signerUID, request.CreatorUID);
+
+            return (signerUID, companyID);
         }
 
         public IEnumerable<FavoriteSignerInfoModel> QueryFavoriteSigner(int creatorUID)
@@ -64,7 +66,9 @@ namespace ContractHome.Services.FavoriteSignerManage
                          select new FavoriteSignerInfoModel
                          {
                              KeyID = f.FavoriteSignerID.EncryptKey(),
+                             SignerKeyID = u.UID.EncryptKey(),
                              Email = u.EMail,
+                             CompanyKeyID = o.CompanyID.EncryptKey(),
                              CompanyName = o.CompanyName,
                              ReceiptNo = o.ReceiptNo
                          };
@@ -101,6 +105,16 @@ namespace ContractHome.Services.FavoriteSignerManage
 
         private void CreateFavoriteSigner(int signerUID, int createUID)
         {
+            var query = from f in _db.FavoriteSigner
+                        where f.SignerUID == signerUID && f.CreateUID == createUID
+                        select f;
+
+            if (query.Any())
+            {
+                // 已存在不重複建立
+                return;
+            }
+
             // 建立常用簽署人
             FavoriteSigner favoriteSigner = new()
             {
@@ -140,10 +154,11 @@ namespace ContractHome.Services.FavoriteSignerManage
             _db.SubmitChanges();
         }
 
-        private void CreateOrganizationAndUser(string companyName, string receiptNo, int signerUID, int createUID)
+        private int CreateOrganizationAndUser(string companyName, string receiptNo, int signerUID, int createUID)
         {
             int companyID = CreateOrganization(companyName, receiptNo, createUID);
             CreateOrganizationUser(companyID, signerUID);
+            return companyID;
         }
 
         public void DeleteFavoriteSigner(FavoriteSignerDeleteRequest request)
@@ -222,7 +237,7 @@ namespace ContractHome.Services.FavoriteSignerManage
 
         public IEnumerable<SignerInfoModel> SearchSigner(QueryInfoModel query)
         {
-            if (string.IsNullOrEmpty(query.ReceiptNo) && string.IsNullOrEmpty(query.Keyword))
+            if (string.IsNullOrEmpty(query.Keyword) && string.IsNullOrEmpty(query.Email) && string.IsNullOrEmpty(query.ReceiptNo))
             {
                 return [];
             }
@@ -235,16 +250,24 @@ namespace ContractHome.Services.FavoriteSignerManage
                              Email = u.EMail,
                              CompanyName = o.CompanyName,
                              ReceiptNo = o.ReceiptNo,
+                             CompanyKeyID = o.CompanyID.EncryptKey()
                          };
+
+            if (!string.IsNullOrEmpty(query.Keyword))
+            {
+                result = result.Where(x => x.CompanyName.Contains(query.Keyword) || 
+                                           x.Email.Contains(query.Keyword) || 
+                                           x.ReceiptNo.Contains(query.Keyword));
+            }
 
             if (!string.IsNullOrEmpty(query.ReceiptNo))
             {
                 result = result.Where(x => x.ReceiptNo.Contains(query.ReceiptNo));
             }
 
-            if (!string.IsNullOrEmpty(query.Keyword))
+            if (!string.IsNullOrEmpty(query.Email))
             {
-                result = result.Where(x => x.Email.Contains(query.Keyword));
+                result = result.Where(x => x.Email.Contains(query.Email));
             }
 
             return result.ToList();

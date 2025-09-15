@@ -4,7 +4,7 @@ namespace ContractHome.Services.FavoriteSignerManage
 {
     public interface IFavoriteSignerService
     {
-        public void CreateFavoriteSigner(FavoriteSignerCreateRequest request);
+        public (int, int) CreateFavoriteSigner(FavoriteSignerCreateRequest request);
 
         public IEnumerable<FavoriteSignerInfoModel> QueryFavoriteSigner(int creatorUID);
 

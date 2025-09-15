@@ -31,6 +31,11 @@ namespace ContractHome.Services.FavoriteSignerManage
             [JsonIgnore]
             public int CreatorUID { get; set; } = -1;
 
+            [JsonIgnore]
+            public int CompanyID => (!string.IsNullOrEmpty(CompanyKeyID)) ? CompanyKeyID.DecryptKeyValue() : -1;
+
+            public string CompanyKeyID { get; set; } = string.Empty;
+
             public string SignerKeyID { get; set; } = string.Empty;
 
             public string CreatorKeyID { get; set; } = string.Empty;
@@ -81,14 +86,17 @@ namespace ContractHome.Services.FavoriteSignerManage
             /// 統編
             /// </summary>
             public string ReceiptNo { get; set; } = string.Empty;
+            [JsonIgnore]
+            public int CompanyID => (!string.IsNullOrEmpty(CompanyKeyID)) ? CompanyKeyID.DecryptKeyValue() : -1;
+
+            public string CompanyKeyID { get; set; } = string.Empty;
         }
 
         public class  QueryInfoModel 
         {
-            /// <summary>
-            /// 公司名稱
-            /// </summary>
             public string Keyword { get; set; } = string.Empty;
+
+            public string Email { get; set; } = string.Empty;
 
             public string ReceiptNo { get; set; } = string.Empty;
         }

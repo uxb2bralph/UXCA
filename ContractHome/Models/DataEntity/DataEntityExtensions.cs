@@ -110,6 +110,10 @@ namespace ContractHome.Models.DataEntity
         public bool IsSysAdmin { get; set; } = false;
 
         public bool IsMemberAdmin { get; set; } = false;
+
+        public string UserCompanyName { get; set; } = string.Empty;
+
+        public string UserCompanyReceiptNo { get; set; } = string.Empty;
     }
 
     public partial class CDS_Document

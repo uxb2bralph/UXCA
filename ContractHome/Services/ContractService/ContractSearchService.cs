@@ -298,7 +298,8 @@ namespace ContractHome.Services.ContractService
                                   o.CompanyName,
                                   o.ReceiptNo,
                                   PID = "",
-                                  p.IsInitiator
+                                  p.IsInitiator,
+                                  email = ""
                               };
 
             // 取出 合約的 甲方 乙方 簽約資訊 指定簽署人
@@ -318,7 +319,8 @@ namespace ContractHome.Services.ContractService
                                 o.CompanyName,
                                 o.ReceiptNo,
                                 u.PID,
-                                p.IsInitiator
+                                p.IsInitiator,
+                                email = u.EMail
                             };
 
             // 合併兩個簽約資訊
@@ -341,7 +343,8 @@ namespace ContractHome.Services.ContractService
                                     x.SignatureDate,
                                     x.StampDate,
                                     x.PID,
-                                    x.IsInitiator
+                                    x.IsInitiator,
+                                    x.email
                                 }
                                 )
                                 .ToList()
@@ -359,7 +362,7 @@ namespace ContractHome.Services.ContractService
                         KeyID = s.CompanyID.EncryptKey(),
                         ContractID = s.ContractID,
                         SignerID = s.PID,
-                        CompanyName = $"{s.CompanyName} ({s.ReceiptNo})",
+                        CompanyName = $"{s.CompanyName} ({s.ReceiptNo})" + ((string.IsNullOrEmpty(s.email)) ? "" : " " + s.email),
                         StampDate = s.StampDate?.ToString("yyyy/MM/dd HH:mm") ?? string.Empty,
                         SignerDate = s.SignatureDate?.ToString("yyyy/MM/dd HH:mm") ?? string.Empty,
                         Step = GetPartyRefStep(contract.CurrentStep ?? 0, contract.IsPassStamp, s.IsInitiator, s.StampDate, s.SignatureDate),

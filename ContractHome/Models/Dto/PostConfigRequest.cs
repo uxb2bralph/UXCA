@@ -8,6 +8,27 @@ using System.Globalization;
 
 namespace ContractHome.Models.Dto
 {
+    /// <summary>
+    /// 簽署人資訊
+    /// </summary>
+    public class SignerInfoModel
+    {
+        /// <summary>
+        /// 公司名稱
+        /// </summary>
+        public string CompanyName { get; set; } = string.Empty;
+        /// <summary>
+        /// 公司統編
+        /// </summary>
+        public string ReceiptNo { get; set; } = string.Empty;
+        /// <summary>
+        /// Email
+        /// </summary>
+        public string Email { get; set; } = string.Empty;
+
+        public bool IsInitiator { get; set; } = false;
+    }
+
     public class PostConfigRequest
     {
         public string ContractID { get; set; }
@@ -19,22 +40,8 @@ namespace ContractHome.Models.Dto
         public string ContractNo { get; set; }
         public string? ExpiryDateTime { get; set; }
         public bool IsPassStamp { get; set; }
-        public IEnumerable<string> Signatories { get; set; }
+        public IEnumerable<SignerInfoModel> Signatories { get; set; }
         public string? EncUID { get; set; }
-
-
-        public PostConfigRequest(string contractID, string title, string contractNo, string expiryDateTime,
-            bool isPassStamp,
-            IEnumerable<string> signatories)
-        {
-            ContractID = contractID;
-            Title = title;
-            ContractNo = contractNo;
-            ExpiryDateTime = expiryDateTime;
-            IsPassStamp = isPassStamp;
-            Signatories = signatories;
-        }
-
 
         public class Validator:AbstractValidator<PostConfigRequest>
         {
@@ -51,15 +58,13 @@ namespace ContractHome.Models.Dto
                 this.RuleFor(x => x.ContractNo)
                     .NotEmpty();
 
-                this.RuleForEach(x => x.Signatories)
-                    .NotEmpty()
-                    .Must(y => GeneralValidator.TryDecryptKeyValue(y));
+                this.RuleFor(x => x)
+                    .Must(y => CheckSignerInfo(y.Signatories))
+                    .WithMessage("簽署人資訊不完整或Email格式錯誤");
 
-                //this.RuleFor(x => x.ExpiryDateTime)
-                //    .NotNull()
-                //    .Must(y => DateTime.TryParseExact(y, "yyyy/MM/dd", null,
-                //            DateTimeStyles.None, out DateTime result))
-                //    .Must(y => GeneralValidator.MustAfterOrIsToday(y));
+                this.RuleFor(x => x)
+                    .Must(y => CheckDuplicateSignerInfo(y.Signatories))
+                    .WithMessage("簽署人公司統編或Email重複");
 
                 this.RuleFor(x => x.ExpiryDateTime)
                     .Must(date => CheckExpiryDateTime(date))
@@ -69,19 +74,40 @@ namespace ContractHome.Models.Dto
                     .NotNull();
             }
 
+            private bool CheckSignerInfo(IEnumerable<SignerInfoModel> signatories)
+            {
+                foreach (var signer in signatories)
+                {
+                    if (string.IsNullOrEmpty(signer.CompanyName) ||
+                        string.IsNullOrEmpty(signer.ReceiptNo) ||
+                        string.IsNullOrEmpty(signer.Email) ||
+                        !new EmailAddressAttribute().IsValid(signer.Email))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            // 檢查公司統編及Email是否重複
+            private bool CheckDuplicateSignerInfo(IEnumerable<SignerInfoModel> signatories)
+            {
+                var companySet = new HashSet<string>();
+                var emailSet = new HashSet<string>();
+                foreach (var signer in signatories)
+                {
+                    if (!companySet.Add(signer.ReceiptNo) || !emailSet.Add(signer.Email))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
             private bool CheckExpiryDateTime(string date)
             {
-                if (string.IsNullOrEmpty(date))
-                {
-                    return true;
-                }
-
-                if (GeneralValidator.MustAfterOrIsToday(date))
-                {
-                    return true;
-                }
-
-                return false;
+                return string.IsNullOrEmpty(date) || GeneralValidator.MustAfterOrIsToday(date);
             }
         }
     }

@@ -546,7 +546,7 @@ html, body {
 }
 @media (min-width: 1200px) {
   .contract__wrapper {
-    width: calc(100% - 400px);
+    width: calc(100% - 550px);
     height: 100%;
   }
 }
@@ -570,7 +570,7 @@ html, body {
 }
 @media (min-width: 1200px) {
   .options__wrapper {
-    width: 400px;
+    width: 550px;
   }
 }
 .options--show {

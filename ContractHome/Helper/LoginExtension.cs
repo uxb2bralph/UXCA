@@ -16,8 +16,8 @@ namespace ContractHome.Helper
             //帳密都輸入正確，ASP.net Core要多寫三行程式碼
             bool isSysAdmin = profile.IsSysAdmin();
             Claim[] claims = new[] {
-                new Claim("UID", profile.UID.ToString()), //這是系統預設的ClaimTypes
-                new Claim("Name", profile.PID), 
+                new Claim("Name", profile.PID),
+                new Claim("UID", profile.UID.ToString()),
                 new Claim("IsAdmin", isSysAdmin.ToString()),
                 new Claim("RoleIDs", profile.GetRoleIDs())
             }; //Key取名"Name"，在登入後的頁面，讀取登入者的帳號會用得到，自己先記在大腦
@@ -37,13 +37,18 @@ namespace ContractHome.Helper
 
             string enPid = profile.PID.EncryptData();
 
-            profile.CurrentCompanyID = profile.GetCompanyID();
+            var organization = profile.GetOrganization();
+
+            profile.CurrentCompanyID = organization.CompanyID;
             profile.CategoryPermission = profile.GetCategoryPermission();
 
             int roleID = profile.GetUserRole().RoleID;
 
             profile.IsSysAdmin = roleID == (int)UserRoleDefinition.RoleEnum.SystemAdmin;
             profile.IsMemberAdmin = roleID == (int)UserRoleDefinition.RoleEnum.MemberAdmin;
+
+            profile.UserCompanyName = organization.CompanyName;
+            profile.UserCompanyReceiptNo = organization.ReceiptNo;
 
             context.Response.Cookies.Append("userID", enPid,
             new CookieOptions

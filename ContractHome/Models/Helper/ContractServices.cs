@@ -1,28 +1,29 @@
 ﻿using CommonLib.Core.Utility;
 using CommonLib.DataAccess;
 using CommonLib.Utility;
+using ContractHome.Controllers;
 using ContractHome.Helper;
-using ContractHome.Models.DataEntity;
-using ContractHome.Models.Email.Template;
-using ContractHome.Models.Email;
-using ContractHome.Models.ViewModel;
-using Newtonsoft.Json;
-using ContractHome.Models.Dto;
-using Microsoft.EntityFrameworkCore;
-using static ContractHome.Models.Dto.PostFieldSettingRequest;
-using Wangkanai.Detection.Services;
-using ContractHome.Models.Cache;
-using Microsoft.AspNetCore.Authorization;
-using static ContractHome.Helper.JwtTokenGenerator;
 using ContractHome.Helper.DataQuery;
+using ContractHome.Models.Cache;
+using ContractHome.Models.DataEntity;
+using ContractHome.Models.Dto;
+using ContractHome.Models.Email;
+using ContractHome.Models.Email.Template;
+using ContractHome.Models.ViewModel;
 using ContractHome.Properties;
-using System.Text;
+using ContractHome.Services.FavoriteSignerManage;
+using DocumentFormat.OpenXml.Drawing;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
+using Wangkanai.Detection.Services;
+using static ContractHome.Helper.JwtTokenGenerator;
 using static ContractHome.Models.DataEntity.CDS_Document;
-using DocumentFormat.OpenXml.Drawing;
-using ContractHome.Controllers;
-using System.Diagnostics.CodeAnalysis;
+using static ContractHome.Models.Dto.PostFieldSettingRequest;
 
 namespace ContractHome.Models.Helper
 {
@@ -35,13 +36,15 @@ namespace ContractHome.Models.Helper
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly BaseResponse _baseResponse;
         private readonly EmailFactory _emailContentFactories;
+        private readonly IFavoriteSignerService _favoriteSignerService;
 
         public ContractServices(IEmailBodyBuilder emailBody,
             EmailFactory emailFactory,
             IDetectionService detectionService,
             IHttpContextAccessor httpContextAccessor, 
             EmailFactory emailContentFactories,
-            BaseResponse baseResponse
+            BaseResponse baseResponse,
+            IFavoriteSignerService favoriteSignerService
             ) 
         {
             _baseResponse = baseResponse;
@@ -49,6 +52,7 @@ namespace ContractHome.Models.Helper
             _detectionService = detectionService;
             _httpContextAccessor = httpContextAccessor;
             _emailContentFactories = emailContentFactories;
+            _favoriteSignerService = favoriteSignerService;
         }
 
         private string _clientDevice => $"{_detectionService.Platform.Name} {_detectionService.Platform.Version.ToString()}/{_detectionService.Browser.Name}";
@@ -813,15 +817,14 @@ namespace ContractHome.Models.Helper
 
         }
 
-        public Contract SetConfigAndSave(Contract contract, PostConfigRequest req, int uid)
+        public Contract SetConfigAndSave(Contract contract, PostConfigRequest req, int createID)
         {
             contract.ContractNo = req.ContractNo;
             contract.ContractCategoryID = req.ContractCategoryID;
             contract.Title = req.Title;
             contract.IsPassStamp = req.IsPassStamp;
-            req.Signatories.ForEach(x => {
-                AddParty(contract, x.DecryptKeyValue());
-            });
+
+            AddSigner(contract, req.Signatories, createID);
 
             if (!string.IsNullOrWhiteSpace(req.ExpiryDateTime))
             {
@@ -829,9 +832,37 @@ namespace ContractHome.Models.Helper
             }
             SaveContract();
 
-            CDS_DocumentTransitStep(contract, uid, CDS_Document.StepEnum.Config);
+            CDS_DocumentTransitStep(contract, createID, CDS_Document.StepEnum.Config);
 
             return contract;
+        }
+
+        private void AddSigner(Contract contract, IEnumerable<SignerInfoModel> signatories, int createID)
+        {
+            FavoriteSignerCreateRequest request = new();
+            foreach (var signer in signatories)
+            {
+                request.CompanyName = signer.CompanyName;
+                request.ReceiptNo = signer.ReceiptNo;
+                request.Email = signer.Email;
+                request.CreatorUID = createID;
+
+                var (signerID, companyID) = _favoriteSignerService.CreateFavoriteSigner(request);
+
+                contract.ContractingParty.Add(new ContractingParty
+                {
+                    CompanyID = companyID,
+                    IntentID = (signer.IsInitiator) ? 1 : 2,
+                    IsInitiator = signer.IsInitiator,
+                });
+
+                contract.ContractSignatureRequest.Add(new ContractSignatureRequest
+                {
+                    CompanyID = companyID,
+                    SignerID = signerID,
+                    StampDate = (contract.IsPassStamp == true) ? DateTime.Now : null,
+                });
+            }
         }
 
         public void CDS_DocumentTransitStep(

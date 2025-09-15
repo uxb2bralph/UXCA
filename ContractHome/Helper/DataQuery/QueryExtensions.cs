@@ -11,16 +11,17 @@ namespace ContractHome.Helper.DataQuery
             return models.GetTable<UserProfile>().Where(u => u.UID == profile.UID).First();
         }
 
-        public static int GetCompanyID(this UserProfile profile)
+        public static Organization? GetOrganization(this UserProfile profile)
         {
             using var db = new DCDataContext();
 
-            var companyID = (from u in db.UserProfile
-                         join o in db.OrganizationUser on u.UID equals o.UID
-                         where u.UID == profile.UID
-                         select o.CompanyID).FirstOrDefault();
+            var organization = (from u in db.UserProfile
+                             join ou in db.OrganizationUser on u.UID equals ou.UID
+                             join o in db.Organization on ou.CompanyID equals o.CompanyID
+                             where u.UID == profile.UID
+                             select o).FirstOrDefault();
 
-            return companyID;
+            return organization;
         }
 
         public static List<int> GetCategoryPermission(this UserProfile profile)

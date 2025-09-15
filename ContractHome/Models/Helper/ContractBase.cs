@@ -31,6 +31,8 @@ namespace ContractHome.Models.Helper
                 SignerDate = initiatContractSignatureRequest.SignatureDate.HasValue ?
                     initiatContractSignatureRequest?.SignatureDate.Value.ToString("yyyy/MM/dd HH:mm") : string.Empty;
                 SignerID = initiatContractSignatureRequest?.UserProfile?.PID ?? string.Empty;
+
+                Name += " " + initiatContractSignatureRequest?.UserProfile?.EMail ?? string.Empty;
                 //if ((Step == (int)StepEnum.Sealing) && (!string.IsNullOrEmpty(StampDate)))
                 //{
                 //    Step = (int)StepEnum.Sealed; 
