@@ -137,6 +137,7 @@
         rememberAccount: false,
         validCode: null,
         encryptedCode: '@Html.Raw(_encryptedCode)',
+        returnUrl: '@Context.Request.Query["ReturnUrl"]'
       },
       isPid: true,
       isPassword: true,
@@ -185,7 +186,6 @@
             hideLoading();
             if ($.isPlainObject(data)) {
               if (data.result) {
-                showLoading();
                 // 記住帳號
                 if (self.formData.rememberAccount) {
                    localStorage.setItem("SavedAccount", self.formData.pid);
@@ -193,7 +193,12 @@
                    localStorage.removeItem("SavedAccount");
                 }
                 // 成功導頁
-                window.location.href = data.message;
+                window.location.href = (self.formData.returnUrl !== '') ? self.formData.returnUrl : data.message;
+
+                setTimeout(() => {
+                   window.close();
+                }, 4000);
+
               } else {
                 // 失敗
                 self.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;
