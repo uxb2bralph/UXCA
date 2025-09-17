@@ -1,0 +1,121 @@
+﻿@using ContractHome.Models.DataEntity
+@using ContractHome.Helper;
+@{
+    Layout = "~/Views/Shared/BlankPage.cshtml";
+    <script src="~/js/api.js"></script>
+    string virtualPath = Context.Request.PathBase.ToString();
+}
+<main id="contractDownload" class="fullHeight ">
+    <div class="login__forgetPassword">
+        <form ref="form" autocomplete="off">
+            <div class="card mx-3 mb-3 p-5 shadow">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <h3 class="py-3 text-center fw-bolder">請先登入再做下載</h3>
+                        </div>
+                        <div class="col-12 input__loginHeight">
+                            <label for="PID" class="fw-bolder">帳號</label>
+                            <input v-model.trim="form.PID" type="text" id="PID"
+                                   class="form-control form-control-sm" placeholder="請輸入帳號" :class="{'is-invalid': pidMsg !== ''}"
+                                   v-on:keyup="checkPID(form.PID)" />
+                            <div class="invalid-feedback text-end">
+                                {{ pidMsg }}
+                            </div>
+                        </div>
+                        <div class="col-12 input__loginHeight">
+                            <label for="newPassword" class="fw-bolder">密碼</label>
+                            <input v-model.trim="form.Password" type="password" id="Password"
+                                   class="form-control form-control-sm" placeholder="請輸入密碼" :class="{'is-invalid': passwordMsg !== ''}"
+                                   v-on:keyup="checkPassword(form.Password)" />
+                            <div class="invalid-feedback text-end">
+                                {{ passwordMsg }}
+                            </div>
+                        </div>
+                        <div class="col-12 pt-4">
+                            <button type="button" class="btn btn-lg btn-primary w-100" v-on:click="loginHandler" elevation="2">
+                                送出
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <!-- 訊息 Dialog -->
+        <div class="modal fade" id="infoModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+             aria-labelledby="infoModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body text-center h5 fw-bolder pt-5">
+                        <div v-html="infoMsg"></div>
+                    </div>
+                    <div class="modal-footer border-top-0 justify-content-center">
+                        <button v-if="loginSucess" type="button" class="btn btn-primary" v-on:click="download">下載檔案</button>
+                        <button v-else type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<script>
+    var app = new Vue({
+      el: '#contractDownload',
+      data: {
+        pidMsg: '',
+        passwordMsg: '',
+        form: {
+          PID: '',
+          Password: '',
+        },
+        loginSucess: false,
+        infoMsg: null
+      },
+      methods: {
+        checkPID() {
+          this.pidMsg = '';
+
+          if (this.form.PID === '') {
+             this.pidMsg = '請輸入帳號';
+             return;
+          }
+        },
+        checkPassword() {
+          this.passwordMsg = '';
+
+          if (this.form.Password === '') {
+             this.passwordMsg = '請輸入密碼';
+             return;
+          }
+        },
+        // 送出表單
+        loginHandler() {
+
+          this.checkPID();
+          this.checkPassword();
+
+          if (this.pidMsg !== '' || this.passwordMsg !== '') return;
+
+          showLoading();
+          postData('@($"{virtualPath}/api/ContractDownload/login")', { ...this.form })
+            .then((data) => {
+              hideLoading();
+              this.loginSucess = data.result;
+              if (data.result) {
+                // 成功
+                this.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"> 登入成功 </div>`;
+              } else {
+                // 失敗
+                this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;
+              }
+
+              $("#infoModal").modal("show");
+            })
+        },
+        download() {
+            let action = ('@Context.Request.Query["type"]' === 'footprints') ? 'DownloadFootprints' : 'DownloadContract';
+            window.location.href = `@virtualPath/api/ContractDownload/${action}?token=@Context.Request.Query["token"]`;
+        }
+      }
+    });
+</script>

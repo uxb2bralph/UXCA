@@ -37,8 +37,8 @@ namespace ContractHome.Models.Email.Template
         };
 
         var jwtToken = JwtTokenGenerator.GenerateJwtToken(jwtPayloadData, 10080);
-        var downloadContractLink = $"{Settings.Default.WebAppDomain}/api/ContractDownload/DownloadContract?token={JwtTokenGenerator.Base64UrlEncode((jwtToken.EncryptData()))}";
-        var downloadFootprintsLink = $"{Settings.Default.WebAppDomain}/api/ContractDownload/DownloadFootprints?token={JwtTokenGenerator.Base64UrlEncode((jwtToken.EncryptData()))}";
+        var downloadContractLink = $"{Settings.Default.WebAppDomain}/ContractDownload?type=contract&token={JwtTokenGenerator.Base64UrlEncode((jwtToken.EncryptData()))}";
+        var downloadFootprintsLink = $"{Settings.Default.WebAppDomain}/ContractDownload?type=footprints&token={JwtTokenGenerator.Base64UrlEncode((jwtToken.EncryptData()))}";
 
         this.EmailBody = _emailBodyBuilder
         .SetTemplateItem(this.GetType().Name)

@@ -4,6 +4,7 @@ using ContractHome.Models.Dto;
 using ContractHome.Models.Helper;
 using ContractHome.Models.ViewModel;
 using ContractHome.Services.ContractService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Web;
@@ -21,7 +22,7 @@ namespace ContractHome.ApiControllers
         private readonly ICustomContractService _customContractService = _customContractService;
         private readonly IDetectionService _detectionService = detectionService;
 
-        private Contract? GetContract(string token, bool isDownloadContract = true)
+        private async Task<Contract?> GetContractAsync(string token, bool isDownloadContract = true)
         {
             (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile)
                     = _contractServices.TokenDownloadValidate(JwtTokenValidator.Base64UrlDecodeToString(token).DecryptData());
@@ -42,6 +43,13 @@ namespace ContractHome.ApiControllers
                 return null;
             }
 
+            var profile = await HttpContext.GetUserAsync();
+
+            if (profile == null)
+            {
+                return null;
+            } 
+
             contract.CDS_Document.DocumentProcessLog.Add(new DocumentProcessLog
             {
                 LogDate = DateTime.Now,
@@ -57,9 +65,10 @@ namespace ContractHome.ApiControllers
 
         [HttpGet]
         [Route("DownloadContract")]
+        [Authorize]
         public async Task<IActionResult> DownloadContractAsync(string token)
         {
-            Contract? contract = GetContract(token, true);
+            Contract? contract = await GetContractAsync(token, true);
 
             if (contract == null)
             {
@@ -73,9 +82,10 @@ namespace ContractHome.ApiControllers
 
         [HttpGet]
         [Route("DownloadFootprints")]
+        [Authorize]
         public async Task<IActionResult> DownloadFootprintsAsync(string token)
         {
-            Contract? contract = GetContract(token, false);
+            Contract? contract = await GetContractAsync(token, false);
 
             if (contract == null)
             {
@@ -85,6 +95,20 @@ namespace ContractHome.ApiControllers
             var pdfDoc = await _customContractService.GetFootprintsPdfDocument(contract);
 
             return File(pdfDoc.Stream.ToArray(), "application/pdf", $"{HttpUtility.UrlEncode(contract.ContractNo)}_history.pdf");
+        }
+
+        [HttpPost]
+        [Route("login")]
+        public IActionResult Login([FromBody] DownloadLoginViewModel viewModel)
+        {
+            var login = new LoginHandler(this);
+
+            if (!login.ProcessLogin(viewModel.PID, viewModel.Password, out string msg))
+            {
+                return Ok(new { result = false, message = msg });
+            }
+
+            return Ok(new { result = true, message = "登入成功" });
         }
     }
 }

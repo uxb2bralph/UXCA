@@ -179,6 +179,18 @@ namespace ContractHome.Models.ViewModel
         public Object? Value { get; set; }
     }
 
+    public class DownloadLoginViewModel
+    {
+        [Required(ErrorMessage = "Please enter {0}")]
+        [Display(Name = "PID")]
+        //[EmailAddress]
+        public string PID { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Please enter {0}")]
+        [DataType(System.ComponentModel.DataAnnotations.DataType.Password)]
+        [Display(Name = "Password")]
+        public string Password { get; set; } = string.Empty;
+    }
+
     public class LoginViewModel : QueryViewModel
     {
         [Required(ErrorMessage = "Please enter {0}")]
