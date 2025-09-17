@@ -114,7 +114,10 @@
                   </li>
                 }
                 <li><a class="dropdown-item" href="@Html.Raw(Url.Action("MaintainSeal","Organization"))">印鑑檔管理</a></li>
-                <li><a class="dropdown-item" href="@Html.Raw(Url.Action("FavoriteSignerList","FavoriteSigner"))">常用簽署人管理</a></li>
+                @if (profile.CanCreateContract())
+                {
+                    <li><a class="dropdown-item" href="@Html.Raw(Url.Action("FavoriteSignerList","FavoriteSigner"))">常用簽署人管理</a></li>
+                }
                 <li>
                   <hr class="dropdown-divider">
                 </li>
