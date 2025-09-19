@@ -194,14 +194,14 @@ namespace ContractHome.Models.Helper
             return contract;
         }
 
-        public (BaseResponse, Contract, UserProfile) CanPdfDigitalSign(int? contractID)
+        public async Task<(BaseResponse, Contract, UserProfile)> CanPdfDigitalSignAsync(int? contractID)
         {
             if (contractID == null || contractID == 0)
             {
                 return (new BaseResponse(reason: WebReasonEnum.ContractNotExisted), null, null);
             }
 
-            var profile = (_httpContextAccessor.HttpContext.GetUserAsync().Result).LoadInstance(_models);
+            var profile = await _httpContextAccessor.HttpContext.GetUserAsync();
             if (profile == null)
             {
                 return (new BaseResponse(reason: WebReasonEnum.Relogin), null, null);
@@ -231,7 +231,7 @@ namespace ContractHome.Models.Helper
             }
 
             if (item.ContractSignatureRequest
-                        .Where(x => x.CompanyID == profile.CompanyID)
+                        .Where(x => x.CompanyID == profile.UserCompanyID)
                         .Where(x => x.SignatureDate != null).Count() > 0)
             {
                 return (new BaseResponse(true, "合約已完成簽署, 無法再次簽署.").AddContractMessage(item), item, profile);
@@ -241,14 +241,15 @@ namespace ContractHome.Models.Helper
         }
 
 
-        public (BaseResponse, Contract, UserProfile)  CanPdfSeal(int? contractID)
+        public async Task<(BaseResponse, Contract, UserProfile)> CanPdfSealAsync(int? contractID)
         {
             if (contractID==null||contractID == 0)
             {
                 return (new BaseResponse(reason: WebReasonEnum.ContractNotExisted), null, null);
             }
 
-            var profile = (_httpContextAccessor.HttpContext.GetUserAsync().Result).LoadInstance(_models);
+            var profile = await _httpContextAccessor.HttpContext.GetUserAsync();
+
             if (profile == null)
             {
                 return (new BaseResponse(reason: WebReasonEnum.Relogin),null,null);
@@ -273,7 +274,7 @@ namespace ContractHome.Models.Helper
             }
 
             if (item.ContractSignatureRequest
-                        .Where(x => x.CompanyID == profile.CompanyID)
+                        .Where(x => x.CompanyID == profile.UserCompanyID)
                         .Where(x => x.StampDate != null).Count() > 0)
             {
                 return (new BaseResponse(true, "合約已完成用印, 無法再次用印.").AddContractMessage(item), item, profile);

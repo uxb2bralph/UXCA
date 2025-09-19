@@ -422,7 +422,7 @@ namespace ContractHome.Services.ContractService
             }
 
             searchModel.SearchUID = profile.UID;
-            searchModel.SearchCompanyID = profile.CurrentCompanyID;
+            searchModel.SearchCompanyID = profile.UserCompanyID;
             // 一般使用者追加分類條件
             if (!profile.IsMemberAdmin)
             {
@@ -443,7 +443,7 @@ namespace ContractHome.Services.ContractService
 
             searchModel.QueryStep = CDS_Document.PendingState;
             searchModel.SearchUID = profile.UID;
-            searchModel.SearchCompanyID = profile.CurrentCompanyID;
+            searchModel.SearchCompanyID = profile.UserCompanyID;
             searchModel.ContractCategoryID = (searchModel.ContractCategoryID.Count > 0) ?
                                              [.. searchModel.ContractCategoryID.Intersect(profile.CategoryPermission)]
                                              : profile.CategoryPermission;

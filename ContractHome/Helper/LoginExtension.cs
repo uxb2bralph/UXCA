@@ -35,11 +35,13 @@ namespace ContractHome.Helper
                     ExpiresUtc = DateTime.UtcNow.AddMinutes(loginExpireMinute)
                 });
 
+            context.User = principal;
+
             string enPid = profile.PID.EncryptData();
 
             var organization = profile.GetOrganization();
 
-            profile.CurrentCompanyID = organization.CompanyID;
+            profile.UserCompanyID = organization.CompanyID;
             profile.CategoryPermission = profile.GetCategoryPermission();
 
             int roleID = profile.GetUserRole().RoleID;

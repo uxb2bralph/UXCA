@@ -103,13 +103,13 @@ namespace ContractHome.Models.DataEntity
         public Organization? Organization =>
             (OrganizationUser != null) ? OrganizationUser.Organization : null;
 
-        public int CurrentCompanyID { get; set; }
-
         public List<int> CategoryPermission { get; set; } = new List<int>();
 
         public bool IsSysAdmin { get; set; } = false;
 
         public bool IsMemberAdmin { get; set; } = false;
+
+        public int UserCompanyID { get; set; }
 
         public string UserCompanyName { get; set; } = string.Empty;
 

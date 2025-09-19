@@ -961,7 +961,7 @@ namespace ContractHome.Controllers
 
             //wait to do:Trust進來可能沒有正常user權限,
             //但因為controller都有用var profile = await HttpContext.GetUserAsync();, 暫時先用
-            HttpContext.SignOnAsync(userProfile);
+            await HttpContext.SignOnAsync(userProfile);
 
             if (userProfile.PasswordUpdatedDate == null)
             {
@@ -979,10 +979,9 @@ namespace ContractHome.Controllers
 
             if (jwtTokenObj.IsSign)
             {
-
                 _contractServices.SetModels(models);
                 ( resp, Contract contract, userProfile) =
-                     _contractServices.CanPdfDigitalSign(contractID: jwtTokenObj.ContractID.DecryptKeyValue());
+                    await _contractServices.CanPdfDigitalSignAsync(contractID: jwtTokenObj.ContractID.DecryptKeyValue());
 
                 if (resp.HasError)
                 {
@@ -995,7 +994,7 @@ namespace ContractHome.Controllers
 
                     ContractNo = contract.ContractNo,
                     ContractTitle = contract.Title,
-                    CompanyName = userProfile.CompanyName,
+                    CompanyName = userProfile.UserCompanyName,
                     ContractID = jwtTokenObj.ContractID
                 };
 
@@ -1021,7 +1020,7 @@ namespace ContractHome.Controllers
 
             _contractServices.SetModels(models);
             (BaseResponse resp, Contract contract, UserProfile userProfile) = 
-                 _contractServices.CanPdfSeal(contractID: contractID);
+                 await _contractServices.CanPdfSealAsync(contractID: contractID);
 
             if (resp.HasError)
             {
