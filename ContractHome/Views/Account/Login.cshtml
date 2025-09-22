@@ -195,10 +195,6 @@
                 // 成功導頁
                 window.location.href = (self.formData.returnUrl !== '') ? self.formData.returnUrl : data.message;
 
-                setTimeout(() => {
-                   window.close();
-                }, 4000);
-
               } else {
                 // 失敗
                 self.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${data.message.replace(/、/g, '<br>')} </div>`;
