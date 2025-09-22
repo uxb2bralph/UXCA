@@ -41,16 +41,16 @@ namespace ContractHome.Helper
 
             var organization = profile.GetOrganization();
 
-            profile.UserCompanyID = organization.CompanyID;
-            profile.CategoryPermission = profile.GetCategoryPermission();
+            profile.UserCompanyID = (organization == null) ? 0 : organization.CompanyID;
+            profile.CategoryPermission = (organization == null) ? [] : profile.GetCategoryPermission();
 
             int roleID = profile.GetUserRole().RoleID;
 
             profile.IsSysAdmin = roleID == (int)UserRoleDefinition.RoleEnum.SystemAdmin;
             profile.IsMemberAdmin = roleID == (int)UserRoleDefinition.RoleEnum.MemberAdmin;
 
-            profile.UserCompanyName = organization.CompanyName;
-            profile.UserCompanyReceiptNo = organization.ReceiptNo;
+            profile.UserCompanyName = (organization == null) ? string.Empty : organization.CompanyName;
+            profile.UserCompanyReceiptNo = (organization == null) ? string.Empty : organization.ReceiptNo;
 
             context.Response.Cookies.Append("userID", enPid,
             new CookieOptions
