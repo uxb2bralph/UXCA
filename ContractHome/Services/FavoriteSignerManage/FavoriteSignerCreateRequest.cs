@@ -32,8 +32,8 @@ namespace ContractHome.Services.FavoriteSignerManage
                     .MaximumLength(100);
 
                 RuleFor(x => x.ReceiptNo)
-                    .NotEmpty()
-                    .MaximumLength(10);
+                    .NotEmpty().WithMessage("統編不可為空")
+                    .Matches(@"^\d{8}$").WithMessage("統編必須是 8 位數字");
 
                 //RuleFor(x => x.CreatorKeyID)
                 //    .NotEmpty()
@@ -41,16 +41,16 @@ namespace ContractHome.Services.FavoriteSignerManage
                 //    .WithMessage("建立人ID不存在");
             }
 
-            private bool IsValidUID(string uid)
-            {
-                var db = new DCDataContext();
+            //private bool IsValidUID(string uid)
+            //{
+            //    var db = new DCDataContext();
 
-                var cc = db.UserProfile
-                        .Where(x => x.UID.Equals(uid.DecryptKeyValue()))
-                        .FirstOrDefault();
+            //    var cc = db.UserProfile
+            //            .Where(x => x.UID.Equals(uid.DecryptKeyValue()))
+            //            .FirstOrDefault();
 
-                return cc != null;
-            }
+            //    return cc != null;
+            //}
 
             private bool IsValidSigner(FavoriteSignerCreateRequest request)
             {
