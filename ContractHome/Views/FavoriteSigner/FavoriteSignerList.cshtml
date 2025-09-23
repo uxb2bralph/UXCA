@@ -238,9 +238,10 @@
             currentlyCounter: -1,
             actionMsg: {
                 QueryError: '搜尋失敗，原因：',
-                CreateError: '存檔失敗，原因：',
-                DeleteError: '存檔失敗，原因：',
-                SaveSuccess: '存檔完成',
+                CreateError: '建立失敗，原因：',
+                DeleteError: '刪除失敗，原因：',
+                CreateSuccess: '建立成功',
+                DeleteSuccess: '刪除成功',
                 DeleteConfirm: '確定要刪除'
             }
         },
@@ -348,7 +349,7 @@
 
                 this.isSubmitted = false;
 
-                this.infoMsg = this.actionMsg['SaveSuccess'];
+                this.infoMsg = this.actionMsg['CreateSuccess'];
                 $('#infoModal').modal('show');
                 $('#formModal').modal('hide');
             },
@@ -362,7 +363,7 @@
                     return result;
                 }
 
-                this.infoMsg = this.actionMsg['SaveSuccess'];
+                this.infoMsg = this.actionMsg['DeleteSuccess'];
                 $('#infoModal').modal('show');
             },
             showCreateDialog() {

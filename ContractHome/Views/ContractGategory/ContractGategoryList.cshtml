@@ -268,7 +268,9 @@
                 DeleteError: '存檔失敗，原因：',
                 GetCompanyUsersError: '搜尋失敗，原因：',
                 GetContractCategoryInfoError: '搜尋失敗，原因：',
-                SaveSuccess: '存檔完成',
+                CreateSuccess: '建立成功',
+                EditSuccess: '修改成功',
+                DeleteSuccess: '刪除成功',
                 DeleteConfirm: '確定要刪除分類'
             }
         },
@@ -337,7 +339,7 @@
 
                 this.isSubmitted = false;
 
-                this.infoMsg = this.actionMsg['SaveSuccess'];
+                this.infoMsg = this.actionMsg['CreateSuccess'];
                 $('#infoModal').modal('show');
                 $('#formModal').modal('hide');
             },
@@ -359,7 +361,7 @@
                 }
 
                 this.isSubmitted = false;
-                this.infoMsg = this.actionMsg['SaveSuccess'];
+                this.infoMsg = this.actionMsg['EditSuccess'];
                 $('#infoModal').modal('show');
                 $('#formModal').modal('hide');
             },
@@ -373,7 +375,7 @@
                     return result;
                 }
 
-                this.infoMsg = this.actionMsg['SaveSuccess'];
+                this.infoMsg = this.actionMsg['DeleteSuccess'];
                 $('#infoModal').modal('show');
             },
             async showEditDialog(info) {
