@@ -3,10 +3,8 @@ using ContractHome.Helper;
 using ContractHome.Hubs;
 using ContractHome.Models.DataEntity;
 using ContractHome.Models.ViewModel;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using System.Threading.Tasks;
 
 namespace ContractHome.ApiControllers
 {
@@ -16,9 +14,11 @@ namespace ContractHome.ApiControllers
     /// <param name="hubContext"></param>
     [Route("api/[controller]")]
     [ApiController]
-    public class GRAController(IHubContext<SignatureHub> hubContext) : ControllerBase
+    public class GRAController(IHubContext<SignatureHub> hubContext, DCDataContext db) : ControllerBase
     {
         private readonly IHubContext<SignatureHub> _hubContext = hubContext;
+
+        private readonly DCDataContext _db = db;
 
         /// <summary>
         /// 使用者授權通知
@@ -29,30 +29,32 @@ namespace ContractHome.ApiControllers
         [Route("AuthNotify")]
         public async Task<IActionResult> AuthNotify([FromBody] AuthNotify authNotify)
         {
-            if (!string.IsNullOrEmpty(authNotify.tid) && !string.IsNullOrEmpty(authNotify.email))
+            var (oneTimeToken, signature) = CHTSigningService.GetApplicationResponse();
+
+            if (string.IsNullOrEmpty(authNotify.tid))
             {
-                using var db = new DCDataContext();
+                FileLogger.Logger.Info($"SignatureHub AuthNotify: No Has tid for result:{authNotify.result} resultMessage:{authNotify.resultMessage} email:{authNotify.email} expDate:{authNotify.expDate} tid:{authNotify.tid}");
 
-                var csr = (from c in db.ContractSignatureRequest
-                           where c.RequestTicket == authNotify.tid
-                           select c).FirstOrDefault();
-
-                var user = (from u in db.UserProfile
-                            where u.EMail == authNotify.email
-                            select u).FirstOrDefault();
-
-                if (csr != null && user != null)
-                {
-                    string key = user.PID + "_" + csr.ContractID;
-                    // 發送通知
-                    await _hubContext.Clients.Group(key)
-                          .SendAsync("ReceiveUpdateNotice", key, authNotify.result, authNotify.resultMessage);
-                }
+                return Ok(new { oneTimeToken, signature });
             }
 
-            FileLogger.Logger.Info($"AuthNotify: result:{authNotify.result} resultMessage:{authNotify.resultMessage} email:{authNotify.email} expDate:{authNotify.expDate} tid:{authNotify.tid}");
+            var csr = (from c in _db.ContractSignatureRequest
+                       where c.RequestTicket == authNotify.tid
+                       select c).FirstOrDefault();
 
-            var (oneTimeToken, signature) = CHTSigningService.GetApplicationResponse();
+            if (csr == null)
+            {
+                FileLogger.Logger.Info($"SignatureHub AuthNotify: No matching ContractSignatureRequest found for tid:{authNotify.tid}");
+                return Ok(new { oneTimeToken, signature });
+            }
+
+            string key = csr.ContractID.ToString();
+            // 發送通知
+            await _hubContext.Clients.Group(key)
+                  .SendAsync("ReceiveUpdateNotice", key, authNotify.result, authNotify.resultMessage);
+
+            FileLogger.Logger.Info($"SignatureHub AuthNotify: GroupKey:{key} result:{authNotify.result} resultMessage:{authNotify.resultMessage} email:{authNotify.email} expDate:{authNotify.expDate} tid:{authNotify.tid}");
+
             return Ok(new { oneTimeToken, signature });
         }
 
@@ -67,19 +69,17 @@ namespace ContractHome.ApiControllers
         {
             if (!string.IsNullOrEmpty(certApply.certSerial) && !string.IsNullOrEmpty(certApply.email))
             {
-                using var db = new DCDataContext();
-
-                var user = db.UserProfile
+                var user = _db.UserProfile
                            .FirstOrDefault(u => u.EMail == certApply.email);
 
                 if (user != null)
                 {
                     user.ContactTitle = certApply.certSerial;
-                    db.SubmitChanges();
+                    _db.SubmitChanges();
                 }
             }
 
-            FileLogger.Logger.Info($"CertApply: email:{certApply.email} resultMessage:{certApply.discountCode} whenCreated:{certApply.whenCreated} certSerial:{certApply.certSerial}");
+            FileLogger.Logger.Info($"SignatureHub CertApply: email:{certApply.email} resultMessage:{certApply.discountCode} whenCreated:{certApply.whenCreated} certSerial:{certApply.certSerial}");
 
             var (oneTimeToken, signature) = CHTSigningService.GetApplicationResponse();
             return Ok(new { oneTimeToken, signature });

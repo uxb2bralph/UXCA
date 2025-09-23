@@ -1,4 +1,6 @@
-﻿using ContractHome.Helper;
+﻿using CommonLib.Core.Utility;
+using ContractHome.Helper;
+using ContractHome.Models.ViewModel;
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
 
@@ -35,7 +37,9 @@ namespace ContractHome.Hubs
         /// </summary>
         public async Task AddConnection(string key)
         {
-            string groupKey = GetGroupKey(key.DecryptKeyValue().ToString());
+            string groupKey = key.DecryptKeyValue().ToString();
+            
+            FileLogger.Logger.Info($"SignatureHub AddConnection GroupKey: {groupKey}");
 
             if (groupKey != string.Empty && GroupKeys.TryAdd(Context.ConnectionId, groupKey))
             {
@@ -48,27 +52,27 @@ namespace ContractHome.Hubs
         /// </summary>
         public async Task SendNotice(string key, int result, string resultMessage)
         {
-            string groupKey = GetGroupKey(key.DecryptKeyValue().ToString());
+            string groupKey = key.DecryptKeyValue().ToString();
             await Clients.Group(groupKey).SendAsync("ReceiveUpdateNotice", groupKey, result, resultMessage);
         }
 
-        private string GetPId()
-        {
-            return Context.User?.Claims.FirstOrDefault()?.Value ?? string.Empty;
-        }
+        //private string GetPId()
+        //{
+        //    return Context.User?.Claims.FirstOrDefault()?.Value ?? string.Empty;
+        //}
 
-        /// <summary>
-        /// 取得群組Key PID_合約ID
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        private string GetGroupKey(string key)
-        {
-            if (GetPId() == string.Empty)
-            {
-                return string.Empty;
-            }
-            return GetPId() + "_" + key;
-        }
+        ///// <summary>
+        ///// 取得群組Key PID_合約ID
+        ///// </summary>
+        ///// <param name="key"></param>
+        ///// <returns></returns>
+        //private string GetGroupKey(string key)
+        //{
+        //    if (GetPId() == string.Empty)
+        //    {
+        //        return string.Empty;
+        //    }
+        //    return GetPId() + "_" + key;
+        //}
     }
 }
