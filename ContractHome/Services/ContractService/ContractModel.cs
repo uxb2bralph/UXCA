@@ -56,4 +56,10 @@ namespace ContractHome.Services.ContractService
         /// </summary>
         public string Mail { get; set; } = string.Empty;
     }
+
+    public enum CreateSourceTypeEnum
+    {
+        Manual = 0,
+        Api = 1
+    }
 }
