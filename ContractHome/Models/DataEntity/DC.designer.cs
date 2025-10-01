@@ -796,8 +796,10 @@ namespace ContractHome.Models.DataEntity
 		private System.Nullable<System.DateTime> _NotifyUntilDate;
 		
 		private int _ContractCategoryID;
-		
-		private EntityRef<CDS_Document> _CDS_Document;
+
+        private int _CreateSourceType;
+
+        private EntityRef<CDS_Document> _CDS_Document;
 		
 		private EntitySet<ContractingParty> _ContractingParty;
 		
@@ -835,9 +837,12 @@ namespace ContractHome.Models.DataEntity
     partial void OnNotifyUntilDateChanged();
     partial void OnContractCategoryIDChanging(int value);
     partial void OnContractCategoryIDChanged();
+    partial void OnCreateSourceTypeChanging(int value);
+    partial void OnCreateSourceTypeChanged();
+
     #endregion
-		
-		public Contract()
+
+        public Contract()
 		{
 			this._CDS_Document = default(EntityRef<CDS_Document>);
 			this._ContractingParty = new EntitySet<ContractingParty>(new Action<ContractingParty>(this.attach_ContractingParty), new Action<ContractingParty>(this.detach_ContractingParty));
@@ -1052,8 +1057,28 @@ namespace ContractHome.Models.DataEntity
 				}
 			}
 		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="FK_Contract_CDS_Document", Storage="_CDS_Document", ThisKey="ContractID", OtherKey="DocID", IsForeignKey=true, DeleteOnNull=true)]
+
+        [global::System.Data.Linq.Mapping.ColumnAttribute(Storage = "_CreateSourceType", DbType = "Int NOT NULL")]
+        public int CreateSourceType
+        {
+            get
+            {
+                return this._CreateSourceType;
+            }
+            set
+            {
+                if ((this._CreateSourceType != value))
+                {
+                    this.OnCreateSourceTypeChanging(value);
+                    this.SendPropertyChanging();
+                    this._CreateSourceType = value;
+                    this.SendPropertyChanged("CreateSourceType");
+                    this.OnCreateSourceTypeChanged();
+                }
+            }
+        }
+
+        [global::System.Data.Linq.Mapping.AssociationAttribute(Name="FK_Contract_CDS_Document", Storage="_CDS_Document", ThisKey="ContractID", OtherKey="DocID", IsForeignKey=true, DeleteOnNull=true)]
 		public CDS_Document CDS_Document
 		{
 			get

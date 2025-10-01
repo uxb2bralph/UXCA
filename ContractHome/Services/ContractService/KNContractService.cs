@@ -65,7 +65,8 @@ namespace ContractHome.Services.ContractService
                 Title = model.Title,
                 IsPassStamp = model.IsPassStamp,
                 CompanyID = promisor.CompanyID,
-                NotifyUntilDate = (string.IsNullOrEmpty(model.ExpiryDateTime)) ? null : DateTime.Parse(model.ExpiryDateTime)
+                NotifyUntilDate = (string.IsNullOrEmpty(model.ExpiryDateTime)) ? null : DateTime.Parse(model.ExpiryDateTime),
+                CreateSourceType = (int)CreateSourceTypeEnum.Api,
             };
 
             // 合約步驟資訊
@@ -719,10 +720,10 @@ namespace ContractHome.Services.ContractService
             try
             {
                 using DCDataContext db = new();
-                // 檢查合約公司編號是否符合中鋼KN公司編號
+                // 檢查合約公司編號是否符合中鋼KN公司編號及來源為API
                 var KNReceiptNo = (from c in db.Contract
                                    join o in db.Organization on c.CompanyID equals o.CompanyID
-                                   where c.ContractID == contract.ContractID && o.ReceiptNo.Equals(_KNFileUploadSetting.KNReceiptNo)
+                                   where c.ContractID == contract.ContractID && c.CreateSourceType == (int)CreateSourceTypeEnum.Api && o.ReceiptNo.Equals(_KNFileUploadSetting.KNReceiptNo)
                                    select o.ReceiptNo).FirstOrDefault();
 
                 if (KNReceiptNo == null)

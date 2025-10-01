@@ -35,6 +35,7 @@
       <Column Name="CompanyID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="NotifyUntilDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
       <Column Name="ContractCategoryID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+	  <Column Name="CreateSourceType" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Association Name="FK_Contract_CDS_Document" Member="CDS_Document" ThisKey="ContractID" OtherKey="DocID" Type="CDS_Document" IsForeignKey="true" DeleteOnNull="true" />
       <Association Name="FK_ContractingParty_Contract" Member="ContractingParty" ThisKey="ContractID" OtherKey="ContractID" Type="ContractingParty" DeleteRule="CASCADE" />
       <Association Name="FK_ContractNoteRequest_Contract" Member="ContractNoteRequest" ThisKey="ContractID" OtherKey="ContractID" Type="ContractNoteRequest" DeleteRule="CASCADE" />
