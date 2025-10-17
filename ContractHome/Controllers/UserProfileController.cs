@@ -28,16 +28,19 @@ namespace ContractHome.Controllers
         private readonly EmailFactory _emailFactory;
         private readonly BaseResponse _baseResponse;
         private readonly ContractServices _contractServices;
+        private readonly DCDataContext _db;
         public UserProfileController(ILogger<UserProfileController> logger, 
                         IServiceProvider serviceProvider,
                         EmailFactory emailContentFactories,
                         ContractServices contractServices,
-                        BaseResponse baseResponse) : base(serviceProvider)
+                        BaseResponse baseResponse, 
+                        DCDataContext db) : base(serviceProvider)
         {
             _logger = logger;
             _emailFactory = emailContentFactories;
             _baseResponse = baseResponse;
             _contractServices = contractServices;
+            _db = db;
         }
 
         [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
@@ -45,6 +48,13 @@ namespace ContractHome.Controllers
         {
             ViewBag.ViewModel = viewModel;
             return View("~/Views/UserProfile/MaintainData.cshtml");
+        }
+
+        [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
+        public ActionResult DeptMgmt(QueryViewModel viewModel)
+        {
+            ViewBag.ViewModel = viewModel;
+            return View("~/Views/UserProfile/DeptMgmt.cshtml");
         }
 
         [Authorize]
@@ -298,12 +308,14 @@ namespace ContractHome.Controllers
         }
 
         [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
-        public ActionResult VueCommitItem([FromBody] UserProfileViewModel viewModel)
+        public async Task<ActionResult> VueCommitItemAsync([FromBody] UserProfileViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
 
+            var profile = await HttpContext.GetUserAsync();
+
             int? uid = null;
-            if (viewModel.KeyID != null)
+            if (!string.IsNullOrEmpty(viewModel.KeyID))
             {
                 uid = viewModel.DecryptKeyValue();
             }
@@ -312,7 +324,8 @@ namespace ContractHome.Controllers
                 .Where(u => u.UID == uid)
                 .FirstOrDefault();
 
-            int? companyID = viewModel.GetCompanyID();
+            // 公司管理員 新增帳號 強制指定管理員的公司ID
+            int? companyID = (profile.IsMemberAdmin()) ? profile.UserCompanyID : viewModel.GetCompanyID();
             // 新增帳號 檢查密碼
             if (dataItem == null && String.IsNullOrEmpty(viewModel.Password))
             {
@@ -353,9 +366,23 @@ namespace ContractHome.Controllers
 
             if (!viewModel.RoleID.HasValue)
             {
-                ModelState.AddModelError("RoleID", "請選擇角色");
+                // 公司管理員 新增帳號 強制設定為一般使用者
+                if (profile.IsMemberAdmin())
+                {
+                    viewModel.RoleID = UserRoleDefinition.RoleEnum.User;
+                }
+                else
+                {
+                    ModelState.AddModelError("RoleID", "請選擇角色");
+                }
             }
 
+            //  預設工商憑證
+            if (string.IsNullOrEmpty(viewModel.Region))
+            {
+                viewModel.Region = "O";
+            }
+ 
             viewModel.PID = viewModel.PID.GetEfficientString();
             if (viewModel.PID == null)
             {
@@ -404,6 +431,7 @@ namespace ContractHome.Controllers
             item.EMail = viewModel.EMail;
             item.UserName = viewModel.UserName.GetEfficientString();
             item.Region = organization?.CHT_Token != null ? "E" : viewModel.Region.GetEfficientString();
+            item.IsEnabled = true;
 
             if (!String.IsNullOrEmpty(viewModel.Password))
             {
@@ -549,9 +577,11 @@ namespace ContractHome.Controllers
         }
 
         [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
-        public ActionResult VueDeleteItem([FromBody] UserProfileViewModel viewModel)
+        public async Task<ActionResult> VueDeleteItemAsync([FromBody] UserProfileViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
+
+            var profile = await HttpContext.GetUserAsync();
 
             if (viewModel.KeyID != null)
             {
@@ -562,8 +592,14 @@ namespace ContractHome.Controllers
                 .FirstOrDefault();
 
             ITable dataTable = models.GetTable<UserProfile>();
+
             if (item != null)
             {
+                if (profile.IsMemberAdmin() && item.OrganizationUser.CompanyID != profile.UserCompanyID)
+                {
+                    return Json(new { result = false, message = "無刪除權限" });
+                }
+
                 dataTable.DeleteOnSubmit(item);
                 try
                 {
@@ -579,6 +615,54 @@ namespace ContractHome.Controllers
                         message = "刪除失敗：此帳號已有簽署記錄";
                     }
 
+                    return Json(new { result = false, message = message });
+                }
+            }
+
+            return Json(new { result = false, message = "資料錯誤！" });
+        }
+
+        [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
+        public ActionResult SetEnabled([FromBody] UserProfileViewModel viewModel)
+        {
+            ViewBag.ViewModel = viewModel;
+
+            if (viewModel.KeyID != null)
+            {
+                viewModel.UID = viewModel.DecryptKeyValue();
+            }
+
+            var item = models.GetTable<UserProfile>().Where(o => o.UID == viewModel.UID)
+                .FirstOrDefault();
+
+            if (item != null)
+            {
+
+                try
+                {
+                    // 檢查使用者是否在進行中的合約做簽署
+                    var result = from csr in _db.ContractSignatureRequest
+                                 join c in _db.Contract on csr.ContractID equals c.ContractID
+                                 join d in _db.CDS_Document on c.ContractID equals d.DocID
+                                 where csr.SignerID == item.UID
+                                 && d.CurrentStep != (int)CDS_Document.StepEnum.Terminated 
+                                 && d.CurrentStep != (int)CDS_Document.StepEnum.Committed
+                                 && d.CurrentStep != (int)CDS_Document.StepEnum.Revoked
+                                 select csr;
+
+                    if (result.Any() && viewModel.IsEnabled == false)
+                    {
+                        return Json(new { result = false, message = "合約簽署中" });
+                    }
+
+                    item.IsEnabled = viewModel.IsEnabled.Value;
+                    models.SubmitChanges();
+                    return Json(new { result = true, message = "已成功" + ((viewModel.IsEnabled.Value) ? "啟用" : "停用") });
+                }
+                catch (SqlException ex)
+                {
+                    FileLogger.Logger.Error(ex);
+                    string message = ex.Message;
                     return Json(new { result = false, message = message });
                 }
             }

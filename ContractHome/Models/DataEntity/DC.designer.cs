@@ -6173,10 +6173,12 @@ namespace ContractHome.Models.DataEntity
 		private string _MailID;
 		
 		private System.Nullable<int> _LoginFailedCount;
-		
-		private System.Nullable<System.DateTime> _PasswordUpdatedDate;
-		
-		private EntitySet<ContractNoteRequest> _ContractNoteRequest;
+
+        private System.Nullable<System.DateTime> _PasswordUpdatedDate;
+
+        private bool _IsEnabled;
+
+        private EntitySet<ContractNoteRequest> _ContractNoteRequest;
 		
 		private EntitySet<ContractSealRequest> _ContractSealRequest;
 		
@@ -6252,9 +6254,11 @@ namespace ContractHome.Models.DataEntity
     partial void OnLoginFailedCountChanged();
     partial void OnPasswordUpdatedDateChanging(System.Nullable<System.DateTime> value);
     partial void OnPasswordUpdatedDateChanged();
+	partial void OnIsEnabledChanging(bool value);
+	partial void OnIsEnabledChanged();
     #endregion
-		
-		public UserProfile()
+
+        public UserProfile()
 		{
 			this._ContractNoteRequest = new EntitySet<ContractNoteRequest>(new Action<ContractNoteRequest>(this.attach_ContractNoteRequest), new Action<ContractNoteRequest>(this.detach_ContractNoteRequest));
 			this._ContractSealRequest = new EntitySet<ContractSealRequest>(new Action<ContractSealRequest>(this.attach_ContractSealRequest), new Action<ContractSealRequest>(this.detach_ContractSealRequest));
@@ -6758,8 +6762,29 @@ namespace ContractHome.Models.DataEntity
 				}
 			}
 		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="FK_ContractNoteRequest_UserProfile", Storage="_ContractNoteRequest", ThisKey="UID", OtherKey="StampUID", DeleteRule="NO ACTION")]
+
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_IsEnabled", DbType="Bit NOT NULL")]
+
+		public bool IsEnabled
+        {
+            get
+			{
+				return this._IsEnabled;
+            }
+			set
+			{
+				if ((this._IsEnabled != value))
+				{
+					this.OnIsEnabledChanging(value);
+					this.SendPropertyChanging();
+					this._IsEnabled = value;
+					this.SendPropertyChanged("IsEnabled");
+					this.OnIsEnabledChanged();
+				}
+            }
+        }
+
+        [global::System.Data.Linq.Mapping.AssociationAttribute(Name="FK_ContractNoteRequest_UserProfile", Storage="_ContractNoteRequest", ThisKey="UID", OtherKey="StampUID", DeleteRule="NO ACTION")]
 		public EntitySet<ContractNoteRequest> ContractNoteRequest
 		{
 			get

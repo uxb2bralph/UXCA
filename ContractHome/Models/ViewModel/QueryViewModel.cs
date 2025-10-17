@@ -269,6 +269,8 @@ namespace ContractHome.Models.ViewModel
         public UserRoleDefinition.RoleEnum? RoleID { get; set; }
         public int? UID { get; set; }
         public String? SealData { get; set; }
+
+        public bool? IsEnabled { get; set; }
     }
 
     public class UserPasswordChangeViewModel : QueryViewModel

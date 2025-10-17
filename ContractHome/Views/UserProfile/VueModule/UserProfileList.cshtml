@@ -41,6 +41,7 @@
             RoleID = item.UserRole.FirstOrDefault()?.RoleID,
             Region = item.OrganizationUser?.Organization.CHT_Token != null ? "E" : item.Region,
             KeyID = item.UID.EncryptKey(),
+            IsEnabled = item.IsEnabled
         };
     }
 }

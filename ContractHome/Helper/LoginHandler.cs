@@ -24,7 +24,7 @@ namespace ContractHome.Helper
             bool auth = false;
             using UserProfileManager mgr = new();
             UserProfile user = mgr.GetUserProfileByPID(pid);
-            if (user?.LoginFailedCount >= 3)
+            if (user?.LoginFailedCount >= 3 || user?.IsEnabled == false)
             {
                 msg = "帳號密碼有誤";
                 return auth;
@@ -45,7 +45,7 @@ namespace ContractHome.Helper
             //       msg = VirtualPathUtility.ToAbsolute("~/UserProfile/EditMySelf?forCheck=True");
             //   }
             //}
-            return auth;
+            //return auth;
         }
 
         public bool ProcessLogin(string pid, out String msg)

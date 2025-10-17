@@ -34,25 +34,6 @@
       <form v-on:submit.prevent="inquireData" id="queryArea" method="post" enctype="multipart/form-data">
         <div class="container">
           <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3 m-3 mb-lg-0 data-item">
-            @if (profile.IsSysAdmin())
-            {
-              <div class="col input__height">
-                <div class="row">
-                  <label for="CompanyName" class="col-sm-12 col-md-3 col-form-label fw-bolder">隸屬公司</label>
-                  <div id="searchCompanyName" class="col-sm-12 col-md-9">
-                    <input v-model="searchFormData.CompanyName" type="text" class="form-control" name="SearchCompany"
-                      placeholder="請輸入關鍵字或統編查詢公司名稱" v-on:keyup="keypressHandler(searchFormData.CompanyName)" />
-                    <ul v-show="isSearchOptionsOpen" class="list-group mb-3 shadow__card">
-                      <li v-for="(result, index) in searchResults" :key="index"
-                        class="list-group-item list-group-item-action" v-on:click="setResult(result, 'search')"
-                        :class="{'active': index === currentlyCounter}">
-                        {{ result.CompanyName }}
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            }
             <div class="col input__height">
               <div class="row">
                 <label for="PID" class="col-sm-12 col-md-3 col-form-label fw-bolder">用戶帳號</label>
@@ -192,13 +173,22 @@
                 </span>
                 @* <span class="text-black-50 opacity-75"> | </span> *@
                 <!-- 停用 -->
-                <span v-if="user.PID !== 'ifsadmin'" class="tooltip__wrapper mx-1">
+                <span v-if="user.PID !== 'ifsadmin' && user.IsEnabled" class="tooltip__wrapper mx-1">
                   <button type="button" id="stopCompany"
                     class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded"
                     v-on:click="openConfirmDialog('stop', user)">
-                    <i class="fas fa-stop"></i>
+                  <i class="fas fa-pause"></i>
                   </button>
                   <div class="tooltip__text">停用</div>
+                </span>
+                <!-- 啟用 -->
+                <span v-if="user.PID !== 'ifsadmin' && !user.IsEnabled" class="tooltip__wrapper mx-1">
+                    <button type="button" id="stopCompany"
+                            class="btn btn-sm btn-danger opacity-75 rounded-pill icon__rounded"
+                            v-on:click="openConfirmDialog('start', user)">
+                    <i class="fas fa-play"></i>
+                    </button>
+                    <div class="tooltip__text">啟用</div>
                 </span>
                 <!-- 刪除 -->
                 <span v-if="user.PID !== 'ifsadmin'" class="tooltip__wrapper mx-1">
@@ -311,30 +301,6 @@
           <form v-on:submit.prevent method="post" enctype="multipart/form-data">
             <div class="container">
               <div class="row row-cols-1 m-3 mb-lg-0 data-item">
-                @if (profile.IsSysAdmin())
-                {
-                  <div class="col input__height">
-                    <div class="row">
-                      <label for="iCompanyName" class="col-sm-12 col-md-3 col-form-label fw-bolder">隸屬公司</label>
-                      <div id="InputCompanyName" class="col-sm-12 col-md-9">
-                        <input v-model="formData.CompanyName" type="text" class="form-control form-control-sm"
-                          :class="{'is-invalid': isCompanyName}" id="iCompanyName" placeholder="請輸入關鍵字或統編查詢公司名稱"
-                          v-on:focus="resetValidate('isCompanyName')"
-                          v-on:blur="validateField('isCompanyName', formData.CompanyName)" autocomplete="off" />
-                        <ul v-show="isInputOptionsOpen" class="list-group mb-3 shadow__card">
-                          <li v-for="(result, index) in searchResults" :key="index"
-                            class="list-group-item list-group-item-action" v-on:click="setResult(result, 'edit')"
-                            :class="{'active': index === currentlyCounter}">
-                            {{ result.CompanyName }}
-                          </li>
-                        </ul>
-                        <div class="invalid-feedback">
-                          請輸入公司名稱
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                }
                 <div class="col input__height">
                   <div class="row">
                     <label for="iPID" class="col-sm-12 col-md-3 col-form-label fw-bolder">用戶帳號</label>
@@ -642,6 +608,9 @@
         if (type === 'stop') {
           this.confirmMsg = `確定停用 <span class="text-primary opacity-75">"${item.PID}"</span> 使用者權限？`;
         }
+        if (type === 'start') {
+          this.confirmMsg = `確定啟用 <span class="text-primary opacity-75">"${item.PID}"</span> 使用者權限？`;
+        }
         if (type === 'delete') {
           this.confirmMsg = `確定刪除 <span class="text-primary opacity-75">"${item.PID}"</span> 使用者？`;
         }
@@ -651,8 +620,8 @@
         if (this.editType === 'canEditStamp') {
           this.setEditStamp();
         }
-        if (this.editType === 'stop') {
-          this.setStop();
+        if (this.editType === 'stop' || this.editType === 'start') {
+          this.setEnabled();
         }
         if (this.editType === 'delete') {
           this.confirmDel();
@@ -694,6 +663,28 @@
             hideLoading();
           })
       },
+        // 設定是否啟用
+        setEnabled() {
+            const { PID, KeyID, IsEnabled } = this.currentUserData;
+
+            showLoading();
+                  postData('@(Url.Action("SetEnabled", "UserProfile"))', { KeyID, IsEnabled : !IsEnabled })
+            .then((res) => {
+                const { result, message } = res;
+                if (result) {
+                // 成功
+                $("#confirmModal").modal("hide");
+                this.deleteConfirm = true;
+                this.infoMsg = `<div class="pb-2 text-success opacity-75" style="font-size: 4rem"><i class="far fa-check-circle"></i></div><div class="lh-base"> ${PID} ${message} </div>`;
+                $("#infoModal").modal("show");
+                } else {
+                // 失敗
+                this.infoMsg = `<div class="pb-2 text-danger opacity-75" style="font-size: 4rem"><i class="far fa-exclamation-circle"></i></div><div class="lh-base"> ${PID} ${message} </div>`;
+                $("#infoModal").modal("show");
+                }
+                hideLoading();
+            })
+        },
       // 發送密碼修改申請
       sendApplyPassword(emailString, pid
       ) {

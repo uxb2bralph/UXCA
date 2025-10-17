@@ -105,6 +105,9 @@
                     <li>
                         <a class="dropdown-item" href="@Html.Raw(Url.Action("ContractGategoryList", "ContractGategory"))">分類授權管理</a>
                     </li>
+                    <li>
+                        <a class="dropdown-item" href="@Html.Raw(Url.Action("DeptMgmt", "UserProfile"))">部門帳號管理</a>
+                    </li>
                 }
                 @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.MemberAdmin,
                 (int)UserRoleDefinition.RoleEnum.User))
