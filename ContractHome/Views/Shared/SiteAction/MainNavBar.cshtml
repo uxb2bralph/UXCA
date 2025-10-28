@@ -100,11 +100,14 @@
                   </li> *@
                 }
 
-                @if (profile.IsMemberAdmin())
+                @if (profile.CanCreateContract() && profile.IsMemberAdmin())
                 {
                     <li>
                         <a class="dropdown-item" href="@Html.Raw(Url.Action("ContractGategoryList", "ContractGategory"))">分類授權管理</a>
                     </li>
+                }
+                @if (profile.IsMemberAdmin())
+                {
                     <li>
                         <a class="dropdown-item" href="@Html.Raw(Url.Action("DeptMgmt", "UserProfile"))">部門帳號管理</a>
                     </li>
