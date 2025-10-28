@@ -54,6 +54,11 @@ namespace ContractHome.Services.FavoriteSignerManage
             /// 統編
             /// </summary>
             public string ReceiptNo { get; set; } = string.Empty;
+
+            /// <summary>
+            /// 是否啟用
+            /// </summary>
+            public bool IsEnabled { get; set; } = true;
         }
 
         public class CompanyInfoModel : FavoriteSignerBaseModel

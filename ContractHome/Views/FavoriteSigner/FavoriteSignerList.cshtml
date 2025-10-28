@@ -41,6 +41,7 @@
                             <th scope="col">公司</th>
                             <th scope="col">統編</th>
                             <th scope="col">Email</th>
+                            <th scope="col">狀態</th>
                             <th scope="col" class="text-center">功能</th>
                         </tr>
                     </thead>
@@ -49,6 +50,7 @@
                             <td class="fs-13">{{info.companyName}}</td>
                             <td class="fs-13">{{info.receiptNo}}</td>
                             <td class="fs-13">{{info.email}}</td>
+                            <td class="fs-13">{{(info.isEnabled) ? "啟用" : "停用"}}</td>
                             <td class="text-nowrap text-center">
                                 <span class="tooltip__wrapper mx-1">
                                     <button type="button" id="deleteCompany"

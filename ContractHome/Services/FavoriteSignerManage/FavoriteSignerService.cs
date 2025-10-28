@@ -70,7 +70,8 @@ namespace ContractHome.Services.FavoriteSignerManage
                              Email = u.EMail,
                              CompanyKeyID = o.CompanyID.EncryptKey(),
                              CompanyName = o.CompanyName,
-                             ReceiptNo = o.ReceiptNo
+                             ReceiptNo = o.ReceiptNo,
+                             IsEnabled = u.IsEnabled
                          };
 
             return result.ToList();
