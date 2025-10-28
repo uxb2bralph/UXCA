@@ -8,6 +8,10 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-ALTER TABLE UserProfile
+ALTER TABLE [dbo].[UserProfile]
 ADD IsEnabled bit NOT NULL DEFAULT 1;
+GO
 
+ALTER TABLE [dbo].[Organization]
+ADD ContractTermDate DATETIME NULL;
+GO

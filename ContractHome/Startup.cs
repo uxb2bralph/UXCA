@@ -149,6 +149,8 @@ namespace ContractHome
             services.AddScoped<IEmailContent, ApplyPassword>();
             services.AddScoped<IEmailContent, FinishContract>();
             services.AddScoped<IEmailContent, TerminationContract>();
+            services.AddScoped<IEmailContent, TerminationPrivilege>();
+            services.AddScoped<IEmailContent, PendingTerminationPrivilege>();
 
             #region 中鋼 KN 合約配置
             services.Configure<KNFileUploadSetting>(Configuration.GetSection(nameof(KNFileUploadSetting)));

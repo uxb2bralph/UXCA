@@ -85,6 +85,7 @@
             item.UndertakerName,
             item.ContactEmail,
             item.CanCreateContract,
+            ContractTermDate = (!item.ContractTermDate.HasValue) ? "" : item.ContractTermDate.Value.ToString("yyyy-MM-dd"),
             CompanyBelongTo,
             NameOfCompanyBelongTo,
             KeyID = item.CompanyID.EncryptKey(),

@@ -13,5 +13,7 @@
         //public book UseStartTls { get; set; }
         public bool Enable { get; set; }
 
+        public string? OPEmail { get; set; }
+
     }
 }

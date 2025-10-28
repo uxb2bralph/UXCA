@@ -25,6 +25,7 @@ namespace ContractHome.Models.Email.Template
         public string ContractLink { get; set; }
         public string VerifyLink { get; set; }
 
+        public string CompanyName { get; set; }
         public string DownloadContractLink { get; set; }
 
         public string DownloadFootprintsLink { get; set; } = string.Empty;
@@ -73,6 +74,11 @@ namespace ContractHome.Models.Email.Template
         public void SetRecipientUserEmail(string recipientUserEmail)
         {
             this.RecipientUserEmail = recipientUserEmail;
+        }
+
+        public void SetCompanyName(string companyName)
+        {
+            this.CompanyName = companyName;
         }
 
         public void SetContractLink(string contractLink)

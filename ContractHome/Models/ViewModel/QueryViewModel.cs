@@ -228,6 +228,10 @@ namespace ContractHome.Models.ViewModel
         public String? ContactFax { get; set; }
         public String? ContactPhone { get; set; }
         public DateTime? ExpirationDate { get; set; }
+
+        // 合約建立權限到期日
+        public DateTime? ContractTermDate { get; set; }
+
         public DateTime? CreationDate { get; set; }
         public String? ContactMobilePhone { get; set; }
         public String? BusinessContactPhone { get; set; }

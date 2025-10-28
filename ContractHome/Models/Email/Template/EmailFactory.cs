@@ -150,6 +150,20 @@ namespace ContractHome.Models.Email.Template
             return emailContent;
         }
 
+        public IEmailContent GetTerminationPrivilege()
+        {
+            var emailContent = _emailContents.OfType<TerminationPrivilege>()
+                .FirstOrDefault()!;
+            return emailContent;
+        }
+
+        public IEmailContent GetPendingTerminationPrivilege()
+        {
+            var emailContent = _emailContents.OfType<PendingTerminationPrivilege>()
+                .FirstOrDefault()!;
+            return emailContent;
+        }
+
         public IEmailContent GetLoginSuccessed(string emailUserName, string email)
         {
             var emailContent = _emailContents.OfType<LoginSuccessed>()

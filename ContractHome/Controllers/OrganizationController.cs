@@ -105,6 +105,11 @@ namespace ContractHome.Controllers
                 items = items.Where(o => o.Fax.StartsWith(viewModel.Fax));
             }
 
+            if (viewModel.CreateContract != null)
+            {
+                items = items.Where(o => o.CanCreateContract == viewModel.CreateContract);
+            } 
+
             //if (viewModel.DataItem != null && viewModel.DataItem.Length > 0)
             //{
             //    items = items.BuildQuery(viewModel.DataItem);
@@ -264,6 +269,8 @@ namespace ContractHome.Controllers
             item.ContactEmail = viewModel.ContactEmail;
             item.CanCreateContract = (viewModel.CreateContract != null) ? viewModel.CreateContract : false;
             item.CompanyBelongTo = (viewModel.BelongToCompany != null) ? viewModel.BelongToCompany.DecryptKeyValue() : null;
+            item.ContractTermDate = viewModel.ContractTermDate;
+
             try
             {
                 models.SubmitChanges();
@@ -323,7 +330,7 @@ namespace ContractHome.Controllers
                 catch (Exception ex)
                 {
                     FileLogger.Logger.Error(ex);
-                    return Json(new { result = false, message = ex.Message });
+                    return Json(new { result = false, message = "已有合約簽屬紀錄" });
                 }
             }
 

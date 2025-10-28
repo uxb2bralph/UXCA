@@ -86,5 +86,11 @@ namespace ContractHome.Models.Email.Template
             _emailTemplate.SetDownloadFootprintsLink(downloadLink);
             return this;
         }
+
+        public IEmailBodyBuilder SetCompanyName(string companyName)
+        {
+            _emailTemplate.SetCompanyName(companyName);
+            return this;
+        }
     }
 }

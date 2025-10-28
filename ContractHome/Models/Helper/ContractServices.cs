@@ -1,28 +1,20 @@
 ﻿using CommonLib.Core.Utility;
 using CommonLib.DataAccess;
 using CommonLib.Utility;
-using ContractHome.Controllers;
 using ContractHome.Helper;
-using ContractHome.Helper.DataQuery;
-using ContractHome.Models.Cache;
 using ContractHome.Models.DataEntity;
 using ContractHome.Models.Dto;
 using ContractHome.Models.Email;
 using ContractHome.Models.Email.Template;
 using ContractHome.Models.ViewModel;
-using ContractHome.Properties;
 using ContractHome.Services.FavoriteSignerManage;
-using DocumentFormat.OpenXml.Drawing;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Text;
 using Wangkanai.Detection.Services;
 using static ContractHome.Helper.JwtTokenGenerator;
-using static ContractHome.Models.DataEntity.CDS_Document;
 using static ContractHome.Models.Dto.PostFieldSettingRequest;
 
 namespace ContractHome.Models.Helper
@@ -37,6 +29,8 @@ namespace ContractHome.Models.Helper
         private readonly BaseResponse _baseResponse;
         private readonly EmailFactory _emailContentFactories;
         private readonly IFavoriteSignerService _favoriteSignerService;
+        private readonly DCDataContext _db;
+        private readonly MailSettings _mailSettings;
 
         public ContractServices(IEmailBodyBuilder emailBody,
             EmailFactory emailFactory,
@@ -44,7 +38,9 @@ namespace ContractHome.Models.Helper
             IHttpContextAccessor httpContextAccessor, 
             EmailFactory emailContentFactories,
             BaseResponse baseResponse,
-            IFavoriteSignerService favoriteSignerService
+            IFavoriteSignerService favoriteSignerService,
+            DCDataContext db,
+            IOptionsMonitor<MailSettings> mailSettingsOptions
             ) 
         {
             _baseResponse = baseResponse;
@@ -53,6 +49,8 @@ namespace ContractHome.Models.Helper
             _httpContextAccessor = httpContextAccessor;
             _emailContentFactories = emailContentFactories;
             _favoriteSignerService = favoriteSignerService;
+            _db = db;
+            _mailSettings = mailSettingsOptions.CurrentValue;
         }
 
         private string _clientDevice => $"{_detectionService.Platform.Name} {_detectionService.Platform.Version.ToString()}/{_detectionService.Browser.Name}";
@@ -750,6 +748,74 @@ namespace ContractHome.Models.Helper
             var usersString = string.Join(" ", users.Select(x => $"{x.UID}"));
             FileLogger.Logger.Info($"NotifyTerminationContract ContractID: {contract.ContractID} {(CDS_Document.StepEnum)contract.CurrentStep} UID: {usersString}");
         }
+
+        /// <summary>
+        /// 通知及處理合約過期的公司
+        /// </summary>
+        /// <returns></returns>
+        public async Task NotifyTerminationPrivilege()
+        {
+            // 取得建立文件權限即將過期的公司管理員 7天(合約即將到期通知)及1天後(合約終止)通知
+            var notifyUsers = (from o in _db.Organization
+                               join ou in _db.OrganizationUser on o.CompanyID equals ou.CompanyID
+                               join u in _db.UserProfile on ou.UID equals u.UID
+                               join r in _db.UserRole on u.UID equals r.UID
+                               where o.ContractTermDate != null 
+                               && (o.ContractTermDate.Value.AddDays(-7) == DateTime.Now.Date || 
+                                   o.ContractTermDate.Value.AddDays(1) == DateTime.Now.Date)
+                               && r.RoleID == (int)UserRoleDefinition.RoleEnum.MemberAdmin
+                               && o.CanCreateContract == true
+                               select new
+                               {
+                                  u.PID,
+                                  u.EMail,
+                                  o.CompanyID,
+                                  o.CompanyName,
+                                  o.ContractTermDate
+                               }).ToList();
+
+            // 將合約權限過期公司的CanCreateContract設為false
+            foreach (var user in notifyUsers) 
+            {
+
+                if (user.ContractTermDate.Value.AddDays(1) != DateTime.Now.Date)
+                {
+                    continue;
+                }
+
+                var organization = _db.GetTable<Organization>()
+                                   .Where(x => 
+                                          x.CompanyID == user.CompanyID && 
+                                          x.CanCreateContract == true && 
+                                          x.ContractTermDate.Value.AddDays(1) == DateTime.Now.Date)
+                                   .FirstOrDefault();
+
+                if (organization != null)
+                {
+                    organization.CanCreateContract = false;
+                }
+            }
+            _db.SubmitChanges();
+
+            foreach (var user in notifyUsers)
+            {
+                IEmailContent emailContent = (user.ContractTermDate.Value.AddDays(1) == DateTime.Now.Date) ? 
+                                             _emailContentFactories.GetTerminationPrivilege() :
+                                             _emailContentFactories.GetPendingTerminationPrivilege();
+
+                emailContent.CreateBody(user.CompanyName, user.EMail);
+                await _emailFactory.SendEmailToCustomer(user.EMail, emailContent);
+
+                // 副本寄給OP
+                if (!string.IsNullOrEmpty(_mailSettings.OPEmail))
+                {
+                    await _emailFactory.SendEmailToCustomer(_mailSettings.OPEmail, emailContent);
+                }
+
+                FileLogger.Logger.Info($"NotifyTerminationPrivilege {emailContent.GetType().Name} CompanyName: {user.CompanyName} EMail: {user.EMail}");
+            }
+        }
+
         /// <summary>
         /// 通知未完成合約簽署人
         /// </summary>

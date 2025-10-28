@@ -1,0 +1,127 @@
+﻿@*
+For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model ContractHome.Models.Email.Template.EmailBody
+@{
+    Layout = null;
+}
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>UX SIGN 合約建立權限即將終止通知</title>
+</head>
+
+<body>
+    <div align="center">
+        <table border="0" cellspacing="0" cellpadding="0" width="100%"
+               style="width: 100%; background: #FAFAFA; border-collapse: collapse">
+            <tbody>
+                <tr>
+                    <td width="100%" valign="top" style="width: 100.0%; padding: 40pt 15pt 0 15pt">
+                        <table width="700" border="0" align="center" cellpadding="0" cellspacing="0"
+                               style="border: 1px solid #ccc;background: white;">
+                            <tbody>
+                                <tr>
+                                    <td align="center" style="padding: 40pt 15pt 0pt 15pt">
+                                        <span>
+                                            <img style="height: 50px" src="https://portal.uxifs.com/ContractHome/images/uxSign-logo.png" />
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center" style="padding: 40pt 15pt 40pt 15pt">
+                                        <span style="font-size:16pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:red;">
+                                            <strong>合約建立權限即將終止</strong>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 0 35pt 20pt 35pt">
+                                        <span style="font-size:12pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#333333;">
+                                            您的公司 <strong>「<span style="color:#204dc7;">@(Model.CompanyName)</span>」</strong> 合約建立權限將於 <strong style="color:red">@(DateTime.Now.Date.AddDays(7).ToString("yyyy/MM/dd"))</strong> 後終止。
+                                            <br>
+                                            <br>
+                                            若您熟悉上方的訊息，可以放心忽略這封電子郵件。
+                                            <br>
+                                            否則，請聯絡我們的客戶服務中心以獲得進一步協助。
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 0 35pt 40pt 35pt">
+                                        <span style="font-size:12pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#333333;">
+                                            祝一切順心。
+                                            <br>
+                                            UX SIGN 團隊
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center" width="100%" valign="top" style="padding: 10pt 15pt 40pt 15pt">
+                        <table width="700" border="0" align="center" cellpadding="0" cellspacing="0">
+                            <tbody>
+                                <tr>
+                                    <td style="padding: 0 30pt 20pt 30pt">
+                                        <span style="font-size:10pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#666666;">
+                                            <strong style="font-weight: bold;font-size:10.5pt;">請注意：</strong>
+                                            <br>
+                                            本訊息由系統寄出請勿直接回覆。
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <table border="1" cellspacing="0" cellpadding="0" width="100%"
+                                               style="width: 100.0%; border-collapse: collapse; border: none">
+                                            <tbody>
+                                                <tr>
+                                                    <td style="border: none; border-top: solid #CCCCCC 1.0pt; padding: 0cm 0cm 0cm 0cm"></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:20pt 30pt 20pt 30pt">
+                                        <span style="font-size:10pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#666666;">
+                                            If this wasn't you, please ignore this email or contact our customer service center:
+                                            <a href="mailto:ifs_service@uxb2b.com" target="_blank">ifs_service@uxb2b.com</a> for further
+                                            assistance.
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center" style="padding:0 30pt 20pt 30pt">
+                                        <span style="font-size:10pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color:#666666;">
+                                            Copyright Ⓒ 2023 UX SIGN, All rights reserved.
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center" style="padding:0 30pt 20pt 30pt">
+                                        <span style="font-size: 9.0pt;font-family:'微軟正黑體,新細明體,Helvetica,sans-serif';color: #656565">
+                                            <a href="https://www.uxb2b.com/" target="_blank">
+                                                <span style="color: #586AF2; background: #FAFAFA">Uxb2b</span>
+                                            </a>
+                                            <span style="background: #FAFAFA"> | </span>
+                                            <a href="mailto:ifs_service@uxb2b.com" target="_blank">
+                                                <span style="color: #586AF2; background: #FAFAFA">Contact us</span>
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>

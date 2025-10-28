@@ -219,6 +219,7 @@
       <Column Name="CompanyBelongTo" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="CanCreateContract" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
       <Column Name="CreateUID" Type="System.Int32" DbType="Int" CanBeNull="true" />
+	  <Column Name="ContractTermDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />	
       <Association Name="FK_CHT_Token_Organization" Member="CHT_Token" ThisKey="CompanyID" OtherKey="CompanyID" Type="CHT_Token" Cardinality="One" DeleteRule="CASCADE" />
       <Association Name="FK_ContractingParty_Organization" Member="ContractingParty" ThisKey="CompanyID" OtherKey="CompanyID" Type="ContractingParty" DeleteRule="NO ACTION" />
       <Association Name="FK_ContractSignatureRequest_Organization" Member="ContractSignatureRequest" ThisKey="CompanyID" OtherKey="CompanyID" Type="ContractSignatureRequest" DeleteRule="NO ACTION" />

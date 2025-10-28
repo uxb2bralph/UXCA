@@ -54,6 +54,20 @@
                 </div>
               </div>
             </div>
+            <div class="col input__height">
+                <div class="row">
+                    <label for="QueryStep" class="col-sm-12 col-md-3 col-form-label fs-14 fw-bolder">文件權限</label>
+                    <div id="queryStepField" class="col-sm-12 col-md-9">
+                        <select v-model="searchFormData.CreateContract" class="form-select">
+                            <option v-for="(item, index) in CreateContractOption" :key="index" :value="item.value">
+                                {{ item.text }}
+                            </option>
+                        </select>
+                        <div class="invalid-feedback">
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!--
             <div class="col input__height">
               <div class="row">
@@ -136,6 +150,8 @@
             <tr>
               <th scope="col">公司名稱</th>
               <th scope="col">統一編號</th>
+              <th scope="col">權限到期日</th>
+              <th scope="col">文件權限</th>
               <!--
               <th scope="col">負責人</th>
               <th scope="col">電話</th>
@@ -150,6 +166,8 @@
             <tr v-for="(company, index) in companyList" :key="`c_${index}`">
               <td class="text-nowrap fs-13">{{ company.CompanyName }}</td>
               <td class="text-nowrap fs-13">{{ company.ReceiptNo }}</td>
+              <td class="text-nowrap fs-13">{{ (company.ContractTermDate === "") ? "無期限" : company.ContractTermDate }}</td>
+              <td class="text-nowrap fs-13">{{ (company.CanCreateContract) ? "啟用" : "停用" }}</td>
               <!--
               <td class="fs-13">{{ company.UndertakerName }}</td>
               <td class="fs-13">{{ company.Phone }}</td>
@@ -379,7 +397,7 @@
                   </div>
                 </div>
                 -->
-                <div class="col input__height">
+                @* <div class="col input__height">
                   <div class="row">
                     <label for="BelongToCompanyName"
                       class="col-sm-12 col-md-3 col-form-label fw-bolder">所屬起約方公司名稱</label>
@@ -395,6 +413,16 @@
                       </ul>
                     </div>
                   </div>
+                </div> *@
+
+
+                <div class="col input__height">
+                    <div class="row">
+                        <label for="ReceiptNo" class="col-sm-12 col-md-3 col-form-label fw-bolder">權限到期日</label>
+                        <div class="col-sm-12 col-md-9">
+                            <input v-model="formData.ContractTermDate" type="date" class="form-control" />
+                        </div>
+                    </div>
                 </div>
 
                 <div class="col input__height">
@@ -455,27 +483,21 @@
       searchFormData: {
         CompanyName: null,
         ReceiptNo: null,
-        //Phone: null,
-        //Fax: null,
-        //Addr: null,
-        //ContactEmail: null,
-        //UndertakerName: null,
+        CreateContract: null
       },
       // 編輯
       initialFormData: {
         CompanyName: null,
         ReceiptNo: null,
-        Phone: null,
-        Fax: null,
-        Addr: null,
-        ContactEmail: null,
-        UndertakerName: null,
-        CreateContract: false,
-        BelongToCompanyName: null,
-        BelongToCompany: null
+        CreateContract: null
       },
       formData: {},
       companyList: [],
+      CreateContractOption: [
+        { text: '請選擇', value: null },
+        { text: '啟用', value: true },
+        { text: '停用', value: false },
+      ],
       /** 分頁 options
        * totalRecordCount: 總筆數
        * pageSize: 每頁筆數
@@ -563,8 +585,10 @@
           const restData = {
             CreateContract: data.CanCreateContract,
             BelongToCompany: data.CompanyBelongTo,
-            BelongToCompanyName: data.NameOfCompanyBelongTo
+            BelongToCompanyName: data.NameOfCompanyBelongTo,
+            ContractTermDate: data.ContractTermDate
           }
+
           this.formData = { ...this.formData, ...data, ...restData };
         }
         $('#addNewModal').modal('show');
@@ -591,7 +615,7 @@
             const { hasError, message, result, data } = res;
             hideLoading();
             if ($.isPlainObject(res)) {
-              if (!hasError) {
+                if (result) {
                 // 成功
                 const filterCompanyList = app.companyList.filter(item => item.KeyID !== companyData.KeyID);
                 app.companyList = filterCompanyList;
@@ -638,11 +662,17 @@
 
         // 刪除不需外送的欄位
         delete this.formData.BelongToCompanyName;
+
         console.log('儲存表單', this.formData);
         // return;
         $('#addNewModal').modal('hide');
 
         const payload = this.formData;
+
+        if (payload.ContractTermDate === '') {
+           delete payload.ContractTermDate;
+        }
+
         showLoading();
         $.ajax({
           url: '@(Url.Action("VueCommitItem", "Organization"))',
@@ -687,6 +717,7 @@
       },
       fetchAPI() {
         // 執行查詢合約列表
+
         const payload = {
           data: this.searchFormData,
           pageSize: this.pageSize,
@@ -697,6 +728,10 @@
           PageSize: this.pageSize,
           PageIndex: this.page,
         }, this.searchFormData);
+
+        if (this.searchFormData.CreateContract == null) {
+           delete viewModel.CreateContract;
+        }
 
         fetchDataList(viewModel, '@(Url.Action("VueInquireData", "Organization"))');
       },

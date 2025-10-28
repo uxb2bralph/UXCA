@@ -4455,8 +4455,10 @@ namespace ContractHome.Models.DataEntity
 		private System.Nullable<bool> _CanCreateContract;
 		
 		private System.Nullable<int> _CreateUID;
-		
-		private EntityRef<CHT_Token> _CHT_Token;
+
+        private System.Nullable<System.DateTime> _ContractTermDate;
+
+        private EntityRef<CHT_Token> _CHT_Token;
 		
 		private EntitySet<ContractingParty> _ContractingParty;
 		
@@ -4524,9 +4526,12 @@ namespace ContractHome.Models.DataEntity
     partial void OnCanCreateContractChanged();
     partial void OnCreateUIDChanging(System.Nullable<int> value);
     partial void OnCreateUIDChanged();
-    #endregion
-		
-		public Organization()
+    partial void OnContractTermDateChanging(System.Nullable<System.DateTime> value);
+    partial void OnContractTermDateChanged();
+
+#endregion
+
+        public Organization()
 		{
 			this._CHT_Token = default(EntityRef<CHT_Token>);
 			this._ContractingParty = new EntitySet<ContractingParty>(new Action<ContractingParty>(this.attach_ContractingParty), new Action<ContractingParty>(this.detach_ContractingParty));
@@ -5056,8 +5061,28 @@ namespace ContractHome.Models.DataEntity
 				}
 			}
 		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="FK_CHT_Token_Organization", Storage="_CHT_Token", ThisKey="CompanyID", OtherKey="CompanyID", IsUnique=true, IsForeignKey=false, DeleteRule="CASCADE")]
+
+        [global::System.Data.Linq.Mapping.ColumnAttribute(Storage = "_ContractTermDate", DbType = "DateTime")]
+        public System.Nullable<System.DateTime> ContractTermDate
+        {
+            get
+            {
+                return this._ContractTermDate;
+            }
+            set
+            {
+                if ((this._ContractTermDate != value))
+                {
+                    this.OnContractTermDateChanging(value);
+                    this.SendPropertyChanging();
+                    this._ContractTermDate = value;
+                    this.SendPropertyChanged("ContractTermDate");
+                    this.OnContractTermDateChanged();
+                }
+            }
+        }
+
+        [global::System.Data.Linq.Mapping.AssociationAttribute(Name="FK_CHT_Token_Organization", Storage="_CHT_Token", ThisKey="CompanyID", OtherKey="CompanyID", IsUnique=true, IsForeignKey=false, DeleteRule="CASCADE")]
 		public CHT_Token CHT_Token
 		{
 			get
