@@ -765,6 +765,7 @@ namespace ContractHome.Models.Helper
                                    o.ContractTermDate.Value.AddDays(1) == DateTime.Now.Date)
                                && r.RoleID == (int)UserRoleDefinition.RoleEnum.MemberAdmin
                                && o.CanCreateContract == true
+                               orderby o.CompanyID descending
                                select new
                                {
                                   u.PID,
@@ -773,6 +774,8 @@ namespace ContractHome.Models.Helper
                                   o.CompanyName,
                                   o.ContractTermDate
                                }).ToList();
+
+            FileLogger.Logger.Info($"NotifyTerminationPrivilege notifyUsers Count: {notifyUsers.Count}");
 
             // 將合約權限過期公司的CanCreateContract設為false
             foreach (var user in notifyUsers) 
@@ -793,10 +796,12 @@ namespace ContractHome.Models.Helper
                 if (organization != null)
                 {
                     organization.CanCreateContract = false;
+                    FileLogger.Logger.Info($"NotifyTerminationPrivilege Set CanCreateContract=false CompanyName: {user.CompanyName} EMail: {user.EMail}");
                 }
             }
             _db.SubmitChanges();
 
+            int tempCompanyID = -1;
             foreach (var user in notifyUsers)
             {
                 IEmailContent emailContent = (user.ContractTermDate.Value.AddDays(1) == DateTime.Now.Date) ? 
@@ -807,9 +812,10 @@ namespace ContractHome.Models.Helper
                 await _emailFactory.SendEmailToCustomer(user.EMail, emailContent);
 
                 // 副本寄給OP
-                if (!string.IsNullOrEmpty(_mailSettings.OPEmail))
+                if (!string.IsNullOrEmpty(_mailSettings.OPEmail) && tempCompanyID != user.CompanyID)
                 {
                     await _emailFactory.SendEmailToCustomer(_mailSettings.OPEmail, emailContent);
+                    tempCompanyID = user.CompanyID;
                 }
 
                 FileLogger.Logger.Info($"NotifyTerminationPrivilege {emailContent.GetType().Name} CompanyName: {user.CompanyName} EMail: {user.EMail}");
