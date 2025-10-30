@@ -191,6 +191,7 @@ namespace ContractHome
             services.AddJobManager()
                     .AddrecurringJob<JobNotifyWhoNotFinishedDoc>()
                     .AddrecurringJob<JobNotifyTerminationContract>()
+                    .AddrecurringJob<JobNotifyTerminationPrivilege>()
                     .AddrecurringJob<JobTouchWebEveryday>();
 
             #endregion
