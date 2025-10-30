@@ -5,7 +5,7 @@ name: .NET
 
 on:
   push:
-    branches: [ "feat/Permission_dev" ]
+    branches: [ "master" ]
     
 jobs:
   build:
