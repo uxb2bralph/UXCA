@@ -109,7 +109,7 @@
                 @if (profile.IsMemberAdmin())
                 {
                     <li>
-                        <a class="dropdown-item" href="@Html.Raw(Url.Action("DeptMgmt", "UserProfile"))">部門帳號管理</a>
+                        <a class="dropdown-item" href="@Html.Raw(Url.Action("DeptMgmt", "UserProfile"))">公司帳號管理</a>
                     </li>
                 }
                 @if (profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.MemberAdmin,
