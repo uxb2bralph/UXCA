@@ -16,8 +16,6 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
-  schedule:
-    - cron: '30 14 * * 4'
 
 jobs:
   analyze:
@@ -99,4 +97,3 @@ jobs:
       uses: github/codeql-action/analyze@v4
       with:
         category: "/language:${{matrix.language}}"
-        sarif_file: results.sarif
