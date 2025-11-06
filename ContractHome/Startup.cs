@@ -240,6 +240,7 @@ namespace ContractHome
                 context =>
                 {
                     context.Request.EnableBuffering();
+                    context.Response.Headers.Add("X-Frame-Options", "DENY");
                     return next(context);
                 });
 
