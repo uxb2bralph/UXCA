@@ -34,7 +34,7 @@ namespace ContractHome.ApiControllers
 
             if (string.IsNullOrEmpty(authNotify.tid))
             {
-                FileLogger.Logger.Info($"SignatureHub AuthNotify: No Has tid for result:{authNotify.result} resultMessage:{authNotify.resultMessage.SanitizeForLog()} email:{authNotify.email} expDate:{authNotify.expDate} tid:{authNotify.tid.SanitizeForLog()}");
+                FileLogger.Logger.Info($"SignatureHub AuthNotify: No Has tid for result:{authNotify.result} resultMessage:{authNotify.resultMessage.SanitizeForLog()} email:{authNotify.email.SanitizeForLog()} expDate:{authNotify.expDate.SanitizeForLog()} tid:{authNotify.tid.SanitizeForLog()}");
 
                 return Ok(new { oneTimeToken, signature });
             }

@@ -65,7 +65,7 @@ namespace CommonLib.Logger
             String log = GetLogContent(obj, "err");
             if (log != null)
             {
-                _err.WriteLog(log);
+                _err.WriteLog(log.SanitizeForLog());
             }
         }
 
@@ -74,7 +74,7 @@ namespace CommonLib.Logger
             String log = GetLogContent(obj, "nfo");
             if (log != null)
             {
-                _nfo.WriteLog(log);
+                _nfo.WriteLog(log.SanitizeForLog());
             }
         }
 
@@ -84,7 +84,7 @@ namespace CommonLib.Logger
             String log = GetLogContent(obj, "wrn");
             if (log != null)
             {
-                _wrn.WriteLog(log);
+                _wrn.WriteLog(log.SanitizeForLog());
             }
         }
 
@@ -93,7 +93,7 @@ namespace CommonLib.Logger
             String log = GetLogContent(obj, "dbg");
             if (log != null)
             {
-                _dbg.WriteLog(log);
+                _dbg.WriteLog(log.SanitizeForLog());
             }
         }
 
@@ -102,7 +102,7 @@ namespace CommonLib.Logger
             String log = GetLogContent(obj, "err");
             if (log != null)
             {
-                _tra.WriteLog(log);
+                _tra.WriteLog(log.SanitizeForLog());
             }
         }
 

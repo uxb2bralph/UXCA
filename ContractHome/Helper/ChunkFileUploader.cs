@@ -295,6 +295,9 @@ namespace ContractHome.Helper
         /// <returns></returns>
         public async Task<(string outputPath, string outputFilename)> AssembleFile(string identifier, string originalFilename)
         {
+            if (!IsValidIdentifier(identifier))
+                throw new ArgumentException("Invalid identifier: Path traversal or unsafe characters detected.", nameof(identifier));
+
             var chunkPaths = GetSortedChunks(identifier);
             var tempFilename = string.IsNullOrWhiteSpace(originalFilename)
                 ? $"assembled_{identifier}"

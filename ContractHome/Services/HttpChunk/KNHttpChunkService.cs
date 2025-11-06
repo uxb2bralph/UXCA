@@ -132,7 +132,7 @@ namespace ContractHome.Services.HttpChunk
                 ChunkRequest = Request;
                 FileID = Request.Headers[_KNFileUploadSetting.HeaderFileId].ToString();
 
-                if (string.IsNullOrWhiteSpace(FileID) || FileID.Contains("..") || FileID.Contains('/') || FileID.Contains('\\'))
+                if (string.IsNullOrWhiteSpace(FileID) || FileID.Contains("..") || FileID.Contains('/') || FileID.Contains('\\') || Path.IsPathRooted(FileID))
                 {
                     WriteLog($"Invalid FileID detected: {FileID}");
                     return false;
