@@ -208,6 +208,11 @@ namespace ContractHome.Services.HttpChunk
         /// <returns></returns>
         private bool ValidateMD5()
         {
+            if (!IsSafeFilePath(_KNFileUploadSetting.TempFolderPath, TempFilePath))
+            {
+                WriteLog($"Unsafe file path detected for MD5 validation: {TempFilePath}");
+                return false;
+            }
             using (var md5 = MD5.Create())
             using (var stream = new FileStream(TempFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
