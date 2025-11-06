@@ -89,6 +89,12 @@ namespace ContractHome.Controllers
                 viewModel.FilePath = viewModel.KeyID.DecryptData();
             }
 
+            if (string.IsNullOrEmpty(viewModel.FilePath) || viewModel.FilePath.Contains("..") ||
+                viewModel.FilePath.Contains('/') || viewModel.FilePath.Contains('\\') || Path.IsPathRooted(viewModel.FilePath))
+            {
+                return new NotFoundResult();
+            }
+
             if (!System.IO.File.Exists(viewModel.FilePath))
             {
                 return new NotFoundResult();

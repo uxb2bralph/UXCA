@@ -1,10 +1,11 @@
 ﻿
+using CommonLib.Core.Utility;
+using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
-using CommonLib.Core.Utility;
-using Microsoft.Extensions.Options;
+using System.Text.RegularExpressions;
 
 namespace ContractHome.Services.HttpChunk
 {
@@ -48,6 +49,13 @@ namespace ContractHome.Services.HttpChunk
             }
 
             return value.Replace("\r", "").Replace("\n", "");
+        }
+
+        private static bool IsSafeFilePath(string baseFolder, string filePath)
+        {
+            var fullBase = Path.GetFullPath(baseFolder);
+            var fullFile = Path.GetFullPath(filePath);
+            return fullFile.StartsWith(fullBase + Path.DirectorySeparatorChar);
         }
 
         /// <summary>
@@ -111,6 +119,13 @@ namespace ContractHome.Services.HttpChunk
         private async Task SaveChunkDataToTempFile()
         {
             Directory.CreateDirectory(_KNFileUploadSetting.TempFolderPath);
+
+            if (!IsSafeFilePath(_KNFileUploadSetting.TempFolderPath, TempFilePath))
+            {
+                WriteLog($"Unsafe file path detected for temp file: {TempFilePath}");
+                throw new UnauthorizedAccessException("Invalid file path.");
+            }
+
             using (var fs = new FileStream(TempFilePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Write))
             {
                 fs.Seek((long)ChunkIndex * ChunkSize, SeekOrigin.Begin);
@@ -132,7 +147,8 @@ namespace ContractHome.Services.HttpChunk
                 ChunkRequest = Request;
                 FileID = Request.Headers[_KNFileUploadSetting.HeaderFileId].ToString();
 
-                if (string.IsNullOrWhiteSpace(FileID) || FileID.Contains("..") || FileID.Contains('/') || FileID.Contains('\\') || Path.IsPathRooted(FileID))
+                if (string.IsNullOrWhiteSpace(FileID) || FileID.Contains("..") || 
+                    FileID.Contains('/') || FileID.Contains('\\') || Path.IsPathRooted(FileID) || !Regex.IsMatch(FileID, "^[A-Za-z0-9_-]+$"))
                 {
                     WriteLog($"Invalid FileID detected: {FileID}");
                     return false;
