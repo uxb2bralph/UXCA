@@ -1,4 +1,5 @@
 ﻿using CommonLib.Core.Utility;
+using CommonLib.Utility;
 using ContractHome.Helper;
 using ContractHome.Hubs;
 using ContractHome.Models.DataEntity;
@@ -33,7 +34,7 @@ namespace ContractHome.ApiControllers
 
             if (string.IsNullOrEmpty(authNotify.tid))
             {
-                FileLogger.Logger.Info($"SignatureHub AuthNotify: No Has tid for result:{authNotify.result} resultMessage:{authNotify.resultMessage} email:{authNotify.email} expDate:{authNotify.expDate} tid:{authNotify.tid}");
+                FileLogger.Logger.Info($"SignatureHub AuthNotify: No Has tid for result:{authNotify.result} resultMessage:{authNotify.resultMessage.SanitizeForLog()} email:{authNotify.email} expDate:{authNotify.expDate} tid:{authNotify.tid.SanitizeForLog()}");
 
                 return Ok(new { oneTimeToken, signature });
             }
@@ -44,7 +45,7 @@ namespace ContractHome.ApiControllers
 
             if (csr == null)
             {
-                FileLogger.Logger.Info($"SignatureHub AuthNotify: No matching ContractSignatureRequest found for tid:{authNotify.tid}");
+                FileLogger.Logger.Info($"SignatureHub AuthNotify: No matching ContractSignatureRequest found for tid:{authNotify.tid.SanitizeForLog()}");
                 return Ok(new { oneTimeToken, signature });
             }
 
@@ -53,7 +54,7 @@ namespace ContractHome.ApiControllers
             await _hubContext.Clients.Group(key)
                   .SendAsync("ReceiveUpdateNotice", key, authNotify.result, authNotify.resultMessage);
 
-            FileLogger.Logger.Info($"SignatureHub AuthNotify: GroupKey:{key} result:{authNotify.result} resultMessage:{authNotify.resultMessage} email:{authNotify.email} expDate:{authNotify.expDate} tid:{authNotify.tid}");
+            FileLogger.Logger.Info($"SignatureHub AuthNotify: GroupKey:{key.SanitizeForLog()} result:{authNotify.result} resultMessage:{authNotify.resultMessage.SanitizeForLog()} email:{authNotify.email.SanitizeForLog()} expDate:{authNotify.expDate.SanitizeForLog()} tid:{authNotify.tid.SanitizeForLog()}");
 
             return Ok(new { oneTimeToken, signature });
         }
@@ -79,7 +80,7 @@ namespace ContractHome.ApiControllers
                 }
             }
 
-            FileLogger.Logger.Info($"SignatureHub CertApply: email:{certApply.email} resultMessage:{certApply.discountCode} whenCreated:{certApply.whenCreated} certSerial:{certApply.certSerial}");
+            FileLogger.Logger.Info($"SignatureHub CertApply: email:{certApply.email.SanitizeForLog()} resultMessage:{certApply.discountCode.SanitizeForLog()} whenCreated:{certApply.whenCreated.SanitizeForLog()} certSerial:{certApply.certSerial.SanitizeForLog()}");
 
             var (oneTimeToken, signature) = CHTSigningService.GetApplicationResponse();
             return Ok(new { oneTimeToken, signature });

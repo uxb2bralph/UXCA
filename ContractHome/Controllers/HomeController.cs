@@ -52,6 +52,14 @@ namespace ContractHome.Controllers
 
         public IActionResult ApplyTemplate(String template)
         {
+            if (string.IsNullOrEmpty(template)
+                || template.Contains("..")
+                || template.Contains('/')
+                || template.Contains('\\'))
+            {
+                return Json(new { result = false, message = "Invalid template file name!" });
+            }
+
             String templatePath = System.IO.Path.Combine(FileLogger.Logger.LogPath, "Template", template);
             if(System.IO.File.Exists(templatePath)) 
             {

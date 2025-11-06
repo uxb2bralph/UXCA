@@ -38,6 +38,21 @@ namespace ContractHome.Helper
             FileLogger.Logger.Info($"ThreadID({Environment.CurrentManagedThreadId}):{message} - {CurrentDateTime}");
         }
 
+        private bool IsValidIdentifier(string identifier)
+        {
+            if (string.IsNullOrWhiteSpace(identifier))
+                return false;
+            if (identifier.Contains("..") || identifier.Contains('/') || identifier.Contains('\\'))
+                return false;
+            // Only allow alphanumeric, dash, and underscore for identifier (adjust pattern as needed)
+            foreach (char c in identifier)
+            {
+                if (!(char.IsLetterOrDigit(c) || c == '-' || c == '_'))
+                    return false;
+            }
+            return true;
+        }
+
         /// <summary>
         /// 上傳檔案
         /// </summary>
@@ -236,6 +251,9 @@ namespace ContractHome.Helper
         /// <returns></returns>
         public async Task<bool> SaveChunkFileAsync(IFormFile file, int chunkNumber, int totalChunks, string identifier)
         {
+            if (!IsValidIdentifier(identifier))
+                throw new ArgumentException("Invalid identifier: Path traversal or unsafe characters detected.", nameof(identifier));
+
             var tempDir = Path.Combine(_kNFileUploadSetting.TempFolderPath);
             Directory.CreateDirectory(tempDir);
 
@@ -255,6 +273,9 @@ namespace ContractHome.Helper
         /// <returns></returns>
         private bool IsUploadComplete(string identifier, int totalChunks)
         {
+            if (!IsValidIdentifier(identifier))
+                throw new ArgumentException("Invalid identifier: Path traversal or unsafe characters detected.", nameof(identifier));
+
             var tempDir = Path.Combine(_kNFileUploadSetting.TempFolderPath);
             for (int i = 0; i < totalChunks; i++)
             {
@@ -335,6 +356,14 @@ namespace ContractHome.Helper
         /// <returns></returns>
         public List<int> GetMissingChunks(string identifier, int totalChunks)
         {
+            if (string.IsNullOrEmpty(identifier) ||
+                identifier.Contains("..") ||
+                identifier.Contains('/') ||
+                identifier.Contains('\\'))
+            {
+                throw new ArgumentException("Invalid identifier value.");
+            }
+
             var tempDir = Path.Combine(_kNFileUploadSetting.TempFolderPath);
             var missingChunks = new List<int>();
             for (int i = 0; i < totalChunks; i++)

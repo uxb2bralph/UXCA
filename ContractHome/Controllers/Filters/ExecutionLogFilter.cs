@@ -14,11 +14,11 @@ namespace ContractHome.Controllers.Filters
             _stopwatch.Stop();
 
             var user = context.HttpContext.User.Claims.FirstOrDefault()?.Value ?? "Anonymous";
-            var path = context.HttpContext.Request.Path;
-            var method = context.HttpContext.Request.Method;
+            var path = context.HttpContext.Request.Path.ToString().Replace("\r", "").Replace("\n", "");
+            var method = context.HttpContext.Request.Method.ToString().Replace("\r", "").Replace("\n", "");
             var elapsedMs = _stopwatch.ElapsedMilliseconds;
             var ip = context.HttpContext.Connection.RemoteIpAddress?.ToString();
-            ip ??= context.HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault() ?? "Unknown";
+            ip ??= context.HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()?.ToString().Replace("\r", "").Replace("\n", "") ?? "Unknown";
 
             _logger.LogInformation($"[PID: {user}] [IP: {ip}] [Method: {method}] [Path: {path}] Time: {elapsedMs}ms");
         }

@@ -891,6 +891,12 @@ namespace CommonLib.Utility
             return String.IsNullOrEmpty(val) ? null : val;
         }
 
+        public static string SanitizeForLog(this string input)
+        {
+            if (input == null) return string.Empty;
+            return input.Replace("\r", "").Replace("\n", "");
+        }
+
         public static String GetEfficientString(this String source, String suffix)
         {
             String val = source != null ? source.Trim() : null;

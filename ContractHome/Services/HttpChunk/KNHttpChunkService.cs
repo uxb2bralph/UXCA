@@ -35,10 +35,19 @@ namespace ContractHome.Services.HttpChunk
         private static void WriteLog(string message)
         {
             #if DEBUG
-            Console.WriteLine($"ThreadID({Environment.CurrentManagedThreadId}):{message} - {CurrentDateTime}");
+            Console.WriteLine($"ThreadID({Environment.CurrentManagedThreadId}):{SanitizeForLog(message)} - {CurrentDateTime}");
             #endif
 
-            FileLogger.Logger.Info($"ThreadID({Environment.CurrentManagedThreadId}):{message} - {CurrentDateTime}");
+            FileLogger.Logger.Info($"ThreadID({Environment.CurrentManagedThreadId}):{SanitizeForLog(message)} - {CurrentDateTime}");
+        }
+
+        private static string SanitizeForLog(string value)
+        {
+            if (value == null) {
+                return string.Empty;
+            }
+
+            return value.Replace("\r", "").Replace("\n", "");
         }
 
         /// <summary>
@@ -51,7 +60,7 @@ namespace ContractHome.Services.HttpChunk
             // 綁定及驗證 Header 屬性
             if (!BuildHeaderProperty(Request) && !ValidateHeaderProperty())
             {
-                string msg = $"Header 屬性錯誤.{_KNFileUploadSetting.HeaderFileId} : {FileID} {_KNFileUploadSetting.HeaderChunkIndex}: {ChunkIndex} {_KNFileUploadSetting.HeaderTotalChunks}: {TotalChunks} {_KNFileUploadSetting.HeaderFileMD5}: {FileMD5}";
+                string msg = $"Header 屬性錯誤.{_KNFileUploadSetting.HeaderFileId} : {SanitizeForLog(FileID)} {_KNFileUploadSetting.HeaderChunkIndex}: {ChunkIndex} {_KNFileUploadSetting.HeaderTotalChunks}: {TotalChunks} {_KNFileUploadSetting.HeaderFileMD5}: {SanitizeForLog(FileMD5)}";
                 WriteLog(msg);
                 return new HttpChunkResult
                 {
@@ -62,7 +71,7 @@ namespace ContractHome.Services.HttpChunk
 
             // 將分塊資料存入暫存檔案
             await SaveChunkDataToTempFile();
-            WriteLog($"Download chunk {ChunkIndex + 1}/{TotalChunks} filename: {FileID}");
+            WriteLog($"Download chunk {ChunkIndex + 1}/{TotalChunks} filename: {SanitizeForLog(FileID)}");
 
             // 驗證MD5
             if (!ValidateMD5())
@@ -70,7 +79,7 @@ namespace ContractHome.Services.HttpChunk
                 return new HttpChunkResult
                 {
                     Code = (int)HttpChunkResultCodeEnum.MD5_ERROR,
-                    Message = $"下載錯誤 chunk {ChunkIndex + 1}/{TotalChunks} {_KNFileUploadSetting.HeaderFileMD5}: {FileMD5} filename: {FileID}"
+                    Message = $"下載錯誤 chunk {ChunkIndex + 1}/{TotalChunks} {_KNFileUploadSetting.HeaderFileMD5}: {SanitizeForLog(FileMD5)} filename: {SanitizeForLog(FileID)}"
                 };
             }
 
@@ -122,6 +131,13 @@ namespace ContractHome.Services.HttpChunk
             {
                 ChunkRequest = Request;
                 FileID = Request.Headers[_KNFileUploadSetting.HeaderFileId].ToString();
+
+                if (string.IsNullOrWhiteSpace(FileID) || FileID.Contains("..") || FileID.Contains('/') || FileID.Contains('\\'))
+                {
+                    WriteLog($"Invalid FileID detected: {FileID}");
+                    return false;
+                }
+
                 ChunkIndex = int.Parse(Request.Headers[_KNFileUploadSetting.HeaderChunkIndex].ToString());
                 TotalChunks = int.Parse(Request.Headers[_KNFileUploadSetting.HeaderTotalChunks].ToString());
                 ChunkSize = int.Parse(Request.Headers[_KNFileUploadSetting.HeaderChunkSize].ToString());

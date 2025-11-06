@@ -21,6 +21,16 @@
         {
             dateTime ??= DateTime.Now;
 
+            if (string.IsNullOrEmpty(fileName)
+                || fileName.Contains("..")
+                || fileName.Contains('/')
+                || fileName.Contains('\\')
+                || Path.GetFileName(fileName) != fileName)
+            {
+                // Invalid file name, treat as not found
+                return [];
+            }
+
             string path = GetPath(dateTime.Value);
 
             string filePath = Path.Combine(path, fileName);

@@ -4,6 +4,7 @@ using System.Text;
 using System.IO;
 using CommonLib.Helper;
 using CommonLib.PlugInAdapter;
+using CommonLib.Utility;
 
 namespace CommonLib.Logger
 {
@@ -69,7 +70,7 @@ namespace CommonLib.Logger
             {
                 _sb.Append($"{DateTime.Now:yyyy/MM/dd HH:mm:ss}");
                 _sb.Append(Environment.NewLine);
-                _sb.Append(log);
+                _sb.Append(log.SanitizeForLog());
                 _sb.Append(Environment.NewLine);
             }
 
@@ -77,7 +78,7 @@ namespace CommonLib.Logger
 
             if (Appendant != null)
             {
-                Appendant.WriteLog(log);
+                Appendant.WriteLog(log.SanitizeForLog());
             }
         }
 

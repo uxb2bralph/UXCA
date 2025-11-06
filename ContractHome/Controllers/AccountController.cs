@@ -227,7 +227,7 @@ namespace ContractHome.Controllers
 
             if (resp.HasError)
             {
-                FileLogger.Logger.Error($"{resp.Message}-{this.GetType().Name}-Base64Token={token}");
+                FileLogger.Logger.Error($"{resp.Message}-{this.GetType().Name.SanitizeForLog()}-Base64Token={token.SanitizeForLog()}");
                 TempData["message"] += resp.Message;
             }
 
@@ -265,7 +265,7 @@ namespace ContractHome.Controllers
 
             if (resp.HasError) 
             {
-                FileLogger.Logger.Error($"{resp.Message}-{this.GetType().Name}-Base64Token={token}");
+                FileLogger.Logger.Error($"{resp.Message}-{this.GetType().Name.SanitizeForLog()}-Base64Token={token.SanitizeForLog()}");
                 return resp; 
             }
 

@@ -64,7 +64,8 @@ namespace ContractHome.Controllers
             }
             catch (Exception ex)
             {
-                FileLogger.Logger.Error($"TokenValidate failed. JwtToken={token};   {ex}");
+                var tokenSanitized = token.Replace("\r", "").Replace("\n", "");
+                FileLogger.Logger.Error($"TokenValidate failed. JwtToken={tokenSanitized};   {ex}");
                 return false;
             }
         }
