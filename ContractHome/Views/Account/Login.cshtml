@@ -137,7 +137,7 @@
         rememberAccount: false,
         validCode: null,
         encryptedCode: '@Html.Raw(_encryptedCode)',
-        returnUrl: '@Context.Request.Query["ReturnUrl"]'
+          returnUrl: '@(Url.IsLocalUrl(Context.Request.Query["ReturnUrl"]) ? Context.Request.Query["ReturnUrl"]:"")'
       },
       isPid: true,
       isPassword: true,
