@@ -2056,7 +2056,7 @@ color:black;'>雙方同意本合約以電子簽章為之，雙方完成電子簽
                     @if (_viewModel?.BuyerSeal != null)
                     {
                         <span style='position:absolute;z-index:-999;margin-left:0px;margin-top:-15px;'>
-                            <img src="@Html.Raw(_viewModel.BuyerSeal)" style="max-width:306px;" />
+                            <img src="@_viewModel.BuyerSeal" style="max-width:306px;" />
                         </span>
                     }
                     <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
@@ -2162,7 +2162,7 @@ color:black;'>雙方同意本合約以電子簽章為之，雙方完成電子簽
                             <span class=SpellE>
                                 <span lang=EN-US
                                       style='font-size:14.0pt;mso-fareast-font-family:
-  標楷體;color:black;'>@Html.Raw(_viewModel?.BuyerIdNo)</span>
+  標楷體;color:black;'>@_viewModel?.BuyerIdNo</span>
                             </span>
                         </span>
                     </p>
@@ -2183,7 +2183,7 @@ color:black;'>雙方同意本合約以電子簽章為之，雙方完成電子簽
                     @if (_viewModel?.SellerSeal != null)
                     {
                         <span style='position:absolute;z-index:-999;'>
-                            <img src="@Html.Raw(_viewModel.SellerSeal)" style="max-width:306px;" >
+                            <img src="@_viewModel.SellerSeal" style="max-width:306px;" >
                         </span>
                     }
                     <p class=MsoBodyTextIndent2 style='margin-left:0cm;text-align:justify;
@@ -2311,7 +2311,7 @@ text-align-last:justify;text-justify:distribute-all-lines;
             <span class=SpellE>
                 <span lang=EN-US
                       style='font-size:14.0pt;font-family:標楷體;color:black;'>
-                    @Html.Raw(_viewModel.SignDate)
+                    @_viewModel.SignDate
                 </span>
             </span>
         </p>
