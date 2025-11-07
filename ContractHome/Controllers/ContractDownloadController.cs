@@ -25,7 +25,7 @@ namespace ContractHome.Controllers
             if (profile != null)
             {
                 string action = (type == "footprints") ? "DownloadFootprints" : "DownloadContract";
-                return Redirect($"api/ContractDownload/{action}?token={Uri.EscapeDataString(token)}");
+                return Redirect($"api/ContractDownload/{action}?token={token}");
             }
 
             return View();

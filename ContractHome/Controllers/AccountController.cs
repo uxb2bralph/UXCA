@@ -102,13 +102,18 @@ namespace ContractHome.Controllers
 
             viewModel.ReturnUrl = viewModel.ReturnUrl.GetEfficientString();
 
-            if (!Url.IsLocalUrl(viewModel.ReturnUrl))
+            if (Url.IsLocalUrl(viewModel.ReturnUrl))
             {
-                return BadRequest("Invalid redirect target.");
+                return Redirect(viewModel.ReturnUrl);
+            } 
+            else if  (Url.IsLocalUrl(msg)) 
+            {
+                return Redirect(msg);
+            } 
+            else
+            {
+                return Redirect("~/Account/Login");
             }
-
-            return Redirect(viewModel.ReturnUrl ?? msg ?? "~/Account/Login");
-
         }
 
         [AllowAnonymous]
