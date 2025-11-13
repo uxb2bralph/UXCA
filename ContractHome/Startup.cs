@@ -212,6 +212,8 @@ namespace ContractHome
                 app.UseDeveloperExceptionPage();
                 app.UseHsts();
             }
+
+            app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             //app.UsePathBase("/ContractHome");
@@ -240,7 +242,22 @@ namespace ContractHome
                 context =>
                 {
                     context.Request.EnableBuffering();
-                    context.Response.Headers.Add("X-Frame-Options", "DENY");
+                    
+                    context.Response.Headers.Append("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+                    context.Response.Headers.Append("X-Frame-Options", "SAMEORIGIN");
+                    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+                    context.Response.Headers.Append("Referrer-Policy", "no-referrer");
+                    context.Response.Headers.Append("X-XSS-Protection", "0");
+                    context.Response.Headers.Append("Permissions-Policy",
+                                                    "accelerometer=(), camera=(), geolocation=(), gyroscope=(), " +
+                                                    "magnetometer=(), microphone=(), payment=(), usb=(), " +
+                                                    "fullscreen=(self)");
+                    context.Response.Headers.Append("Content-Security-Policy",
+                        "object-src 'none'; " +
+                        "frame-ancestors 'self'; " +
+                        "base-uri 'self'; " +
+                        "form-action 'self';");
+
                     return next(context);
                 });
 
