@@ -15,7 +15,10 @@
     <PackageReference Include="GemBox.Pdf" Version="17.0.1386" />
     <PackageReference Include="GrapeCity.Documents.Pdf" Version="6.2.0" />
     <PackageReference Include="IronPDF" Version="2023.8.6" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+    <PackageReference Include="SkiaSharp" Version="3.119.1" />
     <PackageReference Include="System.Drawing.Common" Version="8.0.3" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.10" />
   </ItemGroup>
 
   <ItemGroup>
