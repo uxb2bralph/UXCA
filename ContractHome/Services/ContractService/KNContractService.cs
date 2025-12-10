@@ -453,10 +453,10 @@ namespace ContractHome.Services.ContractService
                                    c.ContractNo
                                };
 
-                if (contract.FirstOrDefault() != null)
-                {
-                    modelState.AddModelError(nameof(model.ContractNo), "合約編號已存在");
-                }
+                //if (contract.FirstOrDefault() != null)
+                //{
+                //    modelState.AddModelError(nameof(model.ContractNo), "合約編號已存在");
+                //}
 
                 // 檢查合約PDF是否存在
                 if (GetContractFile(model.ContractNo) == null)

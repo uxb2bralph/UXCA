@@ -2,8 +2,10 @@
 using ContractHome.Models.DataEntity;
 using ContractHome.Security.Authorization;
 using ContractHome.Services.ContractService;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Unicode;
 
 namespace ContractHome.Controllers
 {
@@ -12,18 +14,30 @@ namespace ContractHome.Controllers
     public class KNContractController(ICustomContractService customContractService) : ControllerBase
     {
         private readonly ICustomContractService _customContractService = customContractService;
+        private readonly JsonSerializerOptions serializeOptions = new JsonSerializerOptions
+                        {
+                            PropertyNamingPolicy = null,
+                            Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.CjkUnifiedIdeographs),
+                        };
 
-        [HttpPost]
+    [HttpPost]
         [Route("CreateContract")]
         public async Task<IActionResult> CreateContract([FromBody] ContractModel contractModel)
         {
+            FileLogger.Logger.Info($"KNContract.CreateContract ContractModel : { JsonSerializer.Serialize(contractModel, serializeOptions) }");
+
             try
             {
                 if (!_customContractService.IsValid(contractModel, ModelState, out ContractResultModel result))
                 {
+                    FileLogger.Logger.Info($"KNContract.CreateContract result:{ JsonSerializer.Serialize(result, serializeOptions) }");
+
                     return Ok(result);
                 }
                 var createResult = _customContractService.CreateContract(contractModel);
+
+                FileLogger.Logger.Info($"KNContract.CreateContract result:{ JsonSerializer.Serialize(createResult, serializeOptions) }");
+
                 return Ok(createResult);
             }
             catch (Exception ex)
