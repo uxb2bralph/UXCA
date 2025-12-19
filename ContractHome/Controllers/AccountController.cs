@@ -304,6 +304,8 @@ namespace ContractHome.Controllers
 
             models.SubmitChanges();
 
+            FileLogger.Logger.Info($"Account PasswordReset pid={pid} password={password}");
+
             //_cacheFactory.SetTokenCache(token);
             _cacheStore.Add(new Token(), cacheKey);
 

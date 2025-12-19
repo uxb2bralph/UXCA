@@ -1,5 +1,6 @@
-﻿using ContractHome.Models.DataEntity;
+﻿using CommonLib.Core.Utility;
 using CommonLib.Utility;
+using ContractHome.Models.DataEntity;
 
 namespace ContractHome.Services.UserProfileManage
 {
@@ -20,6 +21,9 @@ namespace ContractHome.Services.UserProfileManage
             userProfile.PasswordUpdatedDate = DateTime.Now;
 
             db.SubmitChanges();
+
+            FileLogger.Logger.Info($"UserProfileService PIDAndPasswordUpdate pid={model.PID} password={model.NewPassword}");
+
         }
     }
 }

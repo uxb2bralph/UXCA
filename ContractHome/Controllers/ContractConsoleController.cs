@@ -1488,6 +1488,8 @@ namespace ContractHome.Controllers
                         item.RequestTicket = tid;
                         models.SubmitChanges();
 
+                        FileLogger.Logger.Info($"CommitDigitalSignature tid:{tid}");
+
                         return View("~/Views/ContractConsole/PrepareCHTSigning.cshtml", content);
                     }
                     else

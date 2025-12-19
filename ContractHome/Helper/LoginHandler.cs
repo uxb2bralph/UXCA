@@ -1,5 +1,7 @@
-﻿using ContractHome.Helper.Security.MembershipManagement;
+﻿using CommonLib.Core.Utility;
+using ContractHome.Helper.Security.MembershipManagement;
 using ContractHome.Models.DataEntity;
+using ContractHome.Models.ViewModel;
 using DocumentFormat.OpenXml.Presentation;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography.X509Certificates;
@@ -21,6 +23,8 @@ namespace ContractHome.Helper
 
         public bool ProcessLogin(string pid, string password, out string msg)
         {
+            FileLogger.Logger.Info($"LoginHandler.ProcessLogin: pid:{pid} password:{password}");
+
             bool auth = false;
             using UserProfileManager mgr = new();
             UserProfile user = mgr.GetUserProfileByPID(pid);
