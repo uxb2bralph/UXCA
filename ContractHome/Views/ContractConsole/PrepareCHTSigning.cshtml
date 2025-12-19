@@ -57,29 +57,29 @@
     <use xlink:href="#exclamation-triangle-fill" />
   </svg>
   <div>
-    <span class="fs-14 pt-2">系統已發送「雲端簽署憑證」授權訊息到您的信箱，請依訊息指示操作並取得簽署憑證授權後，再點擊<span
-        class="text-primary">「執行簽署」</span>進行文件簽署的動作。
+        <span class="fs-14 pt-2">
+            系統已發送「雲端簽署憑證」授權訊息到您的信箱．<br />請依訊息指示操作並取得簽署憑證授權．<br /><span class="text-danger">
+                請勿關閉視窗</span>並等待<span class="text-primary">「簽署完成」</span>方可返回文件清單查看。
     </span>
   </div>
 </div>
 
 @section ModalFooter
 {
-  <button type="button" class="btn btn-primary waves-effect btn-confirm">執行簽署</button>
+  <button type="button" class="btn btn-primary waves-effect btn-confirm" style="display:none">執行簽署</button>
   <script nonce="Y2hiY29kZQ==">
     $(function () {
-     
       const connection = new signalR.HubConnectionBuilder().withUrl("@Url.Content("~")/SignatureHub").build();
       // 設定 timeout 時間為 4 分鐘
       connection.serverTimeoutInMilliseconds = 240000;
 
       connection.start().then(() => {
-        //$('#@(_viewModel.DialogID) button.btn-confirm').hide();
+        $('#@(_viewModel.DialogID) button.btn-confirm').hide();
         connection.invoke("AddConnection", "@Html.Raw(_item?.ContractID.EncryptKey())").catch((err) => {
            return console.error(err.toString());
         });
       }).catch((err) => {
-        //$('#@(_viewModel.DialogID) button.btn-confirm').show();
+        $('#@(_viewModel.DialogID) button.btn-confirm').show();
         return console.error(err.toString());
       });
 
