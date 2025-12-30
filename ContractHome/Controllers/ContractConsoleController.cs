@@ -946,12 +946,35 @@ namespace ContractHome.Controllers
         public async Task<ActionResult> Trust(string token)
         {
             _contractServices.SetModels(models);
+
+            string decodedToken = string.Empty;
+
+            try
+            {
+                decodedToken = JwtTokenValidator.Base64UrlDecodeToString(token).DecryptData();
+
+            } catch(Exception ex)
+            {
+                FileLogger.Logger.Error(ex);
+            }
+
+            if (string.IsNullOrEmpty(decodedToken))
+            {
+                BaseResponse rep = new();
+                rep.Url = $"{Settings.Default.WebAppDomain}";
+                rep = rep.ErrorMessage("Token已失效。");
+                return View("~/Views/Shared/CustomMessage.cshtml", rep);
+            }
+
             (BaseResponse resp, JwtToken jwtTokenObj, UserProfile userProfile)
-                    = _contractServices.TokenValidate(JwtTokenValidator.Base64UrlDecodeToString(token).DecryptData());
+                    = _contractServices.TokenValidate(decodedToken);
+
             if (resp.HasError)
             {
                 //return View("SignatureTrust",resp);
-                throw new ArgumentException(resp.Message);
+                //throw new ArgumentException(resp.Message);
+                resp.Url = $"{Settings.Default.WebAppDomain}";
+                return View("~/Views/Shared/CustomMessage.cshtml", resp);
             }
 
             if (string.IsNullOrEmpty(jwtTokenObj.ContractID))
