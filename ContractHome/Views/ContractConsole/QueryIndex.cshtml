@@ -24,6 +24,8 @@
 }
 @{
     <script src="~/js/api.js"></script>
+    <script src="~/lib/tippy/popper.min.js"></script>
+    <script src="~/lib/tippy/tippy-bundle.umd.js"></script>
 }
 <div id="queryIndex">
     <div class="container-lg">
@@ -340,13 +342,12 @@
                                         </button>
                                     </div>
 
-                                    <div class="progresses__company" v-on:mouseover="tipHandler(`in_${index}_${idx}`)">
-                                        <span data-bs-toggle="tooltip" :id="`in_${index}_${idx}`" :title="item.companyName">
-                                            <span class=" progresses__name" :class="{ 'bg-lightBlue': item.isCurrentUserCompany }">
-                                                {{ formatName(item.companyName) }}
-                                            </span>
+                                    <div class="progresses__company" :id="`in_${index}_${idx}`" v-on:mouseover="tipHandler(`in_${index}_${idx}`, item.companyName)">
+                                        <span  class=" progresses__name" :class="{ 'bg-lightBlue': item.isCurrentUserCompany }">
+                                            {{ formatName(item.companyName) }}
                                         </span>
                                     </div>
+
                                 </div>
                                 <!-- 簽約方 -->
                                 <div v-else class="progresses__stepGroup">
@@ -389,12 +390,10 @@
                                                 <i class="fas fa-signature"></i>
                                             </button>
                                         </div>
-                                        <div class="progresses__company" v-on:mouseover="tipHandler(`co_${index}_${idx}`)">
-                                            <span data-bs-toggle="tooltip" :id="`co_${index}_${idx}`" :title="item.companyName">
-                                                <span class=" progresses__name"
-                                                      :class="{ 'bg-warning opacity-75 text-dark': item.isCurrentUserCompany }">
-                                                    {{ formatName(item.companyName) }}
-                                                </span>
+
+                                        <div class="progresses__company" :id="`co_${index}_${idx}`" v-on:mouseover="tipHandler(`co_${index}_${idx}`, item.companyName)">
+                                            <span class=" progresses__name" :class="{ 'bg-warning opacity-75 text-dark': item.isCurrentUserCompany }">
+                                                {{ formatName(item.companyName) }}
                                             </span>
                                         </div>
                                     </div>
@@ -1187,10 +1186,16 @@
         },
 
         // Tooltip
-        tipHandler(event) {
-          this.$nextTick(() => {
-            $(`#${event}`).tooltip({ placement: "bottom" });
-          });
+        tipHandler(event, title) {
+            const el = document.getElementById(event);
+
+            if (el._tippy) {
+                el._tippy.destroy();
+            }
+
+            const instance = tippy(el, { placement: 'bottom' });
+            instance.setContent(title);
+            instance.show();
         },
       }
     });
