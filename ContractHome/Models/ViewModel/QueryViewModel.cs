@@ -275,6 +275,8 @@ namespace ContractHome.Models.ViewModel
         public String? SealData { get; set; }
 
         public bool? IsEnabled { get; set; }
+
+        public String? CompanyName { get; set; }
     }
 
     public class UserPasswordChangeViewModel : QueryViewModel

@@ -35,6 +35,14 @@
         <div class="container">
           <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3 m-3 mb-lg-0 data-item">
             <div class="col input__height">
+                <div class="row">
+                    <label for="CompanyName" class="col-sm-12 col-md-3 col-form-label fw-bolder">隸屬公司</label>
+                    <div class="col-sm-12 col-md-9">
+                         <input v-model="searchFormData.CompanyName" type="text" class="form-control" name="CompanyName" id="CompanyName" />
+                    </div>
+                </div>
+            </div>
+            <div class="col input__height">
               <div class="row">
                 <label for="PID" class="col-sm-12 col-md-3 col-form-label fw-bolder">用戶帳號</label>
                 <div class="col-sm-12 col-md-9">
@@ -64,6 +72,20 @@
                   </div>
                 </div>
               </div>
+            </div>
+            <div class="col input__height">
+                <div class="row">
+                    <label for="EnabledState" class="col-sm-12 col-md-3 col-form-label fw-bolder">帳號狀態</label>
+                    <div id="EnabledStateField" class="col-sm-12 col-md-9">
+                        <select v-model="searchFormData.IsEnabled" class="form-select">
+                            <option v-for="(item, index) in EnabledStateOption" :key="index" :value="item.value">
+                                {{ item.text }}
+                            </option>
+                        </select>
+                        <div class="invalid-feedback">
+                        </div>
+                    </div>
+                </div>
             </div>
             <!--
             <div class="col input__height">
@@ -115,13 +137,9 @@
             <tr>
               <th scope="col">隸屬公司</th>
               <th scope="col">用戶帳號</th>
-              <!--
-              <th scope="col">姓名</th>
-              -->
               <th scope="col">電子郵件</th>
               <th scope="col">角色</th>
               <th scope="col">憑證類型</th>
-              <th scope="col">狀態</th>
               <th scope="col" class="text-center">功能</th>
             </tr>
           </thead>
@@ -135,14 +153,6 @@
               <td class="fs-13">{{ user.EMail }}</td>
               <td class="fs-13">{{ formatData(user.RoleID, 'roleList') }}</td>
               <td class="fs-13">{{ formatData(user.Region, 'regionList') }}</td>
-              <td>
-                <!--
-                <span v-if="user.PID !== 'ifsadmin'">
-                  <span class="px-1 text-success opacity-75"><i class="fas fa-stamp"></i></span>
-                  <span class="px-1 text-danger opacity-50"><i class="fas fa-ban"></i></span>
-                </span>
-                -->
-              </td>
               <td class="text-nowrap text-center">
                 <!-- 編輯 -->
 
@@ -301,6 +311,28 @@
           <form v-on:submit.prevent method="post" enctype="multipart/form-data">
             <div class="container">
               <div class="row row-cols-1 m-3 mb-lg-0 data-item">
+                <div class="col input__height">
+                    <div class="row">
+                        <label for="iCompanyName" class="col-sm-12 col-md-3 col-form-label fw-bolder">隸屬公司</label>
+                        <div id="InputCompanyName" class="col-sm-12 col-md-9">
+                            <input v-model="formData.CompanyName" type="text" class="form-control form-control-sm"
+                                    :class="{'is-invalid': isCompanyName}" id="iCompanyName" placeholder="請輸入關鍵字或統編查詢公司名稱"
+                                    v-on:focus="resetValidate('isCompanyName')"
+                                    v-on:blur="validateField('isCompanyName', formData.CompanyName)" autocomplete="off" />
+                            <ul v-show="isInputOptionsOpen" class="list-group mb-3 shadow__card">
+                                <li v-for="(result, index) in searchResults" :key="index"
+                                    class="list-group-item list-group-item-action" v-on:click="setResult(result, 'edit')"
+                                    :class="{'active': index === currentlyCounter}">
+                                    {{ result.CompanyName }}
+                                </li>
+                            </ul>
+                            <div class="invalid-feedback">
+                                 請選擇隸屬公司
+                            </div>
+                        </div>
+                    </div>
+                </div>
+              
                 <div class="col input__height">
                   <div class="row">
                     <label for="iPID" class="col-sm-12 col-md-3 col-form-label fw-bolder">用戶帳號</label>
@@ -470,7 +502,8 @@
         EMail: null,
         RoleID: null,
         Region: null,
-        EncCompanyID: null
+        EncCompanyID: null,
+        IsEnabled: null
       },
       roleList,
       regionList,
@@ -484,7 +517,7 @@
         Password: null,
         EMail: null,
         RoleID: '1',
-        Region: null
+        Region: 'O',
       },
       formData: {
         CompanyName: null,
@@ -521,13 +554,18 @@
       isInputOptionsOpen: false,
       searchResults: [],
       currentlyCounter: -1,
-      deleteConfirm: false
+      deleteConfirm: false,
+      EnabledStateOption: [
+        { text: '請選擇', value: null },
+        { text: '啟用', value: true },
+        { text: '停用', value: false },
+      ],
     },
     watch: {
       // 檢查公司名稱輸入框的值，並執行Autocomplate
-      'searchFormData.CompanyName'() {
-        this.filterResults('search');
-      },
+      // 'searchFormData.CompanyName'() {
+      //   this.filterResults('search');
+      // },
       'formData.CompanyName'() {
         this.filterResults('edit');
       }
@@ -582,7 +620,7 @@
           this.formData = JSON.parse(JSON.stringify(this.initialFormData));
 
         } else if (type === 'edit') {
-          this.formData = data; //JSON.parse(JSON.stringify(data));
+          this.formData = JSON.parse(JSON.stringify(data));
           // 輸入欄位檢核
           this.isCompanyName = !this.formData.CompanyName;
           this.isPID = !this.formData.PID;
@@ -729,7 +767,7 @@
       // 儲存表單
       saveHandler() {
         // 輸入欄位檢核
-        this.isCompanyName = !this.formData.CompanyName;
+        this.isCompanyName = !this.formData.CompanyName || !this.formData.EncCompanyID;
         this.isPID = !this.formData.PID;
         // this.isUserName = !this.formData.UserName;
         // 新增資料時檢查密碼
@@ -827,6 +865,7 @@
       resetHandler() {
         this.searchFormData = JSON.parse(JSON.stringify(this.initialFormData));
         this.searchFormData.RoleID = null;
+        this.searchFormData.IsEnabled = null;
         // delete this.searchFormData.uuid;
       },
 

@@ -57,7 +57,7 @@ namespace ContractHome.Controllers
             return View("~/Views/UserProfile/DeptMgmt.cshtml");
         }
 
-        [Authorize]
+        [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
         public async Task<ActionResult> VueInquireDataAsync([FromBody] UserProfileViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
@@ -65,11 +65,8 @@ namespace ContractHome.Controllers
             var profile = await HttpContext.GetUserAsync();
 
             IQueryable<UserProfile> items = models.GetTable<UserProfile>();
-            if (profile?.IsSysAdmin() == true)
-            {
 
-            }
-            else if (profile?.IsMemberAdmin() == true)
+            if (profile?.IsMemberAdmin() == true)
             {
                 var orgUser = models.GetTable<OrganizationUser>()
                                 .Where(o => o.UID == profile.UID).FirstOrDefault();
@@ -78,14 +75,6 @@ namespace ContractHome.Controllers
                     var orgUsers = models.GetTable<OrganizationUser>().Where(o => o.CompanyID == orgUser.CompanyID);
                     items = items.Where(u => orgUsers.Any(o => o.UID == u.UID));
                 }
-                else
-                {
-                    items = items.Where(p => false);
-                }
-            }
-            else
-            {
-                items = items.Where(p => false);
             }
 
             int? companyID = viewModel.GetCompanyID();
@@ -114,6 +103,19 @@ namespace ContractHome.Controllers
                 items = items.Where(o => o.EMail.StartsWith(viewModel.EMail));
             }
 
+            if (viewModel.IsEnabled.HasValue)
+            {
+                items = items.Where(o => o.IsEnabled == viewModel.IsEnabled.Value);
+            }
+
+            if (viewModel.CompanyName != null)
+            {
+                items = from u in items
+                        join ou in models.GetTable<OrganizationUser>() on u.UID equals ou.UID
+                        join o in models.GetTable<Organization>() on ou.CompanyID equals o.CompanyID
+                        where o.CompanyName.Contains(viewModel.CompanyName)
+                        select u;
+            }
 
             //if (viewModel.DataItem != null && viewModel.DataItem.Length > 0)
             //{
@@ -623,7 +625,7 @@ namespace ContractHome.Controllers
         }
 
         [RoleAuthorize(roleID: new int[] { (int)UserRoleDefinition.RoleEnum.SystemAdmin, (int)UserRoleDefinition.RoleEnum.MemberAdmin })]
-        public ActionResult SetEnabled([FromBody] UserProfileViewModel viewModel)
+        public async Task<ActionResult> SetEnabled([FromBody] UserProfileViewModel viewModel)
         {
             ViewBag.ViewModel = viewModel;
 
@@ -637,9 +639,17 @@ namespace ContractHome.Controllers
 
             if (item != null)
             {
-
                 try
                 {
+                    var profile = await HttpContext.GetUserAsync();
+
+                    if (profile.IsSysAdmin)
+                    {
+                        item.IsEnabled = viewModel.IsEnabled.Value;
+                        models.SubmitChanges();
+                        return Json(new { result = true, message = "已成功" + ((viewModel.IsEnabled.Value) ? "啟用" : "停用") });
+                    }
+
                     // 檢查使用者是否在進行中的合約做簽署
                     var result = from csr in _db.ContractSignatureRequest
                                  join c in _db.Contract on csr.ContractID equals c.ContractID
