@@ -12,7 +12,7 @@
     var profile = (await Context.GetUserAsync()).LoadInstance(models!);
     var companyKeyID = (profile != null) ? profile.CompanyID.EncryptKey() : string.Empty;
 }
-<div id="favoriteSignerInfos" class="container-lg py-4">
+<div id="favoriteSignerInfos" class="container-lg py-4" v-cloak>
     <section class="queryform">
         <!-- Section title -->
         <h4 class="mb-2 mt-0 fw-bolder">常用簽署人管理</h4>

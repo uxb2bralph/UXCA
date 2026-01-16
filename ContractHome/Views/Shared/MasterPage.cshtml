@@ -44,8 +44,13 @@
     await Html.RenderPartialAsync("~/Views/Shared/DataOperationScript.cshtml");
   }
 </head>
-
 <body>
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+
   <!-- Navbar -->
   @{
     if (profile != null)
@@ -77,6 +82,7 @@
 </body>
 
 </html>
+
 <script>
   /** 設定不顯示 MainNavBar 的頁面*/
   const pathName = location.pathname;

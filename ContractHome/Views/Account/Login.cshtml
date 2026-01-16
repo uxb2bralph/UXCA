@@ -24,7 +24,7 @@
   _validCode = 6.CreateRandomStringCode();
   _encryptedCode = _validCode.EncryptData();
 }
-<main id="login" class="login__wrapper bg-secondary">
+<main id="login" class="login__wrapper bg-secondary" v-cloak>
   <div class="login__signin">
     <form ref="form" v-on:submit.prevent id="loginForm" novalidate accept-charset="UTF-8" role="form" method="post"
       autocomplete="off">

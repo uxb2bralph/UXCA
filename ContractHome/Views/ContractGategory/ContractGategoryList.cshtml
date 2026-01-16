@@ -12,7 +12,7 @@
     var profile = (await Context.GetUserAsync()).LoadInstance(models!);
     var companyKeyID = (profile != null) ? profile.CompanyID.EncryptKey() : string.Empty;
 }
-<div id="categoryInfos" class="container-lg py-4">
+<div id="categoryInfos" class="container-lg py-4" v-cloak>
     <section class="queryform">
         <!-- Section title -->
         <h4 class="mb-2 mt-0 fw-bolder">分類授權管理</h4>
