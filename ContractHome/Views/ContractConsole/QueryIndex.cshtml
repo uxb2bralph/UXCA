@@ -246,22 +246,25 @@
                                                 稽核軌跡
                                             </button>
                                         </li>
-                                        <li>
-                                            <button class="dropdown-item d-flex align-items-center fs-13" v-on:click="downloadPdf(contract)">
-                                                <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
-                                                    <i class="far fa-download text-info"></i>
-                                                </span>
-                                                下載合約
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <button class="dropdown-item d-flex align-items-center fs-13" v-on:click="downloadFootprintsPdf(contract)">
-                                                <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
-                                                    <i class="far fa-download text-info"></i>
-                                                </span>
-                                                下載稽核軌跡
-                                            </button>
-                                        </li>
+                                        @if (!profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.SystemAdmin))
+                                        {
+                                            <li>
+                                                <button class="dropdown-item d-flex align-items-center fs-13" v-on:click="downloadPdf(contract)">
+                                                    <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
+                                                        <i class="far fa-download text-info"></i>
+                                                    </span>
+                                                    下載合約
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button class="dropdown-item d-flex align-items-center fs-13" v-on:click="downloadFootprintsPdf(contract)">
+                                                    <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
+                                                        <i class="far fa-download text-info"></i>
+                                                    </span>
+                                                    下載稽核軌跡
+                                                </button>
+                                            </li>
+                                        }
                                         <li v-if="showMenu(contract) && contract.CurrentStep != @((int)CDS_Document.StepEnum.Config) && contract.CurrentStep != @((int)CDS_Document.StepEnum.Committed) && contract.CurrentStep != @((int)CDS_Document.StepEnum.Revoked) && contract.CurrentStep != @((int)CDS_Document.StepEnum.Terminated)">
                                             <button class="dropdown-item d-flex align-items-center fs-13" v-on:click="resendEmail(contract)">
                                                 <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
@@ -270,17 +273,18 @@
                                                 重發通知信
                                             </button>
                                         </li>
-
-                                        <li v-if="showMenu(contract) && contract.CurrentStep != @((int)CDS_Document.StepEnum.Terminated) && contract.CurrentStep != @((int)CDS_Document.StepEnum.Revoked) && contract.CurrentStep != @((int)CDS_Document.StepEnum.Committed)">
-                                            <button class="dropdown-item d-flex align-items-center fs-13"
-                                                    v-on:click="openStopContractModal(contract)">
-                                                <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
-                                                    <i class="fas fa-ban text-danger opacity-75"></i>
-                                                </span>
-                                                終止合約
-                                            </button>
-                                        </li>
-
+                                        @if (!profile.IsAuthorized((int)UserRoleDefinition.RoleEnum.SystemAdmin))
+                                        {
+                                            <li v-if="showMenu(contract) && contract.CurrentStep != @((int)CDS_Document.StepEnum.Terminated) && contract.CurrentStep != @((int)CDS_Document.StepEnum.Revoked) && contract.CurrentStep != @((int)CDS_Document.StepEnum.Committed)">
+                                                <button class="dropdown-item d-flex align-items-center fs-13"
+                                                        v-on:click="openStopContractModal(contract)">
+                                                    <span class="d-flex justify-content-center fs-12 pe-2" style="width: 25px;">
+                                                        <i class="fas fa-ban text-danger opacity-75"></i>
+                                                    </span>
+                                                    終止合約
+                                                </button>
+                                            </li>
+                                        }
                                     </ul>
                                 </div>
                             </div>

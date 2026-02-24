@@ -770,6 +770,13 @@ namespace ContractHome.Controllers
 
             var profile = await HttpContext.GetUserAsync();
 
+            var canView = contract.ContractingParty.Where(p => p.CompanyID == profile!.UserCompanyID).FirstOrDefault() != null;
+
+            if (!canView)
+            {
+                return Json(new { result = false, message = "無權限檢視此合約!!" });
+            }
+
             contract.CDS_Document.DocumentProcessLog.Add(new DocumentProcessLog
             {
                 LogDate = DateTime.Now,
@@ -815,6 +822,13 @@ namespace ContractHome.Controllers
             if (contract != null)
             {
                 var profile = await HttpContext.GetUserAsync();
+
+                var canView = contract.ContractingParty.Where(p => p.CompanyID == profile!.UserCompanyID).FirstOrDefault() != null;
+
+                if (!canView)
+                {
+                    return Json(new { result = false, message = "無權限檢視此合約!!" });
+                }
 
                 int stepID = (int)CDS_Document.StepEnum.Browsed;
 
